@@ -4,7 +4,8 @@
       "Bash(python:*)",
       "Bash(ls:*)",
       "Read(//c/CodeBase/Article/**)",
-      "Bash(sort:*)"
+      "Bash(sort:*)",
+      "Bash(wc:*)"
     ],
     "additionalDirectories": [
       "c:\\CodeBase\\Article"
