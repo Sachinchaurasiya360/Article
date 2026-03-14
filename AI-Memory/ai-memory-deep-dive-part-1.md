@@ -1,21 +1,21 @@
-# Memory in AI Systems Deep Dive — Part 1: How Machines Represent Information (Tokens, Numbers, and Vectors)
+# Memory in AI Systems Deep Dive  Part 1: How Machines Represent Information (Tokens, Numbers, and Vectors)
 
 ---
 
-**Series:** Memory in AI Systems — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Memory in AI Systems  A Developer's Deep Dive from Fundamentals to Production
 **Part:** 1 of 19
 **Audience:** Developers with programming experience who want to understand AI memory systems from the ground up
 **Reading time:** ~50 minutes
 
 ---
 
-In Part 0, we surveyed the landscape: what "memory" means in AI systems, why it matters, and the roadmap for this 19-part series. We drew the distinction between **parametric memory** (knowledge baked into model weights during training), **working memory** (the context window that holds the current conversation), and **external memory** (vector databases, retrieval systems, and persistent stores that extend what a model can access). We also established the central question of this series: *How do AI systems store, retrieve, and reason over information — and how can developers build systems that do it well?*
+In Part 0, we surveyed the landscape: what "memory" means in AI systems, why it matters, and the roadmap for this 19-part series. We drew the distinction between **parametric memory** (knowledge baked into model weights during training), **working memory** (the context window that holds the current conversation), and **external memory** (vector databases, retrieval systems, and persistent stores that extend what a model can access). We also established the central question of this series: *How do AI systems store, retrieve, and reason over information  and how can developers build systems that do it well?*
 
-Now we go to the absolute foundation. Before an AI system can "remember" anything — before it can store a fact, retrieve a similar document, or maintain context across a conversation — it must solve a more fundamental problem: **How do you represent human language as numbers that a computer can process?**
+Now we go to the absolute foundation. Before an AI system can "remember" anything  before it can store a fact, retrieve a similar document, or maintain context across a conversation  it must solve a more fundamental problem: **How do you represent human language as numbers that a computer can process?**
 
 This isn't a trivial question. The word "bank" means something completely different in "river bank" vs. "bank account." The sentences "The cat sat on the mat" and "The feline rested upon the rug" mean nearly the same thing despite sharing almost no words. How do you capture this in numbers?
 
-The answer involves a journey from raw characters to tokens to vectors — representations that encode not just the identity of words, but their *meaning*. This journey is the foundation that everything else in this series builds upon. Get this wrong, and your AI memory system stores garbage. Get it right, and you unlock semantic search, meaningful retrieval, and intelligent information processing.
+The answer involves a journey from raw characters to tokens to vectors  representations that encode not just the identity of words, but their *meaning*. This journey is the foundation that everything else in this series builds upon. Get this wrong, and your AI memory system stores garbage. Get it right, and you unlock semantic search, meaningful retrieval, and intelligent information processing.
 
 By the end of this part, you will:
 
@@ -59,9 +59,9 @@ Let's build.
 
 ### Computers Don't Understand Language
 
-Here's a fundamental truth that's easy to forget: **computers only understand numbers**. Specifically, they understand binary — sequences of 0s and 1s stored as electrical voltages in silicon. A CPU doesn't know what the word "cat" means. It doesn't know that "happy" and "joyful" are similar. It doesn't know that "not bad" actually means "good."
+Here's a fundamental truth that's easy to forget: **computers only understand numbers**. Specifically, they understand binary  sequences of 0s and 1s stored as electrical voltages in silicon. A CPU doesn't know what the word "cat" means. It doesn't know that "happy" and "joyful" are similar. It doesn't know that "not bad" actually means "good."
 
-When you type a message to ChatGPT, Claude, or any other AI system, your words must be converted into numbers before the model can do *anything* with them. The quality of that conversion — how faithfully those numbers capture the *meaning* of your words — determines the quality of everything that follows.
+When you type a message to ChatGPT, Claude, or any other AI system, your words must be converted into numbers before the model can do *anything* with them. The quality of that conversion  how faithfully those numbers capture the *meaning* of your words  determines the quality of everything that follows.
 
 Think of it this way: if you tried to store a photograph by only recording the total number of pixels, you'd lose the image entirely. If you stored each pixel's color values in a grid, you'd capture the image perfectly. **How you represent information determines what operations you can perform on it and how useful the results will be.**
 
@@ -85,11 +85,11 @@ flowchart LR
 | **Tokens** | Break text into processable units | Yes (unique IDs) | No |
 | **Vectors** | Map tokens to dense number arrays | Yes (implicitly) | **Yes** |
 
-Each stage adds information. Raw text is just bytes. Tokens give each piece of text a unique identity. Vectors encode *meaning* — they position words in a space where similar meanings are close together.
+Each stage adds information. Raw text is just bytes. Tokens give each piece of text a unique identity. Vectors encode *meaning*  they position words in a space where similar meanings are close together.
 
 ### Why This Matters for Memory
 
-Every memory system in AI — from the context window of an LLM to a vector database storing millions of documents — operates on these representations. When you:
+Every memory system in AI  from the context window of an LLM to a vector database storing millions of documents  operates on these representations. When you:
 
 - **Store** something in AI memory: text gets tokenized, then embedded into vectors
 - **Search** for something: your query gets embedded, then compared against stored vectors
@@ -107,7 +107,7 @@ Let's start building these representations from the ground up.
 
 Before we can do any AI processing, we need to solve a basic question: **how do we represent text as numbers?**
 
-The simplest approach is character encoding — assign a number to each character. This is what ASCII does (1963) and what Unicode extends to cover all human writing systems.
+The simplest approach is character encoding  assign a number to each character. This is what ASCII does (1963) and what Unicode extends to cover all human writing systems.
 
 ```python
 # Characters are already numbers under the hood
@@ -121,7 +121,7 @@ print([ord(c) for c in text_multilingual])
 # [72, 101, 108, 108, 111, 32, 20320, 22909, 32, 1605, 1585, 1581, 1576, 1575]
 ```
 
-But feeding raw character codes to an AI model is like trying to understand a book by looking at individual letters — you lose all the structure. The word "understanding" has 13 characters, but it's one concept. We need a way to break text into *meaningful units*.
+But feeding raw character codes to an AI model is like trying to understand a book by looking at individual letters  you lose all the structure. The word "understanding" has 13 characters, but it's one concept. We need a way to break text into *meaningful units*.
 
 ### Level 1: Character-Level Tokenization
 
@@ -176,7 +176,7 @@ print(f"Vocab size: {tokenizer.vocab_size}")
 # Vocab size: 13
 ```
 
-Character tokenization works, but it has a critical problem: **sequences become extremely long**. The sentence "The cat sat on the mat" becomes 22 tokens (one per character including spaces). Long sequences mean more computation for the model — and characters alone don't carry much meaning. The letter "t" tells you almost nothing.
+Character tokenization works, but it has a critical problem: **sequences become extremely long**. The sentence "The cat sat on the mat" becomes 22 tokens (one per character including spaces). Long sequences mean more computation for the model  and characters alone don't carry much meaning. The letter "t" tells you almost nothing.
 
 ### Level 2: Word-Level Tokenization
 
@@ -246,9 +246,9 @@ Word tokenization gives us shorter sequences with more meaningful units. But it 
 
 Worse, word tokenization can't handle words it hasn't seen. "ChatGPT" would be `<UNK>`. "Unforgettable" might be `<UNK>`. You lose information constantly.
 
-### Level 3: Subword Tokenization (BPE) — The Sweet Spot
+### Level 3: Subword Tokenization (BPE)  The Sweet Spot
 
-Modern AI systems use **subword tokenization** — a middle ground between characters and words. The most common algorithm is **Byte Pair Encoding (BPE)**, which builds a vocabulary by iteratively merging the most frequent pairs of tokens.
+Modern AI systems use **subword tokenization**  a middle ground between characters and words. The most common algorithm is **Byte Pair Encoding (BPE)**, which builds a vocabulary by iteratively merging the most frequent pairs of tokens.
 
 The intuition: common words like "the" get their own token, but rare words like "unforgettable" get split into subwords like "un" + "forget" + "table". This gives you a compact vocabulary that can represent *any* text.
 
@@ -579,7 +579,7 @@ cat_dog_sim = np.dot(cat_vec, dog_vec)
 cat_sat_sim = np.dot(cat_vec, sat_vec)
 cat_cat_sim = np.dot(cat_vec, cat_vec)
 
-print(f"Similarity(cat, dog) = {cat_dog_sim}")  # 0.0 — but they're both animals!
+print(f"Similarity(cat, dog) = {cat_dog_sim}")  # 0.0  but they're both animals!
 print(f"Similarity(cat, sat) = {cat_sat_sim}")  # 0.0
 print(f"Similarity(cat, cat) = {cat_cat_sim}")  # 1.0
 
@@ -626,7 +626,7 @@ A single token in a Word2Vec vocabulary would need an 11.4 MB vector. A sentence
 
 **Flaw 3: No Generalization**
 
-One-hot vectors are orthogonal — every vector is perpendicular to every other. This means a model that learns something about "cat" gets zero benefit when processing "kitten." The model must learn everything independently for every word. This makes training extremely data-hungry and the resulting model fragile.
+One-hot vectors are orthogonal  every vector is perpendicular to every other. This means a model that learns something about "cat" gets zero benefit when processing "kitten." The model must learn everything independently for every word. This makes training extremely data-hungry and the resulting model fragile.
 
 ```mermaid
 graph TD
@@ -656,19 +656,19 @@ One-hot encoding tells us *which* token we're looking at, but nothing about *wha
 
 ### The Key Insight
 
-What if, instead of a sparse vector with one meaningful dimension, we used a **dense vector** — a short vector where *every* dimension carries information? And what if we could arrange things so that **similar meanings get similar vectors**?
+What if, instead of a sparse vector with one meaningful dimension, we used a **dense vector**  a short vector where *every* dimension carries information? And what if we could arrange things so that **similar meanings get similar vectors**?
 
 This is the core idea behind **embeddings**: learn a mapping from tokens to dense vectors where geometric relationships (distance, direction) correspond to semantic relationships (meaning, similarity).
 
 ### The GPS Coordinate Analogy
 
-Think of it like GPS coordinates. Every location on Earth can be described by two numbers: latitude and longitude. These numbers aren't arbitrary — they encode spatial relationships:
+Think of it like GPS coordinates. Every location on Earth can be described by two numbers: latitude and longitude. These numbers aren't arbitrary  they encode spatial relationships:
 
 - New York (40.7, -74.0) and Philadelphia (39.9, -75.2) are close → similar coordinates
 - New York (40.7, -74.0) and Tokyo (35.7, 139.7) are far → different coordinates
 - You can compute the *distance* between any two cities from their coordinates
 
-Word embeddings work the same way, but in higher dimensions. Instead of 2 dimensions (lat, long), word vectors might have 300 or 768 dimensions. Each dimension captures some aspect of meaning — not as cleanly interpretable as latitude/longitude, but the geometric relationships still hold:
+Word embeddings work the same way, but in higher dimensions. Instead of 2 dimensions (lat, long), word vectors might have 300 or 768 dimensions. Each dimension captures some aspect of meaning  not as cleanly interpretable as latitude/longitude, but the geometric relationships still hold:
 
 ```python
 import numpy as np
@@ -694,7 +694,7 @@ def cosine_similarity(a, b):
 # Compare similarities
 pairs = [
     ("cat", "dog"),      # Both animals, domestic
-    ("cat", "kitten"),   # Very similar — same animal
+    ("cat", "kitten"),   # Very similar  same animal
     ("cat", "tiger"),    # Both felines, but different
     ("cat", "car"),      # Totally unrelated
     ("car", "truck"),    # Both vehicles
@@ -749,7 +749,7 @@ graph LR
 
 ### How Embeddings Are Actually Stored in Models
 
-In practice, embeddings are stored as a matrix — a lookup table where row `i` contains the embedding vector for token `i`:
+In practice, embeddings are stored as a matrix  a lookup table where row `i` contains the embedding vector for token `i`:
 
 ```python
 import numpy as np
@@ -795,7 +795,7 @@ for name, (v, d) in real_models.items():
     print(f"  {name:30s}: {v:>10,} × {d:>6,} = {params:>15,} params ({mem_mb:>8.1f} MB)")
 ```
 
-The embedding matrix is one of the most important components of any language model. In GPT-3, it alone contains ~617 million parameters and occupies ~2.4 GB of memory in float32. This is the model's "vocabulary knowledge" — its representation of what each token means.
+The embedding matrix is one of the most important components of any language model. In GPT-3, it alone contains ~617 million parameters and occupies ~2.4 GB of memory in float32. This is the model's "vocabulary knowledge"  its representation of what each token means.
 
 ---
 
@@ -882,7 +882,7 @@ print(f"euclidean(a, c) = {euclidean_distance(a, c):.4f}")  # Large (different)
 
 ### Dot Product
 
-The raw dot product — no normalization. Sensitive to both direction *and* magnitude.
+The raw dot product  no normalization. Sensitive to both direction *and* magnitude.
 
 ```python
 def dot_product_similarity(a: np.ndarray, b: np.ndarray) -> float:
@@ -917,7 +917,7 @@ print(f"dot(a, c) = {dot_product_similarity(a, c):.4f}")  # -14.0 (negative)
 
 ### Manhattan Distance
 
-Also known as L1 distance or "taxicab distance." The sum of absolute differences along each dimension — like navigating a city grid instead of flying straight.
+Also known as L1 distance or "taxicab distance." The sum of absolute differences along each dimension  like navigating a city grid instead of flying straight.
 
 ```python
 def manhattan_distance(a: np.ndarray, b: np.ndarray) -> float:
@@ -1024,7 +1024,7 @@ flowchart TD
 
 ## 6. Word2Vec: Learning Meaning from Context
 
-We've seen that dense vectors can encode meaning — but where do these vectors come from? How do you *learn* embeddings that capture semantic relationships? The breakthrough answer came in 2013 from Tomas Mikolov and colleagues at Google: **Word2Vec**.
+We've seen that dense vectors can encode meaning  but where do these vectors come from? How do you *learn* embeddings that capture semantic relationships? The breakthrough answer came in 2013 from Tomas Mikolov and colleagues at Google: **Word2Vec**.
 
 ### The Core Insight: "You Shall Know a Word by the Company It Keeps"
 
@@ -1221,7 +1221,7 @@ def train_word2vec(sentences: list[list[str]], embedding_dim: int = 50,
     return model, word_to_id, id_to_word
 
 
-# Training corpus — needs to be large for good results,
+# Training corpus  needs to be large for good results,
 # but this demonstrates the concept
 corpus = [
     "the king ruled the kingdom with wisdom",
@@ -1305,7 +1305,7 @@ def word_analogy(model, word_to_id, id_to_word, a, b, c):
     return results[0][0]
 
 
-# Test analogies (results depend on corpus quality — ours is tiny)
+# Test analogies (results depend on corpus quality  ours is tiny)
 # With a small corpus, these won't be perfect, but they demonstrate the concept
 if "king" in word_to_id and "queen" in word_to_id:
     word_analogy(model, word_to_id, id_to_word, "king", "queen", "man")
@@ -1320,7 +1320,7 @@ if "cat" in word_to_id:
         print(f"  {word}: {sim:.3f}")
 ```
 
-> **Note:** Our tiny training corpus won't produce perfect analogies — you need millions of sentences for truly good embeddings. The point is that the *mechanism* works: the model learns to position words in vector space such that semantic relationships are captured as geometric relationships.
+> **Note:** Our tiny training corpus won't produce perfect analogies  you need millions of sentences for truly good embeddings. The point is that the *mechanism* works: the model learns to position words in vector space such that semantic relationships are captured as geometric relationships.
 
 ### Using Pre-trained Word2Vec with Gensim
 
@@ -1385,7 +1385,7 @@ Word2Vec was revolutionary, but it has critical limitations:
 | **Requires lots of data** | Needs billions of words for good quality | Small corpus → poor embeddings |
 | **Shallow context** | Only considers a small window | Misses long-range dependencies |
 
-These limitations motivate everything that comes next in this article — from simple averaging to sentence transformers.
+These limitations motivate everything that comes next in this article  from simple averaging to sentence transformers.
 
 ---
 
@@ -1425,7 +1425,7 @@ def sentence_vector_avg(sentence: str, word_vecs: dict) -> np.ndarray:
     """
     Create a sentence vector by averaging its word vectors.
 
-    This is the simplest approach — bag of words (ignores word order).
+    This is the simplest approach  bag of words (ignores word order).
     """
     words = sentence.lower().split()
     vectors = [word_vecs[w] for w in words if w in word_vecs]
@@ -1472,7 +1472,7 @@ for i, s1 in enumerate(sentences):
 
 ### Approach 2: TF-IDF Weighted Averaging
 
-Simple averaging treats every word equally — "the" gets the same weight as "cat." TF-IDF (Term Frequency–Inverse Document Frequency) weights words by how *distinctive* they are:
+Simple averaging treats every word equally  "the" gets the same weight as "cat." TF-IDF (Term Frequency–Inverse Document Frequency) weights words by how *distinctive* they are:
 
 ```python
 import numpy as np
@@ -1583,7 +1583,7 @@ print(f"    TF-IDF weighted: {tfidf_sim_13:.3f}")
 
 ### The Fatal Flaw: Lost Word Order
 
-Both averaging approaches have a fundamental problem — they produce **bag-of-words** representations that ignore word order entirely:
+Both averaging approaches have a fundamental problem  they produce **bag-of-words** representations that ignore word order entirely:
 
 ```python
 # These three sentences get IDENTICAL vectors with averaging:
@@ -1598,7 +1598,7 @@ v2 = sentence_vector_avg(s2, word_vectors)
 print(f"'{s1}'")
 print(f"'{s2}'")
 print(f"Similarity: {cosine_sim(v1, v2):.4f}")
-# Similarity: 1.0000 — identical! But the meanings are very different.
+# Similarity: 1.0000  identical! But the meanings are very different.
 ```
 
 ```mermaid
@@ -1615,18 +1615,18 @@ graph TD
     style E fill:#e94560,stroke:#e94560,color:#ffffff
 ```
 
-This is a catastrophic failure. A memory system using averaged word vectors would think "the dog bit the man" and "the man bit the dog" are identical. It can't distinguish "not good" from "good not" — making negation invisible.
+This is a catastrophic failure. A memory system using averaged word vectors would think "the dog bit the man" and "the man bit the dog" are identical. It can't distinguish "not good" from "good not"  making negation invisible.
 
-These problems motivate the move to **contextual embeddings** — models that consider the entire sentence when creating each vector. That's what we'll explore in the next section.
+These problems motivate the move to **contextual embeddings**  models that consider the entire sentence when creating each vector. That's what we'll explore in the next section.
 
 ### Summary: Word-to-Sentence Methods
 
 | Method | Preserves Order? | Captures Semantics? | Handles Negation? | Complexity |
 |--------|-----------------|--------------------|--------------------|------------|
-| **Simple Average** | No | Partially | No | O(n) — trivial |
-| **TF-IDF Weighted** | No | Better | No | O(n) — needs IDF computation |
+| **Simple Average** | No | Partially | No | O(n)  trivial |
+| **TF-IDF Weighted** | No | Better | No | O(n)  needs IDF computation |
 | **SIF (Smooth Inverse Freq)** | No | Better still | No | O(n) + PCA |
-| **Sentence Transformers** | **Yes** | **Yes** | **Yes** | O(n²) — transformer |
+| **Sentence Transformers** | **Yes** | **Yes** | **Yes** | O(n²)  transformer |
 
 The first three are fast but lossy. Sentence transformers (next section) are slower but dramatically better.
 
@@ -1636,12 +1636,12 @@ The first three are fast but lossy. Sentence transformers (next section) are slo
 
 ### The Revolution: Contextual Embeddings
 
-Everything we've built so far has a fundamental limitation: word vectors are **static**. The word "bank" always gets the same vector, whether it appears in "river bank" or "bank account." And our sentence vectors are just averages — they can't distinguish "dog bites man" from "man bites dog."
+Everything we've built so far has a fundamental limitation: word vectors are **static**. The word "bank" always gets the same vector, whether it appears in "river bank" or "bank account." And our sentence vectors are just averages  they can't distinguish "dog bites man" from "man bites dog."
 
 In 2018-2019, two breakthroughs changed everything:
 
-1. **BERT** (2018): A transformer model that creates *contextual* word embeddings — the same word gets different vectors depending on surrounding context.
-2. **Sentence-BERT** (2019): A modification that produces high-quality *sentence* embeddings — fixed-size vectors that capture the full meaning of a sentence, including word order, negation, and context.
+1. **BERT** (2018): A transformer model that creates *contextual* word embeddings  the same word gets different vectors depending on surrounding context.
+2. **Sentence-BERT** (2019): A modification that produces high-quality *sentence* embeddings  fixed-size vectors that capture the full meaning of a sentence, including word order, negation, and context.
 
 These **sentence transformers** are what power modern AI memory systems. Every vector database, every semantic search engine, every RAG pipeline uses some variant of this technology.
 
@@ -1657,7 +1657,7 @@ import numpy as np
 # all-MiniLM-L6-v2: Good balance of speed and quality (384 dimensions)
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# Encode sentences — this is all you need!
+# Encode sentences  this is all you need!
 sentences = [
     "The cat sat on the mat",
     "A feline rested on the rug",           # Same meaning, different words
@@ -1667,7 +1667,7 @@ sentences = [
     "I love programming in Python",          # Unrelated
 ]
 
-# Generate embeddings — each sentence becomes a 384-dimensional vector
+# Generate embeddings  each sentence becomes a 384-dimensional vector
 embeddings = model.encode(sentences)
 
 print(f"Number of sentences: {len(sentences)}")
@@ -1702,7 +1702,7 @@ The output will show something remarkable:
 
 - **"The cat sat on the mat" vs "Machine learning is transforming AI"** → Low similarity (~0.05-0.15). Completely different topics get distant vectors.
 
-This is the power of contextual embeddings — they capture *meaning*, not just word overlap.
+This is the power of contextual embeddings  they capture *meaning*, not just word overlap.
 
 ### Handling the Cases That Broke Averaging
 
@@ -1786,7 +1786,7 @@ top_indices = scores[0].argsort()[-5:][::-1]
 
 print("\nTop 5 results for 'What is topic 5?':")
 for idx in top_indices:
-    print(f"  Score: {scores[0][idx]:.3f} — {documents[idx]}")
+    print(f"  Score: {scores[0][idx]:.3f}  {documents[idx]}")
 ```
 
 ### Embedding Model Comparison Table
@@ -1844,10 +1844,10 @@ flowchart TD
 
 ### Important: Embedding Compatibility
 
-A critical production concern: **you cannot mix embeddings from different models**. An embedding from `all-MiniLM-L6-v2` lives in a completely different vector space than one from `bge-large-en-v1.5`. Comparing them is like comparing GPS coordinates on Earth with coordinates on Mars — the numbers mean nothing relative to each other.
+A critical production concern: **you cannot mix embeddings from different models**. An embedding from `all-MiniLM-L6-v2` lives in a completely different vector space than one from `bge-large-en-v1.5`. Comparing them is like comparing GPS coordinates on Earth with coordinates on Mars  the numbers mean nothing relative to each other.
 
 ```python
-# WRONG — comparing embeddings from different models
+# WRONG  comparing embeddings from different models
 from sentence_transformers import SentenceTransformer
 import numpy as np
 
@@ -1859,11 +1859,11 @@ text = "The cat sat on the mat"
 emb_a = model_a.encode([text])  # Shape: (1, 384)
 emb_b = model_b.encode([text])  # Shape: (1, 768)
 
-# These can't even be compared — different dimensions!
+# These can't even be compared  different dimensions!
 # And even if they were the same size, the spaces are different.
 print(f"Model A embedding shape: {emb_a.shape}")
 print(f"Model B embedding shape: {emb_b.shape}")
-print("These vectors live in DIFFERENT spaces — comparison is meaningless!")
+print("These vectors live in DIFFERENT spaces  comparison is meaningless!")
 ```
 
 **Rule: Once you choose an embedding model for a vector database, you must use the same model for all queries.** Changing models means re-embedding everything.
@@ -1872,7 +1872,7 @@ print("These vectors live in DIFFERENT spaces — comparison is meaningless!")
 
 ## 9. The Vector Space: Visualizing High-Dimensional Meaning
 
-Embeddings live in high-dimensional spaces (384, 768, 1024+ dimensions). Human brains can't visualize anything beyond 3 dimensions. But we can use **dimensionality reduction** techniques to project these high-dimensional vectors down to 2D for visualization — sacrificing some information but revealing structure.
+Embeddings live in high-dimensional spaces (384, 768, 1024+ dimensions). Human brains can't visualize anything beyond 3 dimensions. But we can use **dimensionality reduction** techniques to project these high-dimensional vectors down to 2D for visualization  sacrificing some information but revealing structure.
 
 ### Three Visualization Techniques
 
@@ -1972,7 +1972,7 @@ def visualize_embeddings(sentences, categories, method="pca", title=None):
         ax.scatter([], [], c=[category_to_color[cat]], s=100, label=cat)
     ax.legend(loc="best", fontsize=9)
 
-    ax.set_title(title or f"Sentence Embeddings — {method_label}", fontsize=14)
+    ax.set_title(title or f"Sentence Embeddings  {method_label}", fontsize=14)
     ax.set_xlabel("Dimension 1")
     ax.set_ylabel("Dimension 2")
     ax.grid(True, alpha=0.3)
@@ -2023,17 +2023,17 @@ categories = (
 
 # Visualize with all three methods
 visualize_embeddings(sentences, categories, method="pca",
-                     title="Sentence Embeddings — PCA Projection")
+                     title="Sentence Embeddings  PCA Projection")
 ```
 
 ### What You'll See in the Visualizations
 
 When you run this code, the resulting plot will reveal clusters:
 
-- **Animal sentences** cluster together — the model knows cats, dogs, and birds are related topics
-- **Technology sentences** form their own cluster — programming and ML are close in meaning-space
-- **Food sentences** group together — all about cuisine and cooking
-- **Science sentences** cluster separately — physics, biology, chemistry
+- **Animal sentences** cluster together  the model knows cats, dogs, and birds are related topics
+- **Technology sentences** form their own cluster  programming and ML are close in meaning-space
+- **Food sentences** group together  all about cuisine and cooking
+- **Science sentences** cluster separately  physics, biology, chemistry
 
 This is the power of embeddings: **semantic relationships become spatial relationships**. Documents about similar topics end up near each other in vector space, which is exactly what makes semantic search and retrieval-augmented generation (RAG) work.
 
@@ -2102,7 +2102,7 @@ plt.show()
 | Finding clusters | **t-SNE** | Best at revealing local cluster structure |
 | Publication/presentation | **UMAP** | Good balance of local and global, faster than t-SNE |
 | Very large datasets (>100K) | **PCA** or **UMAP** | t-SNE doesn't scale well |
-| Comparing across runs | **PCA** | Deterministic — same input → same output |
+| Comparing across runs | **PCA** | Deterministic  same input → same output |
 
 ---
 
@@ -2110,7 +2110,7 @@ plt.show()
 
 ### Why Precision Matters for AI Memory
 
-Every vector stored in your AI memory system occupies real memory — RAM, disk, or GPU VRAM. When you're storing millions of document embeddings, the precision of each number directly impacts your costs:
+Every vector stored in your AI memory system occupies real memory  RAM, disk, or GPU VRAM. When you're storing millions of document embeddings, the precision of each number directly impacts your costs:
 
 ```python
 import numpy as np
@@ -2123,7 +2123,7 @@ precisions = {
     "float64 (double)":   np.float64,
     "float32 (single)":   np.float32,
     "float16 (half)":     np.float16,
-    "bfloat16":           np.float32,  # Simulated — not native NumPy
+    "bfloat16":           np.float32,  # Simulated  not native NumPy
     "int8 (quantized)":   np.int8,
 }
 
@@ -2180,7 +2180,7 @@ graph TD
 
 ### How Quantization Works
 
-Quantization converts high-precision floats to lower-precision integers. The key insight: for similarity search, you don't need perfect precision — you just need to preserve the *ranking* of distances.
+Quantization converts high-precision floats to lower-precision integers. The key insight: for similarity search, you don't need perfect precision  you just need to preserve the *ranking* of distances.
 
 ```python
 import numpy as np
@@ -2279,7 +2279,7 @@ def calculate_memory(n_documents: int, embedding_dim: int,
         n_documents: Number of documents/embeddings
         embedding_dim: Dimensions per embedding
         bytes_per_dim: Bytes per dimension (4=float32, 2=float16, 1=int8)
-        overhead_factor: Database overhead (indexes, metadata) — typically 1.2-1.5x
+        overhead_factor: Database overhead (indexes, metadata)  typically 1.2-1.5x
 
     Returns:
         Dictionary with memory calculations
@@ -2317,7 +2317,7 @@ for name, n, dim, bpd in scenarios:
 ### Key Takeaway: Start with float32, Optimize Later
 
 For most projects:
-1. **Start with float32** — it's the default and eliminates precision as a variable during debugging
+1. **Start with float32**  it's the default and eliminates precision as a variable during debugging
 2. **Move to float16** when you need to cut memory in half with minimal quality loss
 3. **Use int8** when scaling to millions of documents and memory is a constraint
 4. **Use binary quantization** only for first-stage retrieval in massive systems (re-rank with full precision)
@@ -2330,13 +2330,13 @@ Let's put everything together. We'll build a complete semantic search engine in 
 
 ```python
 """
-Semantic Search Engine — A Complete Implementation
+Semantic Search Engine  A Complete Implementation
 
 This search engine embeds documents and queries into the same vector space,
 then finds the most semantically similar documents to any query.
 
 Unlike keyword search (which matches exact words), this finds documents
-by MEANING — even if query and document share no words.
+by MEANING  even if query and document share no words.
 
 Requirements:
     pip install sentence-transformers numpy
@@ -2551,7 +2551,7 @@ flowchart LR
     style E fill:#1a1a2e,stroke:#43b581,color:#ffffff
 ```
 
-1. **Tokenization**: The sentence transformer handles this internally — you never see tokens
+1. **Tokenization**: The sentence transformer handles this internally  you never see tokens
 2. **Embedding**: Text becomes a 384-dimensional dense vector
 3. **Storage**: Embeddings are stored as a NumPy matrix (in production, this would be a vector database)
 4. **Retrieval**: Cosine similarity ranks documents by semantic relevance
@@ -2567,7 +2567,7 @@ Let's step back and connect everything in this article to the central theme of t
 
 ### The Representation → Memory Pipeline
 
-Every AI memory system — from a chatbot's context window to a million-document vector database — depends on the representations we've built in this article:
+Every AI memory system  from a chatbot's context window to a million-document vector database  depends on the representations we've built in this article:
 
 ```mermaid
 flowchart TD
@@ -2597,7 +2597,7 @@ flowchart TD
 
 ### Tokens Are the Input Language
 
-Tokens are how information enters an AI system. Every word you type, every document you store, every query you make — it all starts as tokens. The tokenizer determines:
+Tokens are how information enters an AI system. Every word you type, every document you store, every query you make  it all starts as tokens. The tokenizer determines:
 
 - **What the model can represent**: If "New York" is split into two tokens, the model must learn to compose them. If it's one token, the concept is atomic.
 - **How much fits in memory**: More tokens per concept = less information per context window.
@@ -2651,7 +2651,7 @@ When a user asks a question and your system needs to find relevant information, 
 | **Word2Vec** | Algorithm that learns word vectors from context | king - man + woman ≈ queen |
 | **Skip-gram** | Word2Vec variant: predict context from word | Input: "sat" → predict: "cat", "on", "mat" |
 | **CBOW** | Word2Vec variant: predict word from context | Input: "the", "on", "mat" → predict: "sat" |
-| **BPE** | Byte Pair Encoding — subword tokenization | "unhappiness" → "un" + "happiness" |
+| **BPE** | Byte Pair Encoding  subword tokenization | "unhappiness" → "un" + "happiness" |
 | **Contextual Embedding** | Embedding that changes based on context | "bank" in "river bank" ≠ "bank" in "bank account" |
 | **Static Embedding** | One fixed embedding per word regardless of context | Word2Vec, GloVe |
 | **Sentence Transformer** | Model that embeds entire sentences as vectors | all-MiniLM-L6-v2, all-mpnet-base-v2 |
@@ -2674,11 +2674,11 @@ In this article, we went from raw text to production-quality semantic search. He
 ```mermaid
 flowchart TD
     A["Raw Text<br/>'The cat sat on the mat'"]
-    B["Character Tokenization<br/>['T','h','e',' ','c','a','t',...] — too granular"]
-    C["Word Tokenization<br/>['The','cat','sat','on','the','mat'] — vocab too large"]
+    B["Character Tokenization<br/>['T','h','e',' ','c','a','t',...]  too granular"]
+    C["Word Tokenization<br/>['The','cat','sat','on','the','mat']  vocab too large"]
     D["Subword Tokenization (BPE)<br/>Balanced: compact vocab, any text"]
-    E["One-Hot Encoding<br/>[0,1,0,...] — no semantics, huge vectors"]
-    F["Word2Vec Embeddings<br/>Dense vectors with meaning — but static, word-level"]
+    E["One-Hot Encoding<br/>[0,1,0,...]  no semantics, huge vectors"]
+    F["Word2Vec Embeddings<br/>Dense vectors with meaning  but static, word-level"]
     G["Averaged Sentence Vectors<br/>Simple but loses word order"]
     H["Sentence Transformers<br/>Full sentence meaning, handles negation/order"]
     I["Semantic Search Engine<br/>Find documents by meaning, not keywords"]
@@ -2705,7 +2705,7 @@ flowchart TD
 
 6. **Word2Vec proved that meaning emerges from context.** Words that appear in similar contexts get similar vectors. This "distributional hypothesis" underlies all modern embeddings.
 
-7. **Averaging word vectors loses word order** — a fatal flaw. "Dog bit man" and "man bit dog" get identical vectors. Sentence transformers solve this.
+7. **Averaging word vectors loses word order**  a fatal flaw. "Dog bit man" and "man bit dog" get identical vectors. Sentence transformers solve this.
 
 8. **Sentence transformers are the production standard.** They produce single vectors that capture full sentence meaning, including word order, negation, and context.
 
@@ -2713,27 +2713,27 @@ flowchart TD
 
 10. **Your embedding model choice is a one-way door.** Changing models means re-embedding everything. Choose carefully, and never mix embeddings from different models.
 
-### What's Next: Part 2 — Neural Networks as Memory Systems
+### What's Next: Part 2  Neural Networks as Memory Systems
 
 In Part 2, we'll explore how neural networks themselves act as memory systems. We'll build:
 
 - **Perceptrons** and **multi-layer networks** from scratch in NumPy
-- **Backpropagation** — how networks learn to remember patterns
-- **Recurrent Neural Networks (RNNs)** — networks with explicit memory
-- **LSTMs and GRUs** — solving the vanishing gradient (forgetting) problem
-- **The hidden state as working memory** — what RNNs actually remember
+- **Backpropagation**  how networks learn to remember patterns
+- **Recurrent Neural Networks (RNNs)**  networks with explicit memory
+- **LSTMs and GRUs**  solving the vanishing gradient (forgetting) problem
+- **The hidden state as working memory**  what RNNs actually remember
 
-We'll see how the representations from Part 1 become the *inputs* to neural networks, and how those networks learn to store patterns in their weights (parametric memory) and carry information through sequences (working memory). The foundations we built here — tokens, embeddings, similarity — will be the vocabulary we use to understand everything that follows.
+We'll see how the representations from Part 1 become the *inputs* to neural networks, and how those networks learn to store patterns in their weights (parametric memory) and carry information through sequences (working memory). The foundations we built here  tokens, embeddings, similarity  will be the vocabulary we use to understand everything that follows.
 
 See you in Part 2.
 
 ---
 
-*This article is part of the "Memory in AI Systems Deep Dive" series. Started from Part 0? You're building a deep, hands-on understanding of how AI systems store, retrieve, and reason over information — from raw tokens to production memory architectures.*
+*This article is part of the "Memory in AI Systems Deep Dive" series. Started from Part 0? You're building a deep, hands-on understanding of how AI systems store, retrieve, and reason over information  from raw tokens to production memory architectures.*
 
 **Series Navigation:**
 - **Part 0:** The Landscape of AI Memory (overview and roadmap)
-- **Part 1:** How Machines Represent Information (tokens, vectors, embeddings) — *you are here*
+- **Part 1:** How Machines Represent Information (tokens, vectors, embeddings)  *you are here*
 - **Part 2:** Neural Networks as Memory Systems (weights, hidden states, RNNs)
 - **Part 3:** The Attention Mechanism (how transformers focus and remember)
 - **Part 4:** The Transformer Architecture (the engine behind modern AI)

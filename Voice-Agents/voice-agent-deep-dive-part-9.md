@@ -1,29 +1,29 @@
-# Voice Agents Deep Dive — Part 9: Your First Voice Agent — ASR + LLM + TTS in a Loop
+# Voice Agents Deep Dive  Part 9: Your First Voice Agent  ASR + LLM + TTS in a Loop
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** 9 of 20 (Voice Agent Core)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~55 minutes
 
 ---
 
-## Introduction — The Moment Everything Clicks
+## Introduction  The Moment Everything Clicks
 
 Welcome to Part 9. This is the part you have been building toward since the very beginning.
 
 Over the last eight parts, you learned how sound becomes numbers (Part 0), how those numbers become spectrograms (Part 1), how speech recognition turns audio into text (Parts 2-4), how voice activity detection knows when someone is talking (Part 5), how text-to-speech brings words back to life as audio (Parts 6-7), and how streaming architectures keep latency low (Part 8). Each piece was interesting on its own, but none of them alone constitutes a **voice agent**.
 
-Today, we wire everything together. By the end of this part, you will have a fully functional voice agent running on your machine — one that listens to your microphone, understands what you say, thinks about a response, and speaks back to you in real time.
+Today, we wire everything together. By the end of this part, you will have a fully functional voice agent running on your machine  one that listens to your microphone, understands what you say, thinks about a response, and speaks back to you in real time.
 
-> **The whole is greater than the sum of its parts.** A voice agent is not just ASR plus LLM plus TTS. It is the *orchestration* — the timing, the error handling, the conversation flow, and the dozens of small decisions that make the difference between a clunky demo and something that feels genuinely conversational.
+> **The whole is greater than the sum of its parts.** A voice agent is not just ASR plus LLM plus TTS. It is the *orchestration*  the timing, the error handling, the conversation flow, and the dozens of small decisions that make the difference between a clunky demo and something that feels genuinely conversational.
 
 Let us begin.
 
 ---
 
-## Section 1 — What a Voice Agent Actually Is
+## Section 1  What a Voice Agent Actually Is
 
 ### 1.1 The Core Loop: Listen, Think, Speak
 
@@ -51,7 +51,7 @@ This loop has three phases, each corresponding to a human conversational ability
 
 ### 1.2 Why Orchestration Matters More Than Any Single Component
 
-You could have the best ASR in the world, the smartest LLM, and the most natural-sounding TTS — and still build a terrible voice agent. Here is why:
+You could have the best ASR in the world, the smartest LLM, and the most natural-sounding TTS  and still build a terrible voice agent. Here is why:
 
 **Scenario: The Awkward Pause**
 ```
@@ -64,9 +64,9 @@ Three seconds feels like an eternity in conversation. Humans expect responses wi
 
 **Scenario: The Interruption Problem**
 ```
-User: "Tell me about the history of—"
+User: "Tell me about the history of"
 Agent: [still playing previous response audio]
-User: "—actually, never mind. What's the weather?"
+User: "actually, never mind. What's the weather?"
 Agent: [finishes old response, THEN processes the weather question]
 ```
 
@@ -80,7 +80,7 @@ Agent: "Timer set for fifty minutes."
 User: [frustrated]
 ```
 
-Error recovery, confirmation strategies, and graceful degradation — these are all orchestration concerns.
+Error recovery, confirmation strategies, and graceful degradation  these are all orchestration concerns.
 
 ### 1.3 Voice Agents vs. Chatbots vs. IVR Systems
 
@@ -100,7 +100,7 @@ A voice agent combines the intelligence of a modern chatbot with the real-time a
 
 ---
 
-## Section 2 — Building Each Component
+## Section 2  Building Each Component
 
 We will build each component as a standalone class, then wire them together. This modular approach lets you swap implementations (e.g., local Whisper vs. cloud Deepgram) without changing the rest of the system.
 
@@ -110,7 +110,7 @@ The first component captures audio from the microphone and uses Voice Activity D
 
 ```python
 """
-audio_capture.py — Microphone capture with Voice Activity Detection.
+audio_capture.py  Microphone capture with Voice Activity Detection.
 
 Captures audio from the default microphone, runs VAD to detect
 when the user starts and stops speaking, and returns complete
@@ -337,7 +337,7 @@ class AudioCapture:
             self._speech_buffer.append(frame)
 
             if is_speech:
-                # Speaker resumed — not done yet
+                # Speaker resumed  not done yet
                 self._state = SpeechState.SPEAKING
                 self._frames_of_speech += 1
             else:
@@ -352,7 +352,7 @@ class AudioCapture:
                     if speech_duration_ms >= self.vad_config.min_speech_duration_ms:
                         self._finalize_utterance(now)
                     else:
-                        # Too short — probably a noise spike, discard
+                        # Too short  probably a noise spike, discard
                         self._reset_state()
 
     def _finalize_utterance(self, end_time: float) -> None:
@@ -397,13 +397,13 @@ class AudioCapture:
 
 > **Key design decision:** The `AudioCapture` class uses a callback-based approach rather than a blocking read loop. This ensures we never miss audio frames, even if the main thread is busy processing a previous utterance. The callback writes to a queue, and the main thread reads from that queue at its own pace.
 
-### 2.2 ASR Integration — Speech to Text
+### 2.2 ASR Integration  Speech to Text
 
 Next, we build the ASR engine. We support two backends: local Whisper (for privacy and offline use) and cloud Deepgram (for speed and accuracy).
 
 ```python
 """
-asr_engine.py — Automatic Speech Recognition engine.
+asr_engine.py  Automatic Speech Recognition engine.
 
 Supports multiple backends:
 - Whisper (local, via faster-whisper for speed)
@@ -503,7 +503,7 @@ class WhisperASR(ASREngine):
 
         # faster-whisper expects float32 audio at 16kHz
         if sample_rate != 16000:
-            # Resample if needed (simplified — use librosa for production)
+            # Resample if needed (simplified  use librosa for production)
             import librosa
             audio = librosa.resample(
                 audio, orig_sr=sample_rate, target_sr=16000
@@ -625,13 +625,13 @@ class DeepgramASR(ASREngine):
         return f"Deepgram ({self.model})"
 ```
 
-### 2.3 LLM Integration — The Thinking Brain
+### 2.3 LLM Integration  The Thinking Brain
 
 The LLM is the brain of our voice agent. It receives transcribed text and generates a response. Crucially, we use **streaming** to get the first tokens as fast as possible.
 
 ```python
 """
-llm_engine.py — Large Language Model integration for voice agents.
+llm_engine.py  Large Language Model integration for voice agents.
 
 Handles conversation history, system prompts, and streaming
 responses. Designed for voice: optimizes for low time-to-first-token
@@ -725,7 +725,7 @@ class LLMBrain:
         """
         Send user text to the LLM and return the complete response.
 
-        For voice agents, prefer think_stream() instead — it allows
+        For voice agents, prefer think_stream() instead  it allows
         TTS to start synthesizing before the full response is ready.
         """
         start_time = time.time()
@@ -803,13 +803,13 @@ class LLMBrain:
         return f"{turns} turns in conversation history."
 ```
 
-### 2.4 TTS Integration — Giving the Agent a Voice
+### 2.4 TTS Integration  Giving the Agent a Voice
 
 The TTS engine converts the LLM's text response back into audio. We support two backends: OpenAI TTS (simple and good quality) and ElevenLabs (highest quality, more voices).
 
 ```python
 """
-tts_engine.py — Text-to-Speech engine for voice agents.
+tts_engine.py  Text-to-Speech engine for voice agents.
 
 Supports multiple backends:
 - OpenAI TTS (simple, good quality, fast)
@@ -1054,13 +1054,13 @@ class ElevenLabsTTS(TTSEngine):
         return f"ElevenLabs ({self.model_id})"
 ```
 
-### 2.5 Audio Output — Playing Synthesized Speech
+### 2.5 Audio Output  Playing Synthesized Speech
 
 The final piece of the audio pipeline is playback. This needs to handle streaming chunks and support interruption.
 
 ```python
 """
-audio_playback.py — Non-blocking audio playback with interruption support.
+audio_playback.py  Non-blocking audio playback with interruption support.
 
 Plays synthesized audio through the speakers, supports streaming
 chunk-by-chunk playback, and can be interrupted when the user
@@ -1224,7 +1224,7 @@ class AudioPlayback:
 
 ---
 
-## Section 3 — The Latency Breakdown
+## Section 3  The Latency Breakdown
 
 Latency is the enemy of natural conversation. Let us measure every stage of our pipeline and understand where time is spent.
 
@@ -1265,7 +1265,7 @@ Here is the detailed breakdown:
 
 ```python
 """
-latency_tracker.py — Precise latency measurement for each pipeline stage.
+latency_tracker.py  Precise latency measurement for each pipeline stage.
 
 Tracks timing for every stage of the voice agent pipeline,
 computes statistics, and identifies bottlenecks.
@@ -1490,7 +1490,7 @@ fast_brain = LLMBrain(
 
 ---
 
-## Section 4 — Turn-Based vs. Full-Duplex Conversation
+## Section 4  Turn-Based vs. Full-Duplex Conversation
 
 There are two fundamental conversation models, and the choice between them affects every aspect of your voice agent.
 
@@ -1521,14 +1521,14 @@ sequenceDiagram
 - Easier to debug
 
 **Cons:**
-- Feels robotic — humans do not converse this way
+- Feels robotic  humans do not converse this way
 - Cannot handle interruptions
 - User must wait for the full response before speaking
 - Silence during processing feels unnatural
 
 ```python
 """
-turn_based_agent.py — Simple turn-based voice agent.
+turn_based_agent.py  Simple turn-based voice agent.
 
 The user speaks, the agent listens until silence, processes,
 responds, and then listens again. No overlap.
@@ -1539,7 +1539,7 @@ import asyncio
 
 class TurnBasedAgent:
     """
-    Turn-based voice agent — the simplest conversation model.
+    Turn-based voice agent  the simplest conversation model.
 
     Flow: Listen → Process → Speak → Listen → ...
 
@@ -1616,10 +1616,10 @@ sequenceDiagram
     participant U as User
     participant A as Agent
 
-    U->>A: "Tell me about the history of—"
+    U->>A: "Tell me about the history of"
     Note over A: [Starts processing]
     A->>U: [Begins responding...]
-    U->>A: "—actually, what's the weather?"
+    U->>A: "actually, what's the weather?"
     Note over A: [INTERRUPTS response]
     Note over A: [Starts processing weather]
     A->>U: "It's 72 degrees and sunny."
@@ -1639,7 +1639,7 @@ sequenceDiagram
 
 ```python
 """
-full_duplex_agent.py — Full-duplex voice agent with interruption support.
+full_duplex_agent.py  Full-duplex voice agent with interruption support.
 
 Allows the user to interrupt the agent mid-response. Uses
 concurrent tasks for listening and speaking, with a shared
@@ -1823,7 +1823,7 @@ class FullDuplexAgent:
 
 ---
 
-## Section 5 — Building the Complete Voice Agent
+## Section 5  Building the Complete Voice Agent
 
 Now we assemble everything into a unified `VoiceAgent` class that brings together all the components.
 
@@ -1831,7 +1831,7 @@ Now we assemble everything into a unified `VoiceAgent` class that brings togethe
 
 ```python
 """
-voice_agent.py — Complete voice agent assembling all components.
+voice_agent.py  Complete voice agent assembling all components.
 
 This is the main class that orchestrates ASR, LLM, and TTS
 into a coherent voice conversation experience.
@@ -2044,7 +2044,7 @@ class VoiceAgent:
 
     async def run(self) -> None:
         """
-        Main agent loop — the heart of the voice agent.
+        Main agent loop  the heart of the voice agent.
 
         Runs continuously, listening for user speech, processing
         it through the LLM, and speaking the response.
@@ -2110,11 +2110,11 @@ class VoiceAgent:
             self.latency.print_statistics()
 ```
 
-### 5.2 Putting It All Together — The Launch Script
+### 5.2 Putting It All Together  The Launch Script
 
 ```python
 """
-main.py — Launch script for the voice agent.
+main.py  Launch script for the voice agent.
 
 Configures and starts the complete voice agent with your
 choice of ASR, LLM, and TTS backends.
@@ -2209,7 +2209,7 @@ if __name__ == "__main__":
 
 ---
 
-## Section 6 — Prompt Engineering for Voice
+## Section 6  Prompt Engineering for Voice
 
 Voice interaction is fundamentally different from text chat. The prompts that work beautifully in ChatGPT produce terrible results when spoken aloud. This section covers the art and science of crafting prompts specifically for voice.
 
@@ -2220,11 +2220,11 @@ Consider this perfectly good text chatbot response:
 ```
 Here are 5 ways to improve your productivity:
 
-1. **Time blocking** — Allocate specific hours for deep work
-2. **The 2-minute rule** — If it takes < 2 min, do it now
-3. **Pomodoro Technique** — 25 min focus + 5 min break
-4. **Digital detox** — Check email only 3x/day
-5. **Weekly review** — Reflect every Friday afternoon
+1. **Time blocking**  Allocate specific hours for deep work
+2. **The 2-minute rule**  If it takes < 2 min, do it now
+3. **Pomodoro Technique**  25 min focus + 5 min break
+4. **Digital detox**  Check email only 3x/day
+5. **Weekly review**  Reflect every Friday afternoon
 
 For more tips, check out [this guide](https://example.com/productivity).
 ```
@@ -2246,7 +2246,7 @@ five-minute break. Would you like me to go deeper on any of these?
 
 ```python
 """
-voice_prompts.py — System prompts optimized for voice interaction.
+voice_prompts.py  System prompts optimized for voice interaction.
 
 Contains prompt templates and utilities for crafting effective
 voice agent personas.
@@ -2339,7 +2339,7 @@ New patient appointments are sixty minutes. Regular checkups are \
 thirty minutes."""
 ```
 
-### 6.3 Good vs. Bad Voice Prompts — A Comparison
+### 6.3 Good vs. Bad Voice Prompts  A Comparison
 
 | Scenario | Bad Prompt (Text-Oriented) | Good Prompt (Voice-Oriented) |
 |----------|---------------------------|------------------------------|
@@ -2354,7 +2354,7 @@ thirty minutes."""
 
 ```python
 """
-prompt_adapter.py — Dynamically adjust prompts based on conversation context.
+prompt_adapter.py  Dynamically adjust prompts based on conversation context.
 
 Adapts the system prompt and generation parameters based on
 what is happening in the conversation.
@@ -2462,9 +2462,9 @@ class PromptAdapter:
 
 ---
 
-## Section 7 — Function Calling from Voice
+## Section 7  Function Calling from Voice
 
-One of the most powerful features of a voice agent is the ability to take actions in the real world — setting timers, checking the weather, controlling smart home devices, or querying databases. This is accomplished through **function calling** (also known as tool use).
+One of the most powerful features of a voice agent is the ability to take actions in the real world  setting timers, checking the weather, controlling smart home devices, or querying databases. This is accomplished through **function calling** (also known as tool use).
 
 ### 7.1 The Function Calling Architecture
 
@@ -2485,7 +2485,7 @@ graph TD
 
 ```python
 """
-voice_tools.py — Function definitions for voice agent tool use.
+voice_tools.py  Function definitions for voice agent tool use.
 
 Defines tools that the LLM can call in response to user speech.
 Each tool includes a voice-friendly description and handles
@@ -2735,7 +2735,7 @@ class VoiceToolkit:
         In production, this would call a real weather API.
         This is a mock for demonstration purposes.
         """
-        # Mock weather data — replace with real API call
+        # Mock weather data  replace with real API call
         mock_weather = {
             "tokyo": {"temperature": "seventy-two", "condition": "sunny"},
             "london": {"temperature": "fifty-five", "condition": "cloudy with light rain"},
@@ -2814,7 +2814,7 @@ class VoiceToolkit:
 
 ```python
 """
-tool_calling_brain.py — LLM brain with function calling support.
+tool_calling_brain.py  LLM brain with function calling support.
 
 Extends the basic LLMBrain to support tool/function calls,
 allowing the voice agent to take actions in response to speech.
@@ -2869,7 +2869,7 @@ class ToolCallingBrain:
         # Get tool schemas
         tools = self.toolkit.get_tool_schemas()
 
-        # First LLM call — might return a tool call
+        # First LLM call  might return a tool call
         response = await self.client.chat.completions.create(
             model=self.model,
             messages=messages,
@@ -2900,7 +2900,7 @@ class ToolCallingBrain:
                 "content": json.dumps(result.data),
             })
 
-            # Second LLM call — format result for voice
+            # Second LLM call  format result for voice
             follow_up = await self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
@@ -2911,7 +2911,7 @@ class ToolCallingBrain:
             final_text = follow_up.choices[0].message.content
 
         else:
-            # No tool call — direct text response
+            # No tool call  direct text response
             final_text = choice.message.content
 
         # Update history
@@ -2923,7 +2923,7 @@ class ToolCallingBrain:
 
 ---
 
-## Section 8 — Conversation History Management
+## Section 8  Conversation History Management
 
 Managing conversation history is critical for voice agents. The LLM needs context to understand follow-up questions, but too much history slows down responses and increases costs.
 
@@ -2931,7 +2931,7 @@ Managing conversation history is critical for voice agents. The LLM needs contex
 
 ```python
 """
-conversation_manager.py — Intelligent conversation history management.
+conversation_manager.py  Intelligent conversation history management.
 
 Stores, truncates, and summarizes conversation history to keep
 the LLM context window efficient while preserving important context.
@@ -3116,7 +3116,7 @@ Voice conversations have unique patterns that the history manager should account
 
 ```python
 """
-voice_conversation_patterns.py — Common voice conversation patterns.
+voice_conversation_patterns.py  Common voice conversation patterns.
 
 Detects and handles patterns specific to voice interaction,
 such as corrections, confirmations, and topic shifts.
@@ -3220,7 +3220,7 @@ class VoicePatternDetector:
 
 ---
 
-## Section 9 — Error Handling and Edge Cases
+## Section 9  Error Handling and Edge Cases
 
 A voice agent that only works in ideal conditions is not useful. Real-world voice interaction involves noise, accents, mumbling, interruptions, network failures, and countless other challenges.
 
@@ -3228,7 +3228,7 @@ A voice agent that only works in ideal conditions is not useful. Real-world voic
 
 ```python
 """
-robust_voice_agent.py — Voice agent with comprehensive error handling.
+robust_voice_agent.py  Voice agent with comprehensive error handling.
 
 Handles all the things that go wrong in real voice interaction:
 ASR failures, LLM timeouts, TTS errors, silence, noise, and more.
@@ -3347,7 +3347,7 @@ class RobustVoiceAgent:
                     return None
 
                 if result.confidence < 0.4:
-                    # Low confidence — ask for confirmation
+                    # Low confidence  ask for confirmation
                     message = self._get_error_message(
                         ErrorType.ASR_LOW_CONFIDENCE, text=result.text
                     )
@@ -3404,7 +3404,7 @@ class RobustVoiceAgent:
 
             except asyncio.TimeoutError:
                 if attempt == 0:
-                    # First timeout — let user know we are working on it
+                    # First timeout  let user know we are working on it
                     await self._speak_response(
                         "Let me think about that for a moment."
                     )
@@ -3522,7 +3522,7 @@ class RobustVoiceAgent:
 
 ---
 
-## Section 10 — Project: Complete Voice Assistant
+## Section 10  Project: Complete Voice Assistant
 
 Let us bring everything together into a fully functioning personal voice assistant that you can run on your machine right now.
 
@@ -3530,7 +3530,7 @@ Let us bring everything together into a fully functioning personal voice assista
 
 ```python
 """
-personal_assistant.py — Complete personal voice assistant.
+personal_assistant.py  Complete personal voice assistant.
 
 A fully functional voice agent that combines all the components
 from this article into a working assistant with:
@@ -3617,7 +3617,7 @@ Voice interaction rules:
 - Use contractions naturally: "I'm", "don't", "it's".
 - Be warm and helpful, but concise.
 - If unsure, ask a brief clarifying question.
-- End responses clearly — do not trail off.
+- End responses clearly  do not trail off.
 
 You have access to tools for: setting timers, checking weather, \
 getting the current date and time, and setting reminders. \
@@ -3749,7 +3749,7 @@ class PersonalVoiceAssistant:
         await self.setup()
 
         print("=" * 60)
-        print(f"  {self.config.name.upper()} — PERSONAL VOICE ASSISTANT")
+        print(f"  {self.config.name.upper()}  PERSONAL VOICE ASSISTANT")
         print("=" * 60)
         print("  Speak naturally. I'm listening.")
         print("  Say 'goodbye' or press Ctrl+C to stop.")
@@ -3916,7 +3916,7 @@ python personal_assistant.py
 **Step 4: Talk to it!**
 ```
 ============================================================
-  ECHO — PERSONAL VOICE ASSISTANT
+  ECHO  PERSONAL VOICE ASSISTANT
 ============================================================
   Speak naturally. I'm listening.
   Say 'goodbye' or press Ctrl+C to stop.
@@ -4006,22 +4006,22 @@ graph TB
 
 ---
 
-## What's Next — Part 10: Dialog Management and Conversation Design
+## What's Next  Part 10: Dialog Management and Conversation Design
 
 In Part 9, we built a working voice agent that can listen, think, and speak. It handles errors, supports function calling, and tracks its own latency. But we have only scratched the surface of how to design *conversations*.
 
-In **Part 10**, we will dive into **dialog management** — the discipline of designing and controlling how conversations flow:
+In **Part 10**, we will dive into **dialog management**  the discipline of designing and controlling how conversations flow:
 
-- **Dialog state machines** — Modeling conversations as state graphs with defined transitions, guard conditions, and fallback paths.
-- **Slot filling** — How to gather multiple pieces of information from the user across several turns ("What city? What date? How many guests?").
-- **Confirmation strategies** — Implicit vs. explicit confirmation, and when to use each.
-- **Multi-turn intent resolution** — Handling complex requests that take several exchanges to fully understand.
-- **Conversation repair** — What to do when things go wrong mid-dialog (misunderstandings, topic changes, user corrections).
-- **Proactive dialog** — When the agent should take initiative rather than just responding to the user.
-- **Dialog flow frameworks** — Building reusable conversation patterns for common scenarios like booking, troubleshooting, and information gathering.
+- **Dialog state machines**  Modeling conversations as state graphs with defined transitions, guard conditions, and fallback paths.
+- **Slot filling**  How to gather multiple pieces of information from the user across several turns ("What city? What date? How many guests?").
+- **Confirmation strategies**  Implicit vs. explicit confirmation, and when to use each.
+- **Multi-turn intent resolution**  Handling complex requests that take several exchanges to fully understand.
+- **Conversation repair**  What to do when things go wrong mid-dialog (misunderstandings, topic changes, user corrections).
+- **Proactive dialog**  When the agent should take initiative rather than just responding to the user.
+- **Dialog flow frameworks**  Building reusable conversation patterns for common scenarios like booking, troubleshooting, and information gathering.
 
 Part 10 will take your voice agent from "it works" to "it has meaningful conversations."
 
 ---
 
-*Next in the series: **Part 10 — Dialog Management and Conversation Design***
+*Next in the series: **Part 10  Dialog Management and Conversation Design***

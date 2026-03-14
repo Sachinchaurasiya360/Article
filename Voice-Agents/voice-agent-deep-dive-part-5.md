@@ -1,8 +1,8 @@
-# Voice Agents Deep Dive — Part 5: Speech Synthesis — Teaching Machines to Talk
+# Voice Agents Deep Dive  Part 5: Speech Synthesis  Teaching Machines to Talk
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** 5 of 20 (Speech Synthesis)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~55 minutes
@@ -12,25 +12,25 @@
 ## Table of Contents
 
 1. [Recap of Part 4](#recap-of-part-4)
-2. [How TTS Works — The Complete Pipeline](#how-tts-works--the-complete-pipeline)
+2. [How TTS Works  The Complete Pipeline](#how-tts-works--the-complete-pipeline)
 3. [TTS Architecture Evolution](#tts-architecture-evolution)
-4. [Vocoders — Generating the Actual Waveform](#vocoders--generating-the-actual-waveform)
+4. [Vocoders  Generating the Actual Waveform](#vocoders--generating-the-actual-waveform)
 5. [Production TTS APIs](#production-tts-apis)
 6. [Open-Source TTS](#open-source-tts)
-7. [SSML Deep Dive — Speech Synthesis Markup Language](#ssml-deep-dive--speech-synthesis-markup-language)
-8. [Streaming TTS — Chunk-by-Chunk Audio Generation](#streaming-tts--chunk-by-chunk-audio-generation)
+7. [SSML Deep Dive  Speech Synthesis Markup Language](#ssml-deep-dive--speech-synthesis-markup-language)
+8. [Streaming TTS  Chunk-by-Chunk Audio Generation](#streaming-tts--chunk-by-chunk-audio-generation)
 9. [Building a Multi-Engine TTS Service](#building-a-multi-engine-tts-service)
 10. [TTS Quality Evaluation](#tts-quality-evaluation)
 11. [Vocabulary Cheat Sheet](#vocabulary-cheat-sheet)
-12. [What's Next — Part 6](#whats-next--part-6)
+12. [What's Next  Part 6](#whats-next--part-6)
 
 ---
 
 ## Recap of Part 4
 
-In Part 4, we explored **Speech-to-Text (STT)** — the art of converting human speech into written text. We covered the Connectionist Temporal Classification (CTC) loss function, attention-based encoder-decoder architectures, and production STT engines like OpenAI Whisper, Google Speech-to-Text, and Azure Cognitive Services. We learned how to handle real-time transcription with streaming APIs, built a robust transcription pipeline with speaker diarization, and evaluated accuracy using Word Error Rate (WER).
+In Part 4, we explored **Speech-to-Text (STT)**  the art of converting human speech into written text. We covered the Connectionist Temporal Classification (CTC) loss function, attention-based encoder-decoder architectures, and production STT engines like OpenAI Whisper, Google Speech-to-Text, and Azure Cognitive Services. We learned how to handle real-time transcription with streaming APIs, built a robust transcription pipeline with speaker diarization, and evaluated accuracy using Word Error Rate (WER).
 
-Now we tackle the **opposite direction**: turning text back into speech. Text-to-Speech (TTS) is arguably the most user-facing component of any voice agent — it is literally the voice your users hear. A stilted, robotic voice will undermine even the most brilliant AI reasoning behind it, while a natural, expressive voice creates trust and engagement.
+Now we tackle the **opposite direction**: turning text back into speech. Text-to-Speech (TTS) is arguably the most user-facing component of any voice agent  it is literally the voice your users hear. A stilted, robotic voice will undermine even the most brilliant AI reasoning behind it, while a natural, expressive voice creates trust and engagement.
 
 > **Key insight:** TTS is where your voice agent's personality lives. Users will judge your entire system by how it sounds. Invest accordingly.
 
@@ -38,7 +38,7 @@ Let us begin by understanding the full pipeline that transforms a string of char
 
 ---
 
-## How TTS Works — The Complete Pipeline
+## How TTS Works  The Complete Pipeline
 
 At its core, Text-to-Speech synthesis is a pipeline that transforms written text into an audio waveform. While modern end-to-end models blur the boundaries between stages, understanding each stage helps you debug issues, choose the right tools, and optimize for your use case.
 
@@ -351,7 +351,7 @@ if __name__ == "__main__":
 
 #### Grapheme-to-Phoneme (G2P) Conversion
 
-After normalization, we need to convert written words (**graphemes**) into their pronunciation (**phonemes**). English is notoriously irregular — consider how differently the letters "ough" are pronounced in "though," "through," "rough," "cough," and "thought."
+After normalization, we need to convert written words (**graphemes**) into their pronunciation (**phonemes**). English is notoriously irregular  consider how differently the letters "ough" are pronounced in "though," "through," "rough," "cough," and "thought."
 
 The **International Phonetic Alphabet (IPA)** and **ARPAbet** are two common phoneme representation systems:
 
@@ -442,7 +442,7 @@ class GraphemeToPhoneme:
     def _rule_based_g2p(self, word: str) -> list[str]:
         """
         Simple rule-based G2P as fallback.
-        This is very basic — production systems use neural G2P models.
+        This is very basic  production systems use neural G2P models.
         """
         # Simple letter-to-phoneme mapping (very approximate)
         simple_map = {
@@ -583,7 +583,7 @@ class ProsodyPredictor:
         ".": 400,
         "!": 400,
         "?": 400,
-        "—": 350,
+        "": 350,
         "...": 500,
         "\n": 500,
     }
@@ -616,7 +616,7 @@ class ProsodyPredictor:
 
         for i, word in enumerate(words):
             features = ProsodyFeatures()
-            clean_word = word.strip(".,!?;:\"'—")
+            clean_word = word.strip(".,!?;:\"'")
             is_last = i == len(words) - 1
 
             # Determine stress based on content vs. function words
@@ -753,12 +753,12 @@ timeline
 
 | Generation | Approach | Quality (MOS) | Latency | Flexibility | Key Limitation |
 |-----------|----------|---------------|---------|-------------|----------------|
-| **Concatenative** | Splice pre-recorded audio segments | 3.0-3.5 | Fast | Low — needs huge databases | Audible joins, limited expressiveness |
-| **Parametric (HMM)** | Statistical models generate speech parameters | 2.5-3.0 | Fast | Medium — parameter control | "Muffled" or "buzzy" quality |
-| **Neural (Tacotron)** | Seq2seq model generates spectrograms | 4.0-4.3 | Slow | High — learns from data | Slow inference, attention errors |
-| **Neural (FastSpeech 2)** | Non-autoregressive spectrogram generation | 4.0-4.2 | Fast | High — parallel generation | Slightly less expressive |
+| **Concatenative** | Splice pre-recorded audio segments | 3.0-3.5 | Fast | Low  needs huge databases | Audible joins, limited expressiveness |
+| **Parametric (HMM)** | Statistical models generate speech parameters | 2.5-3.0 | Fast | Medium  parameter control | "Muffled" or "buzzy" quality |
+| **Neural (Tacotron)** | Seq2seq model generates spectrograms | 4.0-4.3 | Slow | High  learns from data | Slow inference, attention errors |
+| **Neural (FastSpeech 2)** | Non-autoregressive spectrogram generation | 4.0-4.2 | Fast | High  parallel generation | Slightly less expressive |
 | **End-to-End (VITS)** | Single model: text to waveform | 4.3-4.5 | Fast | Very high | Training complexity |
-| **End-to-End (XTTS)** | Multi-language, voice cloning built in | 4.2-4.5 | Medium | Very high — cross-lingual | Model size |
+| **End-to-End (XTTS)** | Multi-language, voice cloning built in | 4.2-4.5 | Medium | Very high  cross-lingual | Model size |
 
 ### Concatenative TTS
 
@@ -768,7 +768,7 @@ The first widely-deployed TTS approach. The idea is simple: record a human speak
 """
 concatenative_tts_demo.py
 Conceptual demonstration of concatenative TTS.
-This is educational — not a production implementation.
+This is educational  not a production implementation.
 """
 
 import numpy as np
@@ -910,7 +910,7 @@ class ConcatenativeTTS:
         return result
 ```
 
-### Neural TTS — Tacotron 2 Architecture
+### Neural TTS  Tacotron 2 Architecture
 
 **Tacotron 2** (2018) was a breakthrough that made neural TTS practical. It uses an encoder-decoder architecture with attention to generate mel spectrograms from text, which are then converted to audio by a vocoder (originally WaveNet).
 
@@ -952,7 +952,7 @@ flowchart TB
     style Vocoder fill:#fce4ec,stroke:#c62828
 ```
 
-### FastSpeech 2 — Non-Autoregressive Generation
+### FastSpeech 2  Non-Autoregressive Generation
 
 **FastSpeech 2** solved Tacotron 2's speed problem by using a **non-autoregressive** approach. Instead of generating one spectrogram frame at a time, it generates the entire spectrogram in parallel:
 
@@ -964,7 +964,7 @@ flowchart TB
 | Controllability | Limited | Explicit pitch, energy, duration control |
 | Training | Needs attention alignment | Needs external duration labels |
 
-### VITS — End-to-End
+### VITS  End-to-End
 
 **VITS** (Variational Inference with adversarial learning for end-to-end Text-to-Speech, 2021) combines the acoustic model and vocoder into a single end-to-end model. It uses variational autoencoders (VAE) and generative adversarial training to produce high-quality audio directly from text.
 
@@ -1108,7 +1108,7 @@ if __name__ == "__main__":
 
 ---
 
-## Vocoders — Generating the Actual Waveform
+## Vocoders  Generating the Actual Waveform
 
 A **vocoder** (voice encoder/decoder) takes the intermediate representation produced by the acoustic model (typically a mel spectrogram) and converts it into an actual audio waveform. This is the component responsible for the final audio quality you hear.
 
@@ -1127,7 +1127,7 @@ A **vocoder** (voice encoder/decoder) takes the intermediate representation prod
 | **UnivNet** | GAN-based | Excellent | 0.005 | 2022 | Location-variable convolutions |
 | **Vocos** | GAN-based | Excellent | 0.002 | 2023 | Fourier-based head, very lightweight |
 
-### WaveNet — The Pioneer
+### WaveNet  The Pioneer
 
 **WaveNet** (DeepMind, 2016) was the first neural vocoder to produce truly natural-sounding speech. It generates audio **one sample at a time**, using dilated causal convolutions to capture long-range dependencies.
 
@@ -1135,7 +1135,7 @@ A **vocoder** (voice encoder/decoder) takes the intermediate representation prod
 """
 wavenet_concepts.py
 Conceptual demonstration of WaveNet's dilated causal convolutions.
-Not a full implementation — illustrates the key architectural ideas.
+Not a full implementation  illustrates the key architectural ideas.
 """
 
 import numpy as np
@@ -1264,7 +1264,7 @@ if __name__ == "__main__":
     print(f"  - Total operations per second: ~{22050 * len(wavenet.blocks):,}")
 ```
 
-### HiFi-GAN — The Production Standard
+### HiFi-GAN  The Production Standard
 
 **HiFi-GAN** (2020) is currently the most widely-used vocoder in production TTS systems. It uses **Generative Adversarial Networks** to generate high-fidelity audio at real-time or faster speeds.
 
@@ -1301,7 +1301,7 @@ class HiFiGANConfig:
 
     @property
     def hop_size(self) -> int:
-        """Total upsampling ratio — must match mel spectrogram hop size."""
+        """Total upsampling ratio  must match mel spectrogram hop size."""
         result = 1
         for r in self.upsample_rates:
             result *= r
@@ -2411,7 +2411,7 @@ Cartesia specializes in ultra-low latency streaming TTS, making it particularly 
 ```python
 """
 cartesia_tts.py
-Cartesia TTS integration — optimized for ultra-low latency streaming.
+Cartesia TTS integration  optimized for ultra-low latency streaming.
 """
 
 import json
@@ -2571,11 +2571,11 @@ if __name__ == "__main__":
 
 ## Open-Source TTS
 
-While commercial APIs offer convenience and quality, open-source TTS models give you full control over your pipeline — no API costs, no data leaving your servers, and the ability to fine-tune for your specific domain. The open-source TTS ecosystem has matured dramatically since 2023.
+While commercial APIs offer convenience and quality, open-source TTS models give you full control over your pipeline  no API costs, no data leaving your servers, and the ability to fine-tune for your specific domain. The open-source TTS ecosystem has matured dramatically since 2023.
 
 ### Coqui TTS / XTTS
 
-**Coqui TTS** was the most comprehensive open-source TTS toolkit, and its crown jewel — **XTTS v2** — supports 17 languages with zero-shot voice cloning from just a few seconds of reference audio. Although Coqui the company shut down in 2024, the open-source project lives on.
+**Coqui TTS** was the most comprehensive open-source TTS toolkit, and its crown jewel  **XTTS v2**  supports 17 languages with zero-shot voice cloning from just a few seconds of reference audio. Although Coqui the company shut down in 2024, the open-source project lives on.
 
 ```python
 """
@@ -2784,7 +2784,7 @@ if __name__ == "__main__":
 ```python
 """
 piper_tts.py
-Piper TTS integration — fast, lightweight, CPU-friendly.
+Piper TTS integration  fast, lightweight, CPU-friendly.
 """
 
 import subprocess
@@ -2808,7 +2808,7 @@ class PiperVoice:
 
 class PiperTTS:
     """
-    Piper TTS wrapper — extremely fast CPU-based TTS.
+    Piper TTS wrapper  extremely fast CPU-based TTS.
 
     Piper uses VITS-based models optimized for fast CPU inference.
     Models are typically 15-60MB and generate speech ~10x faster than real-time on CPU.
@@ -2951,7 +2951,7 @@ if __name__ == "__main__":
     # wget https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx
     # wget https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json
 
-    print("Piper TTS — Lightweight CPU-based synthesis")
+    print("Piper TTS  Lightweight CPU-based synthesis")
     print("=" * 50)
     print()
     print("Installation:")
@@ -2972,7 +2972,7 @@ if __name__ == "__main__":
 ```python
 """
 bark_tts.py
-Bark TTS integration — expressive speech with laughter, music, and more.
+Bark TTS integration  expressive speech with laughter, music, and more.
 """
 
 import time
@@ -2991,7 +2991,7 @@ except ImportError:
 
 class BarkTTS:
     """
-    Bark TTS wrapper — the most expressive open-source TTS.
+    Bark TTS wrapper  the most expressive open-source TTS.
 
     Special capabilities:
     - Laughter: [laughter]
@@ -3026,7 +3026,7 @@ class BarkTTS:
         "[gasps]": "Inserts a gasp",
         "[clears throat]": "Inserts throat clearing",
         "...": "Inserts hesitation/pause",
-        "—": "Inserts a dramatic pause",
+        "": "Inserts a dramatic pause",
         "♪": "Wrapping text in ♪ makes it sing",
         "CAPITALIZED": "Adds emphasis (shouting)",
     }
@@ -3181,7 +3181,7 @@ if __name__ == "__main__":
 ```python
 """
 styletts2_tts.py
-StyleTTS 2 integration — near-human quality open-source TTS.
+StyleTTS 2 integration  near-human quality open-source TTS.
 """
 
 from pathlib import Path
@@ -3201,7 +3201,7 @@ class StyleTTS2Config:
 
 class StyleTTS2:
     """
-    StyleTTS 2 wrapper — near-human quality TTS.
+    StyleTTS 2 wrapper  near-human quality TTS.
 
     Key features:
     - Style diffusion for natural prosody variation
@@ -3290,7 +3290,7 @@ class StyleTTS2:
 
 # ---------- Demo ----------
 if __name__ == "__main__":
-    print("StyleTTS 2 — Near-Human Quality Open-Source TTS")
+    print("StyleTTS 2  Near-Human Quality Open-Source TTS")
     print("=" * 50)
     print()
     print("Installation:")
@@ -3324,7 +3324,7 @@ if __name__ == "__main__":
 
 ---
 
-## SSML Deep Dive — Speech Synthesis Markup Language
+## SSML Deep Dive  Speech Synthesis Markup Language
 
 **SSML (Speech Synthesis Markup Language)** is a W3C standard XML-based markup language that gives you fine-grained control over how TTS engines render text. It is supported by Azure, Google Cloud, and Amazon Polly (but not OpenAI or ElevenLabs, which use their own controls).
 
@@ -3763,7 +3763,7 @@ if __name__ == "__main__":
 
 ---
 
-## Streaming TTS — Chunk-by-Chunk Audio Generation
+## Streaming TTS  Chunk-by-Chunk Audio Generation
 
 In a voice agent, **latency is everything**. Users expect to hear a response within 200-500ms of asking a question. Streaming TTS allows you to begin audio playback before the entire utterance has been synthesized. Combined with streaming LLM responses, this can dramatically reduce perceived latency.
 
@@ -3831,7 +3831,7 @@ from enum import Enum
 class SentenceSplitStrategy(Enum):
     """How to split text into synthesis chunks."""
     SENTENCE = "sentence"       # Split on sentence boundaries (. ! ?)
-    CLAUSE = "clause"           # Split on clause boundaries (, ; : — and . ! ?)
+    CLAUSE = "clause"           # Split on clause boundaries (, ; :  and . ! ?)
     FIXED_LENGTH = "fixed"      # Split at fixed character count
     ADAPTIVE = "adaptive"       # Adapt based on latency budget
 
@@ -3867,7 +3867,7 @@ class TextChunker:
 
     # Sentence-ending patterns
     SENTENCE_ENDINGS = re.compile(r'[.!?]+[\s"\')\]]*')
-    CLAUSE_ENDINGS = re.compile(r'[.!?,;:\-—]+\s*')
+    CLAUSE_ENDINGS = re.compile(r'[.!?,;:\-]+\s*')
 
     def __init__(self, strategy: SentenceSplitStrategy = SentenceSplitStrategy.SENTENCE):
         self.strategy = strategy
@@ -4114,7 +4114,7 @@ async def demo():
 
     # Simulate a TTS synthesis function
     def fake_synthesize(text: str) -> bytes:
-        """Simulated TTS — returns fake audio bytes."""
+        """Simulated TTS  returns fake audio bytes."""
         time.sleep(0.1)  # Simulate ~100ms synthesis time
         return b"\x00" * (len(text) * 100)  # Fake PCM data
 
@@ -4176,14 +4176,14 @@ if __name__ == "__main__":
 > - Use **sentence-level splitting** for the best quality/latency balance
 > - Use the **turbo/speed-optimized** model variant (e.g., OpenAI tts-1 vs. tts-1-hd)
 > - **Pre-synthesize** common phrases (greetings, confirmations, error messages)
-> - Consider **PCM/raw format** for streaming — no decode overhead on the client
+> - Consider **PCM/raw format** for streaming  no decode overhead on the client
 > - Keep synthesis requests **under 200 characters** for fastest turnaround
 
 ---
 
 ## Building a Multi-Engine TTS Service
 
-In production, you often need to support multiple TTS backends — for fallback resilience, cost optimization, or different quality tiers. Here is a comprehensive multi-engine TTS service:
+In production, you often need to support multiple TTS backends  for fallback resilience, cost optimization, or different quality tiers. Here is a comprehensive multi-engine TTS service:
 
 ```python
 """
@@ -4901,7 +4901,7 @@ How do you know if your TTS output is good? Quality evaluation is critical for c
 
 ### Mean Opinion Score (MOS)
 
-The gold standard for TTS evaluation is the **Mean Opinion Score (MOS)** — a subjective rating from human listeners on a 1-5 scale:
+The gold standard for TTS evaluation is the **Mean Opinion Score (MOS)**  a subjective rating from human listeners on a 1-5 scale:
 
 | Score | Label | Description |
 |-------|-------|-------------|
@@ -4918,7 +4918,7 @@ Since human evaluation is expensive and slow, several automated metrics can serv
 ```python
 """
 tts_quality.py
-TTS quality evaluation metrics — automated and semi-automated.
+TTS quality evaluation metrics  automated and semi-automated.
 """
 
 import numpy as np
@@ -4933,7 +4933,7 @@ class QualityReport:
     # Objective metrics
     signal_to_noise_ratio_db: float = 0.0
     spectral_distortion: float = 0.0
-    mel_cepstral_distortion: float = 0.0  # MCD — lower is better
+    mel_cepstral_distortion: float = 0.0  # MCD  lower is better
     f0_rmse: float = 0.0                  # Pitch accuracy
     voiced_unvoiced_error: float = 0.0    # V/UV classification error
     duration_rmse: float = 0.0            # Timing accuracy
@@ -5179,7 +5179,7 @@ class TTSQualityEvaluator:
     def _estimate_mos(self, report: QualityReport) -> float:
         """
         Estimate MOS from automated metrics.
-        This is a rough heuristic — not a validated model.
+        This is a rough heuristic  not a validated model.
         """
         score = 3.0  # Start with a neutral score
 
@@ -5276,7 +5276,7 @@ class ABTestRunner:
             elif preference == "lower":
                 winner = label_a if val_a < val_b else label_b
             else:
-                winner = "—"
+                winner = ""
 
             lines.append(f"{name:<30} {val_a:>12.3f} {val_b:>12.3f}  {winner:>8}")
 
@@ -5330,18 +5330,18 @@ if __name__ == "__main__":
 
 | Term | Definition |
 |------|-----------|
-| **TTS** | Text-to-Speech — converting written text into spoken audio |
+| **TTS** | Text-to-Speech  converting written text into spoken audio |
 | **Vocoder** | The component that converts spectrograms (or other intermediate representations) into audio waveforms |
 | **Mel Spectrogram** | A visual representation of audio frequencies on the mel scale; the standard intermediate format in neural TTS |
 | **Grapheme** | A written character or letter (e.g., "a", "b", "c") |
 | **Phoneme** | A unit of sound in speech (e.g., /k/, /ae/, /t/ in "cat") |
-| **G2P** | Grapheme-to-Phoneme conversion — mapping written text to pronunciation |
+| **G2P** | Grapheme-to-Phoneme conversion  mapping written text to pronunciation |
 | **Prosody** | The rhythm, stress, and intonation patterns of speech |
 | **F0 (Fundamental Frequency)** | The base pitch of a speaker's voice, measured in Hz |
-| **SSML** | Speech Synthesis Markup Language — XML-based control language for TTS |
+| **SSML** | Speech Synthesis Markup Language  XML-based control language for TTS |
 | **MOS (Mean Opinion Score)** | Subjective human quality rating on a 1-5 scale |
 | **MCD (Mel Cepstral Distortion)** | Objective metric measuring spectral distance between synthesized and reference speech |
-| **STOI** | Short-Time Objective Intelligibility — metric for speech intelligibility |
+| **STOI** | Short-Time Objective Intelligibility  metric for speech intelligibility |
 | **RTF (Real-Time Factor)** | Ratio of synthesis time to audio duration. RTF < 1 means faster than real-time |
 | **Autoregressive** | Generating output one step at a time, where each step depends on previous outputs |
 | **Non-autoregressive** | Generating all output in parallel, enabling faster synthesis |
@@ -5360,26 +5360,26 @@ if __name__ == "__main__":
 | **Text Normalization** | Converting non-standard text (numbers, dates, abbreviations) into spoken form |
 | **Diphone** | A pair of consecutive half-phones, used as the basic unit in concatenative TTS |
 | **ARPAbet** | A phonetic notation system for American English used in the CMU Pronouncing Dictionary |
-| **IPA** | International Phonetic Alphabet — a standardized system for transcribing speech sounds |
-| **PESQ** | Perceptual Evaluation of Speech Quality — ITU standard for audio quality measurement |
+| **IPA** | International Phonetic Alphabet  a standardized system for transcribing speech sounds |
+| **PESQ** | Perceptual Evaluation of Speech Quality  ITU standard for audio quality measurement |
 
 ---
 
-## What's Next — Part 6
+## What's Next  Part 6
 
 In **Part 6: Voice Cloning and Voice Design**, we will dive deep into one of the most exciting (and ethically complex) capabilities in voice AI:
 
-- **How voice cloning works** — speaker embeddings, speaker encoders, and few-shot adaptation
-- **Zero-shot vs. fine-tuned cloning** — tradeoffs between convenience and quality
-- **Building a voice cloning pipeline** — from recording a voice sample to generating speech
-- **Voice design from scratch** — creating entirely new voices without a reference
-- **Emotional and expressive voice control** — making cloned voices convey emotion
-- **Ethical considerations** — consent, deepfake detection, legal landscape, and responsible use
-- **Production voice cloning** — ElevenLabs Instant Voice Cloning, Azure Custom Neural Voice, Coqui XTTS cloning
-- **Speaker verification** — ensuring the right voice is being used
+- **How voice cloning works**  speaker embeddings, speaker encoders, and few-shot adaptation
+- **Zero-shot vs. fine-tuned cloning**  tradeoffs between convenience and quality
+- **Building a voice cloning pipeline**  from recording a voice sample to generating speech
+- **Voice design from scratch**  creating entirely new voices without a reference
+- **Emotional and expressive voice control**  making cloned voices convey emotion
+- **Ethical considerations**  consent, deepfake detection, legal landscape, and responsible use
+- **Production voice cloning**  ElevenLabs Instant Voice Cloning, Azure Custom Neural Voice, Coqui XTTS cloning
+- **Speaker verification**  ensuring the right voice is being used
 
-The ability to give your voice agent a unique, consistent, and natural-sounding voice — or to replicate a specific voice with permission — is a powerful differentiator. But with great power comes great responsibility, and we will cover both sides thoroughly.
+The ability to give your voice agent a unique, consistent, and natural-sounding voice  or to replicate a specific voice with permission  is a powerful differentiator. But with great power comes great responsibility, and we will cover both sides thoroughly.
 
 ---
 
-*Next up: **Part 6 — Voice Cloning and Voice Design** — Creating, cloning, and customizing voices for your agent.*
+*Next up: **Part 6  Voice Cloning and Voice Design**  Creating, cloning, and customizing voices for your agent.*

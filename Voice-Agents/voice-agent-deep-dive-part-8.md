@@ -1,8 +1,8 @@
-# Voice Agents Deep Dive — Part 8: WebRTC and Telephony — Browser and Phone Call Audio
+# Voice Agents Deep Dive  Part 8: WebRTC and Telephony  Browser and Phone Call Audio
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** 8 of 20 (WebRTC & Telephony)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~55 minutes
@@ -18,30 +18,30 @@
 5. [Telephony Basics for Developers](#telephony-basics-for-developers)
 6. [Twilio Voice Integration](#twilio-voice-integration)
 7. [Other Telephony Providers](#other-telephony-providers)
-8. [Open-Source Telephony — FreeSWITCH and Asterisk](#open-source-telephony--freeswitch-and-asterisk)
-9. [Media Bridges — Connecting WebRTC to SIP/PSTN](#media-bridges--connecting-webrtc-to-sippstn)
+8. [Open-Source Telephony  FreeSWITCH and Asterisk](#open-source-telephony--freeswitch-and-asterisk)
+9. [Media Bridges  Connecting WebRTC to SIP/PSTN](#media-bridges--connecting-webrtc-to-sippstn)
 10. [Project: Phone Call Handler](#project-phone-call-handler)
 11. [Vocabulary Cheat Sheet](#vocabulary-cheat-sheet)
-12. [What's Next — Part 9](#whats-next--part-9)
+12. [What's Next  Part 9](#whats-next--part-9)
 
 ---
 
 ## Recap of Part 7
 
-In Part 7, we tackled **streaming architecture and real-time audio pipelines** — the backbone that makes voice agents feel instantaneous. We built concurrent pipelines where audio capture, speech recognition, language model inference, and speech synthesis all run simultaneously. We explored backpressure management, chunk-based processing, and pipeline orchestration patterns that keep latency low while maintaining system stability.
+In Part 7, we tackled **streaming architecture and real-time audio pipelines**  the backbone that makes voice agents feel instantaneous. We built concurrent pipelines where audio capture, speech recognition, language model inference, and speech synthesis all run simultaneously. We explored backpressure management, chunk-based processing, and pipeline orchestration patterns that keep latency low while maintaining system stability.
 
 We left off with a fully functional streaming pipeline that could process audio in real time. But there was a crucial missing piece: **how does the audio actually get to and from the user?**
 
 That is exactly what Part 8 is about.
 
-> **The big question:** You have a brilliant voice agent pipeline running on your server. A user opens their browser — or picks up their phone. How does their voice reach your server, and how does your agent's voice reach their ear?
+> **The big question:** You have a brilliant voice agent pipeline running on your server. A user opens their browser  or picks up their phone. How does their voice reach your server, and how does your agent's voice reach their ear?
 
 The answer involves two very different but equally important technologies:
 
-- **WebRTC** — for browser-based, peer-to-peer real-time communication
-- **Telephony (SIP/PSTN)** — for traditional phone calls
+- **WebRTC**  for browser-based, peer-to-peer real-time communication
+- **Telephony (SIP/PSTN)**  for traditional phone calls
 
-By the end of this part, you will be able to accept voice from a web browser and from a phone call, pipe it through your voice agent, and send audio responses back — all in real time.
+By the end of this part, you will be able to accept voice from a web browser and from a phone call, pipe it through your voice agent, and send audio responses back  all in real time.
 
 ---
 
@@ -53,11 +53,11 @@ Before WebRTC (Web Real-Time Communication), getting live audio or video from on
 
 WebRTC changed everything by providing:
 
-1. **Direct peer-to-peer media** — audio and video flow directly between browsers when possible
-2. **Built-in codecs** — Opus for audio, VP8/VP9/H.264 for video, no plugins needed
-3. **NAT traversal** — mechanisms to punch through firewalls and routers
-4. **Encryption by default** — all media is encrypted with DTLS-SRTP
-5. **Adaptive quality** — automatic bitrate adjustment based on network conditions
+1. **Direct peer-to-peer media**  audio and video flow directly between browsers when possible
+2. **Built-in codecs**  Opus for audio, VP8/VP9/H.264 for video, no plugins needed
+3. **NAT traversal**  mechanisms to punch through firewalls and routers
+4. **Encryption by default**  all media is encrypted with DTLS-SRTP
+5. **Adaptive quality**  automatic bitrate adjustment based on network conditions
 
 > **Key insight:** WebRTC is not just "video calling in the browser." It is a complete real-time media framework that handles the hardest problems in network programming: NAT traversal, codec negotiation, encryption, and adaptive streaming. For voice agents, it gives us a zero-install path to high-quality, low-latency audio.
 
@@ -111,10 +111,10 @@ sequenceDiagram
 
 ### Signaling: The Matchmaker
 
-**Signaling** is the process by which two peers exchange the information they need to establish a connection. WebRTC deliberately does **not** define a signaling protocol — you can use WebSockets, HTTP polling, carrier pigeons, or anything else. The signaling channel carries:
+**Signaling** is the process by which two peers exchange the information they need to establish a connection. WebRTC deliberately does **not** define a signaling protocol  you can use WebSockets, HTTP polling, carrier pigeons, or anything else. The signaling channel carries:
 
-1. **Session Description Protocol (SDP)** — describes what media the peer can send/receive
-2. **ICE candidates** — possible network paths to reach the peer
+1. **Session Description Protocol (SDP)**  describes what media the peer can send/receive
+2. **ICE candidates**  possible network paths to reach the peer
 
 An SDP message looks something like this:
 
@@ -156,7 +156,7 @@ The **offer/answer model** works like this:
 
 1. **Peer A** creates an **offer** describing what it can do
 2. **Peer B** receives the offer and creates an **answer** describing what it accepts
-3. Both peers now know the common ground — which codecs to use, encryption parameters, etc.
+3. Both peers now know the common ground  which codecs to use, encryption parameters, etc.
 
 ### STUN Servers: Discovering Your Public Identity
 
@@ -165,7 +165,7 @@ Most devices sit behind a NAT (Network Address Translation) router. Your laptop 
 ```python
 """
 Simplified illustration of what a STUN request/response looks like.
-In practice, you never implement this yourself — WebRTC libraries handle it.
+In practice, you never implement this yourself  WebRTC libraries handle it.
 """
 
 import struct
@@ -298,9 +298,9 @@ TURN adds latency (every packet makes an extra hop) and costs bandwidth (the rel
 
 ICE gathers three types of **candidates**:
 
-1. **Host candidates** — local IP addresses (e.g., `192.168.1.42:54321`)
-2. **Server reflexive (srflx) candidates** — public IP discovered via STUN (e.g., `203.0.113.5:54321`)
-3. **Relay candidates** — TURN server relay addresses (e.g., `198.51.100.50:3478`)
+1. **Host candidates**  local IP addresses (e.g., `192.168.1.42:54321`)
+2. **Server reflexive (srflx) candidates**  public IP discovered via STUN (e.g., `203.0.113.5:54321`)
+3. **Relay candidates**  TURN server relay addresses (e.g., `198.51.100.50:3478`)
 
 ```python
 """
@@ -419,7 +419,7 @@ for candidate in sorted(
 #     SDP: a=candidate:3 1 udp 16777215 198.51.100.50 3478 typ relay ...
 ```
 
-ICE then forms **candidate pairs** (one local candidate + one remote candidate) and performs **connectivity checks** — sending STUN Binding Requests over each pair to see which ones work. The pair with the highest combined priority that successfully completes a check becomes the **selected pair**.
+ICE then forms **candidate pairs** (one local candidate + one remote candidate) and performs **connectivity checks**  sending STUN Binding Requests over each pair to see which ones work. The pair with the highest combined priority that successfully completes a check becomes the **selected pair**.
 
 ### Media Tracks and Data Channels
 
@@ -427,8 +427,8 @@ Once ICE succeeds and DTLS-SRTP encryption is established, WebRTC provides two t
 
 **Media Tracks** carry audio and video using RTP (Real-time Transport Protocol):
 
-- **Audio tracks** — typically encoded with Opus at 48 kHz
-- **Video tracks** — encoded with VP8, VP9, or H.264
+- **Audio tracks**  typically encoded with Opus at 48 kHz
+- **Video tracks**  encoded with VP8, VP9, or H.264
 - Tracks have direction: `sendonly`, `recvonly`, `sendrecv`, `inactive`
 
 **Data Channels** carry arbitrary data using SCTP (Stream Control Transmission Protocol):
@@ -624,7 +624,7 @@ class AudioProcessorTrack(MediaStreamTrack):
         try:
             response_audio = self._response_queue.get_nowait()
         except asyncio.QueueEmpty:
-            # No response ready — send silence
+            # No response ready  send silence
             response_audio = np.zeros(
                 self._samples_per_frame, dtype=np.int16
             )
@@ -930,7 +930,7 @@ The browser side needs JavaScript to capture the microphone, establish the WebRT
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice Agent — WebRTC Client</title>
+    <title>Voice Agent  WebRTC Client</title>
     <style>
         * {
             margin: 0;
@@ -1605,7 +1605,7 @@ class VoiceProcessor extends AudioWorkletProcessor {
             this.buffer[this.bufferIndex++] = channelData[i];
 
             if (this.bufferIndex >= this.bufferSize) {
-                // Buffer is full — send to main thread
+                // Buffer is full  send to main thread
                 this.port.postMessage({
                     audioData: this.buffer.slice(),
                     timestamp: currentTime,
@@ -1650,7 +1650,7 @@ The **PSTN** is the global network of interconnected telephone networks. Think o
 
 Today, most of the PSTN backbone runs over IP networks. When you make a "regular phone call," it often travels over the internet for much of its journey, only touching traditional phone infrastructure at the edges.
 
-> **Key insight:** For voice agent developers, the PSTN is just another network interface. You do not need to understand 1960s switching theory. You need to understand SIP (signaling) and RTP (audio transport) — which are just internet protocols.
+> **Key insight:** For voice agent developers, the PSTN is just another network interface. You do not need to understand 1960s switching theory. You need to understand SIP (signaling) and RTP (audio transport)  which are just internet protocols.
 
 ### SIP (Session Initiation Protocol)
 
@@ -1679,7 +1679,7 @@ a=rtpmap:8 PCMA/8000
 a=rtpmap:101 telephone-event/8000
 ```
 
-Notice the SDP body — it is the same Session Description Protocol that WebRTC uses. SIP and WebRTC share this common foundation.
+Notice the SDP body  it is the same Session Description Protocol that WebRTC uses. SIP and WebRTC share this common foundation.
 
 ### SIP Call Flow
 
@@ -1747,7 +1747,7 @@ While SIP handles signaling (setting up and tearing down calls), **RTP** handles
 ```python
 """
 Anatomy of an RTP packet.
-This is educational — in practice, libraries handle RTP for you.
+This is educational  in practice, libraries handle RTP for you.
 """
 
 import struct
@@ -2014,7 +2014,7 @@ if __name__ == "__main__":
 
 ### Receiving Inbound Calls
 
-When someone calls your Twilio number, Twilio sends an HTTP request to your webhook URL. You respond with **TwiML** (Twilio Markup Language) — XML instructions telling Twilio what to do.
+When someone calls your Twilio number, Twilio sends an HTTP request to your webhook URL. You respond with **TwiML** (Twilio Markup Language)  XML instructions telling Twilio what to do.
 
 ```python
 """
@@ -2146,7 +2146,7 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
 ```
 
-### Twilio Media Streams — Raw Audio Access
+### Twilio Media Streams  Raw Audio Access
 
 **Media Streams** is the key to building real voice agents with Twilio. Instead of using TwiML's `<Gather>` for speech recognition (which uses Twilio's built-in ASR), Media Streams gives you the raw audio over a WebSocket. You can then run your own ASR, LLM, and TTS pipeline.
 
@@ -2222,7 +2222,7 @@ class TwilioMediaStreamHandler:
             await self._cleanup()
 
     async def _handle_connected(self, data: dict) -> None:
-        """Handle the 'connected' event — WebSocket is ready."""
+        """Handle the 'connected' event  WebSocket is ready."""
         protocol = data.get("protocol", "unknown")
         version = data.get("version", "unknown")
         logger.info(
@@ -2231,7 +2231,7 @@ class TwilioMediaStreamHandler:
         )
 
     async def _handle_start(self, data: dict) -> None:
-        """Handle the 'start' event — stream metadata."""
+        """Handle the 'start' event  stream metadata."""
         start_data = data.get("start", {})
         self.stream_sid = start_data.get("streamSid")
         self.call_sid = start_data.get("callSid")
@@ -2252,7 +2252,7 @@ class TwilioMediaStreamHandler:
 
     async def _handle_media(self, data: dict) -> None:
         """
-        Handle the 'media' event — incoming audio chunk.
+        Handle the 'media' event  incoming audio chunk.
 
         The payload is base64-encoded mulaw audio.
         Each chunk is typically 20ms (160 bytes at 8kHz).
@@ -2273,7 +2273,7 @@ class TwilioMediaStreamHandler:
             await self._process_audio_buffer()
 
     async def _handle_stop(self, data: dict) -> None:
-        """Handle the 'stop' event — stream is ending."""
+        """Handle the 'stop' event  stream is ending."""
         stop_data = data.get("stop", {})
         reason = stop_data.get("reason", "unknown")
         logger.info(
@@ -2283,7 +2283,7 @@ class TwilioMediaStreamHandler:
 
     async def _handle_mark(self, data: dict) -> None:
         """
-        Handle the 'mark' event — a previously sent mark was reached.
+        Handle the 'mark' event  a previously sent mark was reached.
         Marks are used to synchronize audio playback.
         """
         mark_data = data.get("mark", {})
@@ -2513,7 +2513,7 @@ Twilio is the most popular but not the only option. Here is a comparison of majo
 """
 vonage_example.py
 
-Handling incoming calls with Vonage (uses NCCO — Nexmo Call Control Objects).
+Handling incoming calls with Vonage (uses NCCO  Nexmo Call Control Objects).
 NCCO is JSON-based, unlike Twilio's XML-based TwiML.
 """
 
@@ -2667,9 +2667,9 @@ def telnyx_incoming():
 
 ---
 
-## Open-Source Telephony — FreeSWITCH and Asterisk
+## Open-Source Telephony  FreeSWITCH and Asterisk
 
-If you need full control over your telephony stack — no per-minute fees, no vendor lock-in, complete access to the media path — open-source PBX software is the answer. The two dominant projects are **FreeSWITCH** and **Asterisk**.
+If you need full control over your telephony stack  no per-minute fees, no vendor lock-in, complete access to the media path  open-source PBX software is the answer. The two dominant projects are **FreeSWITCH** and **Asterisk**.
 
 ### FreeSWITCH vs. Asterisk
 
@@ -2689,7 +2689,7 @@ If you need full control over your telephony stack — no per-minute fees, no ve
 
 ### Connecting to FreeSWITCH with ESL
 
-FreeSWITCH's **Event Socket Library (ESL)** lets external programs control FreeSWITCH over a TCP socket. You can answer calls, play audio, record, bridge calls, and receive events — all from Python.
+FreeSWITCH's **Event Socket Library (ESL)** lets external programs control FreeSWITCH over a TCP socket. You can answer calls, play audio, record, bridge calls, and receive events  all from Python.
 
 ```python
 """
@@ -2824,7 +2824,7 @@ class FreeSWITCHConnection:
         )
 
     async def listen_for_events(self) -> None:
-        """Main event loop — processes incoming events."""
+        """Main event loop  processes incoming events."""
         while True:
             try:
                 event_data = await self._read_event()
@@ -3076,7 +3076,7 @@ class AsteriskARI:
 
 ---
 
-## Media Bridges — Connecting WebRTC to SIP/PSTN
+## Media Bridges  Connecting WebRTC to SIP/PSTN
 
 In many production deployments, you need to bridge between different media transports. A user might connect via WebRTC in their browser, but you need to transfer them to a phone number (SIP/PSTN). Or you might receive a phone call and want to handle it with the same WebRTC-based voice agent infrastructure.
 
@@ -3407,7 +3407,7 @@ if __name__ == "__main__":
 
 ## Project: Phone Call Handler
 
-Now let us bring everything together into a complete **Phone Call Handler** — a system that answers incoming Twilio calls, streams audio through a voice agent pipeline (ASR, LLM, TTS), and speaks the response back to the caller.
+Now let us bring everything together into a complete **Phone Call Handler**  a system that answers incoming Twilio calls, streams audio through a voice agent pipeline (ASR, LLM, TTS), and speaks the response back to the caller.
 
 ### System Architecture
 
@@ -3629,7 +3629,7 @@ class SimpleVAD:
                 if self._silence_start is None:
                     self._silence_start = time.time()
                 elif time.time() - self._silence_start > self.silence_duration:
-                    # Silence long enough — speech has ended
+                    # Silence long enough  speech has ended
                     self._is_speaking = False
                     self._silence_start = None
                     speech_just_ended = True
@@ -3718,7 +3718,7 @@ class StubTTS:
 
 
 # ---------------------------------------------------------------------------
-# Phone Call Handler — The main class
+# Phone Call Handler  The main class
 # ---------------------------------------------------------------------------
 
 class CallState(Enum):
@@ -3903,7 +3903,7 @@ class PhoneCallHandler:
         is_speaking, speech_ended = call.vad.process(pcm_audio)
 
         if speech_ended:
-            # User finished speaking — process the utterance
+            # User finished speaking  process the utterance
             speech_audio = call.vad.get_speech_audio()
             if speech_audio is not None and len(speech_audio) > 800:
                 call.state = CallState.PROCESSING
@@ -4116,7 +4116,7 @@ Then configure your Twilio phone number:
 
 Update `config.public_ws_url` in the code to match your ngrok WebSocket URL.
 
-Now call your Twilio number — you should hear the greeting, and the system will process your speech through the pipeline.
+Now call your Twilio number  you should hear the greeting, and the system will process your speech through the pipeline.
 
 ---
 
@@ -4153,16 +4153,16 @@ Now call your Twilio number — you should hear the greeting, and the system wil
 
 ---
 
-## What's Next — Part 9
+## What's Next  Part 9
 
 In **Part 9: Building Your First Complete Voice Agent**, we bring together everything from Parts 1 through 8 into a single, working voice agent system. You will build:
 
 - A **complete voice agent** that accepts both browser (WebRTC) and phone (Twilio) connections
 - A full **ASR + LLM + TTS pipeline** with real implementations (Whisper, OpenAI/Claude, ElevenLabs)
-- **Turn-taking logic** — detecting when the user is done speaking and when to start responding
-- **Barge-in handling** — letting the user interrupt the agent mid-sentence
-- **Conversation state management** — maintaining context across multiple turns
-- **Error recovery** — gracefully handling network drops, API failures, and edge cases
+- **Turn-taking logic**  detecting when the user is done speaking and when to start responding
+- **Barge-in handling**  letting the user interrupt the agent mid-sentence
+- **Conversation state management**  maintaining context across multiple turns
+- **Error recovery**  gracefully handling network drops, API failures, and edge cases
 
 Part 9 is where all the building blocks click together into something you can actually demo and deploy. The protocols from this part (WebRTC, SIP, Twilio Media Streams) become the transport layer that connects your agent to the real world.
 
@@ -4170,4 +4170,4 @@ See you in Part 9.
 
 ---
 
-*Next up: **Part 9 — Building Your First Complete Voice Agent** — From components to a working system*
+*Next up: **Part 9  Building Your First Complete Voice Agent**  From components to a working system*

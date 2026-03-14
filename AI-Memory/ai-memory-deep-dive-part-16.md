@@ -1,8 +1,8 @@
-# Memory in AI Systems Deep Dive — Part 16: Autonomous Agents With Memory — From Chat to Action
+# Memory in AI Systems Deep Dive  Part 16: Autonomous Agents With Memory  From Chat to Action
 
 ---
 
-**Series:** Memory in AI Systems — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Memory in AI Systems  A Developer's Deep Dive from Fundamentals to Production
 **Part:** 16 of 19 (Autonomous Agents)
 **Audience:** Developers with programming experience who want to understand AI memory systems from the ground up
 **Reading time:** ~55 minutes
@@ -11,9 +11,9 @@
 
 ## Recap of Part 15
 
-In Part 15, we explored evaluation and benchmarking of memory systems — how to measure retrieval accuracy, latency, memory coherence, and end-to-end system quality. We built evaluation harnesses, established baselines, and learned to detect memory degradation before users notice it.
+In Part 15, we explored evaluation and benchmarking of memory systems  how to measure retrieval accuracy, latency, memory coherence, and end-to-end system quality. We built evaluation harnesses, established baselines, and learned to detect memory degradation before users notice it.
 
-But all of that work served a single interaction pattern: a user asks, the system remembers, and the system responds. **What happens when the AI doesn't just respond — it acts?**
+But all of that work served a single interaction pattern: a user asks, the system remembers, and the system responds. **What happens when the AI doesn't just respond  it acts?**
 
 That's the leap from chatbot to agent. And memory is what makes it possible.
 
@@ -30,7 +30,7 @@ Era 1: Completion (GPT-2 era)
 ─────────────────────────────
 Input: "The capital of France is"
 Output: "Paris"
-Memory: None — stateless text completion
+Memory: None  stateless text completion
 
 Era 2: Chat (ChatGPT era)
 ──────────────────────────
@@ -599,7 +599,7 @@ ReAct:
 
 ### Why Agents Need Plans
 
-The ReAct loop is reactive — it decides one step at a time. For complex tasks, this leads to inefficient exploration and missed dependencies. **Planning** adds foresight: the agent creates a structured plan before acting, then executes and revises the plan based on outcomes.
+The ReAct loop is reactive  it decides one step at a time. For complex tasks, this leads to inefficient exploration and missed dependencies. **Planning** adds foresight: the agent creates a structured plan before acting, then executes and revises the plan based on outcomes.
 
 ```mermaid
 graph LR
@@ -780,7 +780,7 @@ class PlanningAgent:
             next_step = plan.get_next_step()
 
             if next_step is None:
-                # No step is ready — likely due to failed dependencies
+                # No step is ready  likely due to failed dependencies
                 print("\nNo executable steps remaining. Attempting plan revision...")
                 plan = self._revise_plan(goal, plan, "Blocked: no executable steps")
                 if plan.revision_count > self.max_revisions:
@@ -1062,7 +1062,7 @@ Third time planning "Deploy a microservice":
 
 ### Why Tool Memory Matters
 
-Agents use tools to interact with the external world — search engines, APIs, databases, file systems. But tools are unpredictable:
+Agents use tools to interact with the external world  search engines, APIs, databases, file systems. But tools are unpredictable:
 
 - APIs have rate limits and sometimes fail
 - Search results vary in quality
@@ -1454,7 +1454,7 @@ class ActionOutcome:
 
 @dataclass
 class Strategy:
-    """A learned strategy — a pattern of actions that tends to work."""
+    """A learned strategy  a pattern of actions that tends to work."""
     name: str
     description: str
     action_sequence: list[str]
@@ -1565,7 +1565,7 @@ class ExperienceLearner:
                     "strategy": None,
                 }
 
-        # No experience — return no recommendation
+        # No experience  return no recommendation
         return {
             "recommended_action": None,
             "confidence": 0.0,
@@ -1625,7 +1625,7 @@ Provide 3-5 specific, actionable suggestions."""
         """
         Get the most successful sequence of actions for a given context.
 
-        Like a "playbook" — a proven sequence the agent can follow.
+        Like a "playbook"  a proven sequence the agent can follow.
         """
         context_key = self._extract_context_key(context)
 
@@ -1765,6 +1765,6 @@ Provide 3-5 specific, actionable suggestions."""
 └──────────────────────────────────────────────────────────┘
 ```
 
-> **Key Insight:** Experience learning transforms an agent from "stateless function caller" to "adaptive problem solver." After enough experience, the agent develops intuition — it doesn't just follow rules, it applies learned patterns that go beyond what was explicitly programmed.
+> **Key Insight:** Experience learning transforms an agent from "stateless function caller" to "adaptive problem solver." After enough experience, the agent develops intuition  it doesn't just follow rules, it applies learned patterns that go beyond what was explicitly programmed.
 
 ---

@@ -1,8 +1,8 @@
-# Voice Agents Deep Dive — Part 17: Production Infrastructure — Scaling, Monitoring, and Reliability
+# Voice Agents Deep Dive  Part 17: Production Infrastructure  Scaling, Monitoring, and Reliability
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** 17 of 19 (Production Voice Systems)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~50 minutes
@@ -57,7 +57,7 @@ The foundation of scalable voice: move all call state out of worker memory into 
 
 ```python
 """
-session_state.py — External session state management for voice agents.
+session_state.py  External session state management for voice agents.
 """
 import redis.asyncio as aioredis
 import json
@@ -269,10 +269,10 @@ class VoiceAgentWorkerPool:
 
 ## Section 3: Infrastructure Architecture
 
-### Docker Compose — Development Stack
+### Docker Compose  Development Stack
 
 ```yaml
-# docker-compose.yml — Full voice agent development stack
+# docker-compose.yml  Full voice agent development stack
 version: '3.8'
 
 services:
@@ -358,7 +358,7 @@ volumes:
   grafana_data:
 ```
 
-### Kubernetes — Production Deployment
+### Kubernetes  Production Deployment
 
 ```yaml
 # kubernetes/voice-agent-deployment.yaml
@@ -465,7 +465,7 @@ spec:
 
 ```python
 """
-monitoring.py — Prometheus metrics for voice agent infrastructure.
+monitoring.py  Prometheus metrics for voice agent infrastructure.
 """
 from prometheus_client import Counter, Histogram, Gauge, start_http_server
 import time
@@ -627,7 +627,7 @@ monitor = VoiceAgentMonitor()
 ### Prometheus Configuration
 
 ```yaml
-# prometheus.yml — Prometheus scraping configuration
+# prometheus.yml  Prometheus scraping configuration
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
@@ -714,7 +714,7 @@ groups:
 
 ```python
 """
-conversation_analytics.py — Track conversation metrics in PostgreSQL.
+conversation_analytics.py  Track conversation metrics in PostgreSQL.
 """
 import asyncio
 import time
@@ -950,7 +950,7 @@ Understanding and managing cost is critical at scale:
 
 ```python
 """
-cost_tracker.py — Real-time cost tracking per call.
+cost_tracker.py  Real-time cost tracking per call.
 """
 from dataclasses import dataclass, field
 import time
@@ -1032,7 +1032,7 @@ class CallCostAccumulator:
 
 ```python
 """
-circuit_breaker.py — Circuit breakers for external voice service calls.
+circuit_breaker.py  Circuit breakers for external voice service calls.
 """
 import asyncio
 import time
@@ -1045,8 +1045,8 @@ T = TypeVar("T")
 
 class CircuitState(Enum):
     CLOSED = "closed"        # Normal operation
-    OPEN = "open"            # Failing — reject calls immediately
-    HALF_OPEN = "half_open"  # Testing — allow limited calls through
+    OPEN = "open"            # Failing  reject calls immediately
+    HALF_OPEN = "half_open"  # Testing  allow limited calls through
 
 
 @dataclass
@@ -1208,7 +1208,7 @@ class ResilientVoicePipeline:
 
 ```python
 """
-load_tester.py — Simulate concurrent voice agent calls for load testing.
+load_tester.py  Simulate concurrent voice agent calls for load testing.
 """
 import asyncio
 import time
@@ -1378,11 +1378,11 @@ if __name__ == "__main__":
 
 ## Section 9: Graceful Shutdown and Zero-Downtime Deployments
 
-The hardest part of deploying new versions of a voice agent is not breaking active calls. A rolling update that kills a pod mid-call drops that call — unacceptable for production.
+The hardest part of deploying new versions of a voice agent is not breaking active calls. A rolling update that kills a pod mid-call drops that call  unacceptable for production.
 
 ```python
 """
-graceful_shutdown.py — Handle SIGTERM without dropping active calls.
+graceful_shutdown.py  Handle SIGTERM without dropping active calls.
 """
 import asyncio
 import signal
@@ -1429,7 +1429,7 @@ class GracefulShutdownManager:
     def register_call(self, call_id: str) -> None:
         """Register a new active call."""
         if self._is_draining:
-            raise RuntimeError("Worker is draining — not accepting new calls")
+            raise RuntimeError("Worker is draining  not accepting new calls")
         self._active_call_ids.add(call_id)
         logger.debug(f"Call registered: {call_id} (active: {len(self._active_call_ids)})")
 
@@ -1549,7 +1549,7 @@ async def main():
 
     @app.get("/ready")
     async def readiness_check():
-        """Kubernetes readiness probe — returns 503 when draining."""
+        """Kubernetes readiness probe  returns 503 when draining."""
         if shutdown_mgr.is_draining:
             from fastapi import Response
             return Response(
@@ -1652,7 +1652,7 @@ Workers crash. Kubernetes restarts them. But what about the calls in progress?
 
 ```python
 """
-session_recovery.py — Recover abandoned sessions after worker crash.
+session_recovery.py  Recover abandoned sessions after worker crash.
 """
 import asyncio
 import redis.asyncio as aioredis
@@ -1754,14 +1754,14 @@ class SessionRecoveryService:
         # Check if session is still recent enough to recover
         age_seconds = time.time() - orphan.last_activity
         if age_seconds > 120:
-            # Session is too old — the caller has definitely hung up
+            # Session is too old  the caller has definitely hung up
             logger.info(
                 f"Session {orphan.session_id} expired ({age_seconds:.0f}s old). Cleaning up."
             )
             await self._clean_up_session(orphan.session_id)
             return "expired"
 
-        # Recent session — caller might still be connected
+        # Recent session  caller might still be connected
         logger.warning(
             f"Orphaned session {orphan.session_id} from dead worker {orphan.original_worker}. "
             f"Age: {age_seconds:.0f}s, turns: {orphan.turn_count}"
@@ -1772,7 +1772,7 @@ class SessionRecoveryService:
             await self._notify_user_of_disconnect(orphan.user_phone)
 
         # Strategy 2: Reassign to current worker
-        # (only works if the underlying connection is still alive — usually it's not)
+        # (only works if the underlying connection is still alive  usually it's not)
         await self._reassign_session(orphan.session_id)
         return "reassigned"
 
@@ -1822,7 +1822,7 @@ class SessionRecoveryService:
 
 ```python
 """
-rate_limiter.py — Rate limiting for voice agent endpoints.
+rate_limiter.py  Rate limiting for voice agent endpoints.
 """
 import redis.asyncio as aioredis
 import time
@@ -1900,7 +1900,7 @@ class VoiceRateLimiter:
                     f"calls/hour)"
                 )
 
-        # 4. All checks passed — record this call
+        # 4. All checks passed  record this call
         call_id = f"{now}-{id(now)}"
         pipe = r.pipeline()
         pipe.zadd(minute_key, {call_id: now})
@@ -1938,7 +1938,7 @@ class VoiceRateLimiter:
 
 ```python
 """
-capacity_planner.py — Calculate required infrastructure for voice workloads.
+capacity_planner.py  Calculate required infrastructure for voice workloads.
 """
 from dataclasses import dataclass
 import math
@@ -2131,15 +2131,15 @@ spec:
 | Term | Definition |
 |------|-----------|
 | **Sticky session** | Load balancer feature that routes all requests from one client to the same server |
-| **HPA** | Horizontal Pod Autoscaler — Kubernetes feature that scales pods based on metrics |
-| **MOS score** | Mean Opinion Score — 1-5 scale for audio quality (5 = excellent) |
+| **HPA** | Horizontal Pod Autoscaler  Kubernetes feature that scales pods based on metrics |
+| **MOS score** | Mean Opinion Score  1-5 scale for audio quality (5 = excellent) |
 | **Circuit breaker** | Design pattern that stops calls to a failing service to prevent cascade failures |
 | **Prometheus** | Open-source time-series monitoring and alerting system |
 | **Grafana** | Visualization platform for Prometheus metrics (dashboards) |
 | **Histogram** | Prometheus metric type that tracks value distributions (useful for latency) |
 | **Gauge** | Prometheus metric for values that go up and down (e.g., active calls) |
 | **Counter** | Prometheus metric that only increases (e.g., total calls) |
-| **p95 latency** | 95th percentile latency — 95% of requests are faster than this |
+| **p95 latency** | 95th percentile latency  95% of requests are faster than this |
 | **Worker pool** | A set of processes that handle concurrent calls |
 | **Session affinity** | Kubernetes service configuration for sticky sessions |
 | **Pre-warm** | Loading models before calls arrive to reduce first-call latency |
@@ -2154,16 +2154,16 @@ spec:
 
 In **Part 18: Security, Testing, and Compliance**, we add the enterprise-grade protections that make voice agents trustworthy:
 
-- **Threat modeling** — what can go wrong with voice AI systems
-- **Prompt injection via voice** — detecting adversarial speech
-- **PII detection and redaction** — ensuring sensitive data doesn't leak into logs
-- **GDPR, HIPAA, TCPA, PCI DSS** — compliance requirements for voice agents
-- **Conversation simulation testing** — testing without real audio
-- **Red teaming** — adversarial testing of your voice agent
-- **A/B testing** — data-driven improvement of voice agent performance
+- **Threat modeling**  what can go wrong with voice AI systems
+- **Prompt injection via voice**  detecting adversarial speech
+- **PII detection and redaction**  ensuring sensitive data doesn't leak into logs
+- **GDPR, HIPAA, TCPA, PCI DSS**  compliance requirements for voice agents
+- **Conversation simulation testing**  testing without real audio
+- **Red teaming**  adversarial testing of your voice agent
+- **A/B testing**  data-driven improvement of voice agent performance
 
 By the end of Part 18, your voice agent will be ready for enterprise deployment.
 
 ---
 
-*Part 17 of 19 — Building Voice Agents: A Developer's Deep Dive*
+*Part 17 of 19  Building Voice Agents: A Developer's Deep Dive*

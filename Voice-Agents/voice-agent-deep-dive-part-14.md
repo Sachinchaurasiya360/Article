@@ -1,17 +1,17 @@
-# Voice Agents Deep Dive — Part 14: Multi-Language and Emotion — Building Human-Like Voice Agents
+# Voice Agents Deep Dive  Part 14: Multi-Language and Emotion  Building Human-Like Voice Agents
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** 14 of 19 (Advanced Voice Features)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~45 minutes
 
 ---
 
-In Part 13, we built phone call agents — answering inbound calls, making outbound calls, handling DTMF, and integrating with Twilio's Media Streams for real-time audio. Our agents could talk on the phone. But they could only talk in one language, with no awareness of the human emotions flowing through the conversation.
+In Part 13, we built phone call agents  answering inbound calls, making outbound calls, handling DTMF, and integrating with Twilio's Media Streams for real-time audio. Our agents could talk on the phone. But they could only talk in one language, with no awareness of the human emotions flowing through the conversation.
 
-Today we fix that. We'll build voice agents that detect what language someone is speaking and respond in kind, switch languages mid-conversation, and actually understand whether the person they're talking to is frustrated, confused, happy, or angry — and adapt accordingly.
+Today we fix that. We'll build voice agents that detect what language someone is speaking and respond in kind, switch languages mid-conversation, and actually understand whether the person they're talking to is frustrated, confused, happy, or angry  and adapt accordingly.
 
 By the end of this part, you'll have built an emotion-aware multilingual voice agent that feels genuinely human.
 
@@ -57,7 +57,7 @@ OpenAI Whisper has built-in language detection. It was trained on 680,000 hours 
 
 ```python
 """
-language_detector.py — Detect spoken language from audio using Whisper.
+language_detector.py  Detect spoken language from audio using Whisper.
 """
 import numpy as np
 import whisper
@@ -210,7 +210,7 @@ For real-time voice agents, we can't wait for the full Whisper detection on ever
 
 ```python
 """
-session_language_manager.py — Manage language detection across a voice session.
+session_language_manager.py  Manage language detection across a voice session.
 """
 import asyncio
 from dataclasses import dataclass, field
@@ -257,7 +257,7 @@ class SessionLanguageManager:
         session = self.get_or_create_session(session_id)
         session.turn_count += 1
 
-        # Already confirmed — don't re-detect
+        # Already confirmed  don't re-detect
         if session.confirmed:
             return session.detected_language
 
@@ -277,7 +277,7 @@ class SessionLanguageManager:
                 session.confirmed = True
                 print(f"[Session {session_id}] Language confirmed: {result.language}")
             else:
-                # Inconsistent — use higher confidence
+                # Inconsistent  use higher confidence
                 session.detected_language = result.language
                 session.detection_confidence = result.confidence
         else:
@@ -313,7 +313,7 @@ Different ASR engines have different multilingual strengths. Here's how they com
 
 ```python
 """
-multilingual_asr.py — Unified multilingual ASR interface.
+multilingual_asr.py  Unified multilingual ASR interface.
 """
 import asyncio
 import httpx
@@ -528,7 +528,7 @@ Now let's build an agent that detects language on the first turn and routes to t
 
 ```python
 """
-multilingual_agent.py — Voice agent that detects and responds in any language.
+multilingual_agent.py  Voice agent that detects and responds in any language.
 """
 import asyncio
 from dataclasses import dataclass, field
@@ -737,7 +737,7 @@ class MultilingualAgent:
 
 ---
 
-## Section 4: Multilingual TTS — Choosing the Right Engine
+## Section 4: Multilingual TTS  Choosing the Right Engine
 
 | TTS Engine | Languages | Voice Cloning | Streaming | Quality | Notes |
 |------------|-----------|---------------|-----------|---------|-------|
@@ -749,7 +749,7 @@ class MultilingualAgent:
 
 ```python
 """
-multilingual_tts_router.py — Route TTS requests to best engine per language.
+multilingual_tts_router.py  Route TTS requests to best engine per language.
 """
 import asyncio
 from abc import ABC, abstractmethod
@@ -763,7 +763,7 @@ class TTSEngine(ABC):
 
 
 class OpenAITTSEngine(TTSEngine):
-    """OpenAI TTS — automatically multilingual."""
+    """OpenAI TTS  automatically multilingual."""
 
     VOICE_BY_LANGUAGE = {
         "en-US": "alloy", "en-GB": "echo",
@@ -790,7 +790,7 @@ class OpenAITTSEngine(TTSEngine):
 
 
 class ElevenLabsMultilingualTTS(TTSEngine):
-    """ElevenLabs Multilingual v2 — highest quality."""
+    """ElevenLabs Multilingual v2  highest quality."""
 
     def __init__(self, api_key: str, default_voice_id: str = "21m00Tcm4TlvDq8ikWAM"):
         self.api_key = api_key
@@ -850,7 +850,7 @@ class MultilingualTTSRouter:
 
 ## Section 5: Real-Time Translation Pipeline
 
-Sometimes you need an agent that translates between languages — like a customer speaking Spanish to an English-speaking support team:
+Sometimes you need an agent that translates between languages  like a customer speaking Spanish to an English-speaking support team:
 
 ```mermaid
 sequenceDiagram
@@ -870,7 +870,7 @@ sequenceDiagram
 
 ```python
 """
-translation_pipeline.py — Real-time speech-to-speech translation.
+translation_pipeline.py  Real-time speech-to-speech translation.
 """
 import asyncio
 import httpx
@@ -1050,7 +1050,7 @@ class SpeechToSpeechTranslationAgent:
 
 ## Section 6: Emotion Detection from Voice
 
-Now the exciting part — detecting how someone feels from their voice, not just what they say.
+Now the exciting part  detecting how someone feels from their voice, not just what they say.
 
 ### The Acoustic Features of Emotion
 
@@ -1070,7 +1070,7 @@ graph LR
 
 ```python
 """
-emotion_features.py — Extract acoustic features for emotion detection.
+emotion_features.py  Extract acoustic features for emotion detection.
 """
 import numpy as np
 import librosa
@@ -1210,7 +1210,7 @@ class AcousticFeatureExtractor:
 
 ```python
 """
-emotion_detector.py — Classify emotion from acoustic features.
+emotion_detector.py  Classify emotion from acoustic features.
 """
 import numpy as np
 from dataclasses import dataclass
@@ -1413,11 +1413,11 @@ class NeuralEmotionDetector:
 
 ## Section 8: Emotion Tracking Across the Conversation
 
-Detecting a single emotion is useful. Tracking emotion trends over the whole conversation is powerful — it lets the agent notice when things are getting worse:
+Detecting a single emotion is useful. Tracking emotion trends over the whole conversation is powerful  it lets the agent notice when things are getting worse:
 
 ```python
 """
-emotion_tracker.py — Track emotion trends across conversation turns.
+emotion_tracker.py  Track emotion trends across conversation turns.
 """
 from collections import deque
 from dataclasses import dataclass, field
@@ -1527,7 +1527,7 @@ Now we wire emotion detection into the agent's response generation:
 
 ```python
 """
-sentiment_aware_agent.py — Voice agent that adapts responses to detected emotion.
+sentiment_aware_agent.py  Voice agent that adapts responses to detected emotion.
 """
 import asyncio
 from dataclasses import dataclass
@@ -1734,7 +1734,7 @@ class SentimentAwareAgent:
 
 ```python
 """
-pace_adapter.py — Detect speech rate and adapt agent response pace.
+pace_adapter.py  Detect speech rate and adapt agent response pace.
 """
 import re
 import numpy as np
@@ -1845,11 +1845,11 @@ class PaceAdaptingTTS:
 
 ---
 
-## Section 11: Putting It All Together — The Emotion-Aware Multilingual Agent
+## Section 11: Putting It All Together  The Emotion-Aware Multilingual Agent
 
 ```python
 """
-emotion_multilingual_agent.py — Complete emotion-aware multilingual voice agent.
+emotion_multilingual_agent.py  Complete emotion-aware multilingual voice agent.
 """
 import asyncio
 import numpy as np
@@ -1989,11 +1989,11 @@ class EmotionAwareMultilingualAgent:
 
 ---
 
-## Section 12: Project — Testing the Full Agent
+## Section 12: Project  Testing the Full Agent
 
 ```python
 """
-test_multilingual_emotion_agent.py — Test the complete agent with simulated scenarios.
+test_multilingual_emotion_agent.py  Test the complete agent with simulated scenarios.
 """
 import asyncio
 import numpy as np
@@ -2124,14 +2124,14 @@ if __name__ == "__main__":
 
 In **Part 15: Advanced Voice Features**, we go beyond language and emotion to build capabilities that make voice agents truly production-grade:
 
-- **Speaker verification** — voiceprint-based authentication (ECAPA-TDNN, TitaNet)
-- **Anti-spoofing** — detecting replay attacks and deepfake audio
-- **Multi-modal agents** — voice + screen + vision in a single agent
-- **Proactive agents** — scheduled outbound calls and event-triggered conversations
-- **Voice commerce** — order taking, payment flows, and PCI DSS compliance
+- **Speaker verification**  voiceprint-based authentication (ECAPA-TDNN, TitaNet)
+- **Anti-spoofing**  detecting replay attacks and deepfake audio
+- **Multi-modal agents**  voice + screen + vision in a single agent
+- **Proactive agents**  scheduled outbound calls and event-triggered conversations
+- **Voice commerce**  order taking, payment flows, and PCI DSS compliance
 
-By the end of Part 15, your voice agent will be able to authenticate callers by voice, see images users share, and proactively reach out to users when events occur — taking it far beyond a simple question-answering bot.
+By the end of Part 15, your voice agent will be able to authenticate callers by voice, see images users share, and proactively reach out to users when events occur  taking it far beyond a simple question-answering bot.
 
 ---
 
-*Part 14 of 19 — Building Voice Agents: A Developer's Deep Dive*
+*Part 14 of 19  Building Voice Agents: A Developer's Deep Dive*

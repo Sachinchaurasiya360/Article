@@ -1,8 +1,8 @@
-# Memory in AI Systems Deep Dive — Part 19: Designing a Production AI Memory Platform — The Capstone
+# Memory in AI Systems Deep Dive  Part 19: Designing a Production AI Memory Platform  The Capstone
 
 ---
 
-**Series:** Memory in AI Systems — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Memory in AI Systems  A Developer's Deep Dive from Fundamentals to Production
 **Part:** 19 of 19 (Capstone)
 **Audience:** Developers with programming experience who want to understand AI memory systems from the ground up
 **Reading time:** ~60 minutes
@@ -27,13 +27,13 @@
 
 ## 1. The Capstone Challenge
 
-We have arrived at the summit. Across eighteen parts of this series, we explored every dimension of memory in AI systems — from the philosophical foundations of what memory means for machines (Part 0) through the neuroscience of biological memory (Part 1), into the mathematical scaffolding of embeddings, vector spaces, and retrieval algorithms (Parts 2-5), through compression, summarization, and memory management strategies (Parts 6-9), into advanced architectures like memory-augmented neural networks, knowledge graphs, and multi-agent memory (Parts 10-14), and finally through evaluation, privacy, ethical concerns, and the future landscape (Parts 15-18).
+We have arrived at the summit. Across eighteen parts of this series, we explored every dimension of memory in AI systems  from the philosophical foundations of what memory means for machines (Part 0) through the neuroscience of biological memory (Part 1), into the mathematical scaffolding of embeddings, vector spaces, and retrieval algorithms (Parts 2-5), through compression, summarization, and memory management strategies (Parts 6-9), into advanced architectures like memory-augmented neural networks, knowledge graphs, and multi-agent memory (Parts 10-14), and finally through evaluation, privacy, ethical concerns, and the future landscape (Parts 15-18).
 
-Now we bring it all together. This capstone is not a theoretical exercise — it is the blueprint and implementation of a **production-grade AI memory platform** that any application can plug into.
+Now we bring it all together. This capstone is not a theoretical exercise  it is the blueprint and implementation of a **production-grade AI memory platform** that any application can plug into.
 
 ### 1.1 What We Are Building
 
-**Mnemos** — a complete, horizontally scalable AI memory platform that provides:
+**Mnemos**  a complete, horizontally scalable AI memory platform that provides:
 
 - **Memory storage and retrieval** across multiple modalities (text, structured data, conversations)
 - **Semantic search** powered by embeddings and vector databases
@@ -42,7 +42,7 @@ Now we bring it all together. This capstone is not a theoretical exercise — it
 - **Agent-native SDKs** so AI agents can store and retrieve memories with minimal code
 - **Evaluation and observability** so operators know the system works correctly
 
-> **Why "Mnemos"?** From the Greek *mneme* (memory) — the root of "mnemonic." We name our platform after the fundamental concept this entire series explores.
+> **Why "Mnemos"?** From the Greek *mneme* (memory)  the root of "mnemonic." We name our platform after the fundamental concept this entire series explores.
 
 ### 1.2 Requirements Gathering
 
@@ -131,7 +131,7 @@ TECHNOLOGY_CHOICES = {
 def print_tech_stack():
     """Display the complete technology stack."""
     print("=" * 70)
-    print("MNEMOS PLATFORM — TECHNOLOGY STACK")
+    print("MNEMOS PLATFORM  TECHNOLOGY STACK")
     print("=" * 70)
     for category, details in TECHNOLOGY_CHOICES.items():
         print(f"\n[{category.upper()}]")
@@ -255,11 +255,11 @@ SERVICES = {
             "Memory version history",
         ],
         exposes=[
-            "POST /memories — Create memory",
-            "GET /memories/{id} — Read memory",
-            "PUT /memories/{id} — Update memory",
-            "DELETE /memories/{id} — Delete memory",
-            "GET /memories — List with filters",
+            "POST /memories  Create memory",
+            "GET /memories/{id}  Read memory",
+            "PUT /memories/{id}  Update memory",
+            "DELETE /memories/{id}  Delete memory",
+            "GET /memories  List with filters",
         ],
         depends_on=["embedding_service", "storage_manager"],
         port=8001,
@@ -273,9 +273,9 @@ SERVICES = {
             "Model version registry",
         ],
         exposes=[
-            "POST /embed — Generate embedding for text",
-            "POST /embed/batch — Batch embedding generation",
-            "GET /models — List available models",
+            "POST /embed  Generate embedding for text",
+            "POST /embed/batch  Batch embedding generation",
+            "GET /models  List available models",
         ],
         depends_on=[],
         port=8002,
@@ -289,9 +289,9 @@ SERVICES = {
             "Ranking algorithms",
         ],
         exposes=[
-            "POST /search — Semantic search",
-            "POST /search/hybrid — Hybrid keyword+semantic search",
-            "POST /search/rerank — Re-rank results",
+            "POST /search  Semantic search",
+            "POST /search/hybrid  Hybrid keyword+semantic search",
+            "POST /search/rerank  Re-rank results",
         ],
         depends_on=["embedding_service"],
         port=8003,
@@ -305,9 +305,9 @@ SERVICES = {
             "Consolidation scheduling",
         ],
         exposes=[
-            "POST /compress — Compress a memory",
-            "POST /consolidate — Merge related memories",
-            "GET /policies — List compression policies",
+            "POST /compress  Compress a memory",
+            "POST /consolidate  Merge related memories",
+            "GET /policies  List compression policies",
         ],
         depends_on=["memory_service"],
         port=8004,
@@ -321,10 +321,10 @@ SERVICES = {
             "Session-to-memory mappings",
         ],
         exposes=[
-            "POST /sessions — Create session",
-            "GET /sessions/{id} — Get session with context",
-            "POST /sessions/{id}/messages — Add message to session",
-            "POST /sessions/{id}/extract — Extract memories from session",
+            "POST /sessions  Create session",
+            "GET /sessions/{id}  Get session with context",
+            "POST /sessions/{id}/messages  Add message to session",
+            "POST /sessions/{id}/extract  Extract memories from session",
         ],
         depends_on=["memory_service", "compression_service"],
         port=8005,
@@ -338,9 +338,9 @@ SERVICES = {
             "Automatic memory extraction rules",
         ],
         exposes=[
-            "POST /agents/remember — Store a memory from agent context",
-            "POST /agents/recall — Retrieve relevant memories for a query",
-            "POST /agents/reflect — Generate insights from memory patterns",
+            "POST /agents/remember  Store a memory from agent context",
+            "POST /agents/recall  Retrieve relevant memories for a query",
+            "POST /agents/reflect  Generate insights from memory patterns",
         ],
         depends_on=[
             "memory_service",
@@ -354,7 +354,7 @@ SERVICES = {
 
 def print_architecture():
     """Display the service architecture."""
-    print("MNEMOS PLATFORM — SERVICE ARCHITECTURE")
+    print("MNEMOS PLATFORM  SERVICE ARCHITECTURE")
     print("=" * 60)
     for key, svc in SERVICES.items():
         print(f"\n{'─' * 60}")
@@ -629,7 +629,7 @@ class MemoryMetadata(BaseModel):
 
 
 class MemoryRelation(BaseModel):
-    """A relationship between two memories (Part 12 — Knowledge Graphs)."""
+    """A relationship between two memories (Part 12  Knowledge Graphs)."""
     source_id: UUID
     target_id: UUID
     relation_type: str  # e.g., "derived_from", "contradicts", "supports"
@@ -899,7 +899,7 @@ CREATE TABLE IF NOT EXISTS collections (
     UNIQUE(tenant_id, name)
 );
 
--- Memories table — the core entity
+-- Memories table  the core entity
 CREATE TABLE IF NOT EXISTS memories (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id VARCHAR(128) NOT NULL REFERENCES tenants(id),
@@ -1047,7 +1047,7 @@ def print_schema_summary():
     print("MNEMOS DATABASE SCHEMA")
     print("=" * 50)
     for table, desc in tables:
-        print(f"  {table:25s} — {desc}")
+        print(f"  {table:25s}  {desc}")
 
 
 if __name__ == "__main__":
@@ -1064,7 +1064,7 @@ The Memory Service is the heart of the platform. It orchestrates all memory oper
 
 ```python
 """
-Memory Service — Core business logic for the Mnemos platform.
+Memory Service  Core business logic for the Mnemos platform.
 
 This service owns all memory lifecycle operations and coordinates
 between the embedding service, storage backends, and event system.
@@ -1369,7 +1369,7 @@ class MemoryService:
 
             return version_record
         else:
-            # Metadata-only update — no new version needed
+            # Metadata-only update  no new version needed
             allowed_updates = {}
             for key in ["tags", "importance", "metadata", "confidence"]:
                 if key in updates:
@@ -1854,7 +1854,7 @@ Different types of memories may need different processing pipelines. The router 
 
 ```python
 """
-Memory Router — Directs memories to appropriate processing pipelines.
+Memory Router  Directs memories to appropriate processing pipelines.
 
 Different memory types have different requirements:
 - Episodic memories need temporal indexing
@@ -1884,7 +1884,7 @@ class MemoryProcessor(Protocol):
 
 
 class EpisodicProcessor:
-    """Processes episodic memories — events and experiences."""
+    """Processes episodic memories  events and experiences."""
 
     async def pre_process(self, memory: dict) -> dict:
         """Add temporal metadata to episodic memories."""
@@ -1928,7 +1928,7 @@ class EpisodicProcessor:
 
 
 class SemanticProcessor:
-    """Processes semantic memories — facts and knowledge."""
+    """Processes semantic memories  facts and knowledge."""
 
     async def pre_process(self, memory: dict) -> dict:
         """Extract key concepts from semantic memories."""
@@ -1960,7 +1960,7 @@ class SemanticProcessor:
 
 
 class ProceduralProcessor:
-    """Processes procedural memories — instructions and how-tos."""
+    """Processes procedural memories  instructions and how-tos."""
 
     async def pre_process(self, memory: dict) -> dict:
         """Parse procedural memories into structured steps."""
@@ -2001,7 +2001,7 @@ class ProceduralProcessor:
 
 
 class WorkingMemoryProcessor:
-    """Processes working memories — short-term, session-scoped."""
+    """Processes working memories  short-term, session-scoped."""
 
     async def pre_process(self, memory: dict) -> dict:
         """Set up working memory with session binding."""
@@ -2139,7 +2139,7 @@ graph LR
 
 ```python
 """
-Embedding Service — Scalable vector embedding generation.
+Embedding Service  Scalable vector embedding generation.
 
 Key design decisions:
 - Local model inference via ONNX Runtime (no API dependency)
@@ -2174,7 +2174,7 @@ class ModelConfig:
     batch_size_optimal: int = 32
 
 
-# Model registry — ordered by priority
+# Model registry  ordered by priority
 MODEL_REGISTRY: dict[str, ModelConfig] = {
     "all-MiniLM-L6-v2": ModelConfig(
         name="all-MiniLM-L6-v2",
@@ -2247,7 +2247,7 @@ class BatchAccumulator:
     Accumulates individual embedding requests into batches
     for efficient model inference.
 
-    This is critical for throughput — processing 1 text at a time
+    This is critical for throughput  processing 1 text at a time
     wastes most of the GPU/CPU capacity. Batching improves throughput
     by 10-50x depending on hardware.
     """
@@ -2401,7 +2401,7 @@ class EmbeddingService:
                 await self.lru_cache.put(cache_key, redis_cached)
                 return redis_cached.tolist()
 
-        # No cache hit — add to batch and await result
+        # No cache hit  add to batch and await result
         future = await self.batch_accumulator.add(text)
         embedding = await future
 
@@ -2617,7 +2617,7 @@ In production, you need to manage multiple embedding models, handle model update
 
 ```python
 """
-Embedding Model Manager — Handles model lifecycle and versioning.
+Embedding Model Manager  Handles model lifecycle and versioning.
 
 Key concerns:
 - Model downloads and caching

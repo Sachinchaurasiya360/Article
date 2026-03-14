@@ -12,20 +12,20 @@ Create a **20-part developer-focused blog series** on **"Machine Learning from S
 
 ### 1. Developer-First Approach
 - Every concept must be explained through **working code implementation** (Python, NumPy, scikit-learn, PyTorch, TensorFlow)
-- No hand-waving or "left as an exercise" — show the full code
+- No hand-waving or "left as an exercise"  show the full code
 - When math is needed, show it AND implement it in code side by side
 - Use real libraries developers actually use in production
 
 ### 2. Incremental Learning Path
 - Assume the reader **knows programming (Python)** but has **zero ML knowledge**
-- Each part builds on the previous — concepts introduced early are used later
+- Each part builds on the previous  concepts introduced early are used later
 - By Part 19, the reader should be able to architect and deploy production ML systems
 - Difficulty curve: beginner (Parts 0-4) → intermediate (Parts 5-10) → advanced (Parts 11-15) → production/expert (Parts 16-19)
 
 ### 3. Smooth Narrative Flow
 - Each part starts with a **brief recap** of the previous part (2-3 sentences)
 - Each part ends with a **"What's Next" preview** of the next part
-- No abrupt introductions of terms — every new concept is motivated by a problem first
+- No abrupt introductions of terms  every new concept is motivated by a problem first
 - Use transitions like "Remember when we built X in Part N? Now we're going to..."
 
 ### 4. Heavy Code Examples
@@ -57,7 +57,7 @@ The 20 parts must cover this full syllabus:
 - What ML actually is (pattern recognition, not magic)
 - Types of ML (supervised, unsupervised, reinforcement)
 - The ML workflow (data → features → model → evaluate → deploy)
-- Linear algebra essentials (vectors, matrices, dot products — only what's needed)
+- Linear algebra essentials (vectors, matrices, dot products  only what's needed)
 - Statistics essentials (mean, variance, distributions, Bayes theorem)
 - Probability for ML (conditional probability, likelihood, MAP)
 
@@ -101,33 +101,33 @@ The 20 parts must cover this full syllabus:
 ### 8. Research References (Developer-Friendly)
 - When introducing algorithms, briefly mention the original paper/author
 - Explain WHY the research matters, not just what it says
-- Example: "Dropout (Srivastava et al., 2014) — they discovered that randomly turning off neurons during training forces the network to build redundant representations, preventing over-reliance on any single feature. Think of it as cross-training for neural networks."
+- Example: "Dropout (Srivastava et al., 2014)  they discovered that randomly turning off neurons during training forces the network to build redundant representations, preventing over-reliance on any single feature. Think of it as cross-training for neural networks."
 
 ---
 
 ## Suggested 20-Part Structure
 
 ```
-Part 0:  The Machine Learning Landscape — What ML Actually Is (And Isn't)
-Part 1:  The Math You Actually Need — Linear Algebra, Stats, and Probability for ML
-Part 2:  Your First ML Model — Linear Regression from Scratch
-Part 3:  Classification — Logistic Regression, Decision Boundaries, and Evaluation
-Part 4:  Trees and Forests — Decision Trees, Random Forests, and Ensemble Methods
-Part 5:  The Algorithm Zoo — SVMs, KNN, Naive Bayes, and When to Use What
-Part 6:  Unsupervised Learning — Clustering, Dimensionality Reduction, and Anomaly Detection
-Part 7:  Feature Engineering — The Art That Makes or Breaks ML Models
-Part 8:  Neural Networks from Scratch — Building Your First Deep Learning Model
-Part 9:  PyTorch Fundamentals — The Deep Learning Developer's Toolkit
-Part 10: Convolutional Neural Networks — Teaching Machines to See
-Part 11: Sequence Models — RNNs, LSTMs, and Time Series
-Part 12: Training Deep Networks — Optimizers, Regularization, and Debugging
-Part 13: Transfer Learning — Standing on the Shoulders of Giants
-Part 14: NLP with Transformers — From Tokenization to Fine-Tuning BERT
-Part 15: Advanced Computer Vision — Object Detection, Segmentation, and GANs
-Part 16: Model Evaluation and Selection — Beyond Accuracy
-Part 17: ML System Design — Architecture for Real-World ML
-Part 18: MLOps — From Notebook to Production Pipeline
-Part 19: The Capstone — Building a Production ML Platform
+Part 0:  The Machine Learning Landscape  What ML Actually Is (And Isn't)
+Part 1:  The Math You Actually Need  Linear Algebra, Stats, and Probability for ML
+Part 2:  Your First ML Model  Linear Regression from Scratch
+Part 3:  Classification  Logistic Regression, Decision Boundaries, and Evaluation
+Part 4:  Trees and Forests  Decision Trees, Random Forests, and Ensemble Methods
+Part 5:  The Algorithm Zoo  SVMs, KNN, Naive Bayes, and When to Use What
+Part 6:  Unsupervised Learning  Clustering, Dimensionality Reduction, and Anomaly Detection
+Part 7:  Feature Engineering  The Art That Makes or Breaks ML Models
+Part 8:  Neural Networks from Scratch  Building Your First Deep Learning Model
+Part 9:  PyTorch Fundamentals  The Deep Learning Developer's Toolkit
+Part 10: Convolutional Neural Networks  Teaching Machines to See
+Part 11: Sequence Models  RNNs, LSTMs, and Time Series
+Part 12: Training Deep Networks  Optimizers, Regularization, and Debugging
+Part 13: Transfer Learning  Standing on the Shoulders of Giants
+Part 14: NLP with Transformers  From Tokenization to Fine-Tuning BERT
+Part 15: Advanced Computer Vision  Object Detection, Segmentation, and GANs
+Part 16: Model Evaluation and Selection  Beyond Accuracy
+Part 17: ML System Design  Architecture for Real-World ML
+Part 18: MLOps  From Notebook to Production Pipeline
+Part 19: The Capstone  Building a Production ML Platform
 ```
 
 ---
@@ -137,11 +137,11 @@ Part 19: The Capstone — Building a Production ML Platform
 Each article MUST follow this exact format:
 
 ```markdown
-# Machine Learning Deep Dive — Part N: Title Here
+# Machine Learning Deep Dive  Part N: Title Here
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning  A Developer's Deep Dive from Fundamentals to Production
 **Part:** N of 19 (Category Label)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~XX minutes
@@ -173,7 +173,7 @@ Details...
 ### Code Block Format:
 ```python
 """
-descriptive_filename.py — What this code does in one line.
+descriptive_filename.py  What this code does in one line.
 """
 import numpy as np
 
@@ -185,7 +185,7 @@ class AlgorithmName:
         ...
 
     def fit(self, X, y):
-        """Train the model — show the math in comments."""
+        """Train the model  show the math in comments."""
         ...
 
     def predict(self, X):
@@ -227,25 +227,25 @@ print(f"Accuracy: {accuracy:.4f}")
 - A "hello world" ML model (fit a line to data with numpy, then scikit-learn)
 
 ### Part 1: The Math You Need
-- Vectors and matrices (only what ML uses — dot products, matrix multiplication, transpose)
+- Vectors and matrices (only what ML uses  dot products, matrix multiplication, transpose)
 - NumPy crash course for ML (create, manipulate, broadcast, vectorize)
-- Descriptive statistics (mean, median, variance, standard deviation) — implemented from scratch
+- Descriptive statistics (mean, median, variance, standard deviation)  implemented from scratch
 - Probability basics (conditional probability, Bayes theorem with real examples)
-- Distributions (normal, uniform, binomial) — visualized with matplotlib
+- Distributions (normal, uniform, binomial)  visualized with matplotlib
 - Correlation vs causation (with misleading data examples)
-- Calculus in 20 minutes (derivatives, partial derivatives, chain rule — only for gradient understanding)
+- Calculus in 20 minutes (derivatives, partial derivatives, chain rule  only for gradient understanding)
 - Implement gradient descent from scratch on a simple function
 - Project: Build a statistics library from scratch
 
 ### Part 2: Linear Regression from Scratch
 - The regression problem (predicting continuous values)
 - Simple linear regression with pen-and-paper math, then NumPy
-- Cost function (MSE) — visualize the loss landscape
+- Cost function (MSE)  visualize the loss landscape
 - Gradient descent step by step (learning rate visualization, convergence)
 - Multiple linear regression (matrix form)
 - Normal equation (closed-form solution) vs gradient descent
 - Polynomial regression (underfitting → good fit → overfitting)
-- Regularization intro (L1 Lasso, L2 Ridge) — why and how
+- Regularization intro (L1 Lasso, L2 Ridge)  why and how
 - scikit-learn implementation comparison
 - Evaluation metrics (MSE, RMSE, MAE, R²)
 - Project: Predict house prices (from scratch, then scikit-learn)
@@ -262,7 +262,7 @@ print(f"Accuracy: {accuracy:.4f}")
 - Project: Email spam classifier
 
 ### Part 4: Trees and Forests
-- Decision trees (information gain, Gini impurity, entropy — implement from scratch)
+- Decision trees (information gain, Gini impurity, entropy  implement from scratch)
 - Tree visualization and interpretation
 - Overfitting in trees (pruning strategies)
 - Random Forests (bagging, feature subsampling)
@@ -276,7 +276,7 @@ print(f"Accuracy: {accuracy:.4f}")
 ### Part 5: The Algorithm Zoo
 - K-Nearest Neighbors (implement from scratch, distance metrics, curse of dimensionality)
 - Support Vector Machines (maximum margin, kernel trick, RBF kernel visualization)
-- Naive Bayes (Gaussian, Multinomial — implement from scratch)
+- Naive Bayes (Gaussian, Multinomial  implement from scratch)
 - Algorithm selection guide (decision flowchart)
 - Bias-variance for each algorithm
 - Computational complexity comparison
@@ -287,7 +287,7 @@ print(f"Accuracy: {accuracy:.4f}")
 - K-Means clustering (implement from scratch, elbow method, silhouette score)
 - DBSCAN (density-based clustering, no K needed)
 - Hierarchical clustering (dendrograms)
-- PCA (eigenvalues, eigenvectors — implement from scratch, then scikit-learn)
+- PCA (eigenvalues, eigenvectors  implement from scratch, then scikit-learn)
 - t-SNE and UMAP for visualization
 - Anomaly detection (Isolation Forest, Local Outlier Factor)
 - Association rules (Apriori algorithm)
@@ -309,9 +309,9 @@ print(f"Accuracy: {accuracy:.4f}")
 - The biological neuron analogy (and why it's misleading)
 - Perceptron: implement from scratch (AND, OR, XOR problem)
 - Multi-layer networks: forward pass implementation
-- Activation functions (sigmoid, tanh, ReLU, Leaky ReLU, GELU — implement all)
+- Activation functions (sigmoid, tanh, ReLU, Leaky ReLU, GELU  implement all)
 - Backpropagation: derive and implement from scratch (chain rule walkthrough)
-- Loss functions (MSE, cross-entropy — implement from scratch)
+- Loss functions (MSE, cross-entropy  implement from scratch)
 - Training loop from scratch (mini-batch gradient descent)
 - Universal approximation theorem (intuitive explanation + demo)
 - Build a complete neural network framework in NumPy (~200 lines)
@@ -331,7 +331,7 @@ print(f"Accuracy: {accuracy:.4f}")
 - Rebuild the Part 8 network in PyTorch (side-by-side comparison)
 - Project: MNIST classifier in PyTorch
 
-### Part 10: CNNs — Teaching Machines to See
+### Part 10: CNNs  Teaching Machines to See
 - The convolution operation (implement from scratch, then nn.Conv2d)
 - Filters and feature maps (visualize what CNNs see)
 - Pooling layers (max pooling, average pooling)
@@ -379,8 +379,8 @@ print(f"Accuracy: {accuracy:.4f}")
 
 ### Part 14: NLP with Transformers
 - Text preprocessing (tokenization: BPE, WordPiece, SentencePiece)
-- Word embeddings (Word2Vec, GloVe — implement Word2Vec from scratch)
-- The Transformer architecture (attention is all you need — explained for developers)
+- Word embeddings (Word2Vec, GloVe  implement Word2Vec from scratch)
+- The Transformer architecture (attention is all you need  explained for developers)
 - Self-attention and multi-head attention (implement from scratch)
 - BERT: bidirectional understanding (architecture, pre-training, MLM)
 - Fine-tuning BERT with Hugging Face (classification, NER, QA)

@@ -1,31 +1,31 @@
-# Memory in AI Systems Deep Dive — Part 3: The Attention Mechanism — Teaching AI to Focus (With Full Implementation)
+# Memory in AI Systems Deep Dive  Part 3: The Attention Mechanism  Teaching AI to Focus (With Full Implementation)
 
 ---
 
-**Series:** Memory in AI Systems — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Memory in AI Systems  A Developer's Deep Dive from Fundamentals to Production
 **Part:** 3 of 19
 **Audience:** Developers with programming experience who want to understand AI memory systems from the ground up
 **Reading time:** ~55 minutes
 
 ---
 
-In Part 2, we built neural networks from scratch and saw how they store knowledge in weights and carry context in hidden states. We also hit a wall: RNNs compress an entire sequence into a single fixed-size hidden vector, creating a bottleneck that loses information in long sequences. Imagine trying to summarize an entire book into a single sentence — that's what RNNs attempt to do. In this part, we build the solution: **attention** — the mechanism that lets a model look back at ALL previous positions when processing each token, rather than relying on a compressed summary.
+In Part 2, we built neural networks from scratch and saw how they store knowledge in weights and carry context in hidden states. We also hit a wall: RNNs compress an entire sequence into a single fixed-size hidden vector, creating a bottleneck that loses information in long sequences. Imagine trying to summarize an entire book into a single sentence  that's what RNNs attempt to do. In this part, we build the solution: **attention**  the mechanism that lets a model look back at ALL previous positions when processing each token, rather than relying on a compressed summary.
 
-Attention is arguably the single most important idea in modern AI. It's the core of every transformer, every large language model, every chatbot you've ever used. GPT-4, Claude, Gemini, Llama — they all run on attention. Understanding it deeply isn't optional if you want to understand how AI memory works.
+Attention is arguably the single most important idea in modern AI. It's the core of every transformer, every large language model, every chatbot you've ever used. GPT-4, Claude, Gemini, Llama  they all run on attention. Understanding it deeply isn't optional if you want to understand how AI memory works.
 
 By the end of this part, you will:
 
 - Understand **why** attention was invented (the bottleneck problem)
 - Implement **Bahdanau attention** (additive, 2014) from scratch in NumPy
 - Implement **Luong attention** (multiplicative, 2015) from scratch
-- Implement **scaled dot-product attention** — the version used in every modern LLM
+- Implement **scaled dot-product attention**  the version used in every modern LLM
 - Build **multi-head attention** from scratch in both NumPy and PyTorch
-- Understand **self-attention** — the mechanism that makes transformers possible
+- Understand **self-attention**  the mechanism that makes transformers possible
 - Implement a **KV cache** and understand why it matters for inference
 - Visualize **attention patterns** and understand what models actually learn
 - Analyze the **O(n²) computational cost** that limits context windows
 - Build a complete **attention-based sentiment classifier** from scratch
-- Connect attention to **memory** — the throughline of this entire series
+- Connect attention to **memory**  the throughline of this entire series
 
 Let's build.
 
@@ -60,7 +60,7 @@ Let's build.
 Before attention existed, the dominant approach for sequence-to-sequence tasks (like machine translation) was the **encoder-decoder** architecture. Here's how it worked:
 
 1. An **encoder RNN** reads the entire input sequence, one token at a time
-2. The encoder's final hidden state becomes a **context vector** — a fixed-size summary of the whole input
+2. The encoder's final hidden state becomes a **context vector**  a fixed-size summary of the whole input
 3. A **decoder RNN** takes this context vector and generates the output sequence, one token at a time
 
 ```mermaid
@@ -85,7 +85,7 @@ This looks reasonable for short sentences. But there's a critical flaw hiding in
 
 ### The Bottleneck
 
-That context vector — typically 256, 512, or 1024 floating-point numbers — must encode **everything** about the input sentence. Every word, every relationship between words, every nuance of meaning. All of it compressed into a single vector.
+That context vector  typically 256, 512, or 1024 floating-point numbers  must encode **everything** about the input sentence. Every word, every relationship between words, every nuance of meaning. All of it compressed into a single vector.
 
 Think about what this means:
 
@@ -153,7 +153,7 @@ Step 10: h₁₀ encodes "The cat that the dog chased ran up the tree"
 Step 11: h₁₁ encodes "The cat that the dog chased ran up the tree quickly"
 ```
 
-Now, `h₁₁` is our context vector. The decoder must generate the French translation using **only** `h₁₁`. By the time the encoder reaches step 11, the information about "The" from step 1 has been transformed, mixed, and partially overwritten 10 times. The early words are like a photocopy of a photocopy of a photocopy — degraded beyond recognition.
+Now, `h₁₁` is our context vector. The decoder must generate the French translation using **only** `h₁₁`. By the time the encoder reaches step 11, the information about "The" from step 1 has been transformed, mixed, and partially overwritten 10 times. The early words are like a photocopy of a photocopy of a photocopy  degraded beyond recognition.
 
 ### Let's See This in Code
 
@@ -246,11 +246,11 @@ Length 50+:     ██████████                            11.2 B
 (Approximate reproduction of Cho et al., 2014 findings)
 ```
 
-> **Key Insight:** The bottleneck problem isn't just about information loss — it's about **uneven** information loss. The decoder has much better access to recent tokens than early ones. For tasks like translation, where word order often differs between languages, this is catastrophic.
+> **Key Insight:** The bottleneck problem isn't just about information loss  it's about **uneven** information loss. The decoder has much better access to recent tokens than early ones. For tasks like translation, where word order often differs between languages, this is catastrophic.
 
 ### What We Need
 
-The solution seems obvious once you see the problem: **don't throw away the intermediate hidden states**. Instead of compressing everything into one vector, let the decoder access ALL encoder hidden states — and let it decide which ones are relevant at each step.
+The solution seems obvious once you see the problem: **don't throw away the intermediate hidden states**. Instead of compressing everything into one vector, let the decoder access ALL encoder hidden states  and let it decide which ones are relevant at each step.
 
 That's attention.
 
@@ -307,7 +307,7 @@ Generating "le"      → eyes glance at "the"            (high focus)
 Generating "tapis"   → eyes glance at "mat"            (high focus)
 ```
 
-This "glancing back" behavior is exactly what attention does. The decoder doesn't just use a single compressed summary — it **looks back** at the entire input sequence and **focuses on the most relevant parts** for each output token.
+This "glancing back" behavior is exactly what attention does. The decoder doesn't just use a single compressed summary  it **looks back** at the entire input sequence and **focuses on the most relevant parts** for each output token.
 
 ### The Google Search Analogy
 
@@ -344,7 +344,7 @@ graph LR
     style K4 fill:#f44336,stroke:#333,color:#fff
 ```
 
-The search query is "attending" to all possible documents and selecting the most relevant ones. Attention in neural networks works the same way — it's a **soft search** over a set of values, where the relevance of each value is determined by comparing a query to corresponding keys.
+The search query is "attending" to all possible documents and selecting the most relevant ones. Attention in neural networks works the same way  it's a **soft search** over a set of values, where the relevance of each value is determined by comparing a query to corresponding keys.
 
 ### The Three Core Concepts: Query, Key, Value
 
@@ -414,7 +414,7 @@ def attention_pseudocode(query, keys, values):
     return output
 ```
 
-That's it. Every attention variant — Bahdanau, Luong, scaled dot-product, multi-head — is just a different way of implementing `compute_similarity`. The rest stays the same.
+That's it. Every attention variant  Bahdanau, Luong, scaled dot-product, multi-head  is just a different way of implementing `compute_similarity`. The rest stays the same.
 
 > **The Attention Equation in One Sentence:** Attention computes a weighted average of values, where the weights are determined by how well each key matches the query.
 
@@ -432,7 +432,7 @@ Neural attention does the same thing:
 - **Ignores** irrelevant positions (low attention weights)
 - **Dynamically shifts** focus at each decoding step (different queries produce different weight distributions)
 
-A decoder generating the word "chat" (French for "cat") will attend heavily to "cat" in the source sentence, while a decoder generating "tapis" (French for "mat") will shift its attention to "mat". The attention distribution changes at every step — just like human attention.
+A decoder generating the word "chat" (French for "cat") will attend heavily to "cat" in the source sentence, while a decoder generating "tapis" (French for "mat") will shift its attention to "mat". The attention distribution changes at every step  just like human attention.
 
 ---
 
@@ -525,7 +525,7 @@ class BahdanauAttention:
             Dimension of both encoder hidden states and decoder hidden state.
         attention_size : int
             Dimension of the internal attention representation.
-            This is a hyperparameter — typically 64-512.
+            This is a hyperparameter  typically 64-512.
         """
         # W_query projects decoder state into attention space
         # Shape: (hidden_size, attention_size)
@@ -631,7 +631,7 @@ attention = BahdanauAttention(hidden_size, attention_size)
 context, weights = attention.forward(decoder_state, encoder_states)
 
 # Display results
-print("Bahdanau Attention — Translating to 'chat' (cat)")
+print("Bahdanau Attention  Translating to 'chat' (cat)")
 print("=" * 55)
 print(f"\nDecoder state shape: {decoder_state.shape}")
 print(f"Encoder states shape: {encoder_states.shape}")
@@ -817,7 +817,7 @@ attention_matrix = np.array([
 
 visualize_attention_text(source, target, attention_matrix)
 print("Observation: The model learns a roughly diagonal pattern,")
-print("but it's NOT perfectly diagonal — because word order differs")
+print("but it's NOT perfectly diagonal  because word order differs")
 print("between English and French. The attention mechanism learns")
 print("to handle this automatically!")
 ```
@@ -900,7 +900,7 @@ class LuongAttention:
             self.W = np.random.randn(2 * hidden_size, hidden_size) * 0.01
             self.v = np.random.randn(hidden_size) * 0.01
 
-        # No learnable parameters for 'dot' — it's purely based on
+        # No learnable parameters for 'dot'  it's purely based on
         # the raw similarity between query and key vectors
 
         self.last_weights = None
@@ -923,7 +923,7 @@ class LuongAttention:
         """
         if self.method == 'dot':
             # score(s, h) = s · h
-            # Simply the dot product — measures raw cosine-like similarity
+            # Simply the dot product  measures raw cosine-like similarity
             # Requires query and key to have the same dimension
             scores = np.dot(keys, query)  # (seq_len, hidden) @ (hidden,) = (seq_len,)
 
@@ -1168,7 +1168,7 @@ print(f"Softmax:       {softmax(medium_scores)}")
 print(f"Max weight:    {softmax(medium_scores).max():.4f}")
 print("-> Getting peaky")
 
-# Large scores (almost one-hot — gradient vanishes!)
+# Large scores (almost one-hot  gradient vanishes!)
 large_scores = np.array([10.0, 20.0, 30.0, 40.0])
 print(f"\nLarge scores: {large_scores}")
 print(f"Softmax:      {softmax(large_scores)}")
@@ -1224,11 +1224,11 @@ def scaled_dot_product_attention(Q, K, V, mask=None):
     Parameters:
     -----------
     Q : np.ndarray, shape (batch_size, seq_len_q, d_k)
-        Queries — what each position is looking for.
+        Queries  what each position is looking for.
     K : np.ndarray, shape (batch_size, seq_len_k, d_k)
-        Keys — what each source position offers for matching.
+        Keys  what each source position offers for matching.
     V : np.ndarray, shape (batch_size, seq_len_k, d_v)
-        Values — the actual content at each source position.
+        Values  the actual content at each source position.
     mask : np.ndarray, shape (batch_size, seq_len_q, seq_len_k), optional
         Mask where 0 means "do not attend to this position".
         Used for causal (autoregressive) masking.
@@ -1236,9 +1236,9 @@ def scaled_dot_product_attention(Q, K, V, mask=None):
     Returns:
     --------
     output : np.ndarray, shape (batch_size, seq_len_q, d_v)
-        The attention output — weighted sum of values for each query.
+        The attention output  weighted sum of values for each query.
     weights : np.ndarray, shape (batch_size, seq_len_q, seq_len_k)
-        Attention weights — how much each query attended to each key.
+        Attention weights  how much each query attended to each key.
     """
     d_k = Q.shape[-1]
 
@@ -1255,7 +1255,7 @@ def scaled_dot_product_attention(Q, K, V, mask=None):
         scores = np.where(mask == 0, -1e9, scores)
 
     # Step 4: Softmax to get attention weights
-    # Each row sums to 1 — it's a probability distribution over source positions
+    # Each row sums to 1  it's a probability distribution over source positions
     weights = softmax(scores, axis=-1)
 
     # Step 5: Compute weighted sum of values
@@ -1285,7 +1285,7 @@ Q = np.random.randn(batch_size, seq_len, d_k) * 0.5
 K = np.random.randn(batch_size, seq_len, d_k) * 0.5
 V = np.random.randn(batch_size, seq_len, d_v) * 0.5
 
-print("Scaled Dot-Product Attention — Step by Step")
+print("Scaled Dot-Product Attention  Step by Step")
 print("=" * 65)
 print(f"Sequence: {' '.join(words)}")
 print(f"d_k = {d_k}, √d_k = {np.sqrt(d_k):.4f}")
@@ -1327,7 +1327,7 @@ print("where the weights reflect how relevant each position is.")
 
 ### The Causal Mask: Preventing the Model from Cheating
 
-In autoregressive language models (like GPT), the model generates text one token at a time, left to right. When predicting the 5th token, it should only be able to see tokens 1-4 — not token 5 or later (that would be cheating!).
+In autoregressive language models (like GPT), the model generates text one token at a time, left to right. When predicting the 5th token, it should only be able to see tokens 1-4  not token 5 or later (that would be cheating!).
 
 The **causal mask** (also called **look-ahead mask**) enforces this constraint:
 
@@ -1400,7 +1400,7 @@ for i, word in enumerate(words):
     row = weights_masked[0, i]
     print(f"  {word:>4s}: {' '.join(f'{v:>6.3f}' for v in row)}")
 
-print("\nNotice: Upper-right triangle is all zeros — future positions are blocked!")
+print("\nNotice: Upper-right triangle is all zeros  future positions are blocked!")
 print("Each row still sums to 1.0 (the available weights are redistributed).")
 ```
 
@@ -1496,13 +1496,13 @@ visualize_attention_matrix(weights_causal[0], words, "Causal Self-Attention (GPT
 
 A single attention head can focus on one type of relationship at a time. But language is rich with many simultaneous relationships:
 
-- **Syntactic relationships:** "The cat" — determiner + noun
-- **Semantic relationships:** "cat" and "animal" — meaning similarity
-- **Coreference:** "it" refers to "cat" — pronoun resolution
+- **Syntactic relationships:** "The cat"  determiner + noun
+- **Semantic relationships:** "cat" and "animal"  meaning similarity
+- **Coreference:** "it" refers to "cat"  pronoun resolution
 - **Positional:** adjacent words often relate to each other
-- **Long-range dependencies:** "The cat that the dog ... chased **ran**" — subject-verb agreement
+- **Long-range dependencies:** "The cat that the dog ... chased **ran**"  subject-verb agreement
 
-One attention head trying to capture all of these at once would be like trying to watch a soccer game through a keyhole — you'd see one thing at a time and miss the bigger picture.
+One attention head trying to capture all of these at once would be like trying to watch a soccer game through a keyhole  you'd see one thing at a time and miss the bigger picture.
 
 **Multi-head attention** solves this by running **multiple attention computations in parallel**, each with its own learned projection. Each "head" can specialize in a different type of relationship.
 
@@ -1657,7 +1657,7 @@ class MultiHeadAttention:
         scale = np.sqrt(2.0 / d_model)
 
         # Combined projection matrices (more efficient than separate per-head matrices)
-        # Shape: (d_model, d_model) — conceptually h matrices of (d_model, d_k) stacked
+        # Shape: (d_model, d_model)  conceptually h matrices of (d_model, d_k) stacked
         self.W_Q = np.random.randn(d_model, d_model) * scale
         self.W_K = np.random.randn(d_model, d_model) * scale
         self.W_V = np.random.randn(d_model, d_model) * scale
@@ -1877,7 +1877,7 @@ def demonstrate_head_specialization():
 demonstrate_head_specialization()
 ```
 
-> **Key Insight:** Multi-head attention achieves **ensemble-like** behavior within a single layer. Each head is like a different "expert" that focuses on a different aspect of the input. The final output combines all perspectives through the learned projection `W_O`. This is one reason transformers are so powerful — they capture multiple types of relationships simultaneously.
+> **Key Insight:** Multi-head attention achieves **ensemble-like** behavior within a single layer. Each head is like a different "expert" that focuses on a different aspect of the input. The final output combines all perspectives through the learned projection `W_O`. This is one reason transformers are so powerful  they capture multiple types of relationships simultaneously.
 
 ---
 
@@ -1885,7 +1885,7 @@ demonstrate_head_specialization()
 
 ### The Key Innovation
 
-In the attention mechanisms we've seen so far (Bahdanau, Luong), the query comes from the **decoder** and the keys/values come from the **encoder**. This is called **cross-attention** — two different sequences interact.
+In the attention mechanisms we've seen so far (Bahdanau, Luong), the query comes from the **decoder** and the keys/values come from the **encoder**. This is called **cross-attention**  two different sequences interact.
 
 **Self-attention** is different: the queries, keys, AND values all come from the **same sequence**. Each token attends to every other token in the same sequence (including itself).
 
@@ -2106,7 +2106,7 @@ graph LR
     style S8 fill:#4CAF50,stroke:#333,color:#fff
 ```
 
-In an RNN, for token 1 to influence token 8, the signal must pass through 7 intermediate states. At each step, information is mixed, transformed, and potentially lost. With self-attention, token 1 has a **direct** connection to token 8 — the information path is just one step.
+In an RNN, for token 1 to influence token 8, the signal must pass through 7 intermediate states. At each step, information is mixed, transformed, and potentially lost. With self-attention, token 1 has a **direct** connection to token 8  the information path is just one step.
 
 This is why transformers handle long-range dependencies so much better than RNNs, and why they've completely replaced RNNs for most NLP tasks.
 
@@ -2175,7 +2175,7 @@ W_Q = np.random.randn(d_model, d_k) * 0.1
 W_K = np.random.randn(d_model, d_k) * 0.1
 W_V = np.random.randn(d_model, d_k) * 0.1
 
-# Self-attention (no mask — bidirectional, like BERT)
+# Self-attention (no mask  bidirectional, like BERT)
 output, weights = self_attention(x, W_Q, W_K, W_V)
 
 print("Self-Attention Demo")
@@ -2215,7 +2215,7 @@ for i, word in enumerate(words):
 
 ### Production-Quality Multi-Head Attention
 
-Now let's implement multi-head attention in PyTorch — the framework used to train most modern LLMs. This implementation follows the same logic as our NumPy version but uses PyTorch's optimized operations and automatic differentiation.
+Now let's implement multi-head attention in PyTorch  the framework used to train most modern LLMs. This implementation follows the same logic as our NumPy version but uses PyTorch's optimized operations and automatic differentiation.
 
 ```python
 import torch
@@ -2546,7 +2546,7 @@ result = database["user_456"]
 # Returns EXACTLY one entry: {"name": "Bob", "role": "user"}
 ```
 
-This is **hard** memory access — you get exactly one result, the one that matches exactly.
+This is **hard** memory access  you get exactly one result, the one that matches exactly.
 
 Now think about attention:
 
@@ -2566,7 +2566,7 @@ weights = [0.05, 0.85, 0.10]  # user_456 matches best, but not exactly
 result = 0.05 * alice_data + 0.85 * bob_data + 0.10 * charlie_data
 ```
 
-This is **soft** memory access — you get a blended result, weighted by similarity.
+This is **soft** memory access  you get a blended result, weighted by similarity.
 
 ```mermaid
 graph TB
@@ -2769,7 +2769,7 @@ graph TB
     style AM fill:#9C27B0,stroke:#333,color:#fff
 ```
 
-> **The Throughline:** Every memory system in AI — from attention within a transformer, to KV caches, to vector databases, to RAG pipelines — follows the same Query-Key-Value pattern. The query asks "what do I need?", the keys identify relevant information, and the values provide it. Understanding attention deeply means understanding ALL of these systems at their core.
+> **The Throughline:** Every memory system in AI  from attention within a transformer, to KV caches, to vector databases, to RAG pipelines  follows the same Query-Key-Value pattern. The query asks "what do I need?", the keys identify relevant information, and the values provide it. Understanding attention deeply means understanding ALL of these systems at their core.
 
 ---
 
@@ -2779,14 +2779,14 @@ graph TB
 
 During autoregressive text generation (like ChatGPT producing a response), the model generates one token at a time. At each step, it runs attention over **all** previous tokens.
 
-Here's the problem: when generating token 100, the model computes keys and values for tokens 1-99 — **even though it already computed them when generating tokens 2 through 99**.
+Here's the problem: when generating token 100, the model computes keys and values for tokens 1-99  **even though it already computed them when generating tokens 2 through 99**.
 
 ```
 Generating token 1: Compute K₁, V₁                          (1 K,V pair)
-Generating token 2: Compute K₁, V₁, K₂, V₂                  (2 K,V pairs — K₁,V₁ recomputed!)
-Generating token 3: Compute K₁, V₁, K₂, V₂, K₃, V₃          (3 K,V pairs — K₁,V₁,K₂,V₂ recomputed!)
+Generating token 2: Compute K₁, V₁, K₂, V₂                  (2 K,V pairs  K₁,V₁ recomputed!)
+Generating token 3: Compute K₁, V₁, K₂, V₂, K₃, V₃          (3 K,V pairs  K₁,V₁,K₂,V₂ recomputed!)
 ...
-Generating token n: Compute K₁...Kₙ, V₁...Vₙ                (n K,V pairs — massive waste!)
+Generating token n: Compute K₁...Kₙ, V₁...Vₙ                (n K,V pairs  massive waste!)
 ```
 
 Without caching, generating `n` tokens requires `O(n²)` Key-Value computations. With caching, it's only `O(n)`.
@@ -2854,7 +2854,7 @@ class KVCache:
             All cached values + new values.
         """
         if self.key_cache is None:
-            # First token — initialize cache
+            # First token  initialize cache
             self.key_cache = new_keys
             self.value_cache = new_values
         else:
@@ -2945,7 +2945,7 @@ class CachedMultiHeadAttention:
         # During cached generation: seq_q=1, seq_k=total_len
         # The new token can attend to all cached tokens + itself
         if seq_q == 1:
-            # Single new token — can attend to everything (all are in the past)
+            # Single new token  can attend to everything (all are in the past)
             pass
         else:
             mask = np.tril(np.ones((seq_q, seq_k)))
@@ -3110,7 +3110,7 @@ for model in models:
 print()
 print("INSIGHT: For GPT-4-scale models, the KV cache alone can use")
 print("~150+ GB of GPU memory at max sequence length!")
-print("This is WHY context length is limited — it's a memory constraint.")
+print("This is WHY context length is limited  it's a memory constraint.")
 print("(More on this in Part 5: Context Windows and Memory Management)")
 
 # Show how KV cache grows with sequence length
@@ -3226,7 +3226,7 @@ print(f"Pre-allocated cache: {cache}")
 print(f"Memory reserved: {cache.memory_bytes / 1e6:.1f} MB")
 ```
 
-> **Why This Matters:** The KV cache is the single biggest memory bottleneck during LLM inference. Every optimization technique for longer context windows — from sliding window attention to Grouped Query Attention (GQA) to paged attention (vLLM) — is essentially about making the KV cache more efficient. We'll dive deep into these techniques in Part 5.
+> **Why This Matters:** The KV cache is the single biggest memory bottleneck during LLM inference. Every optimization technique for longer context windows  from sliding window attention to Grouped Query Attention (GQA) to paged attention (vLLM)  is essentially about making the KV cache more efficient. We'll dive deep into these techniques in Part 5.
 
 ---
 
@@ -3483,7 +3483,7 @@ def plot_attention_matplotlib(tokens, attention_weights, head_labels=None, title
         import matplotlib.pyplot as plt
         import matplotlib.colors as mcolors
     except ImportError:
-        print("matplotlib not available — skipping plot.")
+        print("matplotlib not available  skipping plot.")
         print("Install with: pip install matplotlib")
         return
 
@@ -3574,9 +3574,9 @@ The fundamental computational cost of self-attention is **quadratic** in the seq
 For a sequence of length `n` with dimension `d`:
 
 ```
-Q: (n, d)    — n queries, each of dimension d
-K: (n, d)    — n keys, each of dimension d
-V: (n, d)    — n values, each of dimension d
+Q: (n, d)     n queries, each of dimension d
+K: (n, d)     n keys, each of dimension d
+V: (n, d)     n values, each of dimension d
 
 Step 1: Q @ K^T  → (n, d) × (d, n) = (n, n)    Cost: O(n² × d)
 Step 2: softmax   → (n, n)                       Cost: O(n²)
@@ -3718,7 +3718,7 @@ def memory_analysis():
     print("-" * 75)
 
     for n in [1024, 4096, 16384, 65536, 131072]:
-        # Attention score matrix: (batch, heads, n, n) — but computed per-head
+        # Attention score matrix: (batch, heads, n, n)  but computed per-head
         # During computation, we need (n, n) per head
         attn_mem = num_heads * n * n * bytes_per_element
 
@@ -3966,7 +3966,7 @@ print(f"\nText embeddings shape: {text_embeddings.shape}")
 print(f"Image features shape: {image_features.shape}")
 print(f"Cross-attention output shape: {output_img.shape}")
 print(f"\nThis is how Stable Diffusion knows WHERE in the image")
-print(f"to place 'red', 'car', and 'beach' — each image patch")
+print(f"to place 'red', 'car', and 'beach'  each image patch")
 print(f"attends to the relevant text tokens!")
 
 # Show which text tokens the first few image patches attend to
@@ -3985,7 +3985,7 @@ for patch in range(4):
 | **Source of Q** | Same sequence | Sequence A |
 | **Source of K, V** | Same sequence | Sequence B |
 | **Q and K/V dimensions** | Must match (same d_model) | Can differ (d_query != d_kv) |
-| **Attention matrix shape** | (n, n) — square | (n_q, n_kv) — rectangular |
+| **Attention matrix shape** | (n, n)  square | (n_q, n_kv)  rectangular |
 | **Use case** | Token interactions within a sequence | Connecting two different sequences |
 | **Examples** | BERT, GPT self-attention | Translation, text-to-image |
 
@@ -4304,7 +4304,7 @@ for epoch in range(num_epochs):
             correct += 1
 
         # Very simple gradient approximation (numerical gradient)
-        # In practice, you'd use autograd — this is for demonstration
+        # In practice, you'd use autograd  this is for demonstration
         eps = 1e-4
 
         # Update embedding for active tokens only
@@ -4354,7 +4354,7 @@ This project demonstrates several key concepts:
 
 1. **Attention as feature selection:** The attention pooling weights show which words the model considers most important for its prediction. For positive reviews, sentiment words like "great", "wonderful", "brilliant" get high weights. For negative reviews, words like "terrible", "awful", "boring" are highlighted.
 
-2. **Self-attention as context building:** Before the pooling step, self-attention lets each word gather context from other words. The word "not" before "great" would cause "great" to have a different representation than "great" alone — self-attention captures this.
+2. **Self-attention as context building:** Before the pooling step, self-attention lets each word gather context from other words. The word "not" before "great" would cause "great" to have a different representation than "great" alone  self-attention captures this.
 
 3. **Interpretability:** Unlike a black-box model, we can see *exactly* what the model is paying attention to. This is one of the most powerful properties of attention mechanisms.
 
@@ -4428,7 +4428,7 @@ scores = torch.matmul(Q, K.transpose(-2, -1))
 
 **The Problem They Solved:**
 
-RNNs were sequential — you couldn't process token 5 until tokens 1-4 were done. This made training slow and limited parallelism. Could you build a model using ONLY attention, with no recurrence at all?
+RNNs were sequential  you couldn't process token 5 until tokens 1-4 were done. This made training slow and limited parallelism. Could you build a model using ONLY attention, with no recurrence at all?
 
 **The Key Ideas:**
 
@@ -4454,9 +4454,9 @@ output = feed_forward(output)     # Process each token independently
 # Stack this N times (N = 12 for small, 96+ for large models)
 ```
 
-**Impact:** This paper changed everything. It introduced the architecture that powers ALL modern large language models. The title — "Attention Is All You Need" — turned out to be one of the most prescient claims in AI history.
+**Impact:** This paper changed everything. It introduced the architecture that powers ALL modern large language models. The title  "Attention Is All You Need"  turned out to be one of the most prescient claims in AI history.
 
-> **We'll implement a complete transformer from scratch in Part 4.** This is just a preview — but notice how every concept from this Part (scaled dot-product attention, multi-head attention, self-attention, the KV framework) feeds directly into the transformer.
+> **We'll implement a complete transformer from scratch in Part 4.** This is just a preview  but notice how every concept from this Part (scaled dot-product attention, multi-head attention, self-attention, the KV framework) feeds directly into the transformer.
 
 ---
 
@@ -4465,20 +4465,20 @@ output = feed_forward(output)     # Process each token independently
 | Term | Definition | First Introduced |
 |------|-----------|-----------------|
 | **Attention** | A mechanism that lets a model focus on relevant parts of the input when producing each output | Bahdanau et al., 2014 |
-| **Query (Q)** | A vector representing "what am I looking for?" — comes from the current position being processed | Vaswani et al., 2017 |
-| **Key (K)** | A vector representing "what do I contain?" — used for matching against queries | Vaswani et al., 2017 |
-| **Value (V)** | A vector representing "what information do I have?" — the actual content retrieved | Vaswani et al., 2017 |
+| **Query (Q)** | A vector representing "what am I looking for?"  comes from the current position being processed | Vaswani et al., 2017 |
+| **Key (K)** | A vector representing "what do I contain?"  used for matching against queries | Vaswani et al., 2017 |
+| **Value (V)** | A vector representing "what information do I have?"  the actual content retrieved | Vaswani et al., 2017 |
 | **Attention Weights** | A probability distribution over source positions, indicating how much to attend to each | Bahdanau et al., 2014 |
 | **Attention Score** | Raw (pre-softmax) similarity between a query and a key | General concept |
-| **Additive Attention** | Scoring using `v · tanh(W_q·q + W_k·k)` — adds projected query and key | Bahdanau et al., 2014 |
-| **Dot-Product Attention** | Scoring using `q · k` — direct dot product | Luong et al., 2015 |
-| **Scaled Dot-Product Attention** | Scoring using `q · k / √d_k` — scaled to prevent softmax saturation | Vaswani et al., 2017 |
+| **Additive Attention** | Scoring using `v · tanh(W_q·q + W_k·k)`  adds projected query and key | Bahdanau et al., 2014 |
+| **Dot-Product Attention** | Scoring using `q · k`  direct dot product | Luong et al., 2015 |
+| **Scaled Dot-Product Attention** | Scoring using `q · k / √d_k`  scaled to prevent softmax saturation | Vaswani et al., 2017 |
 | **Multi-Head Attention** | Running multiple attention operations in parallel, each on a subspace of the representation | Vaswani et al., 2017 |
-| **Self-Attention** | Attention where Q, K, V all come from the same sequence — each token attends to all others | Vaswani et al., 2017 |
+| **Self-Attention** | Attention where Q, K, V all come from the same sequence  each token attends to all others | Vaswani et al., 2017 |
 | **Cross-Attention** | Attention where Q comes from one sequence and K, V come from another | General concept |
 | **Causal Mask** | A lower-triangular mask that prevents tokens from attending to future positions | Standard in autoregressive models |
 | **Padding Mask** | A mask that prevents attention to padding tokens in batched variable-length sequences | Standard practice |
-| **Context Vector** | The output of attention — a weighted sum of values | Bahdanau et al., 2014 |
+| **Context Vector** | The output of attention  a weighted sum of values | Bahdanau et al., 2014 |
 | **KV Cache** | Stored key and value tensors from previous tokens, reused during autoregressive generation | Inference optimization |
 | **Attention Head** | One of the parallel attention computations in multi-head attention | Vaswani et al., 2017 |
 | **d_model** | Total model dimension (e.g., 768, 4096) | Vaswani et al., 2017 |
@@ -4556,7 +4556,7 @@ Attention gave us:
 
 This memory paradigm is the foundation for everything that follows in this series.
 
-### What's Next: Part 4 — Transformers and Context Windows
+### What's Next: Part 4  Transformers and Context Windows
 
 In Part 4, we'll take everything from this part and assemble it into a complete **transformer architecture**:
 

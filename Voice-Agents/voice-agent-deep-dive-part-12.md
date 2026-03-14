@@ -1,21 +1,21 @@
-# Voice Agents Deep Dive — Part 12: Voice Agent Frameworks — LiveKit, Pipecat, and Vocode
+# Voice Agents Deep Dive  Part 12: Voice Agent Frameworks  LiveKit, Pipecat, and Vocode
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** 12 of 19 (Voice Agent Frameworks)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~45 minutes
 
 ---
 
-In Part 11, we built voice agents with persistent memory — agents that remember users across sessions, extract facts from conversation, and retrieve relevant context using vector search. Our agents are now genuinely intelligent.
+In Part 11, we built voice agents with persistent memory  agents that remember users across sessions, extract facts from conversation, and retrieve relevant context using vector search. Our agents are now genuinely intelligent.
 
 But we've been building everything from scratch: the WebSocket server, the audio pipeline, the session management, the streaming logic. In production, teams don't do this. They use frameworks.
 
 Today we explore the three major open-source voice agent frameworks, compare them honestly, and build the same agent in each so you can make an informed choice.
 
-> **When to use a framework**: If your team is building a product, use a framework. If you're learning or need exotic customizations that frameworks don't support, build from scratch. The frameworks in this part represent thousands of engineering hours — don't reinvent them without good reason.
+> **When to use a framework**: If your team is building a product, use a framework. If you're learning or need exotic customizations that frameworks don't support, build from scratch. The frameworks in this part represent thousands of engineering hours  don't reinvent them without good reason.
 
 ---
 
@@ -69,7 +69,7 @@ LiveKit is a real-time communication infrastructure company. Their Agents framew
 
 ```python
 """
-livekit_voice_agent.py — Complete LiveKit voice agent example.
+livekit_voice_agent.py  Complete LiveKit voice agent example.
 
 Install: pip install livekit-agents livekit-plugins-openai livekit-plugins-deepgram
 """
@@ -129,7 +129,7 @@ async def entrypoint(ctx: JobContext):
             text=(
                 "You are a helpful voice assistant. "
                 "Keep responses brief and conversational. "
-                "Avoid using markdown or lists — speak naturally."
+                "Avoid using markdown or lists  speak naturally."
             ),
         ),
     )
@@ -148,7 +148,7 @@ async def entrypoint(ctx: JobContext):
 
 
 if __name__ == "__main__":
-    # Run the worker — it will listen for new rooms to join
+    # Run the worker  it will listen for new rooms to join
     cli.run_app(
         WorkerOptions(
             entrypoint_fnc=entrypoint,
@@ -161,7 +161,7 @@ if __name__ == "__main__":
 
 ```python
 """
-livekit_with_tools.py — LiveKit agent with function calling.
+livekit_with_tools.py  LiveKit agent with function calling.
 """
 import asyncio
 import json
@@ -238,7 +238,7 @@ async def entrypoint(ctx: JobContext):
 
 ```python
 """
-livekit_conference.py — Multi-participant room with an AI agent.
+livekit_conference.py  Multi-participant room with an AI agent.
 """
 import asyncio
 import logging
@@ -290,7 +290,7 @@ async def entrypoint(ctx: JobContext):
 
 ## Section 3: Pipecat
 
-Pipecat takes a different philosophy: everything is a **Frame** flowing through a **Pipeline** of **Processors**. This gives you maximum flexibility — you can insert any processing step anywhere.
+Pipecat takes a different philosophy: everything is a **Frame** flowing through a **Pipeline** of **Processors**. This gives you maximum flexibility  you can insert any processing step anywhere.
 
 ```mermaid
 graph LR
@@ -309,7 +309,7 @@ graph LR
 
 ```python
 """
-pipecat_concepts.py — Understanding Pipecat's frame model.
+pipecat_concepts.py  Understanding Pipecat's frame model.
 """
 from dataclasses import dataclass
 from typing import Optional
@@ -378,7 +378,7 @@ class BaseProcessor:
 
 ```python
 """
-pipecat_agent.py — Full Pipecat voice agent.
+pipecat_agent.py  Full Pipecat voice agent.
 
 Install: pip install pipecat-ai pipecat-ai[openai] pipecat-ai[deepgram]
 """
@@ -440,7 +440,7 @@ async def run_voice_agent():
             "content": (
                 "You are a helpful voice assistant. "
                 "Be conversational and concise. "
-                "Never use markdown — speak naturally."
+                "Never use markdown  speak naturally."
             ),
         }
     ]
@@ -486,7 +486,7 @@ The power of Pipecat is adding custom processors. Here's a sentiment analysis pr
 
 ```python
 """
-pipecat_custom_processor.py — Custom sentiment processor for Pipecat.
+pipecat_custom_processor.py  Custom sentiment processor for Pipecat.
 """
 from pipecat.processors.frame_processor import FrameProcessor
 from pipecat.frames.frames import (
@@ -576,11 +576,11 @@ class MemoryInjectionProcessor(FrameProcessor):
 
 ## Section 4: Vocode
 
-Vocode was one of the first open-source voice agent frameworks and has deep telephony integration. It takes a higher-level approach — you define a conversation, not a pipeline.
+Vocode was one of the first open-source voice agent frameworks and has deep telephony integration. It takes a higher-level approach  you define a conversation, not a pipeline.
 
 ```python
 """
-vocode_agent.py — Complete Vocode voice agent with telephony.
+vocode_agent.py  Complete Vocode voice agent with telephony.
 
 Install: pip install vocode
 """
@@ -666,7 +666,7 @@ if __name__ == "__main__":
 
 ```python
 """
-vocode_outbound.py — Make outbound calls with Vocode.
+vocode_outbound.py  Make outbound calls with Vocode.
 """
 import asyncio
 from vocode.streaming.telephony.outbound_call import OutboundCall
@@ -721,11 +721,11 @@ async def make_outbound_call(phone_number: str, customer_name: str):
 | **Bland AI** | Per minute | Pathways | Limited | Yes | No | No |
 | **ElevenLabs Conversational** | Per minute | Yes | Yes (voice library) | Via Twilio | Yes | No |
 
-### Retell AI — Quick Start
+### Retell AI  Quick Start
 
 ```python
 """
-retell_agent.py — Build a voice agent with Retell AI's API.
+retell_agent.py  Build a voice agent with Retell AI's API.
 """
 import httpx
 import asyncio
@@ -774,7 +774,7 @@ async def retell_webhook(request: Request):
         return JSONResponse({"response": "Hello! How can I help you today?"})
 
     elif event == "agent_response":
-        # Custom LLM endpoint — generate response
+        # Custom LLM endpoint  generate response
         transcript = data.get("transcript", [])
         last_user_message = ""
         for msg in reversed(transcript):
@@ -795,11 +795,11 @@ async def retell_webhook(request: Request):
     return JSONResponse({"status": "unknown event"})
 ```
 
-### Vapi — Custom LLM Integration
+### Vapi  Custom LLM Integration
 
 ```python
 """
-vapi_custom_llm.py — Vapi with a custom LLM server.
+vapi_custom_llm.py  Vapi with a custom LLM server.
 """
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
@@ -862,7 +862,7 @@ To make the comparison concrete, here's a simple FAQ agent built in all three:
 
 ```python
 """
-faq_livekit.py — FAQ agent with LiveKit.
+faq_livekit.py  FAQ agent with LiveKit.
 """
 import asyncio
 from livekit.agents import AutoSubscribe, JobContext, WorkerOptions, cli, llm
@@ -908,7 +908,7 @@ async def entrypoint(ctx: JobContext):
 
 ```python
 """
-faq_pipecat.py — FAQ agent with Pipecat.
+faq_pipecat.py  FAQ agent with Pipecat.
 """
 import asyncio
 from pipecat.pipeline.pipeline import Pipeline
@@ -952,7 +952,7 @@ async def run_pipecat_faq():
 
 ```python
 """
-faq_vocode.py — FAQ agent with Vocode (telephony).
+faq_vocode.py  FAQ agent with Vocode (telephony).
 """
 from vocode.streaming.models.agent import ChatGPTAgentConfig
 from vocode.streaming.models.message import BaseMessage
@@ -1015,7 +1015,7 @@ When you need to switch frameworks, the extract-adapter pattern minimizes rework
 
 ```python
 """
-framework_adapter.py — Framework-agnostic voice agent core.
+framework_adapter.py  Framework-agnostic voice agent core.
 """
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -1107,13 +1107,13 @@ class PipecatAdapter:
 
 ## Section 9: Observability and Debugging in Each Framework
 
-Frameworks abstract away complexity — but when something goes wrong, you need to see inside them. Here's how to instrument each framework for production observability.
+Frameworks abstract away complexity  but when something goes wrong, you need to see inside them. Here's how to instrument each framework for production observability.
 
 ### LiveKit Events and Hooks
 
 ```python
 """
-livekit_observability.py — Full observability setup for a LiveKit agent.
+livekit_observability.py  Full observability setup for a LiveKit agent.
 """
 import asyncio
 import logging
@@ -1225,7 +1225,7 @@ Pipecat's frame model makes it easy to add a debug processor anywhere in the pip
 
 ```python
 """
-pipecat_debug.py — Debug processor for Pipecat pipelines.
+pipecat_debug.py  Debug processor for Pipecat pipelines.
 """
 import logging
 import time
@@ -1277,7 +1277,7 @@ class PipelineDebugProcessor(FrameProcessor):
         if isinstance(frame, AudioRawFrame):
             if self.log_audio:
                 logger.debug(f"[{self.label}] AudioRawFrame: {len(frame.audio)} bytes")
-            # Don't log audio by default — too noisy
+            # Don't log audio by default  too noisy
 
         elif isinstance(frame, UserStartedSpeakingFrame):
             logger.info(f"[{self.label}] >>> User started speaking")
@@ -1363,7 +1363,7 @@ class LatencyMeasurementProcessor(FrameProcessor):
 ```
 Issue: Agent cuts off mid-sentence
   Cause:  VAD `stop_secs` too low (0.3s = hair-trigger, 0.8s = too slow)
-  Fix:    SileroVADAnalyzer(params=VADParams(stop_secs=0.5)) — start here
+  Fix:    SileroVADAnalyzer(params=VADParams(stop_secs=0.5))  start here
   Rule:   If users have accents, go 0.6-0.7s. Fast conversational: 0.4-0.5s
 
 Issue: Agent speaks over the user
@@ -1402,7 +1402,7 @@ ElevenLabs launched their own conversational AI platform in 2024. It offers a ma
 
 ```python
 """
-elevenlabs_conversational.py — ElevenLabs Conversational AI integration.
+elevenlabs_conversational.py  ElevenLabs Conversational AI integration.
 
 ElevenLabs provides a WebSocket-based conversational AI API that handles
 the full pipeline: STT → LLM → ElevenLabs TTS, with their premium voices.
@@ -1506,7 +1506,7 @@ async def run_elevenlabs_conversation(
                 msg_type = data.get("type")
 
                 if msg_type == "audio":
-                    # Agent speaking — play this audio
+                    # Agent speaking  play this audio
                     audio_bytes = base64.b64decode(data["audio_event"]["audio_base_64"])
                     yield audio_bytes
 
@@ -1556,11 +1556,11 @@ async def run_elevenlabs_conversation(
 
 ## Section 11: Production Configuration Management
 
-Production voice agents need proper configuration — not hardcoded API keys.
+Production voice agents need proper configuration  not hardcoded API keys.
 
 ```python
 """
-config.py — Production configuration for voice agent frameworks.
+config.py  Production configuration for voice agent frameworks.
 """
 import os
 from dataclasses import dataclass, field
@@ -1593,7 +1593,7 @@ class TTSEngine(str, Enum):
 class VoiceAgentConfig:
     """
     Complete configuration for a voice agent framework deployment.
-    Loaded from environment variables — never hardcode secrets.
+    Loaded from environment variables  never hardcode secrets.
     """
 
     # STT
@@ -1740,7 +1740,7 @@ Testing voice agents without running real audio is possible with the right appro
 
 ```python
 """
-test_pipecat_processors.py — Unit tests for custom Pipecat processors.
+test_pipecat_processors.py  Unit tests for custom Pipecat processors.
 """
 import pytest
 import asyncio
@@ -1903,7 +1903,7 @@ class TestVoiceAgentCore:
 
 ```python
 """
-integration_test.py — Integration test for a full agent pipeline
+integration_test.py  Integration test for a full agent pipeline
 without real audio hardware.
 """
 import asyncio
@@ -2023,7 +2023,7 @@ class TestAgentPipelineIntegration:
 | **SileroVAD** | Open-source voice activity detection model from Silero AI |
 | **Managed platform** | A SaaS voice agent service (Retell, Vapi) that handles infrastructure |
 | **Self-hosted** | Running voice agent infrastructure on your own servers |
-| **TTFA** | Time to First Audio — key latency metric for voice agents |
+| **TTFA** | Time to First Audio  key latency metric for voice agents |
 | **prewarm** | Loading models before a call arrives to reduce first-call latency |
 | **Interruption** | User speaking while agent is still talking (barge-in) |
 | **Frame model** | Pipecat's architecture where all data flows as typed Frame objects |
@@ -2034,15 +2034,15 @@ class TestAgentPipelineIntegration:
 
 In **Part 13: Phone Call Agents**, we go deep on the specifics of handling real phone calls:
 
-- **Twilio Media Streams** — raw audio over WebSocket for real-time processing
-- **TwiML** — XML-based call control for building complex IVR flows
-- **Outbound dialing** — campaigns, answering machine detection, do-not-call compliance
-- **DTMF handling** — keypad input as a fallback when speech fails
-- **Warm and cold transfers** — handing calls off to human agents with context
+- **Twilio Media Streams**  raw audio over WebSocket for real-time processing
+- **TwiML**  XML-based call control for building complex IVR flows
+- **Outbound dialing**  campaigns, answering machine detection, do-not-call compliance
+- **DTMF handling**  keypad input as a fallback when speech fails
+- **Warm and cold transfers**  handing calls off to human agents with context
 - **Full project**: Complete inbound + outbound phone agent
 
 By the end of Part 13, you'll have a working phone agent that can answer real calls.
 
 ---
 
-*Part 12 of 19 — Building Voice Agents: A Developer's Deep Dive*
+*Part 12 of 19  Building Voice Agents: A Developer's Deep Dive*

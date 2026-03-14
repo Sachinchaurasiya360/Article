@@ -1,8 +1,8 @@
-# Apache Kafka Deep Dive — Part 0: The Foundation You Need Before Going Deep
+# Apache Kafka Deep Dive  Part 0: The Foundation You Need Before Going Deep
 
 ---
 
-**Series:** Apache Kafka Deep Dive — From First Principles to Planet-Scale Event Streaming
+**Series:** Apache Kafka Deep Dive  From First Principles to Planet-Scale Event Streaming
 **Part:** 0 of 10 (Foundation)
 **Audience:** Engineers with 1-3 years of experience preparing for the deep dive, or senior engineers who want to refresh distributed systems fundamentals
 **Reading time:** ~45 minutes
@@ -11,7 +11,7 @@
 
 ## Why This Part Exists
 
-Part 1 of this series dives straight into the distributed commit log abstraction, sequential I/O vs. random I/O performance, zero-copy `sendfile()` transfers, page cache delegation, and the CAP theorem tradeoffs in unclean leader election. If you read sentences like "Kafka uses `sendfile()` to transfer data directly from page cache to NIC via scatter-gather DMA" or "ISR shrinkage under `acks=all` triggers `NotEnoughReplicasException`" and feel lost — this part is for you.
+Part 1 of this series dives straight into the distributed commit log abstraction, sequential I/O vs. random I/O performance, zero-copy `sendfile()` transfers, page cache delegation, and the CAP theorem tradeoffs in unclean leader election. If you read sentences like "Kafka uses `sendfile()` to transfer data directly from page cache to NIC via scatter-gather DMA" or "ISR shrinkage under `acks=all` triggers `NotEnoughReplicasException`" and feel lost  this part is for you.
 
 This is not a Kafka tutorial. You won't learn how to produce and consume messages here. Instead, this article builds the **systems and distributed computing foundation** that makes the rest of the series make sense. We'll cover:
 
@@ -19,7 +19,7 @@ This is not a Kafka tutorial. You won't learn how to produce and consume message
 - What "events" and "event-driven architecture" actually mean
 - How computers store data on disk and why access patterns matter enormously
 - How the operating system helps (and doesn't help) with I/O performance
-- What "distributed" really means — clusters, replication, consensus
+- What "distributed" really means  clusters, replication, consensus
 - How data survives crashes and hardware failure
 - What delivery guarantees (at-least-once, exactly-once) actually promise
 - The fundamental tradeoffs every distributed system faces
@@ -37,7 +37,7 @@ Before diving into the foundation, here's the full arc of this series. Each part
 
 | Part | Title | What You'll Learn |
 |------|-------|-------------------|
-| **0** | Foundation | Distributed systems, disk I/O, OS concepts, delivery semantics — you're reading it |
+| **0** | Foundation | Distributed systems, disk I/O, OS concepts, delivery semantics  you're reading it |
 | **1** | Why Kafka Exists | The log abstraction, sequential I/O, storage engine, pull vs. push, partitioning |
 | **2** | Architecture Internals | Brokers, the controller, KRaft, request handling, thread pools |
 | **3** | Replication Deep Dive | ISR, leader election, high watermark, rack-aware replication |
@@ -124,7 +124,7 @@ This is **point-to-point integration**. With 4 producers and 5 consumers, you ne
 - Retry logic
 - Monitoring for each connection
 
-When you add a new consumer (say, a machine learning pipeline), you have to modify every producer to send data to it. When you change a data format, you break every consumer. The system becomes a tangle of dependencies — fragile, slow to change, and impossible to debug.
+When you add a new consumer (say, a machine learning pipeline), you have to modify every producer to send data to it. When you change a data format, you break every consumer. The system becomes a tangle of dependencies  fragile, slow to change, and impossible to debug.
 
 ### 1.2 The Solution: Put a Central Log in the Middle
 
@@ -149,9 +149,9 @@ flowchart TD
 Now:
 - Producers don't know or care who consumes their data
 - Consumers don't know or care who produces the data
-- Adding a new consumer requires zero changes to producers — just start reading
+- Adding a new consumer requires zero changes to producers  just start reading
 - Data is written once, read many times
-- If a consumer is temporarily down, it catches up when it comes back — no data lost
+- If a consumer is temporarily down, it catches up when it comes back  no data lost
 
 This is what Kafka does. It's the **central nervous system** that connects all the parts of a modern data architecture. But to understand *how* it does this, you need several foundational concepts.
 
@@ -165,7 +165,7 @@ A **message** (also called an **event**, **record**, or **datum**) is a unit of 
 - A JSON object: `{"user_id": 42, "action": "click", "page": "/products/shoes"}`
 - A binary blob: serialized Protobuf or Avro data
 - A simple string: `"order-12345-completed"`
-- Anything, really — Kafka treats message values as opaque bytes
+- Anything, really  Kafka treats message values as opaque bytes
 
 What makes a message different from a database row or an API response is its **intent**: a message represents something that **happened**. It's a fact about the world at a point in time.
 
@@ -198,7 +198,7 @@ Different messaging systems organize messages differently:
 | **Topic (pub/sub)** | Messages are published to a topic. Multiple subscribers each receive a copy. Once delivered, messages are typically deleted. | RabbitMQ (exchanges), Google Pub/Sub |
 | **Log** | Messages are appended to an ordered, immutable log. Multiple consumers read independently from any position. Messages are retained by time or size policy, not by consumption. | **Kafka**, Apache Pulsar, Amazon Kinesis |
 
-Kafka uses the **log** model. This distinction — that messages are *retained*, not *deleted after consumption* — is the single most important thing that separates Kafka from traditional message queues. Part 1 explores why this matters deeply.
+Kafka uses the **log** model. This distinction  that messages are *retained*, not *deleted after consumption*  is the single most important thing that separates Kafka from traditional message queues. Part 1 explores why this matters deeply.
 
 ---
 
@@ -219,9 +219,9 @@ Events are different from **commands** (requests to do something) and **queries*
 
 | Type | Example | Nature |
 |---|---|---|
-| **Command** | "Place order for user 42" | A request — might succeed or fail |
-| **Query** | "What is user 42's address?" | A question — returns current state |
-| **Event** | "Order 12345 was placed by user 42" | A fact — already happened, immutable |
+| **Command** | "Place order for user 42" | A request  might succeed or fail |
+| **Query** | "What is user 42's address?" | A question  returns current state |
+| **Event** | "Order 12345 was placed by user 42" | A fact  already happened, immutable |
 
 ### 3.2 Event-Driven Architecture
 
@@ -247,7 +247,7 @@ User clicks "Buy" → Order Service emits "OrderPlaced" event to Kafka
 ```
 
 The benefits:
-- **Loose coupling:** services don't call each other directly — they just emit and consume events
+- **Loose coupling:** services don't call each other directly  they just emit and consume events
 - **Resilience:** if one service is temporarily down, its events accumulate in Kafka and are processed when it recovers
 - **Scalability:** each service can be scaled independently
 - **Auditability:** the event log is a complete record of everything that happened
@@ -256,13 +256,13 @@ The benefits:
 
 **Event sourcing** takes this further: instead of storing the *current state* of an entity (e.g., "order status: shipped"), you store the *sequence of events* that produced that state ("OrderPlaced → PaymentCompleted → StockReserved → Shipped"). The current state can be reconstructed by replaying the events.
 
-Kafka's log retention makes it a natural fit for event sourcing — the log *is* the sequence of events. Part 1 discusses this when explaining why the log abstraction is more powerful than the queue abstraction.
+Kafka's log retention makes it a natural fit for event sourcing  the log *is* the sequence of events. Part 1 discusses this when explaining why the log abstraction is more powerful than the queue abstraction.
 
 ---
 
 ## 4. How Disks Work: The Foundation of Kafka's Performance Story
 
-Kafka stores all its data on disk — not in memory like Redis. This surprises many engineers who assume "disk = slow." Part 1 explains why Kafka is fast despite storing data on disk, but to understand that explanation, you need to understand how disks actually work.
+Kafka stores all its data on disk  not in memory like Redis. This surprises many engineers who assume "disk = slow." Part 1 explains why Kafka is fast despite storing data on disk, but to understand that explanation, you need to understand how disks actually work.
 
 ### 4.1 Hard Disk Drives (HDD): Mechanical Storage
 
@@ -271,9 +271,9 @@ A hard disk is literally a spinning metal platter with a magnetic surface. Data 
 To read data from a specific location, the drive must:
 1. **Seek:** Move the arm to the correct track (5-10 milliseconds)
 2. **Rotate:** Wait for the platter to spin to the correct sector (2-6 milliseconds for 7200 RPM)
-3. **Transfer:** Read the data (fast once positioned — 100-200 MB/s)
+3. **Transfer:** Read the data (fast once positioned  100-200 MB/s)
 
-The seek and rotation are the expensive parts. If you need to read data from many scattered locations (random I/O), you pay the seek + rotation penalty every time. But if you read data that's stored contiguously — one piece right after another — you only pay the seek/rotation cost once, and then the data streams off the platter at full speed (sequential I/O).
+The seek and rotation are the expensive parts. If you need to read data from many scattered locations (random I/O), you pay the seek + rotation penalty every time. But if you read data that's stored contiguously  one piece right after another  you only pay the seek/rotation cost once, and then the data streams off the platter at full speed (sequential I/O).
 
 ```
 Random I/O on HDD:
@@ -289,7 +289,7 @@ The difference is staggering: **sequential I/O on HDD is 100-200x faster than ra
 
 ### 4.2 Solid State Drives (SSD/NVMe): Electronic Storage
 
-SSDs have no moving parts. Data is stored in electronic flash memory chips. Random reads are dramatically faster than HDDs — microseconds instead of milliseconds.
+SSDs have no moving parts. Data is stored in electronic flash memory chips. Random reads are dramatically faster than HDDs  microseconds instead of milliseconds.
 
 But even on SSDs, sequential I/O is significantly faster than random I/O:
 
@@ -321,10 +321,10 @@ Part 1 frequently references the OS page cache, `sendfile()`, and kernel/user sp
 
 The operating system divides memory into two regions:
 
-- **Kernel space:** where the OS kernel runs — manages hardware, filesystems, network, memory
-- **User space:** where your applications run — including the Kafka broker (a Java process)
+- **Kernel space:** where the OS kernel runs  manages hardware, filesystems, network, memory
+- **User space:** where your applications run  including the Kafka broker (a Java process)
 
-Applications can't directly access hardware (disks, network cards). Instead, they make **system calls (syscalls)** — requests to the kernel to perform hardware operations on their behalf.
+Applications can't directly access hardware (disks, network cards). Instead, they make **system calls (syscalls)**  requests to the kernel to perform hardware operations on their behalf.
 
 ```
 Your application (user space):     "I want to read file X"
@@ -336,11 +336,11 @@ OS kernel (kernel space):          Reads from disk into kernel buffer
 Your application:                  Receives data in application buffer
 ```
 
-Each syscall involves a **context switch** — the CPU switches from running your application code to running kernel code, then back. This costs 1-10 microseconds. When you're processing millions of messages per second, the overhead of unnecessary syscalls and data copies adds up.
+Each syscall involves a **context switch**  the CPU switches from running your application code to running kernel code, then back. This costs 1-10 microseconds. When you're processing millions of messages per second, the overhead of unnecessary syscalls and data copies adds up.
 
 ### 5.2 Page Cache: The OS-Level Disk Cache
 
-When the OS reads data from disk, it doesn't just hand it to your application and forget about it. It keeps a copy in RAM, in an area called the **page cache**. If the same data is requested again, the OS serves it from RAM — no disk access needed.
+When the OS reads data from disk, it doesn't just hand it to your application and forget about it. It keeps a copy in RAM, in an area called the **page cache**. If the same data is requested again, the OS serves it from RAM  no disk access needed.
 
 Similarly, when your application writes data, it goes into the page cache first (in RAM), and the OS flushes it to disk later in the background.
 
@@ -350,10 +350,10 @@ flowchart TD
     PC["Page Cache<br/>(OS-managed RAM)"]
     DISK["Disk<br/>(SSD/HDD)"]
 
-    APP -->|"write() — data goes to page cache"| PC
+    APP -->|"write()  data goes to page cache"| PC
     PC -->|"OS flushes to disk later<br/>(or on fsync)"| DISK
 
-    APP -->|"read() — check page cache first"| PC
+    APP -->|"read()  check page cache first"| PC
     PC -->|"Cache HIT: serve from RAM<br/>(~microseconds)"| APP
     PC -.->|"Cache MISS: read from disk<br/>(~milliseconds)"| DISK
     DISK -.->|"Load into page cache"| PC
@@ -363,19 +363,19 @@ flowchart TD
 
 Key insight for Kafka: **Kafka deliberately does NOT manage its own cache.** Instead, it relies entirely on the OS page cache. This has surprising benefits:
 
-1. **No double-caching:** Some databases (like PostgreSQL) maintain their own buffer pool *and* the OS maintains the page cache — the same data exists in both places, wasting memory. Kafka avoids this.
+1. **No double-caching:** Some databases (like PostgreSQL) maintain their own buffer pool *and* the OS maintains the page cache  the same data exists in both places, wasting memory. Kafka avoids this.
 
 2. **The cache survives restarts:** If the Kafka process crashes and restarts, the page cache (managed by the OS) is still warm. An application-level cache would be empty.
 
-3. **No garbage collection pressure:** Kafka runs on the JVM (Java Virtual Machine). Data in the JVM heap is subject to garbage collection — periodic pauses where the JVM reclaims unused memory. Data in the page cache is outside the JVM heap, so it causes zero GC pressure.
+3. **No garbage collection pressure:** Kafka runs on the JVM (Java Virtual Machine). Data in the JVM heap is subject to garbage collection  periodic pauses where the JVM reclaims unused memory. Data in the page cache is outside the JVM heap, so it causes zero GC pressure.
 
 ### 5.3 What Is the JVM and Why Does Garbage Collection Matter?
 
-Kafka is written in Java and Scala, which run on the **Java Virtual Machine (JVM)**. The JVM manages memory automatically through **garbage collection (GC)** — periodically identifying and freeing memory that's no longer used.
+Kafka is written in Java and Scala, which run on the **Java Virtual Machine (JVM)**. The JVM manages memory automatically through **garbage collection (GC)**  periodically identifying and freeing memory that's no longer used.
 
 GC is convenient for developers (no manual memory management) but introduces **GC pauses**: brief periods where the application freezes while the GC runs. These pauses can range from milliseconds to seconds, depending on heap size and GC algorithm.
 
-For a system like Kafka that processes millions of messages per second, large GC pauses are catastrophic — they can cause:
+For a system like Kafka that processes millions of messages per second, large GC pauses are catastrophic  they can cause:
 - Consumers timing out and triggering rebalances
 - Producers receiving timeout errors
 - Replicas falling out of sync
@@ -388,12 +388,12 @@ When a consumer requests data from a Kafka broker, the data needs to travel from
 
 ```
 Step 1: Disk → Page cache (kernel)          [DMA copy]
-Step 2: Page cache → Application buffer     [CPU copy — read() syscall]
-Step 3: Application buffer → Socket buffer  [CPU copy — write() syscall]
+Step 2: Page cache → Application buffer     [CPU copy  read() syscall]
+Step 3: Application buffer → Socket buffer  [CPU copy  write() syscall]
 Step 4: Socket buffer → Network card (NIC)  [DMA copy]
 ```
 
-Steps 2 and 3 are wasteful — the data passes through the application just to be copied right back to the kernel. **Zero-copy** transfer eliminates this:
+Steps 2 and 3 are wasteful  the data passes through the application just to be copied right back to the kernel. **Zero-copy** transfer eliminates this:
 
 ```
 Step 1: Disk → Page cache (kernel)          [DMA copy]
@@ -458,7 +458,7 @@ Data is distributed across brokers so that:
 
 ### 6.3 Partitioning: Splitting Data Across Machines
 
-When a dataset is too large for one machine, you **partition** it — split it into pieces, each stored on a different machine.
+When a dataset is too large for one machine, you **partition** it  split it into pieces, each stored on a different machine.
 
 Think of it like a library with multiple branches. Instead of one massive library holding every book, you distribute books across branches. Branch A holds books with authors A-H, Branch B holds I-P, Branch C holds Q-Z. Each branch handles its own visitors independently.
 
@@ -521,10 +521,10 @@ This means the system survives any single broker failure without losing data.
 
 In Kafka's replication model:
 - **All client requests (produce and consume) go to the partition leader.** The leader is the source of truth.
-- **Followers passively replicate** — they fetch data from the leader, just like a consumer would. They don't serve client requests directly (in the default configuration).
+- **Followers passively replicate**  they fetch data from the leader, just like a consumer would. They don't serve client requests directly (in the default configuration).
 - **Leader election** happens when a leader fails. Kafka's controller selects a new leader from the followers that are sufficiently caught up.
 
-Part 1 discusses the "In-Sync Replica (ISR)" set — the group of followers that are caught up enough to be eligible for leader election — and why the ISR is one of the most important concepts in Kafka operations.
+Part 1 discusses the "In-Sync Replica (ISR)" set  the group of followers that are caught up enough to be eligible for leader election  and why the ISR is one of the most important concepts in Kafka operations.
 
 ---
 
@@ -541,13 +541,13 @@ When a producer sends a message to Kafka, the producer wants to know: **is this 
 
 When the Kafka broker receives a message and calls `write()`, the data goes into the OS **page cache** (RAM), not directly to disk. The OS flushes page cache to disk in the background.
 
-If the Kafka process crashes, the OS page cache is still intact — the data is safe. But if the **server loses power**, the page cache (which is in RAM) is wiped, and any un-flushed data is lost.
+If the Kafka process crashes, the OS page cache is still intact  the data is safe. But if the **server loses power**, the page cache (which is in RAM) is wiped, and any un-flushed data is lost.
 
 ### 7.3 fsync: Forcing Data to Disk
 
-The `fsync()` system call forces the OS to flush a file's data from page cache to physical disk. After `fsync()` returns, the data is durable — it survives a power loss.
+The `fsync()` system call forces the OS to flush a file's data from page cache to physical disk. After `fsync()` returns, the data is durable  it survives a power loss.
 
-But `fsync()` is slow — it blocks until the disk confirms the write. On HDDs, this can take 5-10 milliseconds. Calling `fsync()` after every message would limit Kafka to 100-200 messages per second on HDDs — unacceptable.
+But `fsync()` is slow  it blocks until the disk confirms the write. On HDDs, this can take 5-10 milliseconds. Calling `fsync()` after every message would limit Kafka to 100-200 messages per second on HDDs  unacceptable.
 
 ### 7.4 Kafka's Approach: Replication Instead of fsync
 
@@ -570,9 +570,9 @@ The producer can choose how much durability confirmation it wants:
 
 | Setting | What Happens | Durability | Speed |
 |---|---|---|---|
-| `acks=0` | Producer doesn't wait for any confirmation | Lowest — data could be lost | Fastest |
-| `acks=1` | Producer waits for the leader to write to its page cache | Medium — lost if leader crashes before replication | Fast |
-| `acks=all` | Producer waits for the leader AND all in-sync followers to write | Highest — survives any single broker failure | Slower |
+| `acks=0` | Producer doesn't wait for any confirmation | Lowest  data could be lost | Fastest |
+| `acks=1` | Producer waits for the leader to write to its page cache | Medium  lost if leader crashes before replication | Fast |
+| `acks=all` | Producer waits for the leader AND all in-sync followers to write | Highest  survives any single broker failure | Slower |
 
 Part 1 discusses these tradeoffs in depth, along with the `min.insync.replicas` setting that controls how many replicas must confirm.
 
@@ -584,11 +584,11 @@ Part 1 discusses Kafka's delivery guarantees. These are fundamental concepts for
 
 ### 8.1 The Problem: Failures Cause Ambiguity
 
-Consider: a producer sends a message to Kafka. The broker writes it. The broker sends an acknowledgment. But the acknowledgment gets lost in the network. The producer didn't receive an ACK — did the message make it or not?
+Consider: a producer sends a message to Kafka. The broker writes it. The broker sends an acknowledgment. But the acknowledgment gets lost in the network. The producer didn't receive an ACK  did the message make it or not?
 
 The producer can either:
-1. **Give up** — risk losing the message (it was written, but the producer doesn't know)
-2. **Retry** — risk duplicating the message (it was already written, and now it's written again)
+1. **Give up**  risk losing the message (it was written, but the producer doesn't know)
+2. **Retry**  risk duplicating the message (it was already written, and now it's written again)
 
 This is the fundamental tension in distributed messaging.
 
@@ -620,7 +620,7 @@ Result: Message delivered exactly 1 time
 
 Kafka achieves exactly-once semantics through two mechanisms:
 1. **Idempotent producers:** Each producer has a unique ID and each message has a sequence number. The broker detects and ignores duplicate messages based on these identifiers.
-2. **Transactions:** Multiple writes across multiple partitions can be committed atomically — all succeed or all fail.
+2. **Transactions:** Multiple writes across multiple partitions can be committed atomically  all succeed or all fail.
 
 Part 1 explains what exactly-once actually guarantees and where it breaks down (specifically: when your consumer writes to an external system like a database, Kafka's exactly-once doesn't extend to that external system unless the external write is also idempotent).
 
@@ -653,7 +653,7 @@ The **CAP theorem** states that a distributed system can provide at most two of 
 
 ### 9.2 Why You Must Choose
 
-In a real distributed system, network partitions (communication failures between servers) **will happen** — cables get cut, switches fail, cloud availability zones have connectivity issues. So partition tolerance is not optional — you must have P.
+In a real distributed system, network partitions (communication failures between servers) **will happen**  cables get cut, switches fail, cloud availability zones have connectivity issues. So partition tolerance is not optional  you must have P.
 
 This means the real choice is between:
 - **CP (Consistency + Partition tolerance):** During a network partition, the system may become unavailable (refuse requests) to maintain consistency.
@@ -673,7 +673,7 @@ Part 1 discusses this tradeoff in the "Unclean Leader Election Dilemma" section.
 
 ## 10. Throughput, Latency, and How to Reason About Performance
 
-Part 1 is full of performance reasoning — "2 million messages per second," "end-to-end latency under 10ms," "100-200x faster." Here's how to think about these numbers.
+Part 1 is full of performance reasoning  "2 million messages per second," "end-to-end latency under 10ms," "100-200x faster." Here's how to think about these numbers.
 
 ### 10.1 Throughput: How Much Work Per Second
 
@@ -688,7 +688,7 @@ These are related but different. If your average message is 1 KB:
 If your average message is 100 bytes:
 - 1,000,000 msgs/sec = only 100 MB/s
 
-Throughput is limited by the **bottleneck** — the slowest component in the pipeline:
+Throughput is limited by the **bottleneck**  the slowest component in the pipeline:
 - Disk write speed
 - Network bandwidth
 - CPU (for compression, serialization, checksums)
@@ -782,7 +782,7 @@ This guarantees that **all messages with the same key always go to the same part
 ### 11.3 Why This Matters
 
 Part 1 discusses:
-- **Partition keys** determine ordering guarantees. Now you understand *how* — through hashing.
+- **Partition keys** determine ordering guarantees. Now you understand *how*  through hashing.
 - **Partition skew** happens when some keys are much more common than others. If "user_42" generates 80% of all events, Partition 2 gets 80% of the load while other partitions sit idle.
 - **Adding partitions breaks key mapping.** If you change from 6 to 8 partitions, `hash("user_42") % 8` might produce a different partition number than `hash("user_42") % 6`. Events for the same user could end up in different partitions, breaking ordering.
 
@@ -794,7 +794,7 @@ Part 1 discusses compression codecs (GZIP, Snappy, LZ4, Zstandard) and their imp
 
 ### 12.1 What Is Compression?
 
-**Compression** reduces the size of data by finding and eliminating redundancy. For example, the string `"AAAAAABBBBCC"` (12 bytes) can be compressed to `"6A4B2C"` (6 bytes) — same information, half the size.
+**Compression** reduces the size of data by finding and eliminating redundancy. For example, the string `"AAAAAABBBBCC"` (12 bytes) can be compressed to `"6A4B2C"` (6 bytes)  same information, half the size.
 
 Real compression algorithms (LZ4, Zstandard, GZIP) are more sophisticated, but the principle is the same: find patterns and represent them more compactly.
 
@@ -815,7 +815,7 @@ Compression costs CPU time. Decompression also costs CPU time (though usually le
 - Less network I/O (faster replication between brokers, faster consumer fetches)
 - More effective page cache (more logical data fits in the same RAM)
 
-This tradeoff is usually worth it — modern CPUs can compress data faster than networks and disks can transfer it. But Part 1 notes that for very high-throughput workloads, CPU can become the bottleneck with heavy compression (GZIP), which is why lighter codecs (LZ4, Zstandard) are preferred.
+This tradeoff is usually worth it  modern CPUs can compress data faster than networks and disks can transfer it. But Part 1 notes that for very high-throughput workloads, CPU can become the bottleneck with heavy compression (GZIP), which is why lighter codecs (LZ4, Zstandard) are preferred.
 
 ---
 
@@ -841,7 +841,7 @@ Corrupt read:
   Compare: 0x7B2E3A91 ≠ 0x4A17B156 ✗ (CORRUPTION DETECTED)
 ```
 
-Kafka computes a CRC32 checksum for each record batch. This ensures that data corruption — whether from disk, network, or memory errors — is detected before it reaches consumers. Silent data corruption is one of the most insidious failure modes in distributed systems.
+Kafka computes a CRC32 checksum for each record batch. This ensures that data corruption  whether from disk, network, or memory errors  is detected before it reaches consumers. Silent data corruption is one of the most insidious failure modes in distributed systems.
 
 ---
 
@@ -883,7 +883,7 @@ Common serialization formats:
 | Apache Avro | Binary | No | Small | Fast |
 | MessagePack | Binary | No | Small | Fast |
 
-Kafka doesn't care what serialization format you use for message values — it treats them as opaque bytes. But the choice affects performance:
+Kafka doesn't care what serialization format you use for message values  it treats them as opaque bytes. But the choice affects performance:
 - JSON: easy to debug (you can read it), but large and slow to parse
 - Protobuf/Avro: compact and fast, but requires schema management
 
@@ -978,8 +978,8 @@ Here's a quick-reference for terms you'll encounter throughout the series:
 | **fsync** | System call that forces data from page cache to physical disk | Section 7.3 |
 | **Syscall** | A function call from user space into the OS kernel | Section 5.1 |
 | **Sequential I/O** | Reading/writing data in order; dramatically faster than random I/O | Section 4.1 |
-| **DMA** | Direct Memory Access — hardware transfers data without CPU involvement | Section 5.4 |
-| **JVM** | Java Virtual Machine — the runtime environment Kafka runs on | Section 5.3 |
+| **DMA** | Direct Memory Access  hardware transfers data without CPU involvement | Section 5.4 |
+| **JVM** | Java Virtual Machine  the runtime environment Kafka runs on | Section 5.3 |
 | **GC (Garbage Collection)** | JVM's automatic memory reclamation; can cause pauses | Section 5.3 |
 | **Serialization** | Converting data structures to bytes for storage or transmission | Section 14.2 |
 | **Compression** | Reducing data size by eliminating redundancy | Section 12.1 |
@@ -1003,7 +1003,7 @@ Here's a quick-reference for terms you'll encounter throughout the series:
 
 2. **Events are immutable facts** about things that happened. Event-driven architecture builds systems around these facts, enabling loose coupling and resilience.
 
-3. **Sequential disk I/O is fast** — 100-200x faster than random I/O on HDDs, 5-10x on SSDs. Kafka exploits this by only ever appending to files.
+3. **Sequential disk I/O is fast**  100-200x faster than random I/O on HDDs, 5-10x on SSDs. Kafka exploits this by only ever appending to files.
 
 4. **The OS page cache is Kafka's secret weapon.** By delegating caching to the OS, Kafka avoids JVM garbage collection, survives process restarts with warm caches, and eliminates double-buffering.
 
@@ -1021,23 +1021,23 @@ Here's a quick-reference for terms you'll encounter throughout the series:
 
 You now have the foundation to understand Part 1's deep dive. Here's exactly what Part 1 covers and how it connects to what you just learned:
 
-### Part 1: Why Kafka Exists — The Distributed Log as a Systems Primitive
+### Part 1: Why Kafka Exists  The Distributed Log as a Systems Primitive
 
-**The log abstraction** — Part 1 opens by explaining why LinkedIn built Kafka in 2010: the gap between log aggregation tools (high throughput, no durability) and enterprise message brokers (durability, but no scale or replay). It shows how a simple append-only log solves all of these problems at once.
+**The log abstraction**  Part 1 opens by explaining why LinkedIn built Kafka in 2010: the gap between log aggregation tools (high throughput, no durability) and enterprise message brokers (durability, but no scale or replay). It shows how a simple append-only log solves all of these problems at once.
 
-**Sequential I/O quantified** — You learned the mechanics of why sequential I/O is fast. Part 1 puts concrete numbers on it: sequential HDD writes at 100-200 MB/s vs. random at 0.5-1 MB/s; NVMe sequential at 2-7 GB/s. It then shows how a well-tuned 6-broker cluster achieves 2-5 million messages per second of sustained write throughput.
+**Sequential I/O quantified**  You learned the mechanics of why sequential I/O is fast. Part 1 puts concrete numbers on it: sequential HDD writes at 100-200 MB/s vs. random at 0.5-1 MB/s; NVMe sequential at 2-7 GB/s. It then shows how a well-tuned 6-broker cluster achieves 2-5 million messages per second of sustained write throughput.
 
-**Page cache and zero-copy in practice** — You learned how the OS page cache works and what `sendfile()` does. Part 1 shows Kafka's complete I/O path: data written once to page cache, served directly to consumers via `sendfile()`, with zero CPU copies and zero double-buffering.
+**Page cache and zero-copy in practice**  You learned how the OS page cache works and what `sendfile()` does. Part 1 shows Kafka's complete I/O path: data written once to page cache, served directly to consumers via `sendfile()`, with zero CPU copies and zero double-buffering.
 
-**Pull vs. push** — Part 1 makes the case for why Kafka consumers pull rather than being pushed to: consumer-controlled pacing, natural backpressure, simpler broker state, and replay as a trivial operation.
+**Pull vs. push**  Part 1 makes the case for why Kafka consumers pull rather than being pushed to: consumer-controlled pacing, natural backpressure, simpler broker state, and replay as a trivial operation.
 
-**Partitioning in practice** — You learned what partition keys and modulo hashing do. Part 1 shows the real design decisions: how to choose a partition key, how to size a topic's partition count, and the consequences of skewed keys.
+**Partitioning in practice**  You learned what partition keys and modulo hashing do. Part 1 shows the real design decisions: how to choose a partition key, how to size a topic's partition count, and the consequences of skewed keys.
 
-**Consumer group coordination** — Part 1 introduces the rebalancing problem: why all consumers stop during an eager rebalance, and why `CooperativeStickyAssignor` should always be used in production.
+**Consumer group coordination**  Part 1 introduces the rebalancing problem: why all consumers stop during an eager rebalance, and why `CooperativeStickyAssignor` should always be used in production.
 
-**Durability and the ISR** — You learned about `acks=all` and replication. Part 1 adds the ISR (in-sync replica) set: which replicas qualify for leader election, how `min.insync.replicas` controls the availability/durability tradeoff, and the unclean leader election dilemma in full.
+**Durability and the ISR**  You learned about `acks=all` and replication. Part 1 adds the ISR (in-sync replica) set: which replicas qualify for leader election, how `min.insync.replicas` controls the availability/durability tradeoff, and the unclean leader election dilemma in full.
 
-> **Go read [Part 1: Why Kafka Exists — The Distributed Log as a Systems Primitive](kafka-deep-dive-part-1.md).** Everything in this article was written to make Part 1 make sense.
+> **Go read [Part 1: Why Kafka Exists  The Distributed Log as a Systems Primitive](kafka-deep-dive-part-1.md).** Everything in this article was written to make Part 1 make sense.
 
 ---
 

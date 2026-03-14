@@ -1,8 +1,8 @@
-# Apache Kafka Deep Dive — Part 9: Production Operations — Monitoring, Incident Response, and Capacity Planning
+# Apache Kafka Deep Dive  Part 9: Production Operations  Monitoring, Incident Response, and Capacity Planning
 
 ---
 
-**Series:** Apache Kafka Deep Dive — From First Principles to Planet-Scale Event Streaming
+**Series:** Apache Kafka Deep Dive  From First Principles to Planet-Scale Event Streaming
 **Part:** 9 of 10
 **Audience:** Senior backend engineers, distributed systems engineers, data platform architects
 **Reading time:** ~45 minutes
@@ -15,7 +15,7 @@ Parts 0 through 8 built the complete technical foundation: the distributed log a
 
 You now understand how Kafka works from first principles. This part is about how Kafka *fails* in production and how you detect, respond to, and prevent those failures at scale.
 
-Production operations for Kafka is not simply "install Prometheus, point at JMX, make dashboards." It is a discipline that requires understanding the causal relationships between metrics — why a growing ISR shrink rate three days ago is the leading indicator of a disk-full incident today, why a single misconfigured `max.poll.interval.ms` can destabilize an entire consumer group across all its partitions, and why capacity planning without accounting for replication factor is how you end up with a 3 a.m. page.
+Production operations for Kafka is not simply "install Prometheus, point at JMX, make dashboards." It is a discipline that requires understanding the causal relationships between metrics  why a growing ISR shrink rate three days ago is the leading indicator of a disk-full incident today, why a single misconfigured `max.poll.interval.ms` can destabilize an entire consumer group across all its partitions, and why capacity planning without accounting for replication factor is how you end up with a 3 a.m. page.
 
 This article organizes production Kafka operations into a coherent framework: monitoring philosophy and metric layering, the critical broker metrics and what they tell you about the system's internal state, consumer lag monitoring as a business-level signal, safe upgrade and migration procedures, partition management at scale, runbooks for the five most common failure modes, and a disciplined approach to capacity planning before problems materialize.
 
@@ -27,15 +27,15 @@ By the end of this article, you will be able to build a monitoring stack that al
 
 ### 1.1 The Four Golden Signals Applied to Kafka
 
-The four golden signals — latency, traffic, errors, and saturation — originate from the Google SRE book as a universal framework for service monitoring. Kafka maps cleanly onto all four, though the signals manifest at multiple layers simultaneously.
+The four golden signals  latency, traffic, errors, and saturation  originate from the Google SRE book as a universal framework for service monitoring. Kafka maps cleanly onto all four, though the signals manifest at multiple layers simultaneously.
 
-**Latency** in Kafka has two distinct dimensions. Produce latency is the time from when a producer calls `send()` to when the broker acknowledges the write (or when the record is committed to all ISR replicas, depending on `acks`). Consume end-to-end latency is the time from when a record is produced to when a consumer processes it — this is largely determined by consumer lag. Both are meaningful; the first tells you about broker health and producer configuration, the second tells you about business SLA adherence.
+**Latency** in Kafka has two distinct dimensions. Produce latency is the time from when a producer calls `send()` to when the broker acknowledges the write (or when the record is committed to all ISR replicas, depending on `acks`). Consume end-to-end latency is the time from when a record is produced to when a consumer processes it  this is largely determined by consumer lag. Both are meaningful; the first tells you about broker health and producer configuration, the second tells you about business SLA adherence.
 
 **Traffic** is measured as messages per second and bytes per second, separately tracked per topic and per broker. Traffic metrics serve two purposes: they tell you whether the system is operating at expected throughput levels (a sudden drop in messages/sec often indicates a stuck producer upstream of Kafka), and they tell you how close you are to capacity limits.
 
-**Errors** in Kafka are not HTTP 5xx codes — they manifest as failed produce requests, failed fetch requests, ISR shrinks (a replica has fallen out of sync), offline partitions (no leader elected), and consumer group rebalances that fail to stabilize. ISR shrinks are particularly important as a leading error signal: they precede broker failures in a large fraction of production incidents.
+**Errors** in Kafka are not HTTP 5xx codes  they manifest as failed produce requests, failed fetch requests, ISR shrinks (a replica has fallen out of sync), offline partitions (no leader elected), and consumer group rebalances that fail to stabilize. ISR shrinks are particularly important as a leading error signal: they precede broker failures in a large fraction of production incidents.
 
-**Saturation** is the signal most engineers underweight. Kafka saturates at disk (write I/O and storage capacity), CPU (compression/decompression, ZooKeeper/KRaft processing), network (bytes in plus bytes out per NIC), and at the broker's request handler thread pool (the number of threads available to process produce and fetch requests). The request handler thread pool is the most counterintuitive saturation point — a broker can be CPU-idle but completely saturated if all request handler threads are blocked waiting on slow disk I/O.
+**Saturation** is the signal most engineers underweight. Kafka saturates at disk (write I/O and storage capacity), CPU (compression/decompression, ZooKeeper/KRaft processing), network (bytes in plus bytes out per NIC), and at the broker's request handler thread pool (the number of threads available to process produce and fetch requests). The request handler thread pool is the most counterintuitive saturation point  a broker can be CPU-idle but completely saturated if all request handler threads are blocked waiting on slow disk I/O.
 
 ### 1.2 Layered Monitoring: Infrastructure to Business SLAs
 
@@ -137,21 +137,21 @@ kafka.server:type=ReplicaManager,name=UnderReplicatedPartitions
 kafka_server_replicamanager_underreplicatedpartitions
 ```
 
-**Alert threshold:** > 0 sustained for more than 5 minutes. The 5-minute grace period is intentional — during a leader election or a brief GC pause on a follower, URP can transiently spike to a non-zero value and then return to zero within seconds or minutes. Alerting on any non-zero value creates noise. Alerting on sustained non-zero values identifies genuine problems.
+**Alert threshold:** > 0 sustained for more than 5 minutes. The 5-minute grace period is intentional  during a leader election or a brief GC pause on a follower, URP can transiently spike to a non-zero value and then return to zero within seconds or minutes. Alerting on any non-zero value creates noise. Alerting on sustained non-zero values identifies genuine problems.
 
-**Why URP matters:** When a partition is under-replicated, data written to the leader exists on fewer replicas than the configured replication factor. If the leader crashes at this moment, data that has been acknowledged to producers (under `acks=all`) is *not necessarily* on a surviving replica — because the follower that would have held the copy is currently behind. This is the data-loss window that URP quantifies. Every minute of URP is a minute where the cluster's durability guarantees are weakened.
+**Why URP matters:** When a partition is under-replicated, data written to the leader exists on fewer replicas than the configured replication factor. If the leader crashes at this moment, data that has been acknowledged to producers (under `acks=all`) is *not necessarily* on a surviving replica  because the follower that would have held the copy is currently behind. This is the data-loss window that URP quantifies. Every minute of URP is a minute where the cluster's durability guarantees are weakened.
 
 **Root causes of sustained URP:**
 
-1. **Broker down** — the most obvious cause. A follower that is down cannot replicate. Check `kafka-broker-api-versions.sh --bootstrap-server broker:9092` to see which brokers respond.
+1. **Broker down**  the most obvious cause. A follower that is down cannot replicate. Check `kafka-broker-api-versions.sh --bootstrap-server broker:9092` to see which brokers respond.
 
-2. **Follower GC pause** — a long GC pause on the follower JVM causes it to stop fetching from the leader. If the pause exceeds `replica.lag.time.max.ms` (default 30 seconds), the follower is removed from the ISR. After GC completes, the follower begins catching up, but during catch-up the partition is under-replicated.
+2. **Follower GC pause**  a long GC pause on the follower JVM causes it to stop fetching from the leader. If the pause exceeds `replica.lag.time.max.ms` (default 30 seconds), the follower is removed from the ISR. After GC completes, the follower begins catching up, but during catch-up the partition is under-replicated.
 
-3. **Disk I/O saturation on follower** — if the follower's disk cannot keep up with the replication write rate, the follower falls behind. The leader's replication log accumulates pending data for the slow follower. Eventually `replica.lag.time.max.ms` expires and the follower is evicted from ISR.
+3. **Disk I/O saturation on follower**  if the follower's disk cannot keep up with the replication write rate, the follower falls behind. The leader's replication log accumulates pending data for the slow follower. Eventually `replica.lag.time.max.ms` expires and the follower is evicted from ISR.
 
-4. **Network partition** — if the network between the leader broker and the follower broker becomes unreliable or drops, the follower stops receiving replication data. The ISR shrinks. This is distinguishable from broker down because the follower process is alive and healthy when viewed locally.
+4. **Network partition**  if the network between the leader broker and the follower broker becomes unreliable or drops, the follower stops receiving replication data. The ISR shrinks. This is distinguishable from broker down because the follower process is alive and healthy when viewed locally.
 
-**Mermaid diagram — URP causal chain:**
+**Mermaid diagram  URP causal chain:**
 
 ```mermaid
 flowchart TD
@@ -178,9 +178,9 @@ kafka.controller:type=KafkaController,name=ActiveControllerCount
 **Alert threshold:** Sum across all brokers != 1. This is a P0 alert.
 
 - **Sum = 0**: No controller is elected. The cluster cannot perform any metadata operations. Producer connections may succeed for existing leadership information cached by clients, but new topic creation, broker failures, and partition reassignments cannot be handled. The cluster is in a degraded state.
-- **Sum >= 2**: Split-brain — two brokers believe they are the controller simultaneously. This is a serious bug condition, typically caused by a ZooKeeper or KRaft quorum anomaly. Two controllers issuing conflicting metadata updates can corrupt cluster state.
+- **Sum >= 2**: Split-brain  two brokers believe they are the controller simultaneously. This is a serious bug condition, typically caused by a ZooKeeper or KRaft quorum anomaly. Two controllers issuing conflicting metadata updates can corrupt cluster state.
 
-In practice, controller elections complete within seconds after a controller failure. A sustained Active Controller Count of 0 indicates that the ZooKeeper quorum (or KRaft quorum in Kafka 3.x+) cannot reach consensus — typically due to a ZooKeeper/KRaft node failure reducing quorum below the majority threshold.
+In practice, controller elections complete within seconds after a controller failure. A sustained Active Controller Count of 0 indicates that the ZooKeeper quorum (or KRaft quorum in Kafka 3.x+) cannot reach consensus  typically due to a ZooKeeper/KRaft node failure reducing quorum below the majority threshold.
 
 ### 2.3 Offline Partitions Count
 
@@ -195,7 +195,7 @@ kafka.controller:type=KafkaController,name=OfflinePartitionsCount
 
 **Alert threshold:** > 0, immediately, P0.
 
-A partition goes offline when all replicas in its ISR fail. This requires multiple simultaneous broker failures, which is rare — but it is exactly the scenario that justifies a multi-replica replication factor in the first place. A partition can also go offline if `unclean.leader.election.enable=false` (the default) and the only surviving replicas are out-of-sync replicas. In this case, Kafka refuses to elect an out-of-sync replica as leader (which would cause data loss) and leaves the partition offline instead.
+A partition goes offline when all replicas in its ISR fail. This requires multiple simultaneous broker failures, which is rare  but it is exactly the scenario that justifies a multi-replica replication factor in the first place. A partition can also go offline if `unclean.leader.election.enable=false` (the default) and the only surviving replicas are out-of-sync replicas. In this case, Kafka refuses to elect an out-of-sync replica as leader (which would cause data loss) and leaves the partition offline instead.
 
 The choice between `unclean.leader.election.enable=true` (prefer availability, risk data loss) and `false` (prefer consistency, risk unavailability) is the classic CAP theorem tradeoff and should be a deliberate architectural decision, not the default.
 
@@ -213,9 +213,9 @@ kafka.server:type=KafkaRequestHandlerPool,name=RequestHandlerAvgIdlePercent
 **Why this matters:** Each request handler thread processes one request at a time. If all threads are busy waiting on disk I/O (the most common cause), incoming requests queue in the network receive buffer. Queue depth grows. Produce timeouts occur. Consumers experience fetch delays. The broker looks CPU-idle (because threads are waiting on I/O, not computing), which can mislead engineers who check only CPU utilization.
 
 **Actions when request handler utilization is high:**
-1. Increase `num.io.threads` — up to 2x the number of disk spindles or NVMe devices on the broker.
-2. Check disk I/O utilization — if disks are saturated, adding threads will not help; you need faster storage or fewer partitions per broker.
-3. Reduce partitions per broker — each partition adds replication fetch overhead to each broker.
+1. Increase `num.io.threads`  up to 2x the number of disk spindles or NVMe devices on the broker.
+2. Check disk I/O utilization  if disks are saturated, adding threads will not help; you need faster storage or fewer partitions per broker.
+3. Reduce partitions per broker  each partition adds replication fetch overhead to each broker.
 4. Add brokers and reassign partitions to reduce load per broker.
 
 ### 2.5 Network Handler Pool Utilization
@@ -235,7 +235,7 @@ Network thread saturation is less common than I/O thread saturation, but it occu
 
 ### 2.6 Log Flush Latency
 
-Kafka's default configuration relies on the OS page cache to flush writes to disk asynchronously. When `log.flush.interval.messages` or `log.flush.interval.ms` are configured to force explicit flushes (which most production deployments avoid — relying instead on replication for durability), flush latency becomes significant.
+Kafka's default configuration relies on the OS page cache to flush writes to disk asynchronously. When `log.flush.interval.messages` or `log.flush.interval.ms` are configured to force explicit flushes (which most production deployments avoid  relying instead on replication for durability), flush latency becomes significant.
 
 **JMX path:**
 ```
@@ -279,24 +279,24 @@ kafka.server:type=BrokerTopicMetrics,name=BytesOutPerSec
 
 Note that `BytesOutPerSec` includes *both* consumer fetch traffic and replication traffic from followers fetching from the leader. On a cluster with replication factor 3, `BytesOutPerSec` on a leader broker will be approximately `consumer_bytes + (replication_factor - 1) × write_bytes = consumer_bytes + 2 × write_bytes`. A broker with 1 GB/s of writes could easily have 3+ GB/s of outbound traffic, consuming a significant portion of a 10 GbE NIC.
 
-**Imbalance detection:** Compare `BytesInPerSec` across all brokers. If one broker is handling 3x the write throughput of others, partition distribution is skewed — likely because one topic's partitions are unevenly distributed, or because a high-traffic topic has all its leaders on one broker. Run `kafka-leader-election.sh` to rebalance leaders, or use Cruise Control for automated rebalancing.
+**Imbalance detection:** Compare `BytesInPerSec` across all brokers. If one broker is handling 3x the write throughput of others, partition distribution is skewed  likely because one topic's partitions are unevenly distributed, or because a high-traffic topic has all its leaders on one broker. Run `kafka-leader-election.sh` to rebalance leaders, or use Cruise Control for automated rebalancing.
 
 ### 2.9 Full Broker Metrics Reference Table
 
 | Metric Name | JMX Path | Alert Threshold | Meaning | Action |
 |-------------|----------|-----------------|---------|--------|
-| UnderReplicatedPartitions | `kafka.server:type=ReplicaManager,name=UnderReplicatedPartitions` | > 0 for 5+ min | Replicas behind — data at risk | Investigate follower: disk, GC, network, broker down |
+| UnderReplicatedPartitions | `kafka.server:type=ReplicaManager,name=UnderReplicatedPartitions` | > 0 for 5+ min | Replicas behind  data at risk | Investigate follower: disk, GC, network, broker down |
 | ActiveControllerCount | `kafka.controller:type=KafkaController,name=ActiveControllerCount` | != 1 (sum across cluster) | Controller missing or split-brain | Check ZK/KRaft quorum; restart controller broker |
-| OfflinePartitionsCount | `kafka.controller:type=KafkaController,name=OfflinePartitionsCount` | > 0 | Partitions with no leader — unavailable | Identify failed brokers; restore or reassign |
+| OfflinePartitionsCount | `kafka.controller:type=KafkaController,name=OfflinePartitionsCount` | > 0 | Partitions with no leader  unavailable | Identify failed brokers; restore or reassign |
 | RequestHandlerAvgIdlePercent | `kafka.server:type=KafkaRequestHandlerPool,name=RequestHandlerAvgIdlePercent` | < 30% | I/O thread pool saturated | Increase num.io.threads; check disk I/O |
 | NetworkProcessorAvgIdlePercent | `kafka.network:type=SocketServer,name=NetworkProcessorAvgIdlePercent` | < 30% | Network thread pool saturated | Increase num.network.threads |
 | LogFlushRateAndTimeMs | `kafka.log:type=LogFlushStats,name=LogFlushRateAndTimeMs` | p99 > 1s | Disk I/O backing up | Investigate disk saturation; reduce flush frequency |
 | IsrShrinksPerSec | `kafka.server:type=ReplicaManager,name=IsrShrinksPerSec` | > 0 sustained | Replicas falling out of ISR | GC tuning on followers; check disk/network |
-| IsrExpandsPerSec | `kafka.server:type=ReplicaManager,name=IsrExpandsPerSec` | — | Rate of ISR re-admission | Companion to shrinks; healthy pattern: shrink quickly followed by expand |
+| IsrExpandsPerSec | `kafka.server:type=ReplicaManager,name=IsrExpandsPerSec` |  | Rate of ISR re-admission | Companion to shrinks; healthy pattern: shrink quickly followed by expand |
 | BytesInPerSec | `kafka.server:type=BrokerTopicMetrics,name=BytesInPerSec` | > 70% NIC capacity | Network ingress approaching limit | Add brokers; reassign partitions |
 | BytesOutPerSec | `kafka.server:type=BrokerTopicMetrics,name=BytesOutPerSec` | > 70% NIC capacity | Network egress approaching limit | Check consumer count; rebalance leaders |
-| TotalFetchRequestsPerSec | `kafka.server:type=BrokerTopicMetrics,name=TotalFetchRequestsPerSec` | — | Request rate; use for capacity planning | Baseline tracking; alert on sudden drop (stuck consumer) |
-| ProduceRequestsPerSec | `kafka.server:type=BrokerTopicMetrics,name=TotalProduceRequestsPerSec` | — | Producer request rate | Baseline tracking; alert on sudden drop (stuck producer) |
+| TotalFetchRequestsPerSec | `kafka.server:type=BrokerTopicMetrics,name=TotalFetchRequestsPerSec` |  | Request rate; use for capacity planning | Baseline tracking; alert on sudden drop (stuck consumer) |
+| ProduceRequestsPerSec | `kafka.server:type=BrokerTopicMetrics,name=TotalProduceRequestsPerSec` |  | Producer request rate | Baseline tracking; alert on sudden drop (stuck producer) |
 | FailedProduceRequestsPerSec | `kafka.server:type=BrokerTopicMetrics,name=FailedProduceRequestsPerSec` | > 0 | Producers getting errors | Check URP, offline partitions, broker errors |
 | FailedFetchRequestsPerSec | `kafka.server:type=BrokerTopicMetrics,name=FailedFetchRequestsPerSec` | > 0 | Consumers getting errors | Check broker health, network, permissions |
 | ActiveConnections | `kafka.server:type=socket-server-metrics,name=connection-count` | > 80% of max.connections | Approaching connection limit | Increase max.connections; add brokers |
@@ -307,7 +307,7 @@ Note that `BytesOutPerSec` includes *both* consumer fetch traffic and replicatio
 
 ### 3.1 Lag Definition
 
-Consumer lag is the difference between the Log End Offset (LEO) — the offset of the next message that will be written to a partition — and the consumer group's committed offset for that partition:
+Consumer lag is the difference between the Log End Offset (LEO)  the offset of the next message that will be written to a partition  and the consumer group's committed offset for that partition:
 
 ```
 lag = partition_LEO - consumer_committed_offset
@@ -315,17 +315,17 @@ lag = partition_LEO - consumer_committed_offset
 
 A lag of 0 means the consumer has processed every message that has been produced. A lag of 10,000 means the consumer is 10,000 messages behind the head of the partition. Lag is always measured per partition and then typically reported as the sum or maximum across all partitions in a consumer group.
 
-Lag is not measured in time — it is measured in message count. To convert to time, you need to divide by the consumption rate:
+Lag is not measured in time  it is measured in message count. To convert to time, you need to divide by the consumption rate:
 
 ```
 estimated_time_behind = lag / consumer_messages_per_second
 ```
 
-This is why lag alone is insufficient for SLA monitoring — a lag of 100,000 messages on a topic that processes 1,000,000 messages/second is 100 milliseconds behind. The same lag on a topic that processes 100 messages/second is 1,000 seconds behind.
+This is why lag alone is insufficient for SLA monitoring  a lag of 100,000 messages on a topic that processes 1,000,000 messages/second is 100 milliseconds behind. The same lag on a topic that processes 100 messages/second is 1,000 seconds behind.
 
 ### 3.2 Why Lag Is the Most Important Consumer Metric
 
-Every other consumer metric is a proxy for what you actually care about: are consumers keeping up with producers? Consumer lag is the direct, unambiguous answer to that question. All other consumer metrics — poll rate, fetch throughput, processing time, rebalance count — are inputs that explain why lag is at its current value, but lag is the output you must track against your SLO.
+Every other consumer metric is a proxy for what you actually care about: are consumers keeping up with producers? Consumer lag is the direct, unambiguous answer to that question. All other consumer metrics  poll rate, fetch throughput, processing time, rebalance count  are inputs that explain why lag is at its current value, but lag is the output you must track against your SLO.
 
 The causal chain from business requirement to metric is:
 
@@ -358,7 +358,7 @@ fraud-detection-consumer transactions  1          2345678         2345679       
 fraud-detection-consumer transactions  2          3456789         3456799         10    consumer-3-uuid     /10.0.0.3
 ```
 
-This gives a point-in-time snapshot per partition. It is useful for ad-hoc debugging but not for alerting — it does not tell you whether lag is growing, stable, or shrinking.
+This gives a point-in-time snapshot per partition. It is useful for ad-hoc debugging but not for alerting  it does not tell you whether lag is growing, stable, or shrinking.
 
 **Burrow** (LinkedIn open-source lag monitor):
 
@@ -449,11 +449,11 @@ graph TD
     F --> I
 ```
 
-The key elements: aggregate lag with trend (not just point-in-time), number of active consumer instances, time since last offset commit, and per-partition breakdown. Per-partition breakdown is critical for diagnosing skew — if one partition has 90% of the lag, that indicates a hot partition or a dead consumer instance that was assigned to that partition.
+The key elements: aggregate lag with trend (not just point-in-time), number of active consumer instances, time since last offset commit, and per-partition breakdown. Per-partition breakdown is critical for diagnosing skew  if one partition has 90% of the lag, that indicates a hot partition or a dead consumer instance that was assigned to that partition.
 
 ### 3.6 The Phantom Lag Problem
 
-Phantom lag is a frequent cause of spurious P1 alerts. It occurs when a consumer group's consumer instances have all stopped (gracefully shut down), but the group's committed offsets remain in `__consumer_offsets`. Because the group is not consuming, the partition's LEO continues to advance as producers write new messages. The lag metric — LEO minus committed offset — grows unboundedly even though no consumer is running.
+Phantom lag is a frequent cause of spurious P1 alerts. It occurs when a consumer group's consumer instances have all stopped (gracefully shut down), but the group's committed offsets remain in `__consumer_offsets`. Because the group is not consuming, the partition's LEO continues to advance as producers write new messages. The lag metric  LEO minus committed offset  grows unboundedly even though no consumer is running.
 
 ```
 Producers write to partition at 1,000 messages/second
@@ -466,7 +466,7 @@ On-call engineer wakes up at 3am to discover the consumer is intentionally stopp
 
 **Solutions:**
 
-1. **Monitor consumer heartbeat status alongside lag.** A consumer group with active members shows `STABLE` state. A consumer group with no members shows `EMPTY` state. Only alert if state is `STABLE` and lag is growing — a growing lag in an `EMPTY` group is expected and should not page.
+1. **Monitor consumer heartbeat status alongside lag.** A consumer group with active members shows `STABLE` state. A consumer group with no members shows `EMPTY` state. Only alert if state is `STABLE` and lag is growing  a growing lag in an `EMPTY` group is expected and should not page.
 
 2. **Use Burrow.** Burrow's evaluation model considers whether the consumer is making progress (committing offsets), not just whether lag exists. A group with no committed offsets in the past N minutes is classified as not-running, and its lag is not treated as an ERROR condition.
 
@@ -558,7 +558,7 @@ Kafka maintains strong backward compatibility between clients and brokers. The r
 
 This means you should always upgrade brokers before upgrading clients. If a new broker version introduces a bug in the old protocol path and you have already upgraded clients, you may have more blast radius. If brokers are upgraded first, clients continue working against the old protocol until you are ready to upgrade them.
 
-Producer and consumer API compatibility is maintained across major versions (2.x clients work against 3.x brokers), but certain features — like idempotent producer with transactions, cooperative rebalancing — require both client and broker to be at compatible versions.
+Producer and consumer API compatibility is maintained across major versions (2.x clients work against 3.x brokers), but certain features  like idempotent producer with transactions, cooperative rebalancing  require both client and broker to be at compatible versions.
 
 ### 4.5 ZooKeeper to KRaft Migration
 
@@ -632,7 +632,7 @@ kafka-reassign-partitions.sh \
   --broker-list "1,2,3,4"
 ```
 
-This outputs two JSON objects: the current assignment (save this for rollback) and the proposed assignment. Review the proposed assignment carefully — the tool generates a plan but cannot know your topology constraints (rack awareness, network locality, disk availability per broker).
+This outputs two JSON objects: the current assignment (save this for rollback) and the proposed assignment. Review the proposed assignment carefully  the tool generates a plan but cannot know your topology constraints (rack awareness, network locality, disk availability per broker).
 
 **Execute the reassignment:**
 ```bash
@@ -698,7 +698,7 @@ Cruise Control significantly reduces the mean time to recover (MTTR) for load im
 
 ### 5.5 Preferred Leader Election
 
-Kafka designates the first replica in a partition's replica list as the "preferred leader" — the broker that should be the partition leader under normal (non-failure) conditions. When a broker restarts after a failure, its partitions may have a different broker acting as leader (the leader that was elected during the failure). The partition is technically healthy, but the leader is not on the preferred broker.
+Kafka designates the first replica in a partition's replica list as the "preferred leader"  the broker that should be the partition leader under normal (non-failure) conditions. When a broker restarts after a failure, its partitions may have a different broker acting as leader (the leader that was elected during the failure). The partition is technically healthy, but the leader is not on the preferred broker.
 
 Over time, without intervention, partition leadership drifts from preferred assignments, causing load imbalance as some brokers end up leading far more partitions than others.
 
@@ -710,7 +710,7 @@ kafka-leader-election.sh \
   --all-topic-partitions
 ```
 
-This is a metadata operation only — no data movement. It completes in seconds, not hours. Run this after any broker restart to restore balanced leadership.
+This is a metadata operation only  no data movement. It completes in seconds, not hours. Run this after any broker restart to restore balanced leadership.
 
 **Automatic preferred leader election:** Set `auto.leader.rebalance.enable=true` in broker configuration (default: true) and `leader.imbalance.check.interval.seconds=300` (default: 300). The controller will automatically trigger preferred leader elections when leadership imbalance exceeds `leader.imbalance.per.broker.percentage` (default: 10%).
 
@@ -840,7 +840,7 @@ When a client exceeds its quota, the broker throttles the client by imposing a d
 
 ### 6.5 Topic Deletion
 
-Topic deletion is enabled by default (`delete.topic.enable=true`). Deleting a topic is permanent and immediate for client purposes — once deleted, producers and consumers get errors for that topic — but physical data deletion is asynchronous.
+Topic deletion is enabled by default (`delete.topic.enable=true`). Deleting a topic is permanent and immediate for client purposes  once deleted, producers and consumers get errors for that topic  but physical data deletion is asynchronous.
 
 ```bash
 kafka-topics.sh \
@@ -905,7 +905,7 @@ A v1 consumer reading v2 messages will ignore the `currency` field (it does not 
 
 ## 7. Common Failure Modes and Runbooks
 
-Kafka's failure modes are well-understood and recurring. Having pre-written runbooks reviewed by the team before incidents occur — not written for the first time during an incident — is the difference between a 15-minute resolution and a 3-hour incident.
+Kafka's failure modes are well-understood and recurring. Having pre-written runbooks reviewed by the team before incidents occur  not written for the first time during an incident  is the difference between a 15-minute resolution and a 3-hour incident.
 
 The following runbooks assume Prometheus metrics and SSH access to brokers are available. Each runbook includes symptoms (what your monitoring will show), investigation steps (numbered for execution during an incident), and resolution steps.
 
@@ -1004,7 +1004,7 @@ The following runbooks assume Prometheus metrics and SSH access to brokers are a
 5. If producer rate genuinely exceeds consumer throughput:
    a. Horizontal scaling: add consumer instances (up to partition count).
       Verify current consumer count < partition count: if consumer count = partition count,
-      horizontal scaling cannot help — need to increase partition count first (requires
+      horizontal scaling cannot help  need to increase partition count first (requires
       topic recreation or careful re-partitioning).
    b. Increase max.poll.records: allows consumer to process more messages per poll cycle
       if processing per-message is fast.
@@ -1093,7 +1093,7 @@ IMMEDIATE ACTIONS (within first 5 minutes):
 
 3. Manually delete the oldest log segments for the largest topics:
    ls -lt /var/kafka-logs/<topic-partition>/ | tail -20
-   (REVIEW these files before deleting — confirm they are old segments, not active)
+   (REVIEW these files before deleting  confirm they are old segments, not active)
    rm /var/kafka-logs/<topic-partition>/00000000000012345678.log
    rm /var/kafka-logs/<topic-partition>/00000000000012345678.index
    (Delete the .log AND the corresponding .index file)
@@ -1155,7 +1155,7 @@ LONG-TERM REMEDIATION:
 2. Check follower broker disk I/O:
    SSH to follower broker.
    iostat -x 1 10
-   (Check await time — > 20ms on SSDs or > 50ms on spinning disk indicates saturation)
+   (Check await time  > 20ms on SSDs or > 50ms on spinning disk indicates saturation)
 
 3. Check follower broker GC:
    tail -200 /var/log/kafka/kafka-gc.log
@@ -1189,7 +1189,7 @@ LONG-TERM REMEDIATION:
 
 ### 8.1 Capacity Tracking Framework
 
-Capacity planning is only effective when it is proactive — driven by trends and projections, not by current utilization crossing a crisis threshold. The framework has three components: track actual utilization, project future utilization, and act before limits are approached.
+Capacity planning is only effective when it is proactive  driven by trends and projections, not by current utilization crossing a crisis threshold. The framework has three components: track actual utilization, project future utilization, and act before limits are approached.
 
 **The 70% rule:** Alert and begin capacity expansion planning when any resource crosses 70% utilization. This provides lead time for provisioning, testing, and deploying new capacity. A cluster running at 90% utilization has no margin for traffic spikes, backup/restore operations, or the replication overhead of partition reassignment.
 
@@ -1241,7 +1241,7 @@ Alert when this value drops below 30 days.
 
 ### 8.3 Partition Count Growth
 
-Kafka brokers have a practical limit on the number of partition-replicas they can host. The commonly cited guideline is approximately 4,000 partition-replicas per broker (as of Kafka 2.x/3.x), beyond which the broker's metadata management overhead (leader election, ISR management, log manager work) becomes significant. This limit is not a hard cutoff but a guideline — actual limits depend on broker hardware and workload.
+Kafka brokers have a practical limit on the number of partition-replicas they can host. The commonly cited guideline is approximately 4,000 partition-replicas per broker (as of Kafka 2.x/3.x), beyond which the broker's metadata management overhead (leader election, ISR management, log manager work) becomes significant. This limit is not a hard cutoff but a guideline  actual limits depend on broker hardware and workload.
 
 **Tracking partition growth:**
 
@@ -1336,9 +1336,9 @@ graph LR
 
 - **Monitor in layers, alert at the boundary closest to where action is taken.** Infrastructure metrics (disk, CPU, network) are inputs; broker JMX metrics translate those inputs into Kafka-specific signals; consumer lag translates broker signals into business impact. Alert at the layer where the signal is specific enough to act on.
 
-- **Under-Replicated Partitions is your most important broker health signal.** It is the early warning system for data durability risk. Any sustained non-zero URP means the cluster's durability guarantees are weakened — if the leader fails now, data loss is possible. Investigate and resolve URP immediately.
+- **Under-Replicated Partitions is your most important broker health signal.** It is the early warning system for data durability risk. Any sustained non-zero URP means the cluster's durability guarantees are weakened  if the leader fails now, data loss is possible. Investigate and resolve URP immediately.
 
-- **Consumer lag is a business metric, not just a technical one.** Derive lag SLOs directly from business SLAs (processing latency requirements), and alert on sustained lag growth rather than instantaneous lag values. Phantom lag from stopped consumer groups is a frequent source of false positives — monitor consumer group state alongside lag.
+- **Consumer lag is a business metric, not just a technical one.** Derive lag SLOs directly from business SLAs (processing latency requirements), and alert on sustained lag growth rather than instantaneous lag values. Phantom lag from stopped consumer groups is a frequent source of false positives  monitor consumer group state alongside lag.
 
 - **Rolling upgrades require two rolling restarts.** The first upgrades the software on each broker while keeping `inter.broker.protocol.version` at the old version (mixed-version compatibility). The second rolling restart applies the new protocol version after all brokers are on the new software. Skipping the first restart risks incompatibility between mixed-version brokers.
 
@@ -1346,7 +1346,7 @@ graph LR
 
 - **Topic management at scale requires infrastructure-as-code discipline.** Manual `kafka-configs.sh` changes in production are unauditable and error-prone. Topic configurations, ACLs, and quotas should be defined in version-controlled YAML or Terraform resources and applied through CI/CD pipelines with review processes.
 
-- **Capacity planning must be proactive, not reactive.** Alert at 70% utilization for disk, network, and partition count per broker. Project disk exhaustion forward using current growth rates. Begin provisioning new capacity when the projection shows less than 30 days until 80% utilization — provisioning time, testing, and partition rebalancing all require lead time.
+- **Capacity planning must be proactive, not reactive.** Alert at 70% utilization for disk, network, and partition count per broker. Project disk exhaustion forward using current growth rates. Begin provisioning new capacity when the projection shows less than 30 days until 80% utilization  provisioning time, testing, and partition rebalancing all require lead time.
 
 - **Runbooks must exist before incidents occur.** Write runbooks for the five most common failure modes (broker down, consumer lag growth, rebalance storm, disk full, ISR shrink) and review them with your team quarterly. The cognitive load of diagnosing a failure and simultaneously writing the investigation procedure during a P0 incident at 3 a.m. is a recipe for extended outages.
 
@@ -1357,7 +1357,7 @@ graph LR
 | Mental Model | Description |
 |---|---|
 | **Layered monitoring pyramid** | Infrastructure → broker JMX → client metrics → business SLAs. Each layer translates signals from the layer below into more actionable terms. Alert at the layer closest to the actionable signal. |
-| **URP as durability window** | Under-replicated partitions are not just a health metric — they represent an open window during which a leader failure can cause data loss. Duration × write rate = potential data at risk. |
+| **URP as durability window** | Under-replicated partitions are not just a health metric  they represent an open window during which a leader failure can cause data loss. Duration × write rate = potential data at risk. |
 | **Lag as business SLA translation** | Consumer lag in message count is meaningless without context. Divide by consumer throughput to get time-behind-realtime. Derive lag thresholds from business SLA requirements, not intuition. |
 | **The 70% trigger** | Production systems should never run above 70% of any resource limit. At 70%, you have time to act without crisis. At 90%, you are one traffic spike away from a P0. |
 | **Two rolling restarts for upgrades** | Rolling upgrade = (one restart per broker for software) + (one restart per broker for protocol version). The protocol version change requires all brokers to be at the new software version first. |
@@ -1373,7 +1373,7 @@ Part 9 covered the operational discipline needed to run Kafka reliably in produc
 
 Part 10 closes the series by zooming back out to the architectural level.
 
-**Part 10: Advanced Patterns — Event Sourcing, CDC, CQRS, and Multi-Datacenter**
+**Part 10: Advanced Patterns  Event Sourcing, CDC, CQRS, and Multi-Datacenter**
 
 - How Kafka enables event sourcing: topics as the system of record, materialized views as derived state
 - Change Data Capture (CDC) with Debezium: streaming database changes into Kafka at the transaction log level, with exactly-once semantics
@@ -1383,4 +1383,4 @@ Part 10 closes the series by zooming back out to the architectural level.
 - MirrorMaker 2 in depth: offset translation, consumer group migration across clusters, and replication topologies
 - The end-to-end event-driven architecture: tying together producers, brokers, stream processing, and consumers into a coherent system design
 
-Part 10 is where the mechanical understanding built across Parts 0-9 converts into architectural judgment — the ability to evaluate which patterns apply to a given problem, where the trade-offs lie, and how to design systems that remain operable as they grow.
+Part 10 is where the mechanical understanding built across Parts 0-9 converts into architectural judgment  the ability to evaluate which patterns apply to a given problem, where the trade-offs lie, and how to design systems that remain operable as they grow.

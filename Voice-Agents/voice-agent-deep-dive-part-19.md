@@ -1,8 +1,8 @@
-# Voice Agents Deep Dive — Part 19: The Capstone — Building a Production Voice Agent Platform
+# Voice Agents Deep Dive  Part 19: The Capstone  Building a Production Voice Agent Platform
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** 19 of 19 (Capstone)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~60 minutes
@@ -13,7 +13,7 @@
 
 In **Part 18**, we tackled the unglamorous but absolutely essential work of **Security, Testing, and Compliance**. We built a threat model for voice agents, implemented PII redaction pipelines that strip sensitive data before it ever reaches logs or storage, and walked through regulatory frameworks: GDPR's right-to-erasure requirements, HIPAA's strict rules around PHI in healthcare voice workflows, and TCPA's consent requirements for outbound calling in the United States. We assembled automated test suites that cover unit tests for VAD and ASR mocking, integration tests for the full pipeline, and adversarial tests that probe the agent for prompt injection and data leakage.
 
-Security and compliance are not afterthoughts. They are the foundation on which a trustworthy voice product is built. Without them, everything else we have built — however technically elegant — cannot be deployed in production.
+Security and compliance are not afterthoughts. They are the foundation on which a trustworthy voice product is built. Without them, everything else we have built  however technically elegant  cannot be deployed in production.
 
 And now, with all of that foundation in place, we arrive at **Part 19: The Capstone**.
 
@@ -26,26 +26,26 @@ This is it. Part 19 of 19.
 Over the previous eighteen parts, we have traveled from raw audio bytes to production-grade AI systems. We have explored:
 
 - **Part 0:** Why voice agents are hard and what makes them different from chatbots
-- **Part 1:** Audio fundamentals — sample rates, PCM, codec tradeoffs
-- **Part 2:** Voice Activity Detection — energy-based and ML-based VAD
-- **Part 3:** Automatic Speech Recognition — streaming ASR with Whisper and Deepgram
-- **Part 4:** Text-to-Speech — neural TTS, SSML, prosody control
-- **Part 5:** End-to-end latency — measurement, budgeting, optimization
-- **Part 6:** Telephony integration — Twilio, SIP trunks, WebRTC
+- **Part 1:** Audio fundamentals  sample rates, PCM, codec tradeoffs
+- **Part 2:** Voice Activity Detection  energy-based and ML-based VAD
+- **Part 3:** Automatic Speech Recognition  streaming ASR with Whisper and Deepgram
+- **Part 4:** Text-to-Speech  neural TTS, SSML, prosody control
+- **Part 5:** End-to-end latency  measurement, budgeting, optimization
+- **Part 6:** Telephony integration  Twilio, SIP trunks, WebRTC
 - **Part 7:** Barge-in and interruption handling
-- **Part 8:** LLM integration — streaming completions, function calling
+- **Part 8:** LLM integration  streaming completions, function calling
 - **Part 9:** Intent recognition and entity extraction
-- **Part 10:** Dialog management — turn-taking, state machines, slot filling
-- **Part 11:** Memory systems — short-term context, long-term retrieval
-- **Part 12:** Multi-modal agents — DTMF, transfers, IVR fallback
-- **Part 13:** Streaming architectures — WebSocket pipelines, backpressure
-- **Part 14:** Observability — distributed tracing, metrics, dashboards
-- **Part 15:** Cost optimization — model routing, caching, batching
-- **Part 16:** Scalability — horizontal scaling, load balancing, stateless workers
-- **Part 17:** Agent personas and customization — voice, tone, DSL config
+- **Part 10:** Dialog management  turn-taking, state machines, slot filling
+- **Part 11:** Memory systems  short-term context, long-term retrieval
+- **Part 12:** Multi-modal agents  DTMF, transfers, IVR fallback
+- **Part 13:** Streaming architectures  WebSocket pipelines, backpressure
+- **Part 14:** Observability  distributed tracing, metrics, dashboards
+- **Part 15:** Cost optimization  model routing, caching, batching
+- **Part 16:** Scalability  horizontal scaling, load balancing, stateless workers
+- **Part 17:** Agent personas and customization  voice, tone, DSL config
 - **Part 18:** Security, testing, and compliance
 
-Now we bring it all together into a **complete, production-ready voice agent platform** — one that you could actually deploy, scale, and monetize.
+Now we bring it all together into a **complete, production-ready voice agent platform**  one that you could actually deploy, scale, and monetize.
 
 This article is long by design. It is the reference implementation. Take your time with it.
 
@@ -55,7 +55,7 @@ This article is long by design. It is the reference implementation. Take your ti
 
 ### 1.1 The Full Platform Diagram
 
-Before writing a single line of code, we need a clear picture of what we are building. A production voice agent platform is not a single service — it is an ecosystem of cooperating components, each with a well-defined responsibility.
+Before writing a single line of code, we need a clear picture of what we are building. A production voice agent platform is not a single service  it is an ecosystem of cooperating components, each with a well-defined responsibility.
 
 ```mermaid
 graph TB
@@ -128,13 +128,13 @@ graph TB
 Every architectural decision in this platform flows from three core principles:
 
 **Principle 1: Stateless Workers**
-Worker processes hold zero conversation state in memory between requests. All state — session data, conversation history, slot values — lives in Redis. This means any worker can handle any request, enabling horizontal scaling and zero-downtime deployments.
+Worker processes hold zero conversation state in memory between requests. All state  session data, conversation history, slot values  lives in Redis. This means any worker can handle any request, enabling horizontal scaling and zero-downtime deployments.
 
 **Principle 2: Externalized State**
 The boundary between compute and state is explicit and enforced. Workers read from and write to Redis and PostgreSQL. They never share memory. This allows the state layer to be scaled, replicated, and backed up independently from the compute layer.
 
 **Principle 3: Graceful Degradation**
-Every external dependency has a fallback. If Deepgram ASR is unavailable, fall back to local Whisper. If ElevenLabs TTS is unavailable, fall back to Azure TTS or a cached audio file. If the LLM is slow, return a "please hold" audio fragment and retry. The platform never hangs silently — it always takes the best available action.
+Every external dependency has a fallback. If Deepgram ASR is unavailable, fall back to local Whisper. If ElevenLabs TTS is unavailable, fall back to Azure TTS or a cached audio file. If the LLM is slow, return a "please hold" audio fragment and retry. The platform never hangs silently  it always takes the best available action.
 
 ### 1.3 Technology Stack Decision Table
 
@@ -159,7 +159,7 @@ Every external dependency has a fallback. If Deepgram ASR is unavailable, fall b
 
 ## 2. Data Models (Pydantic)
 
-A production system needs rigorous data models. These are not just type hints — they are the contract between every service in the platform. We use Pydantic v2 throughout.
+A production system needs rigorous data models. These are not just type hints  they are the contract between every service in the platform. We use Pydantic v2 throughout.
 
 ```python
 # platform/models.py
@@ -628,8 +628,8 @@ The `MemoryService` wraps both short-term (Redis) and long-term (ChromaDB) memor
 """
 MemoryService: Unified interface for short-term and long-term memory.
 
-Short-term: Redis (conversation turns, slot values) — managed by SessionManager.
-Long-term: ChromaDB (user facts, past interaction summaries) — managed here.
+Short-term: Redis (conversation turns, slot values)  managed by SessionManager.
+Long-term: ChromaDB (user facts, past interaction summaries)  managed here.
 """
 
 import logging
@@ -724,7 +724,7 @@ class MemoryService:
         so it can be retrieved in future calls from the same user.
         """
         if not session.user_id:
-            return  # Anonymous call — nothing to store
+            return  # Anonymous call  nothing to store
 
         doc_id = f"session:{session.id}"
         metadata = {
@@ -770,7 +770,7 @@ class MemoryService:
 AgentService: Load, validate, cache, and serve agent configurations.
 
 Agents are stored in PostgreSQL and cached in Redis.
-Cache TTL is 5 minutes — short enough to pick up config changes quickly.
+Cache TTL is 5 minutes  short enough to pick up config changes quickly.
 """
 
 import json
@@ -1120,7 +1120,7 @@ from platform.engines.tts_engine import TTSEngine
 
 logger = logging.getLogger(__name__)
 
-# Cost constants (USD per unit) — update as provider pricing changes
+# Cost constants (USD per unit)  update as provider pricing changes
 COST_GPT4O_INPUT_PER_1K = 0.005
 COST_GPT4O_OUTPUT_PER_1K = 0.015
 COST_ELEVENLABS_PER_CHAR = 0.000030
@@ -1242,7 +1242,7 @@ class VoicePipeline:
             metrics.audio_duration_seconds = segment.duration_seconds
 
             if not asr_result.transcript.strip():
-                logger.debug("Empty transcript — skipping turn")
+                logger.debug("Empty transcript  skipping turn")
                 return
 
             logger.info(
@@ -1289,7 +1289,7 @@ class VoicePipeline:
                 metrics.llm_end = time.monotonic()
                 metrics.llm_output_tokens = len(llm_response_text.split())  # approx
 
-            # 5. TTS streaming — pipe LLM tokens directly to TTS -----------
+            # 5. TTS streaming  pipe LLM tokens directly to TTS -----------
             metrics.tts_start = time.monotonic()
             first_audio = True
 
@@ -1585,7 +1585,7 @@ CUSTOMER_SUPPORT_AGENT = (
         "You help customers with order status, returns, and product questions. "
         "Always verify the customer's order number before accessing their account. "
         "If you cannot resolve an issue, offer to escalate to a human agent. "
-        "Keep responses concise — this is a phone conversation, not an email. "
+        "Keep responses concise  this is a phone conversation, not an email. "
         "Never invent information. If you don't know, say so and offer to find out."
     )
     .with_voice("rachel", provider="elevenlabs", speaking_rate=1.05)
@@ -1620,7 +1620,7 @@ RESTAURANT_BOOKING_AGENT = (
         "Available times are 5:30 PM, 7:00 PM, and 8:30 PM. "
         "Maximum party size is 12. Minimum 2 hours notice required. "
         "Always confirm the reservation details back to the guest before finalizing. "
-        "Speak naturally and warmly — you are creating a first impression of the restaurant."
+        "Speak naturally and warmly  you are creating a first impression of the restaurant."
     )
     .with_voice("bella", provider="elevenlabs", speaking_rate=0.95)
     .with_llm("gpt-4o", temperature=0.6, max_tokens=300)
@@ -1672,7 +1672,7 @@ HEALTHCARE_SCHEDULING_AGENT = (
         "You schedule appointments for existing patients only. "
         "Collect: patient name, date of birth, reason for visit, preferred date/time, and insurance. "
         "You cannot provide medical advice. For urgent symptoms, direct to 911 or ER. "
-        "Speak clearly and slowly — many callers may be elderly or anxious. "
+        "Speak clearly and slowly  many callers may be elderly or anxious. "
         "Always confirm appointment details and provide a confirmation number."
     )
     .with_voice("aria", provider="elevenlabs", speaking_rate=0.90)
@@ -1702,19 +1702,19 @@ Main FastAPI application for the Voice Agent Platform.
 
 Endpoints:
   REST:
-    POST   /agents                      — Create a new agent
-    GET    /agents/{id}                 — Get agent config
-    PATCH  /agents/{id}/activate        — Activate a draft agent
-    POST   /calls/outbound              — Initiate an outbound call
-    GET    /calls/{id}                  — Get call status
-    GET    /analytics/dashboard         — Dashboard metrics
+    POST   /agents                       Create a new agent
+    GET    /agents/{id}                  Get agent config
+    PATCH  /agents/{id}/activate         Activate a draft agent
+    POST   /calls/outbound               Initiate an outbound call
+    GET    /calls/{id}                   Get call status
+    GET    /analytics/dashboard          Dashboard metrics
 
   WebSocket:
-    WS     /ws/audio/{session_id}       — Real-time audio stream
+    WS     /ws/audio/{session_id}        Real-time audio stream
 
   Webhooks:
-    POST   /webhooks/twilio/inbound     — Twilio inbound call webhook
-    POST   /webhooks/twilio/status      — Twilio call status callback
+    POST   /webhooks/twilio/inbound      Twilio inbound call webhook
+    POST   /webhooks/twilio/status       Twilio call status callback
 """
 
 from __future__ import annotations
@@ -2164,7 +2164,7 @@ class EvaluationReport:
             )
         if self.barge_in_rate > 0.30:
             self.alerts.append(
-                f"HIGH barge-in rate: {self.barge_in_rate:.1%} — agent may be speaking too long"
+                f"HIGH barge-in rate: {self.barge_in_rate:.1%}  agent may be speaking too long"
             )
         if self.drop_rate > 0.05:
             self.alerts.append(
@@ -2387,7 +2387,7 @@ x-common-env: &common-env
 
 services:
   # -----------------------------------------------------------------------
-  # Voice Gateway — FastAPI, handles Twilio webhooks and WebSocket audio
+  # Voice Gateway  FastAPI, handles Twilio webhooks and WebSocket audio
   # -----------------------------------------------------------------------
   gateway:
     build:
@@ -2418,7 +2418,7 @@ services:
           memory: 512M
 
   # -----------------------------------------------------------------------
-  # Worker — Pipeline execution (VAD, ASR, LLM, TTS)
+  # Worker  Pipeline execution (VAD, ASR, LLM, TTS)
   # -----------------------------------------------------------------------
   worker:
     build:
@@ -2444,7 +2444,7 @@ services:
           memory: 2G
 
   # -----------------------------------------------------------------------
-  # Redis — Session state and caching
+  # Redis  Session state and caching
   # -----------------------------------------------------------------------
   redis:
     image: redis:7-alpine
@@ -2461,7 +2461,7 @@ services:
     restart: unless-stopped
 
   # -----------------------------------------------------------------------
-  # PostgreSQL + TimescaleDB — Analytics and audit logs
+  # PostgreSQL + TimescaleDB  Analytics and audit logs
   # -----------------------------------------------------------------------
   postgres:
     image: timescale/timescaledb:latest-pg16
@@ -2482,7 +2482,7 @@ services:
     restart: unless-stopped
 
   # -----------------------------------------------------------------------
-  # ChromaDB — Long-term vector memory
+  # ChromaDB  Long-term vector memory
   # -----------------------------------------------------------------------
   chromadb:
     image: chromadb/chroma:latest
@@ -2495,7 +2495,7 @@ services:
     restart: unless-stopped
 
   # -----------------------------------------------------------------------
-  # Prometheus — Metrics collection
+  # Prometheus  Metrics collection
   # -----------------------------------------------------------------------
   prometheus:
     image: prom/prometheus:latest
@@ -2511,7 +2511,7 @@ services:
     restart: unless-stopped
 
   # -----------------------------------------------------------------------
-  # Grafana — Dashboards
+  # Grafana  Dashboards
   # -----------------------------------------------------------------------
   grafana:
     image: grafana/grafana:latest
@@ -2529,7 +2529,7 @@ services:
     restart: unless-stopped
 
   # -----------------------------------------------------------------------
-  # Jaeger — Distributed tracing
+  # Jaeger  Distributed tracing
   # -----------------------------------------------------------------------
   jaeger:
     image: jaegertracing/all-in-one:latest
@@ -2860,7 +2860,7 @@ router = APIRouter()
 
 @router.get("/health")
 async def health_check() -> dict[str, str]:
-    """Basic liveness check — always returns 200 if the process is running."""
+    """Basic liveness check  always returns 200 if the process is running."""
     return {"status": "ok"}
 
 
@@ -2870,7 +2870,7 @@ async def readiness_check(
     redis: aioredis.Redis = Depends(get_redis),
 ) -> JSONResponse:
     """
-    Readiness check — verifies all downstream dependencies are reachable.
+    Readiness check  verifies all downstream dependencies are reachable.
     Returns 200 only when the service is ready to handle traffic.
     Returns 503 if any dependency is unhealthy.
     """
@@ -2902,7 +2902,7 @@ async def readiness_check(
 
 @router.get("/metrics/summary")
 async def metrics_summary(request: Request) -> dict[str, Any]:
-    """Quick metrics snapshot for internal dashboards (not Prometheus — use /metrics for that)."""
+    """Quick metrics snapshot for internal dashboards (not Prometheus  use /metrics for that)."""
     return {
         "active_websockets": getattr(request.app.state, "active_ws_count", 0),
         "uptime_seconds": getattr(request.app.state, "uptime_seconds", 0),
@@ -2930,7 +2930,7 @@ async def metrics_summary(request: Request) -> dict[str, Any]:
 
 ## 9. Observability and Monitoring
 
-Production-grade observability means you know exactly what is happening inside your platform at any moment — before your customers tell you something is wrong.
+Production-grade observability means you know exactly what is happening inside your platform at any moment  before your customers tell you something is wrong.
 
 ### 9.1 Prometheus Metrics
 
@@ -3174,7 +3174,7 @@ response = requests.post(
         "system_prompt": (
             "You are a friendly demo assistant. "
             "Your name is Sam. "
-            "Keep responses to 1-2 sentences — this is a voice call. "
+            "Keep responses to 1-2 sentences  this is a voice call. "
             "Be warm and conversational."
         ),
         "voice_id": "rachel",
@@ -3383,7 +3383,7 @@ def test_unknown_agent_returns_404(client):
 
 ```mermaid
 graph LR
-    subgraph Grafana["Grafana Dashboard — Voice Agent Platform"]
+    subgraph Grafana["Grafana Dashboard  Voice Agent Platform"]
         subgraph Row1["Row 1: Volume"]
             W1["Active Sessions\n(Gauge)"]
             W2["Calls Today\n(Counter)"]
@@ -3501,9 +3501,9 @@ Circuit breaker pattern for external API calls.
 Prevents cascade failures when upstream services are unhealthy.
 
 States:
-  CLOSED   — normal operation, requests pass through
-  OPEN     — too many failures, requests fail immediately
-  HALF_OPEN — testing if service has recovered
+  CLOSED    normal operation, requests pass through
+  OPEN      too many failures, requests fail immediately
+  HALF_OPEN  testing if service has recovered
 """
 
 import asyncio
@@ -3564,7 +3564,7 @@ class CircuitBreaker:
         current_state = self.state
 
         if current_state == CircuitState.OPEN:
-            raise RuntimeError(f"Circuit {self.name} is OPEN — call rejected")
+            raise RuntimeError(f"Circuit {self.name} is OPEN  call rejected")
 
         try:
             result = await func(*args, **kwargs)
@@ -3706,7 +3706,7 @@ def monitor_green(duration: int = 300) -> bool:
             logger.warning("Health check exception: %s (errors=%d)", e, error_count)
 
         if error_count >= 3:
-            logger.error("Green deployment has %d health check failures — triggering rollback", error_count)
+            logger.error("Green deployment has %d health check failures  triggering rollback", error_count)
             return False
 
         time.sleep(check_interval)
@@ -3726,7 +3726,7 @@ def main() -> None:
         deploy_green(args.image)
 
         if not wait_for_green_ready():
-            logger.error("Green not ready — aborting deployment (blue still serving)")
+            logger.error("Green not ready  aborting deployment (blue still serving)")
             sys.exit(1)
 
         switch_traffic_to_green()
@@ -3907,30 +3907,30 @@ A comprehensive reference for every technical term used across this series.
 
 | Term | Definition |
 |---|---|
-| **ASR** | Automatic Speech Recognition — converts spoken audio to text |
-| **TTS** | Text-to-Speech — converts text to spoken audio |
-| **VAD** | Voice Activity Detection — detects when speech starts and ends |
-| **PCM** | Pulse-Code Modulation — raw uncompressed digital audio format |
+| **ASR** | Automatic Speech Recognition  converts spoken audio to text |
+| **TTS** | Text-to-Speech  converts text to spoken audio |
+| **VAD** | Voice Activity Detection  detects when speech starts and ends |
+| **PCM** | Pulse-Code Modulation  raw uncompressed digital audio format |
 | **Sample Rate** | Audio samples per second (e.g., 8000 Hz for telephony, 16000 Hz for ASR) |
 | **Bit Depth** | Bits per audio sample (16-bit is standard for voice) |
 | **Codec** | Algorithm for encoding/decoding audio (μ-law, OPUS, MP3) |
 | **μ-law / mulaw** | Telephony audio codec used by PSTN and Twilio (8kHz, 8-bit) |
 | **OPUS** | Modern low-latency audio codec used in WebRTC |
-| **WebRTC** | Web Real-Time Communication — browser-based audio/video streaming |
-| **SIP** | Session Initiation Protocol — VoIP signaling standard |
-| **PSTN** | Public Switched Telephone Network — traditional phone network |
+| **WebRTC** | Web Real-Time Communication  browser-based audio/video streaming |
+| **SIP** | Session Initiation Protocol  VoIP signaling standard |
+| **PSTN** | Public Switched Telephone Network  traditional phone network |
 | **Twilio** | Cloud telephony platform; provides phone numbers and call routing |
-| **TwiML** | Twilio Markup Language — XML instructions for call flow |
+| **TwiML** | Twilio Markup Language  XML instructions for call flow |
 | **Media Stream** | Twilio feature that delivers call audio over WebSocket |
 | **Barge-in** | User interrupts agent while agent is speaking |
 | **Streaming ASR** | Transcription delivered word-by-word as speech occurs |
-| **TTFT** | Time to First Token — latency from LLM request to first output token |
+| **TTFT** | Time to First Token  latency from LLM request to first output token |
 | **End-to-end Latency** | Time from end of user speech to start of agent audio |
 | **Latency Budget** | Allocation of total latency across pipeline stages |
 | **LLM** | Large Language Model (GPT-4o, Claude 3.5, etc.) |
 | **Function Calling** | LLM feature to invoke external tools/APIs |
 | **Streaming Completion** | LLM response delivered token-by-token |
-| **RAG** | Retrieval-Augmented Generation — injecting retrieved context into LLM |
+| **RAG** | Retrieval-Augmented Generation  injecting retrieved context into LLM |
 | **ChromaDB** | Open-source vector database for semantic search |
 | **Embeddings** | Dense vector representations of text for semantic similarity |
 | **Redis** | In-memory data store; used for session state and caching |
@@ -3948,7 +3948,7 @@ A comprehensive reference for every technical term used across this series.
 | **Grafana** | Metrics visualization and dashboarding platform |
 | **Jaeger** | Distributed tracing system for microservices |
 | **OpenTelemetry** | Vendor-neutral observability framework (traces, metrics, logs) |
-| **HPA** | Horizontal Pod Autoscaler — Kubernetes automatic scaling |
+| **HPA** | Horizontal Pod Autoscaler  Kubernetes automatic scaling |
 | **Circuit Breaker** | Resilience pattern that stops calling failing services |
 | **Blue-Green Deployment** | Zero-downtime deployment by running two identical environments |
 | **PII** | Personally Identifiable Information (names, phone numbers, SSNs) |
@@ -3956,10 +3956,10 @@ A comprehensive reference for every technical term used across this series.
 | **HIPAA** | Health Insurance Portability and Accountability Act (US healthcare privacy) |
 | **TCPA** | Telephone Consumer Protection Act (US telemarketing law) |
 | **CSAT** | Customer Satisfaction Score (1-5 rating) |
-| **AHT** | Average Handle Time — mean duration of a voice session |
-| **FCR** | First Call Resolution — % of issues resolved without a callback |
+| **AHT** | Average Handle Time  mean duration of a voice session |
+| **FCR** | First Call Resolution  % of issues resolved without a callback |
 | **A/B Test** | Controlled experiment comparing two agent configurations |
-| **DSL** | Domain-Specific Language — a specialized configuration syntax |
+| **DSL** | Domain-Specific Language  a specialized configuration syntax |
 | **Stateless Worker** | A compute process that holds no persistent state between requests |
 | **Externalized State** | Architecture pattern where state lives in dedicated stores, not workers |
 | **Graceful Degradation** | System continues operating at reduced capability when a component fails |
@@ -3995,7 +3995,7 @@ graph LR
     P18 --> P19["Part 19\nThe Capstone"]
 ```
 
-Each part built on the last. VAD made ASR possible. ASR made LLM integration meaningful. LLM integration made dialog management necessary. Dialog management demanded memory. Memory required observability. Observability enabled optimization. Optimization enabled scale. Scale demanded security. And security enabled trust — the foundation of any production system.
+Each part built on the last. VAD made ASR possible. ASR made LLM integration meaningful. LLM integration made dialog management necessary. Dialog management demanded memory. Memory required observability. Observability enabled optimization. Optimization enabled scale. Scale demanded security. And security enabled trust  the foundation of any production system.
 
 ---
 
@@ -4008,9 +4008,9 @@ Finishing this series is a beginning, not an end. Here is where to go from here:
 | Topic | Resource | Why |
 |---|---|---|
 | **Audio DSP** | Julius O. Smith's "Mathematics of the DFT" (ccrma.stanford.edu) | Understand what is happening inside VAD and ASR at the signal level |
-| **Speech Science** | "Spoken Language Processing" — Huang, Acero, Hon | The academic foundation of everything ASR/TTS does |
-| **LLM Engineering** | "Building LLM-Powered Applications" — Valentina Alto | Beyond function calling to advanced agent architectures |
-| **Distributed Systems** | "Designing Data-Intensive Applications" — Martin Kleppmann | The mental models behind everything in our state layer |
+| **Speech Science** | "Spoken Language Processing"  Huang, Acero, Hon | The academic foundation of everything ASR/TTS does |
+| **LLM Engineering** | "Building LLM-Powered Applications"  Valentina Alto | Beyond function calling to advanced agent architectures |
+| **Distributed Systems** | "Designing Data-Intensive Applications"  Martin Kleppmann | The mental models behind everything in our state layer |
 | **SRE** | Google's "Site Reliability Engineering" (sre.google/books) | How to operate production systems at scale |
 | **Kafka** | Confluent's Kafka documentation | Next-level event streaming for high-volume voice platforms |
 
@@ -4018,33 +4018,33 @@ Finishing this series is a beginning, not an end. Here is where to go from here:
 
 The skills you have built apply across several growing career tracks:
 
-**Voice AI Engineer** — Build and maintain voice agent platforms. Deep expertise in audio processing, real-time streaming, and LLM integration. High demand in healthcare, fintech, and e-commerce.
+**Voice AI Engineer**  Build and maintain voice agent platforms. Deep expertise in audio processing, real-time streaming, and LLM integration. High demand in healthcare, fintech, and e-commerce.
 
-**Conversational AI Designer** — Design dialog flows, agent personas, and user experiences. Combines linguistic expertise with LLM prompting and evaluation skills.
+**Conversational AI Designer**  Design dialog flows, agent personas, and user experiences. Combines linguistic expertise with LLM prompting and evaluation skills.
 
-**ML Platform Engineer** — Build the infrastructure that ML models run on. Focus on model serving, latency optimization, and cost management at scale.
+**ML Platform Engineer**  Build the infrastructure that ML models run on. Focus on model serving, latency optimization, and cost management at scale.
 
-**AI Product Manager** — Define what voice AI products should do, measure whether they succeed, and prioritize improvements. Requires deep technical literacy.
+**AI Product Manager**  Define what voice AI products should do, measure whether they succeed, and prioritize improvements. Requires deep technical literacy.
 
-**Voice AI Researcher** — Advance the state of the art in ASR, TTS, spoken dialog systems. Academic or industrial research track.
+**Voice AI Researcher**  Advance the state of the art in ASR, TTS, spoken dialog systems. Academic or industrial research track.
 
 ### 16.3 The Future of Voice AI
 
 The landscape is moving fast. Here is what to watch:
 
-**GPT-4o Native Audio** — OpenAI's native audio model processes speech directly without a separate ASR step, dramatically reducing latency and preserving prosody. This will reshape the pipeline architecture we built.
+**GPT-4o Native Audio**  OpenAI's native audio model processes speech directly without a separate ASR step, dramatically reducing latency and preserving prosody. This will reshape the pipeline architecture we built.
 
-**Real-time Multimodal Models** — Models that simultaneously understand audio, video, and text are arriving. Your voice agent may soon also see the caller's screen or face.
+**Real-time Multimodal Models**  Models that simultaneously understand audio, video, and text are arriving. Your voice agent may soon also see the caller's screen or face.
 
-**Ambient AI** — Always-on voice agents embedded in physical spaces (offices, hospitals, retail floors) that help proactively rather than reactively.
+**Ambient AI**  Always-on voice agents embedded in physical spaces (offices, hospitals, retail floors) that help proactively rather than reactively.
 
-**Smaller, Faster Models** — Distilled models that run locally on devices (phones, smart speakers, embedded systems) will eliminate cloud round-trip latency entirely.
+**Smaller, Faster Models**  Distilled models that run locally on devices (phones, smart speakers, embedded systems) will eliminate cloud round-trip latency entirely.
 
-**Emotional Intelligence** — Models that detect and respond appropriately to caller emotions (frustration, urgency, distress) will dramatically improve CSAT scores.
+**Emotional Intelligence**  Models that detect and respond appropriately to caller emotions (frustration, urgency, distress) will dramatically improve CSAT scores.
 
-**Voice Cloning and Persona** — Agents that sound exactly like a brand's ideal voice, with consistent emotional tone, are already commercially available.
+**Voice Cloning and Persona**  Agents that sound exactly like a brand's ideal voice, with consistent emotional tone, are already commercially available.
 
-The infrastructure patterns we have built — streaming pipelines, stateless workers, externalized state, observability-first design — will remain relevant regardless of which underlying models power them. Good architecture outlasts any individual model.
+The infrastructure patterns we have built  streaming pipelines, stateless workers, externalized state, observability-first design  will remain relevant regardless of which underlying models power them. Good architecture outlasts any individual model.
 
 ---
 
@@ -4056,13 +4056,13 @@ You understand audio at the byte level. You know why 16kHz matters and what μ-l
 
 Most importantly, you have built something that *speaks*.
 
-Voice is the most natural interface humans have. It is how we comfort our children, negotiate deals, tell stories, and ask for help. Building AI that participates in that — that can listen and respond with genuine usefulness — is not a small thing.
+Voice is the most natural interface humans have. It is how we comfort our children, negotiate deals, tell stories, and ask for help. Building AI that participates in that  that can listen and respond with genuine usefulness  is not a small thing.
 
-The systems we have built in this series are not perfect. No production system ever is. They will break in ways you did not anticipate. Callers will say things your prompts never imagined. Deepgram will have an outage at 2 AM. Your circuit breaker will trip on a busy Friday afternoon. These are not failures — they are the curriculum of production engineering.
+The systems we have built in this series are not perfect. No production system ever is. They will break in ways you did not anticipate. Callers will say things your prompts never imagined. Deepgram will have an outage at 2 AM. Your circuit breaker will trip on a busy Friday afternoon. These are not failures  they are the curriculum of production engineering.
 
 Every incident is a data point. Every barge-in event is feedback about your TTS pacing. Every dropped call is a signal worth investigating. The evaluation framework you built in Part 19 gives you the instruments to hear those signals and act on them.
 
-The future of voice AI will be built by people who understand both the technical depth and the human stakes. People who care not just about latency percentiles, but about the 80-year-old caller who needed help understanding their insurance bill. The developer who ships a robust healthcare scheduling agent is not just writing code — they are improving someone's access to care.
+The future of voice AI will be built by people who understand both the technical depth and the human stakes. People who care not just about latency percentiles, but about the 80-year-old caller who needed help understanding their insurance bill. The developer who ships a robust healthcare scheduling agent is not just writing code  they are improving someone's access to care.
 
 Build things that matter. Measure what you build. Fix what breaks. Share what you learn.
 
@@ -4147,7 +4147,7 @@ voice-agent-platform/
 ## Appendix B: .env.example
 
 ```bash
-# Voice Agent Platform — Environment Variables
+# Voice Agent Platform  Environment Variables
 # Copy to .env and fill in your values.
 # NEVER commit .env to version control.
 
@@ -4190,7 +4190,7 @@ POSTGRES_PASSWORD=change-me-to-a-strong-password
 
 ---
 
-*This article is Part 19 of 19 in the "Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production" series.*
+*This article is Part 19 of 19 in the "Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production" series.*
 
 *Parts 0–18 are available in the same repository.*
 

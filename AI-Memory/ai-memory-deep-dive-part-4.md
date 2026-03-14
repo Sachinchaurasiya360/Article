@@ -1,17 +1,17 @@
-# Memory in AI Systems Deep Dive — Part 4: Transformers and Context Windows — The Architecture That Changed Everything
+# Memory in AI Systems Deep Dive  Part 4: Transformers and Context Windows  The Architecture That Changed Everything
 
 ---
 
-**Series:** Memory in AI Systems — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Memory in AI Systems  A Developer's Deep Dive from Fundamentals to Production
 **Part:** 4 of 19
 **Audience:** Developers with programming experience who want to understand AI memory systems from the ground up
 **Reading time:** ~60 minutes
 
 ---
 
-In Part 3, we built the attention mechanism from scratch — from Bahdanau's original additive attention through scaled dot-product attention and multi-head attention. We implemented KV caches, visualized attention patterns, and saw how attention acts as a dynamic memory access mechanism: queries search through keys to retrieve relevant values. We also explored the causal mask that prevents autoregressive models from seeing the future.
+In Part 3, we built the attention mechanism from scratch  from Bahdanau's original additive attention through scaled dot-product attention and multi-head attention. We implemented KV caches, visualized attention patterns, and saw how attention acts as a dynamic memory access mechanism: queries search through keys to retrieve relevant values. We also explored the causal mask that prevents autoregressive models from seeing the future.
 
-But attention alone is not a model. It's a component — like an engine without a chassis, wheels, or steering. In this part, we assemble the complete vehicle: the **Transformer architecture**. We'll build it piece by piece, understand every component, and see why this architecture — published in a single 2017 paper — replaced virtually every other approach in AI.
+But attention alone is not a model. It's a component  like an engine without a chassis, wheels, or steering. In this part, we assemble the complete vehicle: the **Transformer architecture**. We'll build it piece by piece, understand every component, and see why this architecture  published in a single 2017 paper  replaced virtually every other approach in AI.
 
 More critically for our series, we'll see how the Transformer is itself a memory system. Its context window is working memory. Its feed-forward networks store factual knowledge. Its attention heads perform dynamic information retrieval. Understanding these memory properties is essential for understanding why we need external memory systems (the subject of Parts 5-19).
 
@@ -56,14 +56,14 @@ Let's build.
 
 ### The Dominant Paradigm: Recurrent Neural Networks
 
-Before June 2017, if you wanted to build a system that processed sequences — translation, summarization, question answering, text generation — you used some variant of a Recurrent Neural Network. The landscape looked like this:
+Before June 2017, if you wanted to build a system that processed sequences  translation, summarization, question answering, text generation  you used some variant of a Recurrent Neural Network. The landscape looked like this:
 
 | Architecture | Year | Key Idea | Major Limitation |
 |---|---|---|---|
 | **Vanilla RNN** | 1986 | Process tokens sequentially, carry hidden state | Vanishing gradients, can't learn long dependencies |
 | **LSTM** | 1997 | Gated memory cells to preserve long-term info | Still sequential, slow to train, ~500 token practical limit |
 | **GRU** | 2014 | Simplified LSTM with fewer parameters | Same sequential bottleneck as LSTM |
-| **Seq2Seq + Attention** | 2014-2015 | Attention over encoder states | Core is still an RNN — sequential, slow |
+| **Seq2Seq + Attention** | 2014-2015 | Attention over encoder states | Core is still an RNN  sequential, slow |
 | **ConvS2S** | 2017 (pre-Transformer) | 1D convolutions instead of RNNs | Limited receptive field, stacking required for long range |
 
 Every approach had the same fundamental problem: **sequential processing**. An RNN must process token 5 before it can process token 6, because token 6's hidden state depends on token 5's output. This creates three critical limitations:
@@ -94,7 +94,7 @@ import numpy as np
 
 def rnn_forward(tokens, W_h, W_x, b):
     """
-    RNN forward pass — inherently sequential.
+    RNN forward pass  inherently sequential.
 
     Each step DEPENDS on the previous step's output.
     There is no way to compute h[t] without first computing h[t-1].
@@ -124,21 +124,21 @@ Compare this with what attention can do:
 ```python
 def attention_forward(tokens, W_q, W_k, W_v):
     """
-    Attention forward pass — fully parallelizable.
+    Attention forward pass  fully parallelizable.
 
     Every position's output can be computed simultaneously
     because each position has access to ALL other positions
-    through the attention matrix — no sequential dependency.
+    through the attention matrix  no sequential dependency.
     """
-    # All positions computed simultaneously — one big matrix multiply
+    # All positions computed simultaneously  one big matrix multiply
     Q = tokens @ W_q  # [seq_len, d_model] @ [d_model, d_k] -> [seq_len, d_k]
-    K = tokens @ W_k  # Same — all positions at once
-    V = tokens @ W_v  # Same — all positions at once
+    K = tokens @ W_k  # Same  all positions at once
+    V = tokens @ W_v  # Same  all positions at once
 
     # Attention scores: all pairs computed in one matrix multiply
     scores = Q @ K.T / np.sqrt(Q.shape[-1])  # [seq_len, seq_len]
 
-    # Softmax and weighted sum — also parallelizable
+    # Softmax and weighted sum  also parallelizable
     weights = softmax(scores, axis=-1)
     output = weights @ V  # [seq_len, d_v]
 
@@ -154,7 +154,7 @@ def attention_forward(tokens, W_q, W_k, W_v):
 
 In June 2017, a team of eight researchers at Google published a paper with one of the most consequential titles in computer science history: **"Attention Is All You Need"** (Vaswani et al., 2017).
 
-The paper's core claim was radical: you don't need recurrence at all. You don't need convolutions. You can build a sequence model using **only** attention mechanisms — plus some feed-forward layers, normalization, and positional information. They called this architecture the **Transformer**.
+The paper's core claim was radical: you don't need recurrence at all. You don't need convolutions. You can build a sequence model using **only** attention mechanisms  plus some feed-forward layers, normalization, and positional information. They called this architecture the **Transformer**.
 
 The results were staggering:
 
@@ -169,7 +169,7 @@ But the BLEU scores weren't the real story. The real story was **scalability**. 
 
 1. **You can train on more data.** RNN training was bounded by sequential processing time. Transformers could process the same data 10-100x faster.
 2. **You can build bigger models.** Bigger RNNs gave diminishing returns because gradient flow degraded. Bigger transformers just kept getting better.
-3. **You can scale both.** The combination of more data + bigger models followed a clean power law — the **scaling laws** that would later drive GPT-3, GPT-4, and Claude.
+3. **You can scale both.** The combination of more data + bigger models followed a clean power law  the **scaling laws** that would later drive GPT-3, GPT-4, and Claude.
 
 ```
 Timeline: The Transformer Revolution
@@ -202,7 +202,7 @@ Timeline: The Transformer Revolution
 2020 May  ─── GPT-3 (OpenAI)
               │  Massive decoder-only transformer
               │  96 layers, 12288 dim, 175B parameters
-              │  Key finding: "in-context learning" — few-shot without fine-tuning
+              │  Key finding: "in-context learning"  few-shot without fine-tuning
               │
 2022 Mar  ─── Chinchilla (DeepMind)
               │  Proved most LLMs were undertrained
@@ -311,7 +311,7 @@ graph LR
 | **Decoder-Only** | Causal (masked) self-attention | No (only sees past) | Text generation, reasoning | GPT-2/3/4, Claude, Llama, Mistral |
 | **Encoder-Decoder** | Bidirectional (encoder) + causal + cross (decoder) | Encoder: yes, Decoder: no | Translation, summarization, seq2seq tasks | T5, BART, mBART, Whisper |
 
-**The modern trend is decoder-only.** GPT-4, Claude, Llama, Mistral, Gemini — they're all decoder-only transformers. It turns out that a sufficiently large decoder-only model can learn to do everything the other variants do, with a simpler architecture. We'll explore why in later sections.
+**The modern trend is decoder-only.** GPT-4, Claude, Llama, Mistral, Gemini  they're all decoder-only transformers. It turns out that a sufficiently large decoder-only model can learn to do everything the other variants do, with a simpler architecture. We'll explore why in later sections.
 
 For the rest of this article, we'll build a **decoder-only transformer** (the GPT architecture) as our primary implementation, then discuss the differences with BERT and encoder-decoder models.
 
@@ -321,7 +321,7 @@ For the rest of this article, we'll build a **decoder-only transformer** (the GP
 
 ### The Problem: Attention Has No Sense of Order
 
-Here's something subtle that might not be obvious: the attention mechanism we built in Part 3 treats the input as a **set**, not a **sequence**. If you shuffle the input tokens, the attention outputs change — but only because the values being attended to have moved, not because the model "knows" that position 0 comes before position 1.
+Here's something subtle that might not be obvious: the attention mechanism we built in Part 3 treats the input as a **set**, not a **sequence**. If you shuffle the input tokens, the attention outputs change  but only because the values being attended to have moved, not because the model "knows" that position 0 comes before position 1.
 
 To see why, consider self-attention on two sentences:
 
@@ -330,7 +330,7 @@ Sentence A: "The cat sat on the mat"
 Sentence B: "mat the on sat cat The"   (reversed word order)
 ```
 
-In a pure attention mechanism without positional information, if we permute the input tokens, we get the same outputs — just permuted in the same way. The model has no way to distinguish "The cat sat" from "sat cat The."
+In a pure attention mechanism without positional information, if we permute the input tokens, we get the same outputs  just permuted in the same way. The model has no way to distinguish "The cat sat" from "sat cat The."
 
 ```python
 import numpy as np
@@ -364,10 +364,10 @@ def demonstrate_position_invariance():
     print("Without positional encoding, 'the cat sat' = 'sat cat the'")
 
 demonstrate_position_invariance()
-# Output: Max difference: 0.0000000000 — They're identical!
+# Output: Max difference: 0.0000000000  They're identical!
 ```
 
-RNNs naturally encode position because they process tokens sequentially — token 5's representation is built on top of tokens 1-4. But transformers process all tokens in parallel. We need to **explicitly inject** position information.
+RNNs naturally encode position because they process tokens sequentially  token 5's representation is built on top of tokens 1-4. But transformers process all tokens in parallel. We need to **explicitly inject** position information.
 
 ### Sinusoidal Positional Encoding (Original Paper)
 
@@ -392,7 +392,7 @@ def sinusoidal_positional_encoding(max_seq_len, d_model):
     Compute sinusoidal positional encodings.
 
     Each position gets a unique "fingerprint" vector. Different dimensions
-    oscillate at different frequencies — like a binary counter with smooth waves:
+    oscillate at different frequencies  like a binary counter with smooth waves:
     - Low dimensions: oscillate fast (encode fine-grained position)
     - High dimensions: oscillate slowly (encode coarse position)
 
@@ -429,7 +429,7 @@ print(f"\nRelative position property (dot products for gap k=5):")
 for pos in [0, 10, 20, 50]:
     dot = np.dot(PE[pos], PE[pos + 5])
     print(f"  PE[{pos}] · PE[{pos+5}] = {dot:.4f}")
-print("  (Approximately equal — depends only on the gap, not absolute position)")
+print("  (Approximately equal  depends only on the gap, not absolute position)")
 ```
 
 ### Rotary Position Embeddings (RoPE): The Modern Standard
@@ -625,7 +625,7 @@ graph LR
     style FFNPhase fill:#ff6b6b,stroke:#333,color:#fff
 ```
 
-Research has shown that FFN layers act as **key-value memories** (Geva et al., 2021). Each neuron in the first layer activates for specific input patterns, and the corresponding row in the second layer stores the "value" — the knowledge associated with that pattern.
+Research has shown that FFN layers act as **key-value memories** (Geva et al., 2021). Each neuron in the first layer activates for specific input patterns, and the corresponding row in the second layer stores the "value"  the knowledge associated with that pattern.
 
 ### The Standard FFN: Two Linear Layers with Activation
 
@@ -679,7 +679,7 @@ class FeedForwardNetwork:
 
     def gelu(self, x):
         """
-        GELU (Gaussian Error Linear Unit) — used in GPT-2, BERT.
+        GELU (Gaussian Error Linear Unit)  used in GPT-2, BERT.
 
         Unlike ReLU which hard-clips at 0, GELU smoothly gates values
         based on their magnitude. Small negative values get partially
@@ -766,7 +766,7 @@ import numpy as np
 
 class SwiGLUFeedForward:
     """
-    SwiGLU Feed-Forward Network — used in Llama 2, Llama 3, Mistral.
+    SwiGLU Feed-Forward Network  used in Llama 2, Llama 3, Mistral.
 
     Instead of:  FFN(x) = W2(GELU(W1(x)))
     SwiGLU does: FFN(x) = W2(Swish(W_gate(x)) ⊙ W_up(x))
@@ -882,7 +882,7 @@ import numpy as np
 
 class LayerNorm:
     """
-    Layer Normalization — normalizes across the feature dimension.
+    Layer Normalization  normalizes across the feature dimension.
 
     Unlike Batch Normalization (which normalizes across the batch dimension),
     Layer Norm normalizes each sample independently. This is critical for:
@@ -966,7 +966,7 @@ Post-Norm (Original):          Pre-Norm (Modern):
   output                        output
 ```
 
-Pre-Norm advantage: the residual path is "clean" — gradients flow through addition only, not through LayerNorm. This is why GPT-2+ and all modern LLMs use Pre-Norm.
+Pre-Norm advantage: the residual path is "clean"  gradients flow through addition only, not through LayerNorm. This is why GPT-2+ and all modern LLMs use Pre-Norm.
 
 ### The Complete Transformer Block
 
@@ -1065,7 +1065,7 @@ np.random.seed(42)
 block = TransformerBlock(d_model=64, n_heads=4)
 mask = np.tril(np.ones((10, 10))).reshape(1, 1, 10, 10)
 x = np.random.randn(2, 10, 64)
-output = block.forward(x, mask=mask)  # [2, 10, 64] — same shape as input
+output = block.forward(x, mask=mask)  # [2, 10, 64]  same shape as input
 
 # Parameter breakdown per block (d_model=64, d_ff=256):
 #   Attention (W_Q, W_K, W_V, W_O): 16,384
@@ -1258,8 +1258,8 @@ class GPT(nn.Module):
         Forward pass.
 
         Args:
-            input_ids: [batch_size, seq_len] — token IDs
-            targets: [batch_size, seq_len] — target token IDs (optional)
+            input_ids: [batch_size, seq_len]  token IDs
+            targets: [batch_size, seq_len]  target token IDs (optional)
 
         Returns:
             logits: [batch_size, seq_len, vocab_size]
@@ -1306,13 +1306,13 @@ class GPT(nn.Module):
         Each new token is appended to the context and used to predict the next.
 
         Args:
-            input_ids: [batch_size, seq_len] — prompt token IDs
+            input_ids: [batch_size, seq_len]  prompt token IDs
             max_new_tokens: How many tokens to generate
             temperature: Controls randomness (0.0 = greedy, 1.0 = normal, >1.0 = creative)
             top_k: If set, only sample from top k most likely tokens
 
         Returns:
-            [batch_size, seq_len + max_new_tokens] — full sequence including generated tokens
+            [batch_size, seq_len + max_new_tokens]  full sequence including generated tokens
         """
         for _ in range(max_new_tokens):
             # Crop to max sequence length (context window limit!)
@@ -1371,7 +1371,7 @@ print(f"Memory: {total_params * 4 / 1024**2:.1f} MB (float32), {total_params * 2
 
 ### Weight Tying: A Clever Parameter Optimization
 
-Notice the line `self.output_proj.weight = self.token_embedding.weight`. This is **weight tying** — the output projection shares the exact same weight matrix as the token embedding, just transposed.
+Notice the line `self.output_proj.weight = self.token_embedding.weight`. This is **weight tying**  the output projection shares the exact same weight matrix as the token embedding, just transposed.
 
 Why does this work? Think about what each matrix does:
 
@@ -1403,9 +1403,9 @@ savings = 38.6  # million parameters saved = ~31% fewer total params for GPT-2 S
 
 ### What the Context Window Is
 
-The **context window** is the maximum number of tokens a transformer can process at once. It's defined by the `max_seq_len` parameter — in our GPT implementation above, it's 1024 tokens.
+The **context window** is the maximum number of tokens a transformer can process at once. It's defined by the `max_seq_len` parameter  in our GPT implementation above, it's 1024 tokens.
 
-This is the transformer's **working memory** — its "RAM," if you will. Everything the model can "think about" at any given moment must fit within this window:
+This is the transformer's **working memory**  its "RAM," if you will. Everything the model can "think about" at any given moment must fit within this window:
 
 ```mermaid
 graph TB
@@ -1616,7 +1616,7 @@ WITHOUT KV cache (naive):                WITH KV cache (efficient):
   Savings at seq_len 32,000: KV cache saves 99.99% of KV computation
 ```
 
-The KV cache is why the `generate` method in our GPT class only needs to compute forward passes on the cropped context — in a production implementation, we'd cache the K and V tensors from each layer and only process the new token.
+The KV cache is why the `generate` method in our GPT class only needs to compute forward passes on the cropped context  in a production implementation, we'd cache the K and V tensors from each layer and only process the new token.
 
 ---
 
@@ -1671,7 +1671,7 @@ def compare_attention_patterns():
     print()
 
     # BERT: Full bidirectional attention
-    print("BERT (Bidirectional) — for 'The bank by the river':")
+    print("BERT (Bidirectional)  for 'The bank by the river':")
     print("-" * 40)
     bert_mask = torch.ones(seq_len, seq_len)
     for i, tok in enumerate(tokens):
@@ -1682,7 +1682,7 @@ def compare_attention_patterns():
     print()
 
     # GPT: Causal (left-to-right only)
-    print("GPT (Causal) — for 'The bank by the river':")
+    print("GPT (Causal)  for 'The bank by the river':")
     print("-" * 40)
     gpt_mask = torch.tril(torch.ones(seq_len, seq_len))
     for i, tok in enumerate(tokens):
@@ -1697,7 +1697,7 @@ compare_attention_patterns()
 
 ### Masked Language Modeling (MLM): How BERT Trains
 
-BERT can't train like GPT (predicting the next token) because it would be cheating — with bidirectional attention, position 5 can already see position 6, so "predicting" token 6 from position 5 is trivial.
+BERT can't train like GPT (predicting the next token) because it would be cheating  with bidirectional attention, position 5 can already see position 6, so "predicting" token 6 from position 5 is trivial.
 
 Instead, BERT uses **Masked Language Modeling (MLM)**: randomly mask some tokens and train the model to predict them using context from both sides.
 
@@ -1767,7 +1767,7 @@ demonstrate_mlm()
 
 ### Why BERT Matters for Embeddings
 
-BERT's bidirectional architecture makes it excellent for creating **contextual embeddings** — vector representations of text that capture meaning in context. This is critical for memory systems:
+BERT's bidirectional architecture makes it excellent for creating **contextual embeddings**  vector representations of text that capture meaning in context. This is critical for memory systems:
 
 Consider "I went to the **bank** to deposit money":
 - **BERT** sees both "went to the" AND "to deposit money" when encoding "bank" -- clearly a financial institution.
@@ -1845,8 +1845,8 @@ class CrossAttention:
     def forward(self, decoder_states, encoder_output):
         """
         Args:
-            decoder_states: [batch, decoder_len, d_model] — decoder's current states
-            encoder_output: [batch, encoder_len, d_model] — encoder's final output
+            decoder_states: [batch, decoder_len, d_model]  decoder's current states
+            encoder_output: [batch, encoder_len, d_model]  encoder's final output
 
         Returns:
             [batch, decoder_len, d_model]
@@ -1859,7 +1859,7 @@ class CrossAttention:
         # Attention: each decoder position queries all encoder positions
         scores = Q @ K.transpose(0, 2, 1) / np.sqrt(self.d_k)
 
-        # Softmax (no causal mask — decoder can see all encoder positions)
+        # Softmax (no causal mask  decoder can see all encoder positions)
         exp_scores = np.exp(scores - scores.max(axis=-1, keepdims=True))
         weights = exp_scores / exp_scores.sum(axis=-1, keepdims=True)
 
@@ -1906,7 +1906,7 @@ print("This alignment is learned during training!")
 | **Input processing** | Bidirectional (encoder) | Causal only |
 | **Best for** | Translation, summarization, structured output | General text generation, reasoning, chat |
 | **Parameter efficiency** | Better for seq2seq tasks | Better at scale (simpler = easier to scale) |
-| **Scaling behavior** | Good, but encoder-decoder split adds complexity | Excellent — clear scaling laws |
+| **Scaling behavior** | Good, but encoder-decoder split adds complexity | Excellent  clear scaling laws |
 | **Modern trend** | Declining (except specialized: Whisper, T5-XXL) | Dominant (GPT-4, Claude, Llama, Mistral) |
 | **In-context learning** | Weaker | Stronger (can leverage prompt engineering) |
 | **Training data format** | Needs input-output pairs | Can train on raw text (next-token prediction) |
@@ -2025,7 +2025,7 @@ for name, vocab, d_model, n_heads, n_layers, d_ff, max_len in models:
 
 print()
 print("Key observations:")
-print("  1. FFN parameters are ~2/3 of each layer — this is where 'knowledge' lives")
+print("  1. FFN parameters are ~2/3 of each layer  this is where 'knowledge' lives")
 print("  2. Embedding % shrinks as models grow (fixed vocab, growing layers)")
 print("  3. Doubling d_model quadruples per-layer params (all are d_model²)")
 print("  4. GPT-3 175B: 96 layers × ~1.8B params/layer ≈ 175B total")
@@ -2200,7 +2200,7 @@ class CharTokenizer:
     Simple character-level tokenizer.
 
     Production models use BPE (Byte Pair Encoding) with 50K-100K tokens.
-    We use character-level for simplicity — each character is a token.
+    We use character-level for simplicity  each character is a token.
     """
 
     def __init__(self, text):
@@ -2535,7 +2535,7 @@ def analyze_mini_gpt_memory():
     print("   - CANNOT remember who spoke 500 characters ago")
     print("   - CANNOT maintain a coherent plot across a scene")
     print()
-    print("This last point — the context window limitation — is why")
+    print("This last point  the context window limitation  is why")
     print("we need external memory systems, which we build in Parts 5-19.")
 
 analyze_mini_gpt_memory()
@@ -2620,7 +2620,7 @@ A production AI system like ChatGPT, Claude, or a custom enterprise AI assistant
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-The transformer is the **core** — but the memory infrastructure around it is what makes modern AI systems actually useful. Building that infrastructure is what the rest of this series is about.
+The transformer is the **core**  but the memory infrastructure around it is what makes modern AI systems actually useful. Building that infrastructure is what the rest of this series is about.
 
 ---
 
@@ -2628,7 +2628,7 @@ The transformer is the **core** — but the memory infrastructure around it is w
 
 ### Paper 1: "Attention Is All You Need" (Vaswani et al., 2017)
 
-**What it introduced:** The Transformer architecture — encoder-decoder model using only attention mechanisms, no recurrence or convolution.
+**What it introduced:** The Transformer architecture  encoder-decoder model using only attention mechanisms, no recurrence or convolution.
 
 **Key contributions:**
 1. **Multi-head self-attention** as the primary mechanism for sequence processing
@@ -2650,13 +2650,13 @@ The transformer is the **core** — but the memory infrastructure around it is w
 
 ### Paper 2: "Language Models are Unsupervised Multitask Learners" (GPT-2, Radford et al., 2019)
 
-**What it introduced:** GPT-2 — a 1.5B parameter decoder-only transformer that could perform multiple NLP tasks without task-specific fine-tuning.
+**What it introduced:** GPT-2  a 1.5B parameter decoder-only transformer that could perform multiple NLP tasks without task-specific fine-tuning.
 
 **Key contributions:**
 1. **Decoder-only architecture** for language modeling (no encoder, no cross-attention)
-2. **Zero-shot task performance** — the model could do translation, summarization, and question answering just from the prompt format
-3. **Scaling insight** — bigger models + more data = emergent capabilities
-4. **Pre-norm architecture** — moved layer norm before the sub-layer (now standard)
+2. **Zero-shot task performance**  the model could do translation, summarization, and question answering just from the prompt format
+3. **Scaling insight**  bigger models + more data = emergent capabilities
+4. **Pre-norm architecture**  moved layer norm before the sub-layer (now standard)
 
 **The critical insight:** "Language models can learn tasks without explicit supervision. Sufficient model capacity + diverse training data = general-purpose language understanding."
 
@@ -2670,13 +2670,13 @@ The transformer is the **core** — but the memory infrastructure around it is w
 
 ### Paper 3: "BERT: Pre-training of Deep Bidirectional Transformers" (Devlin et al., 2018)
 
-**What it introduced:** BERT — an encoder-only transformer that produces deep bidirectional representations, pre-trained with masked language modeling.
+**What it introduced:** BERT  an encoder-only transformer that produces deep bidirectional representations, pre-trained with masked language modeling.
 
 **Key contributions:**
-1. **Bidirectional pre-training** — BERT sees context from both directions, unlike GPT which only sees left context
-2. **Masked Language Modeling (MLM)** — randomly mask tokens and predict them (enabling bidirectional training without "cheating")
-3. **Next Sentence Prediction (NSP)** — predict whether two sentences are consecutive (later found to be less useful)
-4. **Fine-tuning paradigm** — pre-train once on generic text, fine-tune on specific tasks
+1. **Bidirectional pre-training**  BERT sees context from both directions, unlike GPT which only sees left context
+2. **Masked Language Modeling (MLM)**  randomly mask tokens and predict them (enabling bidirectional training without "cheating")
+3. **Next Sentence Prediction (NSP)**  predict whether two sentences are consecutive (later found to be less useful)
+4. **Fine-tuning paradigm**  pre-train once on generic text, fine-tune on specific tasks
 
 **The critical insight:** "BERT is designed to pre-train deep bidirectional representations from unlabeled text by jointly conditioning on both left and right context in all layers."
 
@@ -2699,9 +2699,9 @@ The transformer is the **core** — but the memory infrastructure around it is w
 | **Decoder-only** | Transformer variant with causal (masked) attention. Used for generation (GPT, Claude). | This part (Section 2) |
 | **Encoder-decoder** | Original transformer design with both halves connected by cross-attention (T5, BART). | This part (Section 2) |
 | **Positional encoding** | Method for injecting position information into attention (sinusoidal, RoPE, learned). | This part (Section 3) |
-| **RoPE** | Rotary Position Embedding — encodes relative position by rotating Q and K vectors. | This part (Section 3) |
+| **RoPE** | Rotary Position Embedding  encodes relative position by rotating Q and K vectors. | This part (Section 3) |
 | **Feed-forward network (FFN)** | Two-layer MLP applied independently to each position. Stores factual knowledge. | This part (Section 4) |
-| **GELU** | Gaussian Error Linear Unit — smooth activation function used in modern transformers. | This part (Section 4) |
+| **GELU** | Gaussian Error Linear Unit  smooth activation function used in modern transformers. | This part (Section 4) |
 | **SwiGLU** | Gated FFN variant using Swish activation. Used in Llama, Mistral. | This part (Section 4) |
 | **Layer normalization** | Normalizes activations across the feature dimension for training stability. | This part (Section 5) |
 | **Residual connection** | Skip connection that adds sublayer input to its output. Enables deep networks. | This part (Section 5) |
@@ -2724,7 +2724,7 @@ The transformer is the **core** — but the memory infrastructure around it is w
 
 ### What We Learned in Part 4
 
-1. **The Transformer replaced everything.** Published in 2017, the Transformer architecture — built entirely on attention — replaced RNNs, CNNs, and every other approach for sequence modeling. Every major AI model today is a Transformer.
+1. **The Transformer replaced everything.** Published in 2017, the Transformer architecture  built entirely on attention  replaced RNNs, CNNs, and every other approach for sequence modeling. Every major AI model today is a Transformer.
 
 2. **Three variants emerged.** Encoder-only (BERT) for understanding and embeddings, decoder-only (GPT/Claude) for generation and reasoning, and encoder-decoder (T5) for sequence-to-sequence tasks. The modern trend is decoder-only.
 
@@ -2758,11 +2758,11 @@ Same for every user            →    Personalized to each user's history
 
 ### What's Coming in Part 5
 
-**Part 5: Tokenization and Embeddings — Turning Text into Vectors** dives into the first piece of the external memory puzzle: how do we represent text in a form that can be stored, searched, and retrieved?
+**Part 5: Tokenization and Embeddings  Turning Text into Vectors** dives into the first piece of the external memory puzzle: how do we represent text in a form that can be stored, searched, and retrieved?
 
 We'll cover:
 
-- **Tokenization in depth:** BPE, WordPiece, SentencePiece — how production models break text into tokens
+- **Tokenization in depth:** BPE, WordPiece, SentencePiece  how production models break text into tokens
 - **Token embeddings vs. sentence embeddings:** Why you can't just use a token's embedding for search
 - **Embedding models:** How BERT-descended models create sentence-level representations
 - **Embedding spaces:** What it means for two texts to be "close" in embedding space
@@ -2775,4 +2775,4 @@ See you in Part 5.
 
 ---
 
-*This is Part 4 of 19 in the "Memory in AI Systems" series. Each part builds on the previous ones — if concepts like attention, Q/K/V, or multi-head attention feel unfamiliar, start with Part 3.*
+*This is Part 4 of 19 in the "Memory in AI Systems" series. Each part builds on the previous ones  if concepts like attention, Q/K/V, or multi-head attention feel unfamiliar, start with Part 3.*

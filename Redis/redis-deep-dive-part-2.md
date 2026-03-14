@@ -1,8 +1,8 @@
-# Redis Deep Dive Series — Part 2: Redis Data Structures Deep Dive (Internal Encoding + Complexity)
+# Redis Deep Dive Series  Part 2: Redis Data Structures Deep Dive (Internal Encoding + Complexity)
 
 ---
 
-**Series:** Redis Deep Dive — Engineering the World's Most Misunderstood Data Structure Server
+**Series:** Redis Deep Dive  Engineering the World's Most Misunderstood Data Structure Server
 **Part:** 2 of 10
 **Audience:** Senior backend engineers, distributed systems engineers, infrastructure architects
 **Reading time:** ~50 minutes
@@ -11,7 +11,7 @@
 
 ## Where We Are in the Series
 
-In Part 0, we built the systems foundation — memory hierarchy, cache lines, data structure fundamentals. In Part 1, we dissected Redis's architecture: the `ae` event loop, the client request lifecycle, threaded I/O, and the `redisObject` wrapper with its encoding duality concept. Part 1 showed that each Redis data type has multiple internal representations, and hinted at why this matters for memory efficiency.
+In Part 0, we built the systems foundation  memory hierarchy, cache lines, data structure fundamentals. In Part 1, we dissected Redis's architecture: the `ae` event loop, the client request lifecycle, threaded I/O, and the `redisObject` wrapper with its encoding duality concept. Part 1 showed that each Redis data type has multiple internal representations, and hinted at why this matters for memory efficiency.
 
 Now we go inside those representations. This article dismantles every Redis data type to the byte level. You'll learn exactly how a sorted set with 50 members is stored differently from one with 50,000 members, why a hash with small values uses 3x less memory than you'd expect, and how to exploit these internals to dramatically reduce your memory footprint in production.
 
@@ -33,7 +33,7 @@ typedef struct redisObject {
 } robj;  // 16 bytes on 64-bit systems
 ```
 
-The `encoding` field is the key insight. Redis doesn't use a single data structure per type — it selects the most memory-efficient encoding based on the data's size and characteristics. This is not a premature optimization; it's a fundamental design decision that reduces memory usage by 2-10x for typical workloads.
+The `encoding` field is the key insight. Redis doesn't use a single data structure per type  it selects the most memory-efficient encoding based on the data's size and characteristics. This is not a premature optimization; it's a fundamental design decision that reduces memory usage by 2-10x for typical workloads.
 
 ### Why Two Encodings?
 
@@ -57,7 +57,7 @@ HSET user:1 name "Alice" age "30" city "NYC" role "engineer" active "true"
 - Each entry: ~5-15 bytes (length prefix + data + backlen)
 - **Total: ~120-180 bytes**
 
-The listpack uses 3-4x less memory. For a system storing 10 million user profiles, this difference is 5.6 GB vs 1.5 GB — the difference between needing a larger instance class and fitting comfortably.
+The listpack uses 3-4x less memory. For a system storing 10 million user profiles, this difference is 5.6 GB vs 1.5 GB  the difference between needing a larger instance class and fitting comfortably.
 
 The tradeoff: listpack access is O(n) (sequential scan), while hash table access is O(1). But for small collections (≤128 entries by default), the sequential scan is faster in absolute terms because the data fits in 1-3 CPU cache lines and requires no pointer chasing.
 
@@ -96,7 +96,7 @@ Strings are Redis's most fundamental type. Every key in Redis is a string. Value
 
 ### Encoding: INT (OBJ_ENCODING_INT)
 
-When a string value is a valid 64-bit signed integer, Redis stores it directly in the `ptr` field of the `redisObject` — no separate allocation needed.
+When a string value is a valid 64-bit signed integer, Redis stores it directly in the `ptr` field of the `redisObject`  no separate allocation needed.
 
 ```c
 // Instead of:  robj->ptr → SDS("12345")    [16 + ~24 bytes]
@@ -105,7 +105,7 @@ When a string value is a valid 64-bit signed integer, Redis stores it directly i
 
 This means integer strings use exactly 16 bytes (the `robj` struct itself). No SDS, no extra allocation.
 
-Redis also maintains a pool of shared integer objects for values 0-9999. When you `SET counter 42`, Redis doesn't even allocate a new `robj` — it reuses the pre-existing object for 42. This is pure free memory savings for small integer values that appear frequently.
+Redis also maintains a pool of shared integer objects for values 0-9999. When you `SET counter 42`, Redis doesn't even allocate a new `robj`  it reuses the pre-existing object for 42. This is pure free memory savings for small integer values that appear frequently.
 
 ```bash
 # Verify INT encoding
@@ -128,14 +128,14 @@ OK
 ```
 
 **Complexity for INT strings:**
-- `GET`: O(1) — return the integer value
-- `SET`: O(1) — store in ptr field
-- `INCR`/`DECR`: O(1) — arithmetic on the integer directly (no parse-modify-serialize cycle)
+- `GET`: O(1)  return the integer value
+- `SET`: O(1)  store in ptr field
+- `INCR`/`DECR`: O(1)  arithmetic on the integer directly (no parse-modify-serialize cycle)
 - `APPEND`: Forces conversion to RAW encoding (the value is no longer a pure integer)
 
 ### Encoding: EMBSTR (OBJ_ENCODING_EMBSTR)
 
-For strings ≤44 bytes, Redis uses EMBSTR — a single contiguous allocation containing both the `robj` header and the SDS string data.
+For strings ≤44 bytes, Redis uses EMBSTR  a single contiguous allocation containing both the `robj` header and the SDS string data.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -153,9 +153,9 @@ Why 44 bytes? The math:
 - Total overhead: 20 bytes
 - jemalloc allocates in size classes. The 64-byte class fits 64 - 20 = 44 bytes of actual string data.
 
-A 44-byte EMBSTR string uses exactly 64 bytes — one cache line. The CPU fetches it in a single memory access.
+A 44-byte EMBSTR string uses exactly 64 bytes  one cache line. The CPU fetches it in a single memory access.
 
-**EMBSTR is read-only.** If you modify an EMBSTR string (e.g., with `APPEND`), Redis converts it to RAW encoding. This is because modifying the string might require resizing, which would need reallocation — and since the `robj` and SDS are in one block, you can't resize the SDS independently.
+**EMBSTR is read-only.** If you modify an EMBSTR string (e.g., with `APPEND`), Redis converts it to RAW encoding. This is because modifying the string might require resizing, which would need reallocation  and since the `robj` and SDS are in one block, you can't resize the SDS independently.
 
 ```bash
 127.0.0.1:6379> SET greeting "hello"
@@ -166,7 +166,7 @@ OK
 127.0.0.1:6379> APPEND greeting " world"
 (integer) 11
 127.0.0.1:6379> OBJECT ENCODING greeting
-"embstr"    # Still fits! ≤44 bytes — but wait...
+"embstr"    # Still fits! ≤44 bytes  but wait...
 
 # Actually, APPEND always converts to RAW regardless of final size
 127.0.0.1:6379> OBJECT ENCODING greeting
@@ -175,7 +175,7 @@ OK
 
 ### Encoding: RAW (OBJ_ENCODING_RAW)
 
-For strings >44 bytes, or strings that have been modified, Redis uses RAW encoding — the `robj` and SDS are separate allocations.
+For strings >44 bytes, or strings that have been modified, Redis uses RAW encoding  the `robj` and SDS are separate allocations.
 
 ```
 ┌────────────────┐     ┌──────────────────────────────────┐
@@ -286,17 +286,17 @@ async function demonstrateEncodings() {
 }
 ```
 
-Strings are the simplest Redis type — one key, one value, three possible encodings. But Redis's data structure story gets much more interesting when values contain *collections* of elements. Lists are the first collection type, and they introduce the pattern you'll see repeated through every collection type in this article: a compact encoding for small collections that auto-converts to a more scalable encoding as the data grows.
+Strings are the simplest Redis type  one key, one value, three possible encodings. But Redis's data structure story gets much more interesting when values contain *collections* of elements. Lists are the first collection type, and they introduce the pattern you'll see repeated through every collection type in this article: a compact encoding for small collections that auto-converts to a more scalable encoding as the data grows.
 
 ---
 
 ## 3. Lists: From Listpack to Quicklist
 
-Redis lists are ordered sequences of strings, supporting push/pop at both ends (O(1)) and random access by index (O(n)). They're used for activity feeds, job queues, and bounded logs — patterns we'll explore in detail in Part 7.
+Redis lists are ordered sequences of strings, supporting push/pop at both ends (O(1)) and random access by index (O(n)). They're used for activity feeds, job queues, and bounded logs  patterns we'll explore in detail in Part 7.
 
 ### Encoding: LISTPACK (Small Lists)
 
-For small lists, Redis uses a **listpack** — a contiguous byte array where all elements are packed together without pointers.
+For small lists, Redis uses a **listpack**  a contiguous byte array where all elements are packed together without pointers.
 
 ```
 Listpack binary layout:
@@ -323,7 +323,7 @@ The **backlen** field stores the total entry length, enabling reverse traversal 
 
 #### Why Listpacks Are Fast for Small Collections
 
-For a list with 10 elements, the entire listpack might be 200-300 bytes. That's 3-5 cache lines. Scanning all 10 elements is a sequential memory access — the CPU prefetcher predicts the access pattern and loads cache lines ahead of time. Compare this to a linked list where each node is a separate allocation, potentially scattered across memory — every node access is a potential cache miss.
+For a list with 10 elements, the entire listpack might be 200-300 bytes. That's 3-5 cache lines. Scanning all 10 elements is a sequential memory access  the CPU prefetcher predicts the access pattern and loads cache lines ahead of time. Compare this to a linked list where each node is a separate allocation, potentially scattered across memory  every node access is a potential cache miss.
 
 ```
 Listpack: [A][B][C][D][E][F][G][H][I][J]   ← sequential, prefetchable
@@ -336,7 +336,7 @@ Linked list: A→ ? →B→ ? →C→ ? →D→ ...      ← random, cache-hosti
 
 ### Encoding: QUICKLIST (Large Lists)
 
-When a list exceeds `list-max-listpack-size`, Redis converts it to a **quicklist** — a doubly-linked list where each node contains a listpack (optionally compressed with LZF).
+When a list exceeds `list-max-listpack-size`, Redis converts it to a **quicklist**  a doubly-linked list where each node contains a listpack (optionally compressed with LZF).
 
 ```mermaid
 flowchart LR
@@ -446,7 +446,7 @@ def enqueue(queue_name, job_data):
     r.rpush(f"queue:{queue_name}", job_data)
 
 def dequeue(queue_name, timeout=0):
-    # BLPOP: blocking pop — waits for data, prevents busy-polling
+    # BLPOP: blocking pop  waits for data, prevents busy-polling
     result = r.blpop(f"queue:{queue_name}", timeout=timeout)
     return result[1] if result else None
 
@@ -466,7 +466,7 @@ def get_avg_latency(service):
 ```
 
 ```javascript
-// Node.js — reliable queue with BRPOPLPUSH
+// Node.js  reliable queue with BRPOPLPUSH
 const Redis = require('ioredis');
 const redis = new Redis();
 
@@ -487,7 +487,7 @@ async function acknowledgeProcessed(processingQueue, item) {
 }
 ```
 
-Lists store *ordered sequences* where elements are identified by position. But many real-world objects are better represented as *named fields* — a user has a `name`, an `email`, an `age`. That's what hashes are for, and they follow the same listpack-to-hashtable encoding pattern we just saw with lists.
+Lists store *ordered sequences* where elements are identified by position. But many real-world objects are better represented as *named fields*  a user has a `name`, an `email`, an `age`. That's what hashes are for, and they follow the same listpack-to-hashtable encoding pattern we just saw with lists.
 
 ---
 
@@ -546,7 +546,7 @@ flowchart TD
 
 ### The Encoding Transition
 
-The transition from listpack to hashtable is **one-way and irreversible**. Once a hash is converted to a hashtable, it stays as a hashtable even if you delete fields to bring it below the threshold. This is by design — the transition itself has a cost (O(n) to rebuild the hashtable), and Redis assumes that if the hash grew large once, it's likely to do so again.
+The transition from listpack to hashtable is **one-way and irreversible**. Once a hash is converted to a hashtable, it stays as a hashtable even if you delete fields to bring it below the threshold. This is by design  the transition itself has a cost (O(n) to rebuild the hashtable), and Redis assumes that if the hash grew large once, it's likely to do so again.
 
 ```bash
 # Demonstrate the transition
@@ -558,7 +558,7 @@ The transition from listpack to hashtable is **one-way and irreversible**. Once 
 127.0.0.1:6379> OBJECT ENCODING test
 "listpack"
 
-# Add one more field — triggers conversion
+# Add one more field  triggers conversion
 127.0.0.1:6379> HSET test f4 v4
 (integer) 1
 127.0.0.1:6379> OBJECT ENCODING test
@@ -605,7 +605,7 @@ for i in range(10_000_000):
     bucket = i // 100
     field = i % 100
     r.hset(f"user_emails:{bucket}", str(field), f"user{i}@example.com")
-# Overhead: ~200 MB — 6x less!
+# Overhead: ~200 MB  6x less!
 ```
 
 Instagram famously used this technique to store 300 million user ID → profile URL mappings in Redis, reducing memory from 70 GB (one key per mapping) to 10 GB (hashes of ~1000 entries each).
@@ -631,7 +631,7 @@ flowchart TD
     style NOTE2 fill:#4a9,color:#fff
 ```
 
-Hashes give you named field access. But sometimes you don't need field names or ordering — you just need to know whether an element is *in the collection or not*. That's the domain of sets. Sets add an interesting twist to the encoding story: in addition to listpack and hashtable, they have a third encoding — `intset` — optimized for the common case where all members are integers.
+Hashes give you named field access. But sometimes you don't need field names or ordering  you just need to know whether an element is *in the collection or not*. That's the domain of sets. Sets add an interesting twist to the encoding story: in addition to listpack and hashtable, they have a third encoding  `intset`  optimized for the common case where all members are integers.
 
 ---
 
@@ -641,7 +641,7 @@ Redis sets are unordered collections of unique strings. They support membership 
 
 ### Encoding: INTSET (All-Integer Sets)
 
-When all members of a set are integers, Redis uses an **intset** — a sorted array of integers with uniform encoding width.
+When all members of a set are integers, Redis uses an **intset**  a sorted array of integers with uniform encoding width.
 
 ```c
 typedef struct intset {
@@ -659,7 +659,7 @@ The encoding width is determined by the largest integer in the set:
 | `INT32` | -2^31 to 2^31-1 | 4 bytes |
 | `INT64` | -2^63 to 2^63-1 | 8 bytes |
 
-If you add a large integer to a set of small integers, the entire intset is **upgraded** — all existing elements are widened to the new encoding width.
+If you add a large integer to a set of small integers, the entire intset is **upgraded**  all existing elements are widened to the new encoding width.
 
 ```bash
 # Intset with INT16 encoding
@@ -706,7 +706,7 @@ Since Redis 7.2, small sets with non-integer members (or mixed) use listpack enc
 "listpack"
 ```
 
-Membership test in listpack is O(n) — linear scan. But for ≤128 entries in contiguous memory, this is still fast due to cache efficiency.
+Membership test in listpack is O(n)  linear scan. But for ≤128 entries in contiguous memory, this is still fast due to cache efficiency.
 
 ### Encoding: HASHTABLE (Large Sets)
 
@@ -732,7 +732,7 @@ Set algebra operations are where complexity gets interesting:
 | `SINTERSTORE` | O(N×M) | Same as SINTER + write result |
 | `SINTERCARD` | O(N×M) with LIMIT | Can bail early if only counting |
 
-**Production warning:** `SINTER` on large sets is one of the most dangerous operations in Redis. If you intersect a set of 1 million members with a set of 2 million members, Redis must check each of the 1 million members against the 2 million-member hashtable. That's 1 million hash lookups — potentially 10-50ms of blocked execution.
+**Production warning:** `SINTER` on large sets is one of the most dangerous operations in Redis. If you intersect a set of 1 million members with a set of 2 million members, Redis must check each of the 1 million members against the 2 million-member hashtable. That's 1 million hash lookups  potentially 10-50ms of blocked execution.
 
 ```python
 # DANGER: Intersecting large sets on the main thread
@@ -743,7 +743,7 @@ count = r.sintercard(2, ["large_set_1", "large_set_2"], limit=1000)
 
 # SAFEST: Use SSCAN and do the intersection client-side
 def safe_intersection(r, key1, key2):
-    """Client-side intersection using SSCAN — doesn't block Redis"""
+    """Client-side intersection using SSCAN  doesn't block Redis"""
     result = set()
     cursor = 0
     while True:
@@ -760,7 +760,7 @@ def safe_intersection(r, key1, key2):
 
 ## 6. Sorted Sets: The Most Complex Data Structure
 
-Sets give you membership testing but no ordering. What if you need elements *ranked* — sorted by a score, with the ability to ask "who's in the top 10?" or "what's my rank?" This is the sorted set, and it's Redis's most architecturally interesting data type. While other types use a single data structure for their large encoding, sorted sets use *two simultaneously* — a skip list and a hash table — to provide O(log n) range queries *and* O(1) member lookups.
+Sets give you membership testing but no ordering. What if you need elements *ranked*  sorted by a score, with the ability to ask "who's in the top 10?" or "what's my rank?" This is the sorted set, and it's Redis's most architecturally interesting data type. While other types use a single data structure for their large encoding, sorted sets use *two simultaneously*  a skip list and a hash table  to provide O(log n) range queries *and* O(1) member lookups.
 
 ### Encoding: LISTPACK (Small Sorted Sets)
 
@@ -786,7 +786,7 @@ typedef struct zset {
 } zset;
 ```
 
-This dual structure means every member is stored twice — once in the dict and once in the skip list. The memory cost is higher, but it enables both O(1) score lookups by member and O(log n) range queries by score.
+This dual structure means every member is stored twice  once in the dict and once in the skip list. The memory cost is higher, but it enables both O(1) score lookups by member and O(log n) range queries by score.
 
 ```mermaid
 flowchart TD
@@ -847,9 +847,9 @@ typedef struct zskiplistNode {
 
 Key design details:
 
-1. **Maximum 32 levels.** Each node has a randomly determined level (higher levels are exponentially rarer). The probability is p=0.25 — each additional level has a 25% chance. This means ~75% of nodes are level 1, ~18.75% are level 2, ~4.7% are level 3, etc.
+1. **Maximum 32 levels.** Each node has a randomly determined level (higher levels are exponentially rarer). The probability is p=0.25  each additional level has a 25% chance. This means ~75% of nodes are level 1, ~18.75% are level 2, ~4.7% are level 3, etc.
 
-2. **Span tracking.** Each forward pointer also stores the span — the number of nodes skipped. This enables O(log n) rank calculations: to find the rank of a node, sum the spans along the traversal path.
+2. **Span tracking.** Each forward pointer also stores the span  the number of nodes skipped. This enables O(log n) rank calculations: to find the rank of a node, sum the spans along the traversal path.
 
 3. **Why skip lists over balanced trees (Red-Black, AVL)?**
    - **Range queries are natural.** Once you find the start of a range, you just follow forward pointers. In a BST, in-order traversal requires stack management or parent pointers.
@@ -917,7 +917,7 @@ class Leaderboard:
         return r.zrevrange(self.key, start, end, withscores=True)
 
     def get_score(self, player_id):
-        """Get a player's score. O(1) — dict lookup!"""
+        """Get a player's score. O(1)  dict lookup!"""
         return r.zscore(self.key, player_id)
 
 
@@ -933,7 +933,7 @@ nearby = lb.get_around("player:42", window=3)
 ```
 
 ```javascript
-// Node.js — Real-time leaderboard with ioredis
+// Node.js  Real-time leaderboard with ioredis
 const Redis = require('ioredis');
 const redis = new Redis();
 
@@ -970,7 +970,7 @@ class Leaderboard {
 }
 ```
 
-The five data types we've covered so far — strings, lists, hashes, sets, and sorted sets — are Redis's "classic" types, available since the earliest versions. Redis 5.0 introduced a fundamentally different data structure: Streams. While the classic types map to familiar computer science structures, Streams introduce an entirely new internal architecture — a radix tree — to support a use case that was previously awkward to model in Redis: ordered, consumer-group-aware event streaming.
+The five data types we've covered so far  strings, lists, hashes, sets, and sorted sets  are Redis's "classic" types, available since the earliest versions. Redis 5.0 introduced a fundamentally different data structure: Streams. While the classic types map to familiar computer science structures, Streams introduce an entirely new internal architecture  a radix tree  to support a use case that was previously awkward to model in Redis: ordered, consumer-group-aware event streaming.
 
 ---
 
@@ -1014,7 +1014,7 @@ The radix tree uses the entry ID (128 bits: 64-bit milliseconds + 64-bit sequenc
 
 ### Stream Entry Encoding
 
-Within each listpack node, entries are **delta-encoded** — only the differences from a "master entry" are stored:
+Within each listpack node, entries are **delta-encoded**  only the differences from a "master entry" are stored:
 
 ```
 Master entry: [num-fields][field1-name][field2-name]...[0]
@@ -1022,7 +1022,7 @@ Master entry: [num-fields][field1-name][field2-name]...[0]
               [entry2-ms-delta][entry2-seq-delta][field1-value][field2-value]...
 ```
 
-If all entries have the same field names (common in practice — e.g., all entries have "sensor-id" and "temperature"), the field names are stored only once in the master entry. Subsequent entries only store their values. This can reduce memory usage by 50-70% for streams with consistent schemas.
+If all entries have the same field names (common in practice  e.g., all entries have "sensor-id" and "temperature"), the field names are stored only once in the master entry. Subsequent entries only store their values. This can reduce memory usage by 50-70% for streams with consistent schemas.
 
 ### Consumer Groups
 
@@ -1126,13 +1126,13 @@ pending = r.xpending("events", "processors")
 | `XTRIM` | O(n) | n = entries removed |
 | `XINFO` | O(1) or O(n) | Depends on subcommand |
 
-The seven core data types we've covered handle exact storage and retrieval. But some problems — counting unique visitors, tracking feature usage across billions of events — don't need exact answers. They need *approximate* answers with bounded error, using dramatically less memory. Redis offers three specialized types for these use cases: HyperLogLog for cardinality estimation, Bitmaps for bit-level operations, and Geospatial indexes for location queries.
+The seven core data types we've covered handle exact storage and retrieval. But some problems  counting unique visitors, tracking feature usage across billions of events  don't need exact answers. They need *approximate* answers with bounded error, using dramatically less memory. Redis offers three specialized types for these use cases: HyperLogLog for cardinality estimation, Bitmaps for bit-level operations, and Geospatial indexes for location queries.
 
 ---
 
 ## 8. HyperLogLog: Probabilistic Counting
 
-HyperLogLog (HLL) is a probabilistic data structure for cardinality estimation — counting unique elements with O(1) space regardless of the number of elements. Part 7 demonstrates real-world HyperLogLog patterns for analytics and unique visitor counting.
+HyperLogLog (HLL) is a probabilistic data structure for cardinality estimation  counting unique elements with O(1) space regardless of the number of elements. Part 7 demonstrates real-world HyperLogLog patterns for analytics and unique visitor counting.
 
 ### How It Works (Simplified)
 
@@ -1162,7 +1162,7 @@ Max position = 7 → estimated cardinality ≈ 2^7 = 128
 127.0.0.1:6379> PFCOUNT visitors
 (integer) 3
 127.0.0.1:6379> MEMORY USAGE visitors
-(integer) 216    # Sparse encoding — very compact
+(integer) 216    # Sparse encoding  very compact
 
 # Add many elements
 127.0.0.1:6379> eval "for i=1,100000 do redis.call('PFADD','visitors','user:'..i) end" 0
@@ -1170,7 +1170,7 @@ Max position = 7 → estimated cardinality ≈ 2^7 = 128
 127.0.0.1:6379> PFCOUNT visitors
 (integer) 99723    # ±0.81% error: actual=100,003, estimated≈99,723
 127.0.0.1:6379> MEMORY USAGE visitors
-(integer) 14408    # Dense encoding — always ~14 KB
+(integer) 14408    # Dense encoding  always ~14 KB
 ```
 
 ### Real-World: Unique Visitor Counting
@@ -1214,7 +1214,7 @@ Companies like Google (for BigQuery), Twitter, and Cloudflare use HyperLogLog-ba
 
 ### Bitmaps
 
-Redis bitmaps are not a separate data type — they're regular strings operated on at the bit level.
+Redis bitmaps are not a separate data type  they're regular strings operated on at the bit level.
 
 ```bash
 # Track daily active users (1 bit per user ID)
@@ -1234,7 +1234,7 @@ Redis bitmaps are not a separate data type — they're regular strings operated 
 127.0.0.1:6379> BITOP OR active:either active:2025-01-15 active:2025-01-16
 ```
 
-**Memory math:** For 10 million users, a bitmap uses 10,000,000 / 8 = 1.25 MB. A set of user IDs would use ~80 MB. But if only 1000 users out of 10 million are active, the bitmap wastes space — it's most efficient when the cardinality is high relative to the ID space.
+**Memory math:** For 10 million users, a bitmap uses 10,000,000 / 8 = 1.25 MB. A set of user IDs would use ~80 MB. But if only 1000 users out of 10 million are active, the bitmap wastes space  it's most efficient when the cardinality is high relative to the ID space.
 
 ### Bitfields
 
@@ -1338,7 +1338,7 @@ locator.update_location("driver:42", -73.985, 40.748)
 nearby = locator.find_nearby_drivers(-73.990, 40.750, radius_km=2)
 ```
 
-We've now covered all of Redis's data types — from strings to geospatial indexes. Each has its own encoding mechanics, complexity characteristics, and sweet spots. But in practice, the challenge isn't understanding individual types — it's knowing *which one to use* for a given problem. The following guide synthesizes everything above into a practical decision framework.
+We've now covered all of Redis's data types  from strings to geospatial indexes. Each has its own encoding mechanics, complexity characteristics, and sweet spots. But in practice, the challenge isn't understanding individual types  it's knowing *which one to use* for a given problem. The following guide synthesizes everything above into a practical decision framework.
 
 ---
 
@@ -1428,7 +1428,7 @@ zset-max-listpack-value 64       # Max member size (bytes)
 
 1. **Profile your data.** Use `OBJECT ENCODING` and `MEMORY USAGE` on representative keys to understand your current encoding distribution.
 
-2. **Increase listpack thresholds cautiously.** If your hashes typically have 200 fields with short values, setting `hash-max-listpack-entries 256` saves significant memory. But listpack operations are O(n) — at 256 entries, each HGET requires scanning ~256 entries. Profile the latency impact.
+2. **Increase listpack thresholds cautiously.** If your hashes typically have 200 fields with short values, setting `hash-max-listpack-entries 256` saves significant memory. But listpack operations are O(n)  at 256 entries, each HGET requires scanning ~256 entries. Profile the latency impact.
 
 3. **Monitor encoding transitions.** Use `INFO commandstats` to track command latencies. If `HSET` latency spikes at certain key sizes, you may be hitting encoding transitions.
 
@@ -1513,17 +1513,17 @@ zset-max-listpack-value 64       # Max member size (bytes)
 
 ## Coming Up in Part 3: Memory Management, Persistence, and Storage Mechanics
 
-This article showed you *what* Redis stores and *how* it encodes that data. But we've been taking memory for granted — allocating it freely, assuming it's always available. In production, memory is the scarcest resource for Redis, and managing it is the difference between a stable deployment and a 3 AM OOM kill.
+This article showed you *what* Redis stores and *how* it encodes that data. But we've been taking memory for granted  allocating it freely, assuming it's always available. In production, memory is the scarcest resource for Redis, and managing it is the difference between a stable deployment and a 3 AM OOM kill.
 
 Part 3 goes deep into the memory layer:
 
-- **jemalloc internals** — arena management, size classes, and why the allocator's behavior directly affects the encoding choices we discussed here
-- **Key expiration and eviction** — the lazy + active expiry dance, LRU vs LFU algorithms, and why `maxmemory` doesn't mean what you think
-- **Memory fragmentation** — how the create/delete patterns from this article cause fragmentation, and how active defragmentation fixes it
-- **RDB persistence** — the fork + CoW mechanism (from Part 0) in full detail, with binary format analysis
-- **AOF persistence** — append-only file mechanics, fsync strategies, AOF rewrite, and the hybrid RDB+AOF model
-- **Copy-on-write measurement** — how to quantify CoW amplification during BGSAVE and minimize its impact
+- **jemalloc internals**  arena management, size classes, and why the allocator's behavior directly affects the encoding choices we discussed here
+- **Key expiration and eviction**  the lazy + active expiry dance, LRU vs LFU algorithms, and why `maxmemory` doesn't mean what you think
+- **Memory fragmentation**  how the create/delete patterns from this article cause fragmentation, and how active defragmentation fixes it
+- **RDB persistence**  the fork + CoW mechanism (from Part 0) in full detail, with binary format analysis
+- **AOF persistence**  append-only file mechanics, fsync strategies, AOF rewrite, and the hybrid RDB+AOF model
+- **Copy-on-write measurement**  how to quantify CoW amplification during BGSAVE and minimize its impact
 
 ---
 
-*This is Part 2 of the Redis Deep Dive series. Part 1 established the event loop and architecture. This part gave you the data structure internals. Part 3 will show you how Redis manages the memory that holds all these structures — and what happens when it runs out.*
+*This is Part 2 of the Redis Deep Dive series. Part 1 established the event loop and architecture. This part gave you the data structure internals. Part 3 will show you how Redis manages the memory that holds all these structures  and what happens when it runs out.*

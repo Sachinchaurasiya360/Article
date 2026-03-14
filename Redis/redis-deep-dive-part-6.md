@@ -1,8 +1,8 @@
-# Redis Deep Dive Series — Part 6: Redis Cluster and Distributed Systems Concepts
+# Redis Deep Dive Series  Part 6: Redis Cluster and Distributed Systems Concepts
 
 ---
 
-**Series:** Redis Deep Dive — Engineering the World's Most Misunderstood Data Structure Server
+**Series:** Redis Deep Dive  Engineering the World's Most Misunderstood Data Structure Server
 **Part:** 6 of 10
 **Audience:** Senior backend engineers, distributed systems engineers, infrastructure architects
 **Reading time:** ~50 minutes
@@ -11,9 +11,9 @@
 
 ## Where We Are in the Series
 
-Part 5 introduced the distributed world: replication copies data from one master to multiple replicas, and Sentinel automates failover when the master dies. This solved the *availability* problem — your Redis deployment survives a single node failure.
+Part 5 introduced the distributed world: replication copies data from one master to multiple replicas, and Sentinel automates failover when the master dies. This solved the *availability* problem  your Redis deployment survives a single node failure.
 
-But Sentinel doesn't solve the *capacity* problem. You still have one master holding all the data. Its memory is bounded by a single machine. Its write throughput is bounded by a single thread. When your dataset exceeds 100 GB, or your write load exceeds 200,000 ops/sec, Sentinel + replicas can't help — you need to split the data across multiple masters.
+But Sentinel doesn't solve the *capacity* problem. You still have one master holding all the data. Its memory is bounded by a single machine. Its write throughput is bounded by a single thread. When your dataset exceeds 100 GB, or your write load exceeds 200,000 ops/sec, Sentinel + replicas can't help  you need to split the data across multiple masters.
 
 Redis Cluster is Redis's built-in sharding solution. This part covers the complete architecture: the 16,384 hash slot model that distributes keys, the gossip protocol that coordinates nodes, the resharding process that rebalances data, and the consistency tradeoffs (spoiler: Redis Cluster prioritizes availability over consistency in a partition) that you must understand before deploying Cluster in production.
 
@@ -97,7 +97,7 @@ SET {user:42}:email "a@b.com"  # slot = CRC16("user:42") mod 16384
 # Same slot! Same node! Multi-key operations work!
 
 # Now you can do:
-MGET {user:42}:name {user:42}:email    # Works — same slot
+MGET {user:42}:name {user:42}:email    # Works  same slot
 ```
 
 **Warning:** Hash tags can create **hot slots** if many keys share the same tag. If `{user:42}` is a power user with millions of associated keys, all those keys land on one node.
@@ -114,7 +114,7 @@ MGET {user:42}:name {user:42}:email    # Works — same slot
 (integer) 9342
 ```
 
-Hash slots define *where* data lives. But how do the nodes coordinate? How does a node that just joined the cluster learn which other nodes exist and which slots they own? And how does the cluster detect failures without a central coordinator? The answer is the gossip protocol — a decentralized communication mechanism inspired by the way epidemics spread.
+Hash slots define *where* data lives. But how do the nodes coordinate? How does a node that just joined the cluster learn which other nodes exist and which slots they own? And how does the cluster detect failures without a central coordinator? The answer is the gossip protocol  a decentralized communication mechanism inspired by the way epidemics spread.
 
 ---
 
@@ -122,7 +122,7 @@ Hash slots define *where* data lives. But how do the nodes coordinate? How does 
 
 ### Node Types
 
-Each Redis Cluster node is either a **master** (owns hash slots, accepts reads/writes) or a **replica** (replicates a master, can serve reads with `READONLY`). Unlike Sentinel (Part 5), there's no separate monitoring process — every cluster node participates in failure detection and configuration propagation.
+Each Redis Cluster node is either a **master** (owns hash slots, accepts reads/writes) or a **replica** (replicates a master, can serve reads with `READONLY`). Unlike Sentinel (Part 5), there's no separate monitoring process  every cluster node participates in failure detection and configuration propagation.
 
 ```mermaid
 flowchart TD
@@ -187,7 +187,7 @@ sequenceDiagram
     Note over A,B: Both nodes update their<br/>view of the cluster
 ```
 
-The gossip section of each message contains information about a subset of other nodes (typically 1/10th of all nodes, minimum 3). This creates **eventual consistency** — every node eventually learns about every other node, even in large clusters. The propagation time for a state change is approximately O(log N) message rounds, where N is the cluster size.
+The gossip section of each message contains information about a subset of other nodes (typically 1/10th of all nodes, minimum 3). This creates **eventual consistency**  every node eventually learns about every other node, even in large clusters. The propagation time for a state change is approximately O(log N) message rounds, where N is the cluster size.
 
 ### Cluster State: Epochs and Configuration
 
@@ -211,7 +211,7 @@ cluster_stats_messages_sent:24690
 cluster_stats_messages_received:24690
 ```
 
-**Configuration epochs** are monotonically increasing integers that represent the "version" of a node's configuration. When a slot ownership changes (e.g., during resharding or failover), the epoch increments. The highest epoch wins in conflicts — this is how cluster nodes resolve disagreements about slot ownership.
+**Configuration epochs** are monotonically increasing integers that represent the "version" of a node's configuration. When a slot ownership changes (e.g., during resharding or failover), the epoch increments. The highest epoch wins in conflicts  this is how cluster nodes resolve disagreements about slot ownership.
 
 ### CLUSTER NODES: The Full Picture
 
@@ -227,7 +227,7 @@ cluster_stats_messages_received:24690
 
 Each line contains: node ID, address, flags (master/slave, status), master ID (if slave), ping-sent, pong-recv, config epoch, link state, slot ranges.
 
-We now know how data is distributed (hash slots) and how nodes coordinate (gossip). But what happens when a client connects to the "wrong" node — one that doesn't own the slot for the requested key? In a non-clustered setup, every key lives on the same node. In Cluster mode, the client needs to learn the slot-to-node mapping and handle redirections gracefully.
+We now know how data is distributed (hash slots) and how nodes coordinate (gossip). But what happens when a client connects to the "wrong" node  one that doesn't own the slot for the requested key? In a non-clustered setup, every key lives on the same node. In Cluster mode, the client needs to learn the slot-to-node mapping and handle redirections gracefully.
 
 ---
 
@@ -270,7 +270,7 @@ rc.set('user:42', 'Alice')   # Automatically routes to correct node
 ```
 
 ```javascript
-// Node.js (ioredis) — built-in cluster support
+// Node.js (ioredis)  built-in cluster support
 const Redis = require('ioredis');
 
 const cluster = new Redis.Cluster([
@@ -287,14 +287,14 @@ const cluster = new Redis.Cluster([
     slotsRefreshInterval: 5000,
 });
 
-// Automatic routing — client handles MOVED/ASK
+// Automatic routing  client handles MOVED/ASK
 await cluster.set('user:42', 'Alice');
 const value = await cluster.get('user:42');
 ```
 
 ### ASK: Temporary Redirection (During Resharding)
 
-During slot migration (resharding), a slot is in a transitional state — some keys are on the source node, some are on the destination. The `ASK` redirect handles this:
+During slot migration (resharding), a slot is in a transitional state  some keys are on the source node, some are on the destination. The `ASK` redirect handles this:
 
 ```mermaid
 sequenceDiagram
@@ -320,13 +320,13 @@ sequenceDiagram
 
 The difference between MOVED and ASK:
 - **MOVED:** "This slot permanently lives on another node. Update your routing table."
-- **ASK:** "This specific key might be on another node temporarily. Check there, but don't update your routing table — the migration is still in progress."
+- **ASK:** "This specific key might be on another node temporarily. Check there, but don't update your routing table  the migration is still in progress."
 
 ---
 
 ## 5. Resharding: Moving Slots Between Nodes
 
-Resharding (moving hash slots from one node to another) is how you scale Redis Cluster — add a new node and move some slots to it.
+Resharding (moving hash slots from one node to another) is how you scale Redis Cluster  add a new node and move some slots to it.
 
 ### The Resharding Process
 
@@ -393,7 +393,7 @@ redis-cli --cluster add-node 192.168.1.17:6379 192.168.1.10:6379 \
 
 ### Resharding Performance Impact
 
-Slot migration is **online** — the cluster continues serving requests during resharding. But there are performance implications:
+Slot migration is **online**  the cluster continues serving requests during resharding. But there are performance implications:
 
 1. **MIGRATE commands use the main thread.** Each key migration serializes the value and sends it over the network. Large values (>1 MB) can cause noticeable latency.
 
@@ -409,13 +409,13 @@ Slot migration is **online** — the cluster continues serving requests during r
 
 ### Automatic Failover
 
-Redis Cluster has built-in failure detection and failover — no Sentinel needed.
+Redis Cluster has built-in failure detection and failover  no Sentinel needed.
 
 ```mermaid
 flowchart TD
     PING["All nodes PING each other<br/>every cluster-node-timeout/2"] --> MISS{"Node B doesn't<br/>respond to pings"}
 
-    MISS --> PFAIL["Node A marks Node B as PFAIL<br/>(Possible Failure — local opinion)"]
+    MISS --> PFAIL["Node A marks Node B as PFAIL<br/>(Possible Failure  local opinion)"]
 
     PFAIL --> GOSSIP["Node A gossips about B's PFAIL<br/>Other nodes report their observations"]
 
@@ -544,10 +544,10 @@ cluster-allow-pubsubshard-when-down yes
 In Cluster mode, commands that operate on multiple keys require **all keys to be in the same hash slot**:
 
 ```bash
-# Works — same hash tag → same slot
+# Works  same hash tag → same slot
 MGET {user:42}:name {user:42}:email
 
-# Fails — different slots
+# Fails  different slots
 MGET user:42:name user:43:name
 (error) CROSSSLOT Keys in request don't hash to the same slot
 ```
@@ -593,7 +593,7 @@ return a .. ':' .. b
 
 ### Cross-Slot Pipeline Support
 
-Modern clients like `redis-py` and `ioredis` support pipelines across slots — they automatically split the pipeline into per-node sub-pipelines:
+Modern clients like `redis-py` and `ioredis` support pipelines across slots  they automatically split the pipeline into per-node sub-pipelines:
 
 ```python
 # redis-py handles this transparently in cluster mode
@@ -888,16 +888,16 @@ cluster-migration-barrier 1
 
 ## Coming Up in Part 7: Advanced Use Cases and Real-World System Design Patterns
 
-Parts 1-6 built your understanding of *how Redis works* — from the event loop and data structures through memory management, persistence, replication, and clustering. You now understand the complete infrastructure story: a single Redis instance, replicated for availability, potentially clustered for scale.
+Parts 1-6 built your understanding of *how Redis works*  from the event loop and data structures through memory management, persistence, replication, and clustering. You now understand the complete infrastructure story: a single Redis instance, replicated for availability, potentially clustered for scale.
 
-Part 7 shifts perspective entirely: from *how Redis works* to *how engineers use Redis to solve real problems*. We'll take the concepts from every previous part — Lua scripting (Part 4), consistency guarantees (Part 5), hash tags (Part 6) — and apply them to concrete system design patterns:
+Part 7 shifts perspective entirely: from *how Redis works* to *how engineers use Redis to solve real problems*. We'll take the concepts from every previous part  Lua scripting (Part 4), consistency guarantees (Part 5), hash tags (Part 6)  and apply them to concrete system design patterns:
 
-- **Distributed locking** — the simple lock, Redlock algorithm, fencing tokens, and Martin Kleppmann's famous critique
-- **Rate limiting** — fixed window, sliding window, and token bucket implementations using Lua scripts
-- **Caching patterns** — cache-aside, write-through, write-behind, and the cache stampede problem
-- **Real-time analytics** — using HyperLogLog (Part 2), bitmaps, and sorted sets for dashboards
-- **Job queues** — from simple lists to Streams with consumer groups
-- **How Netflix, Uber, Twitter, GitHub, Instagram, and Cloudflare use Redis** — real architecture patterns at scale
+- **Distributed locking**  the simple lock, Redlock algorithm, fencing tokens, and Martin Kleppmann's famous critique
+- **Rate limiting**  fixed window, sliding window, and token bucket implementations using Lua scripts
+- **Caching patterns**  cache-aside, write-through, write-behind, and the cache stampede problem
+- **Real-time analytics**  using HyperLogLog (Part 2), bitmaps, and sorted sets for dashboards
+- **Job queues**  from simple lists to Streams with consumer groups
+- **How Netflix, Uber, Twitter, GitHub, Instagram, and Cloudflare use Redis**  real architecture patterns at scale
 
 ---
 

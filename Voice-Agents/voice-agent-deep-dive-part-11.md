@@ -1,22 +1,22 @@
-# Voice Agents Deep Dive — Part 11: Voice Agent Memory — Context, Personalization, and Learning
+# Voice Agents Deep Dive  Part 11: Voice Agent Memory  Context, Personalization, and Learning
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** 11 of 19 (Voice Agent Architecture)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~45 minutes
 
 ---
 
-## Recap: Part 10 — Dialog Management
+## Recap: Part 10  Dialog Management
 
 In Part 10 we built the dialog management layer that gives a voice agent its conversational intelligence. We covered:
 
-- **Slot filling** — systematically collecting required information (name, date, party size) through natural conversation, handling missing or ambiguous values gracefully
-- **Turn-taking** — detecting when the user has finished speaking using VAD (Voice Activity Detection) combined with prosodic cues, so the agent neither interrupts prematurely nor waits too long
-- **Interruption handling** — barge-in detection that lets users interrupt the agent mid-sentence, immediately halting TTS playback and re-routing dialog state
-- **Restaurant reservation agent** — a full end-to-end implementation tying all dialog management concepts together into a working booking system
+- **Slot filling**  systematically collecting required information (name, date, party size) through natural conversation, handling missing or ambiguous values gracefully
+- **Turn-taking**  detecting when the user has finished speaking using VAD (Voice Activity Detection) combined with prosodic cues, so the agent neither interrupts prematurely nor waits too long
+- **Interruption handling**  barge-in detection that lets users interrupt the agent mid-sentence, immediately halting TTS playback and re-routing dialog state
+- **Restaurant reservation agent**  a full end-to-end implementation tying all dialog management concepts together into a working booking system
 
 The dialog manager gave our agent a structured way to conduct goal-oriented conversations. But it had a fundamental blind spot: every call started from zero. The agent had no memory of the user's name, preferences, or past interactions. Today we fix that.
 
@@ -30,15 +30,15 @@ You call back the next day with a follow-up question. The agent greets you with:
 
 It has forgotten everything.
 
-This is not a hypothetical — it is the default behavior of almost every deployed voice agent. Each call is a blank slate. The agent treats a loyal customer of ten years exactly the same as a first-time caller.
+This is not a hypothetical  it is the default behavior of almost every deployed voice agent. Each call is a blank slate. The agent treats a loyal customer of ten years exactly the same as a first-time caller.
 
-> **Key Insight:** Memory is not a nice-to-have feature for voice agents — it is the difference between a phone tree with a language model bolted on and an agent that feels genuinely intelligent.
+> **Key Insight:** Memory is not a nice-to-have feature for voice agents  it is the difference between a phone tree with a language model bolted on and an agent that feels genuinely intelligent.
 
 Human memory operates across multiple timescales:
 
-- **Working memory** — what you are thinking about right now (seconds)
-- **Short-term memory** — what happened earlier in the conversation (minutes)
-- **Long-term memory** — what you know about a person across many interactions (days, months, years)
+- **Working memory**  what you are thinking about right now (seconds)
+- **Short-term memory**  what happened earlier in the conversation (minutes)
+- **Long-term memory**  what you know about a person across many interactions (days, months, years)
 
 Voice agents need all three, and each presents distinct engineering challenges. This article builds each layer from scratch, then assembles them into a voice agent that remembers users across sessions.
 
@@ -52,7 +52,7 @@ Before writing code, let us map the full memory system.
 graph TB
     subgraph "Incoming Call"
         A[Audio Stream] --> B[ASR / Transcription]
-        B --> C[NLU — Intent & Entity Extraction]
+        B --> C[NLU  Intent & Entity Extraction]
     end
 
     subgraph "Memory System"
@@ -98,7 +98,7 @@ The system has four memory stores, each with a different purpose:
 | CallMemory | Current call | RAM | <1ms | Conversation transcript, slots, emotional state |
 | UserMemory | Across calls | SQLite/PostgreSQL | 5-50ms | User profile, preferences, history summaries |
 | Vector Store | Semantic search | FAISS/ChromaDB | 10-100ms | Find relevant past conversations by meaning |
-| Knowledge Base | Domain facts | Vector DB + text | 20-200ms | RAG — retrieve product info, policies, FAQs |
+| Knowledge Base | Domain facts | Vector DB + text | 20-200ms | RAG  retrieve product info, policies, FAQs |
 
 ---
 
@@ -164,7 +164,7 @@ class CallMemory:
     # Conversation transcript
     turns: list[Turn] = field(default_factory=list)
 
-    # Extracted entities — keyed by entity_type
+    # Extracted entities  keyed by entity_type
     entities: dict[str, ExtractedEntity] = field(default_factory=dict)
 
     # Slot values for current dialog task
@@ -438,15 +438,15 @@ class UserMemory:
         default_factory=CommunicationStyle
     )
 
-    # Persistent entities — things the user mentions repeatedly
+    # Persistent entities  things the user mentions repeatedly
     # e.g. {"home_city": "Austin", "account_number": "4521"}
     known_entities: dict[str, str] = field(default_factory=dict)
 
-    # Preferences — open-ended key-value store
+    # Preferences  open-ended key-value store
     # e.g. {"notification_method": "email", "favorite_branch": "downtown"}
     preferences: dict[str, Any] = field(default_factory=dict)
 
-    # Interaction history — most recent N summaries
+    # Interaction history  most recent N summaries
     interaction_history: list[InteractionSummary] = field(
         default_factory=list
     )
@@ -488,7 +488,7 @@ class UserMemory:
     def to_context_string(self) -> str:
         """
         Format user memory as a string for LLM prompt injection.
-        Keeps it concise — only the most relevant facts.
+        Keeps it concise  only the most relevant facts.
         """
         lines: list[str] = []
 
@@ -528,7 +528,7 @@ class UserMemory:
                 f"{self.total_issues_resolved} resolved"
             )
 
-        return "\n".join(lines) if lines else "New user — no history."
+        return "\n".join(lines) if lines else "New user  no history."
 
     def to_dict(self) -> dict:
         """Serialize to dict for database storage."""
@@ -737,7 +737,7 @@ class SQLiteMemoryStorage(MemoryStorage):
         )
 
     def _find_by_phone_sync(self, phone: str) -> UserMemory | None:
-        # Normalize phone — strip non-digits
+        # Normalize phone  strip non-digits
         normalized = "".join(c for c in phone if c.isdigit())
         with self._get_connection() as conn:
             rows = conn.execute(
@@ -914,14 +914,14 @@ class ASRMemoryHandler:
         entity = memory.add_entity(
             entity_type=entity_type,
             value=corrected_value,
-            confidence=0.99,  # User confirmed — very high confidence
+            confidence=0.99,  # User confirmed  very high confidence
             turn_id=turn_id,
         )
         entity.confirmed = True
         return entity
 ```
 
-### 4.2 Handling Corrections — "Actually, My Name Is..."
+### 4.2 Handling Corrections  "Actually, My Name Is..."
 
 Corrections are a critical edge case. Users frequently notice ASR errors mid-conversation and attempt to fix them. The agent must:
 
@@ -930,10 +930,10 @@ Corrections are a critical edge case. Users frequently notice ASR errors mid-con
 3. Update memory with the new value
 4. Acknowledge the correction naturally
 
-> **Key Insight:** When a user corrects the agent, they are not just fixing the current response — they are correcting the memory that will influence all future responses. Treat corrections as high-confidence ground truth.
+> **Key Insight:** When a user corrects the agent, they are not just fixing the current response  they are correcting the memory that will influence all future responses. Treat corrections as high-confidence ground truth.
 
 ```python
-# In your dialog manager — handling a detected correction
+# In your dialog manager  handling a detected correction
 async def handle_correction(
     self,
     user_text: str,
@@ -975,7 +975,7 @@ async def handle_correction(
 
         return (
             f"Got it, I've updated that. "
-            f"So it's {new_value} — is that right?"
+            f"So it's {new_value}  is that right?"
         )
 
     return "I want to make sure I have that right. Could you say it once more?"
@@ -1138,7 +1138,7 @@ SYSTEM_PROMPT_TEMPLATE = """You are a helpful voice assistant. You are speaking 
 
 ## Guidelines:
 - Address the user as {address_as}
-- Keep responses {detail_level} — this is a voice call, not a chat
+- Keep responses {detail_level}  this is a voice call, not a chat
 - Speech pace: {pace}
 - {formality_instruction}
 - If the user mentions new facts about themselves (address, preferences, family members), note them in your response using [MEMORY: entity_type=value] tags so they can be extracted
@@ -1569,7 +1569,7 @@ class VoiceVectorStore:
 
 ## 7. RAG for Voice Agents
 
-Retrieval-Augmented Generation (RAG) lets a voice agent answer questions about its domain without hallucinating. The key challenge for voice is that retrieved content must be spoken aloud — no markdown, no URLs, no bullet points.
+Retrieval-Augmented Generation (RAG) lets a voice agent answer questions about its domain without hallucinating. The key challenge for voice is that retrieved content must be spoken aloud  no markdown, no URLs, no bullet points.
 
 ### 7.1 Voice-Friendly Content Formatting
 
@@ -1615,7 +1615,7 @@ class VoiceRAGFormatter:
         text = re.sub(r"_{1,2}([^_]+)_{1,2}", r"\1", text)
         # Remove inline code
         text = re.sub(r"`([^`]+)`", r"\1", text)
-        # Remove links — keep text, drop URL
+        # Remove links  keep text, drop URL
         text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
         # Remove bare URLs
         text = re.sub(
@@ -1955,7 +1955,7 @@ class PersonalizationEngine:
         elif avg_user_words_per_turn > 25:
             user_memory.communication_style.preferred_detail = "detailed"
 
-        # Long calls may indicate confusion — offer more detail next time
+        # Long calls may indicate confusion  offer more detail next time
         if avg_call_duration_minutes > 10:
             user_memory.set_preference("may_need_more_explanation", True)
 ```
@@ -2229,7 +2229,7 @@ class PIIDetector:
     Prevents sensitive data from persisting unnecessarily.
     """
 
-    # PII patterns — ordered by specificity (most specific first)
+    # PII patterns  ordered by specificity (most specific first)
     PATTERNS: list[tuple[str, str, str]] = [
         # (name, pattern, replacement)
         ("ssn", r"\b\d{3}-\d{2}-\d{4}\b", "[SSN REDACTED]"),
@@ -2434,7 +2434,7 @@ class ForgetHandler:
             )
 
         else:
-            # Partial deletion — remove specific entity
+            # Partial deletion  remove specific entity
             hint = (request.entity_hint or "").lower()
             removed_keys: list[str] = []
 
@@ -2494,7 +2494,7 @@ voice_memory_agent/
 ### 10.2 The Full Agent Implementation
 
 ```python
-# agent/memory_agent.py — Complete orchestrator
+# agent/memory_agent.py  Complete orchestrator
 from __future__ import annotations
 
 import asyncio
@@ -2646,7 +2646,7 @@ class VoiceMemoryAgent:
         if pii_matches:
             pii_types = list({m.pii_type for m in pii_matches})
             print(
-                f"[PII] Detected {pii_types} in user input — "
+                f"[PII] Detected {pii_types} in user input  "
                 f"redacted for storage"
             )
 
@@ -2785,7 +2785,7 @@ CURRENT CALL STATE:
 RESPONSE GUIDELINES:
 - Address user as: {address_as}
 - Keep responses {"brief (1-2 sentences)" if style.preferred_detail == "brief" else "moderately detailed"}
-- This is a voice call — no markdown, no lists, no URLs
+- This is a voice call  no markdown, no lists, no URLs
 - If the user mentions new personal information, acknowledge it naturally
 
 CONVERSATION SO FAR:
@@ -3047,7 +3047,7 @@ from agent.memory_agent import VoiceMemoryAgent
 async def simulate_session_one(
     agent: VoiceMemoryAgent, user_phone: str
 ) -> str:
-    """First call — user introduces themselves."""
+    """First call  user introduces themselves."""
     print("\n=== SESSION 1: First Contact ===\n")
     session = await agent.start_call(phone_number=user_phone)
 
@@ -3103,7 +3103,7 @@ async def simulate_session_two(
     user_id: str,
     user_phone: str,
 ) -> None:
-    """Second call — agent recalls the user."""
+    """Second call  agent recalls the user."""
     print("\n\n=== SESSION 2: Returning User (3 days later) ===\n")
     session = await agent.start_call(
         phone_number=user_phone, user_id=user_id
@@ -3118,7 +3118,7 @@ async def simulate_session_two(
             0.93,
         ),
         (
-            "I moved the router to the bedroom — will that help?",
+            "I moved the router to the bedroom  will that help?",
             0.91,
         ),
         (
@@ -3153,17 +3153,17 @@ async def simulate_session_two(
     updated_memory = await agent.storage.load_user(user_id)
     if updated_memory:
         print(
-            f"\n[Memory check — known_name: {updated_memory.known_name}]"
+            f"\n[Memory check  known_name: {updated_memory.known_name}]"
         )
         print(
-            f"[Memory check — preferred_pace: "
+            f"[Memory check  preferred_pace: "
             f"{updated_memory.communication_style.preferred_pace}]"
         )
         print(
-            f"[Memory check — total_calls: {updated_memory.total_calls}]"
+            f"[Memory check  total_calls: {updated_memory.total_calls}]"
         )
         print(
-            f"[Memory check — known_entities: "
+            f"[Memory check  known_entities: "
             f"{updated_memory.known_entities}]"
         )
 
@@ -3173,7 +3173,7 @@ async def simulate_forget_request(
     user_id: str,
     user_phone: str,
 ) -> None:
-    """Third call — user requests partial memory deletion."""
+    """Third call  user requests partial memory deletion."""
     print("\n\n=== SESSION 3: Memory Deletion Request ===\n")
     session = await agent.start_call(
         phone_number=user_phone, user_id=user_id
@@ -3212,7 +3212,7 @@ async def simulate_forget_request(
     final_memory = await agent.storage.load_user(user_id)
     if final_memory:
         print(
-            f"\n[Final memory — known_entities: "
+            f"\n[Final memory  known_entities: "
             f"{final_memory.known_entities}]"
         )
 
@@ -3313,11 +3313,11 @@ graph TB
 | Vector Store | Database that stores text as embeddings and retrieves by semantic similarity |
 | Embedding | A dense numerical representation of text that captures semantic meaning |
 | Semantic Search | Finding relevant content by meaning similarity, not keyword matching |
-| RAG | Retrieval-Augmented Generation — augmenting LLM responses with retrieved facts |
+| RAG | Retrieval-Augmented Generation  augmenting LLM responses with retrieved facts |
 | ChromaDB | Open-source vector database with a Python-native API |
-| FAISS | Facebook AI Similarity Search — high-performance embedding similarity library |
-| TTL | Time-to-Live — how long a memory entry is retained before automatic deletion |
-| PII | Personally Identifiable Information — data that can identify a specific person |
+| FAISS | Facebook AI Similarity Search  high-performance embedding similarity library |
+| TTL | Time-to-Live  how long a memory entry is retained before automatic deletion |
+| PII | Personally Identifiable Information  data that can identify a specific person |
 | Memory Temperature | Classification of memory freshness: Active, Warm, Cold, Expired |
 | Entity | A named piece of information extracted from conversation (name, date, address) |
 | Slot | A dialog management variable that must be filled to complete a task |
@@ -3369,25 +3369,25 @@ graph TB
 
 ---
 
-## What's Next: Part 12 — Voice Agent Frameworks
+## What's Next: Part 12  Voice Agent Frameworks
 
 In Part 12, we move from building everything from scratch to leveraging dedicated voice agent frameworks that handle much of the infrastructure for us.
 
-**LiveKit** — Open-source real-time communications infrastructure with a Python SDK (`livekit-agents`) specifically designed for AI voice agents. We will build a production agent using LiveKit's pipeline architecture, covering room management, track subscriptions, and the agent worker pattern.
+**LiveKit**  Open-source real-time communications infrastructure with a Python SDK (`livekit-agents`) specifically designed for AI voice agents. We will build a production agent using LiveKit's pipeline architecture, covering room management, track subscriptions, and the agent worker pattern.
 
-**Pipecat** — A framework from Daily.co for building voice and multimodal AI agents. Pipecat's transport-agnostic design lets you swap underlying WebRTC providers while keeping your agent logic intact. We will examine its frame-based pipeline model and built-in VAD, STT, and TTS integrations.
+**Pipecat**  A framework from Daily.co for building voice and multimodal AI agents. Pipecat's transport-agnostic design lets you swap underlying WebRTC providers while keeping your agent logic intact. We will examine its frame-based pipeline model and built-in VAD, STT, and TTS integrations.
 
-**Vocode** — An open-source library for building voice-based LLM apps, with built-in support for telephony (Twilio, Vonage), STT, TTS, and dialog management. Vocode abstracts the entire telephony stack so you can focus on the conversation.
+**Vocode**  An open-source library for building voice-based LLM apps, with built-in support for telephony (Twilio, Vonage), STT, TTS, and dialog management. Vocode abstracts the entire telephony stack so you can focus on the conversation.
 
 We will compare all three frameworks on:
 - Developer experience and API ergonomics
 - Latency characteristics and optimization options
-- Cost — self-hosted versus managed cloud
+- Cost  self-hosted versus managed cloud
 - Telephony integration (SIP, PSTN, WebRTC)
 - Community activity and production readiness
 
-> **Preview:** The frameworks in Part 12 solve many of the infrastructure problems we have been solving manually in Parts 1-11. But understanding the fundamentals — how audio pipelines work, how ASR and TTS fit together, how memory must be architected — is exactly what lets you know when to trust the framework and when to bypass it for a custom solution.
+> **Preview:** The frameworks in Part 12 solve many of the infrastructure problems we have been solving manually in Parts 1-11. But understanding the fundamentals  how audio pipelines work, how ASR and TTS fit together, how memory must be architected  is exactly what lets you know when to trust the framework and when to bypass it for a custom solution.
 
 ---
 
-*This is Part 11 of the "Building Voice Agents — A Developer's Deep Dive" series. Each part builds on the previous, so if memory architecture is new to you, Parts 1-10 are available in the series index.*
+*This is Part 11 of the "Building Voice Agents  A Developer's Deep Dive" series. Each part builds on the previous, so if memory architecture is new to you, Parts 1-10 are available in the series index.*

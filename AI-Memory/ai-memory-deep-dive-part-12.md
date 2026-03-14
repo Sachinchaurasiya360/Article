@@ -1,8 +1,8 @@
-# Memory in AI Systems Deep Dive — Part 12: Memory Compression and Summarization
+# Memory in AI Systems Deep Dive  Part 12: Memory Compression and Summarization
 
 ---
 
-**Series:** Memory in AI Systems — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Memory in AI Systems  A Developer's Deep Dive from Fundamentals to Production
 **Part:** 12 of 19 (Memory Compression)
 **Audience:** Developers with programming experience who want to understand AI memory systems from the ground up
 **Reading time:** ~45 minutes
@@ -11,13 +11,13 @@
 
 ## Recap of Part 11
 
-In Part 11, we explored memory persistence and storage — how to save, load, and manage memory across sessions so that AI systems can remember users, conversations, and learned facts across restarts and deployments. We built storage backends, serialization pipelines, and lifecycle management systems that keep memory alive beyond a single conversation turn.
+In Part 11, we explored memory persistence and storage  how to save, load, and manage memory across sessions so that AI systems can remember users, conversations, and learned facts across restarts and deployments. We built storage backends, serialization pipelines, and lifecycle management systems that keep memory alive beyond a single conversation turn.
 
-But here's a problem we kept bumping into: **memory grows**. Every conversation adds tokens. Every retrieved document adds context. Every fact learned adds to the knowledge base. And LLMs have a hard limit — the context window. Even with the largest models offering 128K or 200K token windows, an AI assistant that remembers everything from every conversation will eventually run out of room.
+But here's a problem we kept bumping into: **memory grows**. Every conversation adds tokens. Every retrieved document adds context. Every fact learned adds to the knowledge base. And LLMs have a hard limit  the context window. Even with the largest models offering 128K or 200K token windows, an AI assistant that remembers everything from every conversation will eventually run out of room.
 
-This is the compression problem. And it's not just about fitting into the context window — it's about **cost**, **latency**, and **attention quality**. A 100K token context costs 50x more than a 2K token context. It takes longer to process. And research consistently shows that LLMs struggle to utilize information in the middle of very long contexts (the "lost in the middle" effect).
+This is the compression problem. And it's not just about fitting into the context window  it's about **cost**, **latency**, and **attention quality**. A 100K token context costs 50x more than a 2K token context. It takes longer to process. And research consistently shows that LLMs struggle to utilize information in the middle of very long contexts (the "lost in the middle" effect).
 
-In this part, we'll build a complete memory compression system from scratch. We'll implement extractive compression (keeping the important parts), abstractive compression (summarizing with LLMs), hierarchical compression (multi-level summarization), sliding window strategies, memory budget allocation, and quality evaluation — then combine everything into a production-ready compressor.
+In this part, we'll build a complete memory compression system from scratch. We'll implement extractive compression (keeping the important parts), abstractive compression (summarizing with LLMs), hierarchical compression (multi-level summarization), sliding window strategies, memory budget allocation, and quality evaluation  then combine everything into a production-ready compressor.
 
 By the end of this part, you will:
 
@@ -141,7 +141,7 @@ Year of usage                  10       7300       87,600,000      $2628.00   68
 Power user (year)              30       7300       262,800,000     $7884.00   2053.1
 ```
 
-The numbers are stark. A single conversation fits easily in context. But a month of usage generates **7.2 million tokens** — that's 56 context windows worth of data. A year of power usage hits **262 million tokens**. You simply cannot stuff all of that into a context window.
+The numbers are stark. A single conversation fits easily in context. But a month of usage generates **7.2 million tokens**  that's 56 context windows worth of data. A year of power usage hits **262 million tokens**. You simply cannot stuff all of that into a context window.
 
 ### The Four Forces Demanding Compression
 
@@ -289,7 +289,7 @@ def calculate_cost_savings(
 result = calculate_cost_savings(
     memory_tokens=1_680_000,
     queries_per_day=50,
-    compression_ratio=0.05  # 95% compression — keep only 5%
+    compression_ratio=0.05  # 95% compression  keep only 5%
 )
 
 print(f"Uncompressed: {result['uncompressed_tokens']:,} tokens")
@@ -396,7 +396,7 @@ Sending 128K tokens means the user waits **13 seconds** just for the first token
 
 #### Force 4: Attention Degradation
 
-> **Key Insight:** More context does not always mean better answers. Research on the "lost in the middle" effect (Liu et al., 2023) shows that LLMs are best at using information placed at the **beginning** and **end** of the context. Information in the middle gets progressively ignored. Compression helps by ensuring that only the most relevant information survives — and it gets placed where the model can actually use it.
+> **Key Insight:** More context does not always mean better answers. Research on the "lost in the middle" effect (Liu et al., 2023) shows that LLMs are best at using information placed at the **beginning** and **end** of the context. Information in the middle gets progressively ignored. Compression helps by ensuring that only the most relevant information survives  and it gets placed where the model can actually use it.
 
 ```python
 """
@@ -462,7 +462,7 @@ print(f"Accuracy gap:   {best['accuracy'] - worst['accuracy']:.1%}")
 
 ## 2. Extractive Compression
 
-**Extractive compression** keeps the most important parts of the original text verbatim. Think of it as highlighting the key sentences in a textbook — you're not rewriting anything, just selecting what matters.
+**Extractive compression** keeps the most important parts of the original text verbatim. Think of it as highlighting the key sentences in a textbook  you're not rewriting anything, just selecting what matters.
 
 ### 2.1 TF-IDF Based Importance Scoring
 
@@ -1082,7 +1082,7 @@ for name, extractor in methods.items():
 
 ## 3. Abstractive Compression (LLM Summarization)
 
-Extractive compression keeps original sentences — it can never synthesize new text or combine ideas. **Abstractive compression** uses an LLM to generate new, shorter text that captures the same meaning. This is more powerful but also more expensive and risky (the LLM might hallucinate or lose important details).
+Extractive compression keeps original sentences  it can never synthesize new text or combine ideas. **Abstractive compression** uses an LLM to generate new, shorter text that captures the same meaning. This is more powerful but also more expensive and risky (the LLM might hallucinate or lose important details).
 
 ### 3.1 Basic LLM Summarization
 
@@ -1191,7 +1191,7 @@ Target length: approximately {max_tokens} tokens (about {int(max_tokens / 1.3)} 
 
 IMPORTANT RULES:
 - Do NOT add information that isn't in the original text
-- Preserve factual accuracy — especially names, numbers, and technical terms
+- Preserve factual accuracy  especially names, numbers, and technical terms
 - Write in the same style and tense as the original
 - Do not include meta-commentary like "This text discusses..."
 
@@ -1286,10 +1286,10 @@ Generate {num_iterations} summaries of the above text, each approximately
 
 For each summary:
 - Summary 1: Write a first summary covering the main topics
-- Summary 2: Make the summary denser — add 1-2 important details that were
+- Summary 2: Make the summary denser  add 1-2 important details that were
   missing from Summary 1, while removing less important content to maintain
   the same length
-- Summary 3: Make it even denser — add remaining critical details, compress
+- Summary 3: Make it even denser  add remaining critical details, compress
   redundant phrasing, use more information-dense language
 
 Format your response as:
@@ -1461,7 +1461,7 @@ graph LR
 
 ## 4. Hierarchical Memory Compression
 
-Real memory systems don't use a single compression level. Think about human memory: you remember today's breakfast in detail, last week's meals vaguely, and last year's meals as "I usually ate healthy." This is **hierarchical compression** — different levels of detail for different time horizons.
+Real memory systems don't use a single compression level. Think about human memory: you remember today's breakfast in detail, last week's meals vaguely, and last year's meals as "I usually ate healthy." This is **hierarchical compression**  different levels of detail for different time horizons.
 
 ### 4.1 The Five Levels of Memory Compression
 

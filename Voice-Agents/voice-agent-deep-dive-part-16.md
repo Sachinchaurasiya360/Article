@@ -1,17 +1,17 @@
-# Voice Agents Deep Dive — Part 16: Latency Optimization — Making Voice Agents Feel Instant
+# Voice Agents Deep Dive  Part 16: Latency Optimization  Making Voice Agents Feel Instant
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** 16 of 19 (Production Voice Systems)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~50 minutes
 
 ---
 
-## Recap: Part 15 — Advanced Voice Features
+## Recap: Part 15  Advanced Voice Features
 
-In Part 15 we pushed voice agents beyond simple question-and-answer exchanges into the territory of genuinely intelligent, context-aware systems. We implemented speaker authentication using voice embeddings — allowing a single agent endpoint to recognize and personalize responses for multiple registered users without any typed credentials. We layered in multi-modal awareness so the agent could accept image, document, or screen-share context alongside speech, enriching the conversation with visual grounding. Finally, we built proactive agents: systems that do not wait passively for a user utterance but instead monitor background events — a database row change, a calendar alarm, a sensor threshold — and initiate outbound voice calls or push audio notifications when conditions are met.
+In Part 15 we pushed voice agents beyond simple question-and-answer exchanges into the territory of genuinely intelligent, context-aware systems. We implemented speaker authentication using voice embeddings  allowing a single agent endpoint to recognize and personalize responses for multiple registered users without any typed credentials. We layered in multi-modal awareness so the agent could accept image, document, or screen-share context alongside speech, enriching the conversation with visual grounding. Finally, we built proactive agents: systems that do not wait passively for a user utterance but instead monitor background events  a database row change, a calendar alarm, a sensor threshold  and initiate outbound voice calls or push audio notifications when conditions are met.
 
 Those advanced features made our agents smarter. This part makes them *feel* faster. No matter how clever a voice agent is, if it pauses for three seconds before speaking, users perceive it as broken. Latency is not a micro-optimization you defer to later; it is the single most important factor in whether a voice agent feels natural or robotic. Every technique in this article has been battle-tested in production systems handling millions of conversations.
 
@@ -30,7 +30,7 @@ Those advanced features made our agents smarter. This part makes them *feel* fas
 9. Real-World Optimization Walkthrough: 3s → Under 800ms
 10. Project: Benchmark-Driven Optimization
 11. Vocabulary Cheat Sheet
-12. What's Next: Part 17 — Production Infrastructure
+12. What's Next: Part 17  Production Infrastructure
 
 ---
 
@@ -38,19 +38,19 @@ Those advanced features made our agents smarter. This part makes them *feel* fas
 
 ### Human Conversation Timing
 
-Human beings have evolved remarkably precise expectations for conversational timing. In face-to-face dialogue, the gap between one speaker finishing and another beginning — the Inter-Pausal Turn (IPT) — averages between 200 and 300 milliseconds. This number is not a cultural artifact; it appears consistently across dozens of languages and cultures studied by conversation analysts. It represents the time a human brain needs to recognize that speech has stopped, decide to respond, motor-program an utterance, and begin voicing it.
+Human beings have evolved remarkably precise expectations for conversational timing. In face-to-face dialogue, the gap between one speaker finishing and another beginning  the Inter-Pausal Turn (IPT)  averages between 200 and 300 milliseconds. This number is not a cultural artifact; it appears consistently across dozens of languages and cultures studied by conversation analysts. It represents the time a human brain needs to recognize that speech has stopped, decide to respond, motor-program an utterance, and begin voicing it.
 
 ```
-Comfortable:  <200ms  — feels like natural overlapping speech
-Natural:       200-300ms — the gold standard window
-Slightly slow: 300-600ms — perceptible but acceptable in low-stakes contexts
-Awkward:       600ms-1s  — users begin to wonder if the agent heard them
-Broken:        1s+       — users repeat themselves, raise their voice, or hang up
+Comfortable:  <200ms   feels like natural overlapping speech
+Natural:       200-300ms  the gold standard window
+Slightly slow: 300-600ms  perceptible but acceptable in low-stakes contexts
+Awkward:       600ms-1s   users begin to wonder if the agent heard them
+Broken:        1s+        users repeat themselves, raise their voice, or hang up
 ```
 
 When a voice agent responds inside that 200–300 ms window, users describe the interaction as "smooth," "natural," and "like talking to a person." When the agent crosses 1 second, a fundamentally different cognitive process kicks in: the user re-evaluates the channel itself. They wonder whether the call dropped, the internet connection failed, or their microphone stopped working. The resulting anxiety poisons the entire interaction even if the eventual answer is perfect.
 
-> **Key Insight:** A voice agent that answers slowly and correctly will be rated lower in user satisfaction surveys than one that answers quickly with a minor imprecision. Speed is not just a nice-to-have — it is part of the answer's perceived quality.
+> **Key Insight:** A voice agent that answers slowly and correctly will be rated lower in user satisfaction surveys than one that answers quickly with a minor imprecision. Speed is not just a nice-to-have  it is part of the answer's perceived quality.
 
 ### The Uncanny Valley of Latency
 
@@ -72,7 +72,7 @@ graph LR
     style F fill:#7f1d1d,color:#fff
 ```
 
-Between 600 ms and 1 second, something strange happens. The pause is long enough that users know something is processing, but the system has not crossed any obvious failure threshold. Users often interpret this as the agent being "confused" or "thinking hard" — and they pre-judge the eventual answer negatively before it arrives. This is worse than a clearly broken 3-second pause, because at least the 3-second pause prompts the user to adjust their expectations.
+Between 600 ms and 1 second, something strange happens. The pause is long enough that users know something is processing, but the system has not crossed any obvious failure threshold. Users often interpret this as the agent being "confused" or "thinking hard"  and they pre-judge the eventual answer negatively before it arrives. This is worse than a clearly broken 3-second pause, because at least the 3-second pause prompts the user to adjust their expectations.
 
 ### Business Impact
 
@@ -91,7 +91,7 @@ These numbers come from published studies by Twilio, Google CCAI, and Amazon Con
 
 ### The Latency Budget
 
-Before optimizing anything, define your latency budget — the maximum allowable delay across the entire pipeline for each component.
+Before optimizing anything, define your latency budget  the maximum allowable delay across the entire pipeline for each component.
 
 | Component | Aggressive Budget | Comfortable Budget | Current Typical |
 |-----------|------------------|-------------------|----------------|
@@ -150,7 +150,7 @@ gantt
 
 ```python
 """
-latency_profiler.py — Comprehensive latency measurement for voice agents.
+latency_profiler.py  Comprehensive latency measurement for voice agents.
 
 Captures timing at every pipeline stage with support for:
 - Span-based tracing (compatible with OpenTelemetry)
@@ -390,7 +390,7 @@ For production deployments, connect the profiler to OpenTelemetry to get distrib
 
 ```python
 """
-otel_tracing.py — OpenTelemetry integration for voice agent latency.
+otel_tracing.py  OpenTelemetry integration for voice agent latency.
 
 pip install opentelemetry-api opentelemetry-sdk opentelemetry-exporter-otlp
 """
@@ -469,7 +469,7 @@ class OTelVoicePipeline:
 
 ## 3. ASR Latency Optimization
 
-Automatic Speech Recognition is typically the first stage of the pipeline, and its latency characteristics are unique because ASR runs *while the user is still speaking*. The key insight: by the time the user finishes their last word, you want the ASR engine to be milliseconds away from delivering a final transcript — not seconds.
+Automatic Speech Recognition is typically the first stage of the pipeline, and its latency characteristics are unique because ASR runs *while the user is still speaking*. The key insight: by the time the user finishes their last word, you want the ASR engine to be milliseconds away from delivering a final transcript  not seconds.
 
 ### Streaming vs. Batch ASR
 
@@ -535,7 +535,7 @@ Most ASR services expose endpointing parameters. Tune them aggressively for voic
 
 ```python
 """
-optimized_asr.py — Streaming ASR with aggressive endpointing and latency optimization.
+optimized_asr.py  Streaming ASR with aggressive endpointing and latency optimization.
 
 Supports faster-whisper (local) and Deepgram Nova-2 (cloud streaming).
 pip install faster-whisper deepgram-sdk websockets
@@ -707,7 +707,7 @@ class FasterWhisperASR(BaseASR):
 
 class DeepgramStreamingASR(BaseASR):
     """
-    Deepgram Nova-2 streaming ASR — lowest latency cloud option.
+    Deepgram Nova-2 streaming ASR  lowest latency cloud option.
     Achieves ~30ms TTAS using Deepgram's KeepAlive WebSocket connection.
     """
 
@@ -834,7 +834,7 @@ The most fundamental change: never wait for the full LLM response. Stream tokens
 
 ```python
 """
-streaming_llm.py — Streaming LLM with sentence boundary detection and caching.
+streaming_llm.py  Streaming LLM with sentence boundary detection and caching.
 
 pip install openai anthropic redis
 """
@@ -863,7 +863,7 @@ class LLMConfig:
     stream: bool = True
 
 
-# Sentence boundary pattern — matches common end-of-sentence punctuation
+# Sentence boundary pattern  matches common end-of-sentence punctuation
 SENTENCE_BOUNDARY = re.compile(
     r'(?<=[.!?])\s+(?=[A-Z])|(?<=[.!?])$'
 )
@@ -1085,7 +1085,7 @@ Not every response needs to be generated fresh. A substantial portion of voice a
 
 ```python
 """
-semantic_cache.py — Semantic similarity cache for LLM responses.
+semantic_cache.py  Semantic similarity cache for LLM responses.
 
 Uses sentence embeddings to find similar cached queries.
 pip install sentence-transformers faiss-cpu
@@ -1225,7 +1225,7 @@ class SemanticCache:
 
 ## 5. TTS Latency Optimization
 
-Text-to-Speech is the final transformation in the pipeline — turning text into audio bytes the user can hear. Without optimization, TTS often contributes 300–600 ms of latency. With streaming synthesis and audio caching, you can bring this under 80 ms for the first audio chunk.
+Text-to-Speech is the final transformation in the pipeline  turning text into audio bytes the user can hear. Without optimization, TTS often contributes 300–600 ms of latency. With streaming synthesis and audio caching, you can bring this under 80 ms for the first audio chunk.
 
 ### Streaming TTS Architecture
 
@@ -1260,11 +1260,11 @@ sequenceDiagram
 
 ### Pre-Generated Filler Audio
 
-For phrases that appear constantly — "Let me check that for you", "One moment please", "Sure!" — pre-generate and cache the audio at startup. When these phrases are needed, play them from a byte buffer with zero synthesis latency.
+For phrases that appear constantly  "Let me check that for you", "One moment please", "Sure!"  pre-generate and cache the audio at startup. When these phrases are needed, play them from a byte buffer with zero synthesis latency.
 
 ```python
 """
-streaming_tts_pipeline.py — Streaming TTS with pre-generation, caching, and pipelining.
+streaming_tts_pipeline.py  Streaming TTS with pre-generation, caching, and pipelining.
 
 pip install openai aiohttp aiofiles
 """
@@ -1562,7 +1562,7 @@ flowchart TD
 
 ```python
 """
-speculative_executor.py — Speculative response pre-generation for voice agents.
+speculative_executor.py  Speculative response pre-generation for voice agents.
 
 Predicts likely user intents during speech and pre-generates responses.
 Rolls back cleanly when predictions are wrong.
@@ -1703,7 +1703,7 @@ class IntentPredictor:
     def matches(self, signal: IntentSignal, final_transcript: str) -> bool:
         """
         Check if a final transcript matches a previously predicted intent.
-        More lenient than prediction — a match doesn't require same keywords.
+        More lenient than prediction  a match doesn't require same keywords.
         """
         final_lower = final_transcript.lower()
         keywords = self.INTENT_PATTERNS.get(signal.intent, [])
@@ -1935,7 +1935,7 @@ Cold connection establishment adds 100–300 ms to every API call. A warm connec
 
 ```python
 """
-warm_connection_pool.py — Persistent connection pool for voice agent services.
+warm_connection_pool.py  Persistent connection pool for voice agent services.
 
 Maintains warm HTTP/WebSocket connections to eliminate cold-start latency.
 pip install aiohttp websockets tenacity
@@ -2167,7 +2167,7 @@ One of the most powerful but least-discussed optimizations is geographic proximi
 
 ## 8. Filler Words and Prosodic Bridging
 
-Even with all the optimizations above, there will be moments — complex multi-step queries, unusual phrasing, first-time model cold-starts — where the agent cannot respond within 400 ms. When that happens, filler words and prosodic bridging save the interaction.
+Even with all the optimizations above, there will be moments  complex multi-step queries, unusual phrasing, first-time model cold-starts  where the agent cannot respond within 400 ms. When that happens, filler words and prosodic bridging save the interaction.
 
 In human conversation, we naturally say "Hmm", "Let me think", "One moment" to signal that we heard the question and are processing it. A brief filler word at 150 ms prevents the awkward silence at 800 ms from feeling like a broken connection.
 
@@ -2177,7 +2177,7 @@ In human conversation, we naturally say "Hmm", "Let me think", "One moment" to s
 
 ```python
 """
-filler_word_injector.py — Inject prosodic filler sounds to bridge LLM latency.
+filler_word_injector.py  Inject prosodic filler sounds to bridge LLM latency.
 
 Pre-synthesizes a library of filler sounds at startup.
 Selects contextually appropriate fillers based on query type.
@@ -2388,12 +2388,12 @@ class FillerWordInjector:
                 timeout=max_wait_ms / 1000.0,
             )
 
-            # Response arrived in time — yield it directly
+            # Response arrived in time  yield it directly
             if first_chunk is not None:
                 yield first_chunk
 
         except asyncio.TimeoutError:
-            # Response not ready — inject a filler
+            # Response not ready  inject a filler
             filler = self.get_filler(intent, recently_used)
             if filler and filler.duration_ms <= self.config.max_filler_duration_ms:
                 logger.debug(f"Injecting filler: '{filler.text}'")
@@ -2405,7 +2405,7 @@ class FillerWordInjector:
                 for i in range(0, len(filler.audio_bytes), chunk_size):
                     yield filler.audio_bytes[i:i + chunk_size]
 
-            # Now wait for the real response (no more timeout — filler bought us time)
+            # Now wait for the real response (no more timeout  filler bought us time)
             first_chunk = await response_queue.get()
             if first_chunk is not None:
                 yield first_chunk
@@ -2425,13 +2425,13 @@ class FillerWordInjector:
 
 ## 9. Real-World Optimization Walkthrough: 3s → Under 800ms
 
-This section traces the complete optimization journey on a real voice agent deployment: a customer service bot for a retail company. Starting latency was 3.2 seconds (TTFA). After applying techniques from this article systematically, we achieved 720 ms — a 78% reduction.
+This section traces the complete optimization journey on a real voice agent deployment: a customer service bot for a retail company. Starting latency was 3.2 seconds (TTFA). After applying techniques from this article systematically, we achieved 720 ms  a 78% reduction.
 
 ### Optimization Impact Table
 
 | Optimization | Cumulative TTFA | Delta | Implementation Effort |
 |-------------|----------------|-------|----------------------|
-| Baseline (batch ASR, sync LLM, batch TTS) | 3200ms | — | — |
+| Baseline (batch ASR, sync LLM, batch TTS) | 3200ms |  |  |
 | Switch to streaming ASR (Deepgram Nova-2) | 2400ms | -800ms | Low |
 | Tune endpointing (1000ms → 350ms silence) | 1900ms | -500ms | Low |
 | Stream LLM tokens, sentence detection | 1400ms | -500ms | Medium |
@@ -2439,14 +2439,14 @@ This section traces the complete optimization journey on a real voice agent depl
 | Warm connection pool | 850ms | -100ms | Medium |
 | Pre-generate common phrases (cache hit) | 780ms | -70ms | Low |
 | Speculative execution (40% hit rate) | 720ms average | -60ms avg | High |
-| Filler word injection (perceived latency) | 720ms real, ~300ms perceived | — | Low |
+| Filler word injection (perceived latency) | 720ms real, ~300ms perceived |  | Low |
 | Edge deployment (50ms network savings) | 670ms | -50ms | High |
 
 ### Phase 1: Baseline Measurement
 
 ```python
 """
-baseline_measurement.py — Measure the starting latency of an unoptimized pipeline.
+baseline_measurement.py  Measure the starting latency of an unoptimized pipeline.
 """
 
 import asyncio
@@ -2527,7 +2527,7 @@ if __name__ == "__main__":
 
 ```python
 """
-optimized_pipeline.py — Fully optimized voice agent pipeline achieving <800ms TTFA.
+optimized_pipeline.py  Fully optimized voice agent pipeline achieving <800ms TTFA.
 
 Integrates all techniques from this article:
 - Streaming ASR with tuned endpointing
@@ -2645,7 +2645,7 @@ class OptimizedVoiceAgent:
         """
         Process a single conversation turn, yielding audio bytes as they're ready.
 
-        This is the hot path — optimized for minimum TTFA.
+        This is the hot path  optimized for minimum TTFA.
         """
         if not self._initialized:
             raise RuntimeError("Agent not initialized. Call initialize() first.")
@@ -2657,7 +2657,7 @@ class OptimizedVoiceAgent:
             trace.start_span("asr.end_of_speech")
 
             async def on_partial(partial_text: str):
-                """Handle partial ASR results — trigger speculative execution."""
+                """Handle partial ASR results  trigger speculative execution."""
                 await self.speculative.on_partial_transcript(partial_text)
                 logger.debug(f"Partial ASR: '{partial_text}'")
 
@@ -2683,9 +2683,9 @@ class OptimizedVoiceAgent:
             spec_hit, spec_result = await self.speculative.commit_or_rollback(transcript)
 
             if spec_hit and spec_result:
-                # Speculation was correct — serve pre-generated audio immediately
+                # Speculation was correct  serve pre-generated audio immediately
                 logger.info(
-                    f"Speculation HIT — serving pre-generated audio "
+                    f"Speculation HIT  serving pre-generated audio "
                     f"(TTFA ~{(time.perf_counter() - turn_start)*1000:.0f}ms)"
                 )
                 trace.start_span("tts.first_audio_chunk")
@@ -2776,7 +2776,7 @@ latency_project/
 
 ```python
 """
-mock_services.py — Deterministic mock services for latency benchmarking.
+mock_services.py  Deterministic mock services for latency benchmarking.
 
 Each service simulates realistic latency distributions using
 log-normal distributions (matching real-world API behavior).
@@ -2863,14 +2863,14 @@ class MockLLM:
         self.total_tokens = total_tokens
 
     async def generate(self, prompt: str) -> str:
-        """Batch generation — returns full response at once."""
+        """Batch generation  returns full response at once."""
         ttft = lognormal_sample(self.ttft_mean, self.ttft_std)
         generation_time = (self.total_tokens / self.tps) * 1000
         await asyncio.sleep((ttft + generation_time) / 1000.0)
         return "The weather in San Francisco today is partly cloudy with a high of 68 degrees."
 
     async def generate_stream(self, prompt: str) -> AsyncGenerator[str, None]:
-        """Streaming generation — yields tokens as they arrive."""
+        """Streaming generation  yields tokens as they arrive."""
         ttft = lognormal_sample(self.ttft_mean, self.ttft_std)
         await asyncio.sleep(ttft / 1000.0)
 
@@ -2902,7 +2902,7 @@ class MockTTS:
         self.bps = bytes_per_second
 
     async def synthesize(self, text: str) -> bytes:
-        """Batch synthesis — returns full audio at once."""
+        """Batch synthesis  returns full audio at once."""
         delay = lognormal_sample(self.first_chunk_mean, self.first_chunk_std)
         audio_duration_ms = len(text.split()) * 300  # ~300ms per word
         total_delay = delay + audio_duration_ms
@@ -2911,7 +2911,7 @@ class MockTTS:
         return b"\x00" * audio_bytes_count
 
     async def synthesize_stream(self, text: str) -> AsyncGenerator[bytes, None]:
-        """Streaming synthesis — yields audio chunks as they're ready."""
+        """Streaming synthesis  yields audio chunks as they're ready."""
         first_chunk_delay = lognormal_sample(self.first_chunk_mean, self.first_chunk_std)
         await asyncio.sleep(first_chunk_delay / 1000.0)
 
@@ -2929,7 +2929,7 @@ class MockTTS:
 
 ```python
 """
-benchmark.py — Comprehensive latency benchmark for voice agent pipelines.
+benchmark.py  Comprehensive latency benchmark for voice agent pipelines.
 
 Runs N turns through each pipeline variant and reports
 p50/p95/p99 TTFA with statistical confidence intervals.
@@ -3044,7 +3044,7 @@ async def pipeline_v3_full_streaming(asr: MockASR, llm: MockLLM, tts: MockTTS) -
             break
 
     if first_sentence:
-        # Stream first sentence TTS — measure time to first chunk
+        # Stream first sentence TTS  measure time to first chunk
         async for chunk in tts.synthesize_stream(first_sentence):
             first_audio_time.append(time.perf_counter())
             break  # Only need first chunk timing
@@ -3088,7 +3088,7 @@ async def pipeline_v4_with_filler(asr: MockASR, llm: MockLLM, tts: MockTTS) -> f
             break
         ttfa = (time.perf_counter() - start) * 1000
     else:
-        # Filler audio was TTFA — now stream real TTS in parallel
+        # Filler audio was TTFA  now stream real TTS in parallel
         ttfa = filler_ttfa  # User heard audio at filler_ttfa
 
     return ttfa
@@ -3131,11 +3131,11 @@ async def pipeline_v5_speculative(asr: MockASR, llm: MockLLM, tts: MockTTS) -> f
     hit = (asyncio.get_event_loop().time() % 1.0) < SPECULATION_HIT_RATE
 
     if hit and spec_task.done():
-        # Speculation hit and audio ready — instant TTFA
+        # Speculation hit and audio ready  instant TTFA
         ttfa = (time.perf_counter() - start) * 1000
         return ttfa
     elif hit:
-        # Speculation hit but still generating — wait for it
+        # Speculation hit but still generating  wait for it
         try:
             await asyncio.wait_for(asyncio.shield(spec_task), timeout=0.1)
             ttfa = (time.perf_counter() - start) * 1000
@@ -3143,7 +3143,7 @@ async def pipeline_v5_speculative(asr: MockASR, llm: MockLLM, tts: MockTTS) -> f
         except asyncio.TimeoutError:
             pass
 
-    # Speculation missed — filler + streaming
+    # Speculation missed  filler + streaming
     spec_task.cancel()
     return await pipeline_v4_with_filler(asr, llm, tts)
 
@@ -3198,7 +3198,7 @@ async def run_benchmark(n_turns: int = 100) -> List[BenchmarkResult]:
 def print_report(results: List[BenchmarkResult]) -> None:
     """Print a formatted ASCII benchmark report."""
     print("\n" + "=" * 70)
-    print("VOICE AGENT LATENCY BENCHMARK — TTFA (Time To First Audio)")
+    print("VOICE AGENT LATENCY BENCHMARK  TTFA (Time To First Audio)")
     print("=" * 70)
     print(f"{'Pipeline':<30} {'p50':>8} {'p95':>8} {'p99':>8} {'Mean':>8} {'Stdev':>8}")
     print("-" * 70)
@@ -3253,7 +3253,7 @@ if __name__ == "__main__":
 
 ```
 ======================================================================
-VOICE AGENT LATENCY BENCHMARK — TTFA (Time To First Audio)
+VOICE AGENT LATENCY BENCHMARK  TTFA (Time To First Audio)
 ======================================================================
 Pipeline                        p50      p95      p99     Mean    Stdev
 ----------------------------------------------------------------------
@@ -3302,7 +3302,7 @@ Technical TTFA and user-perceived TTFA are different quantities. Users perceive 
 
 ```python
 """
-perceived_latency.py — Model and measure perceived vs. actual latency.
+perceived_latency.py  Model and measure perceived vs. actual latency.
 
 Implements adjustments based on user research findings.
 """
@@ -3399,7 +3399,7 @@ def analyze_user_experience():
 
 ```python
 """
-adaptive_quality.py — Dynamically adjust model quality to meet latency targets.
+adaptive_quality.py  Dynamically adjust model quality to meet latency targets.
 
 When the pipeline detects it is running over budget, it automatically
 switches to faster (but slightly lower quality) models.
@@ -3556,33 +3556,33 @@ This section defines every specialized term introduced in Part 16. Use it as a q
 | **TTFT** | Time To First Token | The elapsed time from when the LLM receives its prompt to when it produces the first output token. A sub-metric of TTFA. |
 | **TTAS** | Time To ASR Stable | Time from end of user speech to when the ASR engine produces a finalized, non-revising transcript. |
 | **p50 / p95 / p99** | Percentile Latency | Statistical percentiles of a latency distribution. p50 is the median; p99 means 99% of calls are faster than this value. |
-| **Endpointing** | — | The algorithm that detects when a user has finished speaking. Poorly tuned endpointing is one of the most common causes of unnecessary latency. |
+| **Endpointing** |  | The algorithm that detects when a user has finished speaking. Poorly tuned endpointing is one of the most common causes of unnecessary latency. |
 | **IPT** | Inter-Pausal Turn | The gap between one speaker finishing and another beginning. Human average: 200-300ms. |
-| **Speculative Execution** | — | Pre-generating LLM responses and TTS audio during user speech, based on predicted intent, before the final ASR transcript is known. Discarded if prediction is wrong. |
-| **Prosodic Bridging** | — | Using filler words or sounds ("Hmm", "One moment") to bridge silence during processing, maintaining conversational rhythm. |
+| **Speculative Execution** |  | Pre-generating LLM responses and TTS audio during user speech, based on predicted intent, before the final ASR transcript is known. Discarded if prediction is wrong. |
+| **Prosodic Bridging** |  | Using filler words or sounds ("Hmm", "One moment") to bridge silence during processing, maintaining conversational rhythm. |
 | **VAD** | Voice Activity Detection | Algorithm that distinguishes speech from silence/noise in an audio stream. |
 | **WER** | Word Error Rate | The primary accuracy metric for ASR models. Lower is better. |
 | **EMA** | Exponential Moving Average | A smoothing technique that gives more weight to recent observations. Used in adaptive quality control to avoid rapid tier oscillations. |
-| **Streaming TTS** | — | TTS synthesis that begins returning audio bytes before the full text has been synthesized, enabling pipelining with the LLM. |
-| **Connection Pool** | — | A pre-established collection of network connections to external services, eliminating cold-connection overhead on each request. |
-| **Flame Chart** | — | A visualization of function call stacks and timing, used to identify where latency is concentrated in a pipeline. |
-| **Latency Budget** | — | A deliberate allocation of the maximum acceptable delay for each component of a pipeline. Guides optimization priorities. |
-| **Uncanny Valley (latency)** | — | The range of response delays (600ms-1s) that feel neither natural nor clearly broken, and are rated most negatively by users. |
-| **Batch Mode** | — | Processing entire inputs as complete units (whole audio clip, full LLM response) before passing to the next stage. Adds latency proportional to generation time. |
-| **Sentence Boundary Detection** | — | Identifying the end of a complete sentence in a token stream to trigger TTS synthesis at the earliest useful point. |
-| **Edge Deployment** | — | Running compute resources in geographically distributed locations close to users, minimizing network round-trip time. |
-| **Hit Rate** | — | In speculative execution: the fraction of predictions that match the actual user intent. Typical effective range: 30-60%. |
-| **Log-Normal Distribution** | — | A probability distribution commonly used to model API latency: always positive, right-skewed, matching empirical API response time distributions. |
+| **Streaming TTS** |  | TTS synthesis that begins returning audio bytes before the full text has been synthesized, enabling pipelining with the LLM. |
+| **Connection Pool** |  | A pre-established collection of network connections to external services, eliminating cold-connection overhead on each request. |
+| **Flame Chart** |  | A visualization of function call stacks and timing, used to identify where latency is concentrated in a pipeline. |
+| **Latency Budget** |  | A deliberate allocation of the maximum acceptable delay for each component of a pipeline. Guides optimization priorities. |
+| **Uncanny Valley (latency)** |  | The range of response delays (600ms-1s) that feel neither natural nor clearly broken, and are rated most negatively by users. |
+| **Batch Mode** |  | Processing entire inputs as complete units (whole audio clip, full LLM response) before passing to the next stage. Adds latency proportional to generation time. |
+| **Sentence Boundary Detection** |  | Identifying the end of a complete sentence in a token stream to trigger TTS synthesis at the earliest useful point. |
+| **Edge Deployment** |  | Running compute resources in geographically distributed locations close to users, minimizing network round-trip time. |
+| **Hit Rate** |  | In speculative execution: the fraction of predictions that match the actual user intent. Typical effective range: 30-60%. |
+| **Log-Normal Distribution** |  | A probability distribution commonly used to model API latency: always positive, right-skewed, matching empirical API response time distributions. |
 
 ---
 
-## What's Next: Part 17 — Production Infrastructure
+## What's Next: Part 17  Production Infrastructure
 
 In Part 16, we achieved sub-800ms TTFA through a systematic combination of streaming at every stage, speculative execution, filler word bridging, and warm connection management. The optimization journey is genuinely satisfying: every change is measurable, every improvement is meaningful, and the end result is a voice agent that feels like talking to a responsive, intelligent system.
 
 Part 17 shifts focus from individual agent performance to the infrastructure that makes voice agents reliable, scalable, and observable at production scale.
 
-**Part 17: Production Infrastructure — Scaling Voice Agents to Millions of Calls** will cover:
+**Part 17: Production Infrastructure  Scaling Voice Agents to Millions of Calls** will cover:
 
 1. **WebRTC and SIP integration:** Replacing simple audio streams with production telephony protocols. Handling DTMF, hold, transfer, conferencing.
 2. **Horizontal scaling:** Stateless agent design, session affinity, Redis-backed conversation state, Kubernetes deployment patterns.
@@ -3603,7 +3603,7 @@ Part 16 covered every layer of the voice agent latency stack, from the psycholog
 
 **Measurement first:** The `LatencyProfiler` and `CallTrace` classes instrument every pipeline stage with span-based tracing. OpenTelemetry integration exports data to Jaeger, Honeycomb, or Datadog. p50/p95/p99 percentiles catch the long tail that averages hide.
 
-**ASR optimization:** Switching from batch Whisper to streaming Deepgram Nova-2 and tuning endpointing from 1000ms to 350ms silence typically yields 600-800ms of TTFA reduction alone — the single biggest win available.
+**ASR optimization:** Switching from batch Whisper to streaming Deepgram Nova-2 and tuning endpointing from 1000ms to 350ms silence typically yields 600-800ms of TTFA reduction alone  the single biggest win available.
 
 **LLM optimization:** The `StreamingLLM` class yields complete sentences via `SentenceAccumulator`, enabling TTS to begin synthesis before the LLM finishes generation. Semantic caching handles repeat queries with zero LLM cost.
 
@@ -3613,7 +3613,7 @@ Part 16 covered every layer of the voice agent latency stack, from the psycholog
 
 **Pipeline orchestration:** `WarmConnectionPool` eliminates cold-connection overhead. Parallel initialization reduces startup time. Edge deployment cuts network latency by 30-80ms globally.
 
-**Filler words:** The `FillerWordInjector` bridges the gap between user perception and technical reality. A 150ms filler sound followed by 650ms of processing feels dramatically better than 800ms of silence — because it tells the user the system is alive and working.
+**Filler words:** The `FillerWordInjector` bridges the gap between user perception and technical reality. A 150ms filler sound followed by 650ms of processing feels dramatically better than 800ms of silence  because it tells the user the system is alive and working.
 
 **Benchmarking:** The project benchmark demonstrates the cumulative effect: baseline 3200ms → under 300ms perceived TTFA through the systematic application of each technique.
 
@@ -3621,5 +3621,5 @@ The optimization order matters: measure first, fix ASR endpointing and streaming
 
 ---
 
-*Part 16 of 19 — Building Voice Agents: A Developer's Deep Dive*
-*Next: Part 17 — Production Infrastructure: Scaling Voice Agents to Millions of Calls*
+*Part 16 of 19  Building Voice Agents: A Developer's Deep Dive*
+*Next: Part 17  Production Infrastructure: Scaling Voice Agents to Millions of Calls*

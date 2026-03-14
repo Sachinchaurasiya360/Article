@@ -1,8 +1,8 @@
-# Apache Kafka Deep Dive — Part 7: Performance Engineering — Throughput, Latency, and Tuning
+# Apache Kafka Deep Dive  Part 7: Performance Engineering  Throughput, Latency, and Tuning
 
 ---
 
-**Series:** Apache Kafka Deep Dive — From First Principles to Planet-Scale Event Streaming
+**Series:** Apache Kafka Deep Dive  From First Principles to Planet-Scale Event Streaming
 **Part:** 7 of 10
 **Audience:** Senior backend engineers, distributed systems engineers, data platform architects
 **Reading time:** ~45 minutes
@@ -13,15 +13,15 @@
 
 Parts 0–6 of this series covered the theoretical and architectural foundations this article builds on directly:
 
-- **Part 0** — Series orientation and the distributed log abstraction
-- **Part 1** — Why Kafka exists: the log as a systems primitive
-- **Part 2** — Broker architecture: network threads, I/O threads, request lifecycle
-- **Part 3** — Replication protocol: ISR, leader election, acknowledgement semantics
-- **Part 4** — Consumer group coordination and the rebalance protocol
-- **Part 5** — Storage engine: segments, indexes, log compaction, retention
-- **Part 6** — Producer internals: accumulator, sender, batching, idempotence, transactions
+- **Part 0**  Series orientation and the distributed log abstraction
+- **Part 1**  Why Kafka exists: the log as a systems primitive
+- **Part 2**  Broker architecture: network threads, I/O threads, request lifecycle
+- **Part 3**  Replication protocol: ISR, leader election, acknowledgement semantics
+- **Part 4**  Consumer group coordination and the rebalance protocol
+- **Part 5**  Storage engine: segments, indexes, log compaction, retention
+- **Part 6**  Producer internals: accumulator, sender, batching, idempotence, transactions
 
-This article assumes fluency with all of the above. When a concept from a prior part is referenced here, it is not re-explained — only the performance implication is discussed.
+This article assumes fluency with all of the above. When a concept from a prior part is referenced here, it is not re-explained  only the performance implication is discussed.
 
 ---
 
@@ -29,7 +29,7 @@ This article assumes fluency with all of the above. When a concept from a prior 
 
 ### 1.1 The Bottleneck Principle
 
-Every distributed system has a bottleneck — a single constraint that caps its total throughput. Kafka is no different. The cluster's maximum sustainable throughput equals the capacity of its slowest component.
+Every distributed system has a bottleneck  a single constraint that caps its total throughput. Kafka is no different. The cluster's maximum sustainable throughput equals the capacity of its slowest component.
 
 This sounds obvious, but it has a non-obvious implication: **adding resources to non-bottleneck components produces zero throughput improvement**. Adding more brokers when the bottleneck is consumer processing capacity wastes money and complexity. Adding NVMe SSDs when the bottleneck is a 1 Gbps NIC produces no measurable difference.
 
@@ -64,7 +64,7 @@ The red node is where most production bottlenecks live. Identify which node is s
 
 ### 1.2 Identifying the Bottleneck: Diagnostic Tools
 
-**Disk I/O saturation** — `iostat -x 1`:
+**Disk I/O saturation**  `iostat -x 1`:
 
 ```bash
 iostat -x 1 10
@@ -80,21 +80,21 @@ Key columns to watch:
 | `r/s`, `w/s` | Read/write operations per second | Compare to device spec |
 | `rMB/s`, `wMB/s` | Throughput | Compare to device spec |
 
-**Network saturation** — `sar -n DEV 1`:
+**Network saturation**  `sar -n DEV 1`:
 
 ```bash
 sar -n DEV 1 10
 ```
 
-Compare `txkB/s` and `rxkB/s` to NIC advertised bandwidth. A 25 Gbps NIC saturates at approximately 3,000 MB/s (accounting for protocol overhead). If the sum of all Kafka traffic — producer writes + replication + consumer reads — approaches this, network is the bottleneck.
+Compare `txkB/s` and `rxkB/s` to NIC advertised bandwidth. A 25 Gbps NIC saturates at approximately 3,000 MB/s (accounting for protocol overhead). If the sum of all Kafka traffic  producer writes + replication + consumer reads  approaches this, network is the bottleneck.
 
-Kafka-native metric: `kafka.network:type=RequestMetrics,name=ResponseQueueTimeMs` — time a response spent waiting to be sent. High values mean the network thread cannot drain responses fast enough.
+Kafka-native metric: `kafka.network:type=RequestMetrics,name=ResponseQueueTimeMs`  time a response spent waiting to be sent. High values mean the network thread cannot drain responses fast enough.
 
-**CPU saturation** — `top` or `htop`:
+**CPU saturation**  `top` or `htop`:
 
 Look for broker Java process CPU above 70%. Check what the CPU is doing with `perf top` or JVM profiling (async-profiler). Compression/decompression work from Part 6 (the sender's batch compression) appears as `LZ4.compress()` or `SnappyCompressor` time in profiles. High CPU with no compression configured usually means message parsing overhead.
 
-**Application bottleneck** — consumer lag:
+**Application bottleneck**  consumer lag:
 
 ```bash
 kafka-consumer-groups.sh --bootstrap-server localhost:9092 \
@@ -129,10 +129,10 @@ Typical causes: 1 Gbps NIC in a 500 MB/s cluster, client and replication traffic
 
 - Broker CPU > 70% sustained
 - Compression/decompression routines in JVM profiler output
-- `kafka.network:type=RequestMetrics,name=RequestQueueTimeMs` elevated — I/O threads falling behind
-- GC pause duration increasing — heap pressure from large batches
+- `kafka.network:type=RequestMetrics,name=RequestQueueTimeMs` elevated  I/O threads falling behind
+- GC pause duration increasing  heap pressure from large batches
 
-Typical causes: per-message compression (compress in batches, not per-message — see Part 6), Snappy or ZSTD on high-throughput topics without hardware acceleration, insufficient I/O thread count.
+Typical causes: per-message compression (compress in batches, not per-message  see Part 6), Snappy or ZSTD on high-throughput topics without hardware acceleration, insufficient I/O thread count.
 
 **Application bottleneck:**
 
@@ -169,7 +169,7 @@ Parameters:
 |---|---|
 | `--num-records` | Total messages to produce |
 | `--record-size` | Message payload size in bytes |
-| `--throughput -1` | No rate limit — produce as fast as possible |
+| `--throughput -1` | No rate limit  produce as fast as possible |
 | `--throughput N` | Rate-limit to N records/second (for latency measurement at realistic load) |
 
 **kafka-consumer-perf-test.sh:**
@@ -216,7 +216,7 @@ What each number means:
 | 99th percentile | 99% of requests complete within | SLA compliance indicator |
 | 99.9th percentile | 1 in 1000 requests latency | Tail latency (GC, disk flush events) |
 
-The ratio of p99 to p50 is diagnostic. A ratio above 5x indicates periodic latency spikes — look for GC pauses, fsync events, or request queue buildup. A ratio of 2-3x is typical for a healthy cluster under load.
+The ratio of p99 to p50 is diagnostic. A ratio above 5x indicates periodic latency spikes  look for GC pauses, fsync events, or request queue buildup. A ratio of 2-3x is typical for a healthy cluster under load.
 
 ---
 
@@ -224,7 +224,7 @@ The ratio of p99 to p50 is diagnostic. A ratio above 5x indicates periodic laten
 
 ### 2.1 Storage Hardware Choice
 
-Kafka's I/O pattern — described in depth in Part 5 — is almost entirely sequential: sequential appends to the active segment, sequential reads by consumers tailing the log. This pattern is highly favorable for SSDs and acceptable for HDDs at low throughput.
+Kafka's I/O pattern  described in depth in Part 5  is almost entirely sequential: sequential appends to the active segment, sequential reads by consumers tailing the log. This pattern is highly favorable for SSDs and acceptable for HDDs at low throughput.
 
 Throughput tiers by storage type:
 
@@ -250,7 +250,7 @@ log.dirs=/data/kafka/disk1,/data/kafka/disk2,/data/kafka/disk3,/data/kafka/disk4
 Kafka distributes partitions across these directories, load-balancing I/O across all disks. This approach has several advantages:
 
 - **No write amplification.** RAID-5 and RAID-6 require reading parity blocks and rewriting them on every write. For a 4+1 RAID-5 array, every logical write becomes 4 physical operations. Sequential write performance drops by 50-75% relative to JBOD.
-- **Fault isolation.** A failed disk in JBOD takes only the partitions on that disk offline. In RAID-5/6, the entire array enters degraded mode and rebuild I/O competes with Kafka I/O. Kafka's replication handles data redundancy — you do not need storage-level redundancy.
+- **Fault isolation.** A failed disk in JBOD takes only the partitions on that disk offline. In RAID-5/6, the entire array enters degraded mode and rebuild I/O competes with Kafka I/O. Kafka's replication handles data redundancy  you do not need storage-level redundancy.
 - **Cost efficiency.** Raw disks are cheaper per TB than RAID controllers.
 
 RAID-10 (mirroring + striping) is acceptable if policy requires it: it has no write amplification penalty and delivers full sequential write bandwidth. However, it costs 2x the disk capacity for what Kafka's own replication already provides.
@@ -281,7 +281,7 @@ The `largeio` option sets the preferred I/O size to the filesystem stripe unit, 
 
 ### 2.4 The `noatime` Mount Option
 
-Every file read on a Linux filesystem normally triggers a metadata write: the file's `atime` (access time) field is updated. For Kafka, which reads heavily from the OS page cache (zero-copy sends as described in Part 2), this means every consumer fetch triggers a disk write for atime metadata — even though the data itself was served from memory.
+Every file read on a Linux filesystem normally triggers a metadata write: the file's `atime` (access time) field is updated. For Kafka, which reads heavily from the OS page cache (zero-copy sends as described in Part 2), this means every consumer fetch triggers a disk write for atime metadata  even though the data itself was served from memory.
 
 The `noatime` option disables atime updates entirely:
 
@@ -289,7 +289,7 @@ The `noatime` option disables atime updates entirely:
 noatime  # disables all atime updates
 ```
 
-Alternatively, `relatime` updates atime only when the current atime is older than the modification time — this satisfies most applications that depend on atime semantics while eliminating the constant update overhead.
+Alternatively, `relatime` updates atime only when the current atime is older than the modification time  this satisfies most applications that depend on atime semantics while eliminating the constant update overhead.
 
 In benchmarks on busy Kafka brokers, `noatime` reduces disk write IOPS by 10-20% on SATA SSDs. On NVMe the improvement is less dramatic but still measurable at high message rates.
 
@@ -309,13 +309,13 @@ For Kafka brokers, set `vm.swappiness=1` (not 0). Here is why:
 
 - **Value 0:** Linux avoids swap entirely. If the broker runs out of RAM, the OOM killer terminates the JVM process. Kafka recovers via re-election and log recovery. This is acceptable.
 - **Value 1:** Linux uses swap only as a last resort before OOM-killing. This provides a small safety margin without allowing swap to degrade performance.
-- **Value 60 (default):** Linux aggressively swaps. On a broker with 64GB RAM and a 6GB heap, the JVM heap can be partially swapped while 58GB of page cache sits in memory — because the kernel overestimates the heap's "coldness". When the GC runs and accesses swapped heap pages, GC pauses extend from milliseconds to seconds. This is catastrophic for ISR stability (see Section 4.3).
+- **Value 60 (default):** Linux aggressively swaps. On a broker with 64GB RAM and a 6GB heap, the JVM heap can be partially swapped while 58GB of page cache sits in memory  because the kernel overestimates the heap's "coldness". When the GC runs and accesses swapped heap pages, GC pauses extend from milliseconds to seconds. This is catastrophic for ISR stability (see Section 4.3).
 
 The Kafka page cache (described in Part 5) is anonymous from the application perspective but is managed by the kernel as file-backed memory, which the kernel handles separately from swappiness. Reducing swappiness protects heap and JVM internals from being swapped, which is the correct behavior.
 
 ### 2.6 Dirty Page Flushing
 
-When Kafka writes to the log (an `mmap` + `FileChannel.write()` as described in Part 5), data initially lands in the page cache as dirty pages — pages that differ from their on-disk version. The kernel flushes dirty pages to disk asynchronously.
+When Kafka writes to the log (an `mmap` + `FileChannel.write()` as described in Part 5), data initially lands in the page cache as dirty pages  pages that differ from their on-disk version. The kernel flushes dirty pages to disk asynchronously.
 
 Two kernel parameters control this behavior:
 
@@ -339,7 +339,7 @@ On a broker with 128GB RAM and 80% dirty_ratio, up to 102GB of dirty pages can a
 
 ### 2.7 Disk I/O Scheduler
 
-The Linux I/O scheduler reorders disk requests to improve efficiency. For spinning disks, the CFQ (Completely Fair Queuing) scheduler provides good performance by ordering requests to minimize seek distance. For SSDs, this reordering adds latency with no benefit — SSDs have near-zero seek time and handle random I/O as efficiently as sequential.
+The Linux I/O scheduler reorders disk requests to improve efficiency. For spinning disks, the CFQ (Completely Fair Queuing) scheduler provides good performance by ordering requests to minimize seek distance. For SSDs, this reordering adds latency with no benefit  SSDs have near-zero seek time and handle random I/O as efficiently as sequential.
 
 ```bash
 # Check current scheduler for a device
@@ -392,7 +392,7 @@ net.core.wmem_max = 134217728        # 128MB send buffer maximum
 sysctl -p
 ```
 
-These settings set the default and maximum socket buffer sizes system-wide. With 128MB buffers and 1ms RTT, the bandwidth-delay product supports up to 128 GB/s — far above any NIC Kafka runs on today.
+These settings set the default and maximum socket buffer sizes system-wide. With 128MB buffers and 1ms RTT, the bandwidth-delay product supports up to 128 GB/s  far above any NIC Kafka runs on today.
 
 ### 3.2 TCP Tuning
 
@@ -404,7 +404,7 @@ net.ipv4.tcp_retries2 = 5             # Reduce retransmission before giving up (
 net.ipv4.tcp_slow_start_after_idle = 0 # Don't reset cwnd after idle periods
 ```
 
-`tcp_retries2` deserves special attention. The default value of 15 means Linux retries TCP retransmissions for approximately 13-30 minutes before declaring the connection dead. During this time, Kafka's producer or consumer believes it is connected to a broker that is actually unreachable. Reducing to 5 means dead connections are detected in approximately 60-90 seconds — still a long time, but much better than the default for broker failure detection.
+`tcp_retries2` deserves special attention. The default value of 15 means Linux retries TCP retransmissions for approximately 13-30 minutes before declaring the connection dead. During this time, Kafka's producer or consumer believes it is connected to a broker that is actually unreachable. Reducing to 5 means dead connections are detected in approximately 60-90 seconds  still a long time, but much better than the default for broker failure detection.
 
 `tcp_slow_start_after_idle` = 0 prevents TCP from resetting its congestion window after a period of inactivity. Without this setting, a Kafka consumer that has been idle (no messages to consume) restarts TCP slow start when messages arrive, causing a throughput ramp-up period before reaching full speed.
 
@@ -424,7 +424,7 @@ socket.send.buffer.bytes=67108864    # 64MB
 socket.receive.buffer.bytes=67108864 # 64MB
 ```
 
-Note the asymmetry between the OS-level buffer (128MB) and the Kafka socket config (64MB): the OS buffer accounts for multiple concurrent sockets on the same server, while the Kafka config controls per-socket sizing. On a broker with 1,000 concurrent producer connections, 1,000 × 64MB = 64GB of kernel socket buffer memory is theoretically allocatable — the OS manages this dynamically and does not actually allocate full buffers unless they are used.
+Note the asymmetry between the OS-level buffer (128MB) and the Kafka socket config (64MB): the OS buffer accounts for multiple concurrent sockets on the same server, while the Kafka config controls per-socket sizing. On a broker with 1,000 concurrent producer connections, 1,000 × 64MB = 64GB of kernel socket buffer memory is theoretically allocatable  the OS manages this dynamically and does not actually allocate full buffers unless they are used.
 
 ### 3.4 Network Thread Tuning
 
@@ -459,7 +459,7 @@ num.io.threads=32  # Appropriate for NVMe SSDs with high IOPS
 
 Diagnostic metric: `kafka.server:type=KafkaRequestHandlerPool,name=RequestHandlerAvgIdlePercent`
 
-If this metric drops below 30%, I/O threads are saturated. Increase `num.io.threads`. Note that adding I/O threads beyond the storage system's IOPS capacity produces no further improvement — the bottleneck shifts back to disk.
+If this metric drops below 30%, I/O threads are saturated. Increase `num.io.threads`. Note that adding I/O threads beyond the storage system's IOPS capacity produces no further improvement  the bottleneck shifts back to disk.
 
 | Storage type | Recommended `num.io.threads` |
 |---|---|
@@ -470,7 +470,7 @@ If this metric drops below 30%, I/O threads are saturated. Increase `num.io.thre
 
 ### 3.6 Separating Replication and Client Traffic
 
-Replication traffic (followers fetching from the leader — described in Part 3) competes with producer and consumer traffic on the same NIC. During high ingestion periods, replication can consume a significant fraction of NIC bandwidth, causing ISR lag and consumer latency spikes.
+Replication traffic (followers fetching from the leader  described in Part 3) competes with producer and consumer traffic on the same NIC. During high ingestion periods, replication can consume a significant fraction of NIC bandwidth, causing ISR lag and consumer latency spikes.
 
 Strategies to separate this traffic:
 
@@ -506,7 +506,7 @@ This limits reassignment replication to 50 MB/s per broker, leaving client traff
 
 The counterintuitive truth about Kafka heap sizing: **more heap is worse above a threshold**.
 
-Kafka's architecture (from Part 5) deliberately delegates data caching to the OS page cache rather than application-level heap structures. The broker stores no message data in heap — the log segments are memory-mapped or zero-copied directly between the kernel's page cache and the network socket. JVM heap stores only metadata: topic/partition maps, ISR state, consumer group assignments, and object allocations from the request processing pipeline.
+Kafka's architecture (from Part 5) deliberately delegates data caching to the OS page cache rather than application-level heap structures. The broker stores no message data in heap  the log segments are memory-mapped or zero-copied directly between the kernel's page cache and the network socket. JVM heap stores only metadata: topic/partition maps, ISR state, consumer group assignments, and object allocations from the request processing pipeline.
 
 Heap sizing recommendations:
 
@@ -517,11 +517,11 @@ Heap sizing recommendations:
 | 128 GB | 6-8 GB | 120-122 GB |
 | 256 GB | 8-10 GB | 246-248 GB |
 
-The heap does not scale with server RAM. Giving a 128GB broker a 32GB heap does not improve performance — it reduces page cache by 24GB (because the JVM heap is reserved RAM unavailable to the kernel) and produces dramatically longer GC pause times.
+The heap does not scale with server RAM. Giving a 128GB broker a 32GB heap does not improve performance  it reduces page cache by 24GB (because the JVM heap is reserved RAM unavailable to the kernel) and produces dramatically longer GC pause times.
 
 ### 4.2 GC Algorithm Options
 
-**G1GC — recommended for Kafka < 3.x or JDK < 15:**
+**G1GC  recommended for Kafka < 3.x or JDK < 15:**
 
 ```bash
 export KAFKA_JVM_PERFORMANCE_OPTS="-XX:+UseG1GC \
@@ -534,9 +534,9 @@ export KAFKA_JVM_PERFORMANCE_OPTS="-XX:+UseG1GC \
 
 `MaxGCPauseMillis=20` is a target, not a guarantee. G1GC will attempt to limit pauses to 20ms but will exceed this during full GC events or when the old generation is close to exhaustion. `InitiatingHeapOccupancyPercent=35` starts concurrent marking when the old generation reaches 35%, giving G1 time to complete marking before the old generation fills. Lower values cause more frequent concurrent GC (slightly higher CPU, lower pause risk); higher values risk triggering full GC.
 
-`G1HeapRegionSize=16M` — larger regions reduce region count and the metadata overhead G1 maintains per region. For a 6GB heap, 16MB regions produce 384 regions — a manageable number.
+`G1HeapRegionSize=16M`  larger regions reduce region count and the metadata overhead G1 maintains per region. For a 6GB heap, 16MB regions produce 384 regions  a manageable number.
 
-**ZGC — recommended for Kafka 3.x+ on JDK 15+:**
+**ZGC  recommended for Kafka 3.x+ on JDK 15+:**
 
 ```bash
 export KAFKA_JVM_PERFORMANCE_OPTS="-XX:+UseZGC \
@@ -585,8 +585,8 @@ The sequence:
 
 1. A GC pause (1+ second) on a follower broker causes the follower to stop sending fetch requests to the leader.
 2. The leader tracks the last fetch time per follower. After `replica.lag.time.max.ms` (default 30,000ms) with no fetch, the leader notifies the controller to remove the follower from the ISR.
-3. With the follower out of ISR, `acks=all` producers now only require acknowledgement from the leader — ISR size = 1 means `acks=all` degrades to effective `acks=1`.
-4. If the leader also experiences a GC pause (or crashes), any data acknowledged but not yet replicated is lost — exactly the scenario `acks=all` was meant to prevent.
+3. With the follower out of ISR, `acks=all` producers now only require acknowledgement from the leader  ISR size = 1 means `acks=all` degrades to effective `acks=1`.
+4. If the leader also experiences a GC pause (or crashes), any data acknowledged but not yet replicated is lost  exactly the scenario `acks=all` was meant to prevent.
 
 The mitigation: ZGC (sub-millisecond pauses eliminate the problem) or ensuring `replica.lag.time.max.ms` is much larger than maximum GC pause duration with G1GC.
 
@@ -602,9 +602,9 @@ Enable GC logging in `KAFKA_JVM_PERFORMANCE_OPTS`:
 
 This produces rolling GC logs (10 × 20MB files) with timestamps. Feed these into a GC analysis tool:
 
-- **GCViewer** — open source, visualizes pause distribution
-- **GCEasy** — web-based analysis with recommendations
-- **Prometheus JMX Exporter** — `jvm_gc_collection_seconds` for real-time alerting
+- **GCViewer**  open source, visualizes pause distribution
+- **GCEasy**  web-based analysis with recommendations
+- **Prometheus JMX Exporter**  `jvm_gc_collection_seconds` for real-time alerting
 
 Key GC metrics to export to Prometheus:
 
@@ -614,17 +614,17 @@ Key GC metrics to export to Prometheus:
   expr: kafka_jvm_gc_pause_seconds{quantile="0.99"} > 0.5
   for: 5m
   annotations:
-    summary: "Kafka GC p99 pause > 500ms — ISR instability risk"
+    summary: "Kafka GC p99 pause > 500ms  ISR instability risk"
 
 - alert: KafkaFullGC
   expr: increase(kafka_jvm_gc_full_collections_total[5m]) > 0
   annotations:
-    summary: "Full GC detected — immediate investigation required"
+    summary: "Full GC detected  immediate investigation required"
 ```
 
 ### 4.5 Direct Memory
 
-Kafka's network layer (from Part 2: the `Selector` and `KafkaChannel` network stack) allocates Java NIO `ByteBuffer`s for network I/O. When `java.nio.ByteBuffer.allocateDirect()` is called, memory is allocated outside the JVM heap — in the JVM's off-heap "direct memory" region.
+Kafka's network layer (from Part 2: the `Selector` and `KafkaChannel` network stack) allocates Java NIO `ByteBuffer`s for network I/O. When `java.nio.ByteBuffer.allocateDirect()` is called, memory is allocated outside the JVM heap  in the JVM's off-heap "direct memory" region.
 
 Direct memory is not subject to GC pauses but has its own limits:
 
@@ -632,7 +632,7 @@ Direct memory is not subject to GC pauses but has its own limits:
 -XX:MaxDirectMemorySize=2G
 ```
 
-If direct memory is exhausted, the JVM throws `java.lang.OutOfMemoryError: Direct buffer memory`. This crash does not produce a heap dump (the heap is fine) and does not trigger the normal OOM handling — the JVM exits immediately. Without explicit monitoring, this looks like a silent broker crash.
+If direct memory is exhausted, the JVM throws `java.lang.OutOfMemoryError: Direct buffer memory`. This crash does not produce a heap dump (the heap is fine) and does not trigger the normal OOM handling  the JVM exits immediately. Without explicit monitoring, this looks like a silent broker crash.
 
 Sizing: with `num.network.threads=16` and large socket buffers, direct memory usage per broker can reach 512MB-1GB. Set `MaxDirectMemorySize` to at least 2GB on high-throughput brokers. Monitor with:
 
@@ -644,9 +644,9 @@ java.nio:type=BufferPool,name=direct
 ### 4.6 File Descriptor Limits
 
 Each Kafka log segment requires three file descriptors:
-- `.log` — the data file
-- `.index` — the offset index
-- `.timeindex` — the timestamp index
+- `.log`  the data file
+- `.index`  the offset index
+- `.timeindex`  the timestamp index
 
 With large deployments, this adds up rapidly:
 
@@ -656,7 +656,7 @@ With large deployments, this adds up rapidly:
 
 Add to this: each client connection (producer + consumer) requires a file descriptor. A broker with 1,000 clients and 120,000 segment FDs needs 121,000+ FDs.
 
-Default Linux limits are typically 65,536 per process — insufficient.
+Default Linux limits are typically 65,536 per process  insufficient.
 
 ```bash
 # /etc/security/limits.conf
@@ -681,7 +681,7 @@ ls /proc/$(pgrep -f kafka.Kafka)/fd | wc -l
 cat /proc/$(pgrep -f kafka.Kafka)/limits | grep 'open files'
 ```
 
-Alert when FD utilization exceeds 70% of the limit — approaching the limit causes `Too many open files` errors that manifest as failed replication and client disconnections.
+Alert when FD utilization exceeds 70% of the limit  approaching the limit causes `Too many open files` errors that manifest as failed replication and client disconnections.
 
 ---
 
@@ -689,7 +689,7 @@ Alert when FD utilization exceeds 70% of the limit — approaching the limit cau
 
 ### 5.1 The Throughput-Latency Dial
 
-From Part 6: the producer accumulator batches records before sending. The two primary controls — `linger.ms` and `batch.size` — define a dial between two extremes:
+From Part 6: the producer accumulator batches records before sending. The two primary controls  `linger.ms` and `batch.size`  define a dial between two extremes:
 
 - **linger.ms=0, batch.size=small** → minimum latency, low throughput (send every record immediately, no batching)
 - **linger.ms=large, batch.size=large** → maximum throughput, high latency (accumulate large batches, amortize network round trips)
@@ -787,7 +787,7 @@ Practical guideline: throughput scales roughly linearly with partition count up 
 At high message rates, serialization CPU cost can equal or exceed Kafka I/O cost. Consider: at 1,000,000 messages/second with 1KB JSON payloads:
 
 - JSON serialization: ~200ns per message × 1,000,000 = 200ms of CPU time per second = 0.2 CPU cores at 100% utilization
-- But JSON involves reflection, String allocation, and escape processing — real-world cost is 400-800ns per message at 1KB
+- But JSON involves reflection, String allocation, and escape processing  real-world cost is 400-800ns per message at 1KB
 - At 1M msg/sec: 0.4-0.8 CPU cores fully consumed by serialization alone
 - At 5M msg/sec (not unusual for aggregated producers): 2-4 CPU cores
 
@@ -803,15 +803,15 @@ Binary schema-based serialization comparison:
 
 For producers handling > 500,000 messages/second, moving from JSON to Avro or Protobuf can recover 2-4 CPU cores, which can be used to increase `num.io.threads` and batch throughput instead.
 
-The Confluent Schema Registry (used with Avro and Protobuf) adds a schema ID lookup per message type but caches schemas — amortized cost is negligible after warm-up.
+The Confluent Schema Registry (used with Avro and Protobuf) adds a schema ID lookup per message type but caches schemas  amortized cost is negligible after warm-up.
 
 ---
 
 ## 6. Consumer Performance Tuning
 
-### 6.1 `fetch.min.bytes` — Batching Fetches
+### 6.1 `fetch.min.bytes`  Batching Fetches
 
-`fetch.min.bytes` (default 1) controls how much data the broker accumulates before sending a fetch response. With the default value of 1, the broker sends a response as soon as any data is available — potentially sending thousands of small responses for individual messages.
+`fetch.min.bytes` (default 1) controls how much data the broker accumulates before sending a fetch response. With the default value of 1, the broker sends a response as soon as any data is available  potentially sending thousands of small responses for individual messages.
 
 For throughput workloads, increase `fetch.min.bytes`:
 
@@ -822,9 +822,9 @@ fetch.max.wait.ms=1000     # But don't wait longer than 1 second
 
 The effect: instead of 1,000 fetch requests/second returning 1KB each, the consumer sends 1 fetch request/second receiving 1MB. Network round-trip overhead drops 1,000x. For a consumer processing 100MB/s, this reduces broker-side fetch handling from 100,000 requests/second to 100 requests/second.
 
-For latency-sensitive consumers, keep `fetch.min.bytes=1` — any data available is returned immediately.
+For latency-sensitive consumers, keep `fetch.min.bytes=1`  any data available is returned immediately.
 
-### 6.2 `fetch.max.wait.ms` — Fetch Wait Bound
+### 6.2 `fetch.max.wait.ms`  Fetch Wait Bound
 
 `fetch.max.wait.ms` (default 500ms) is the upper bound on how long the broker waits for `fetch.min.bytes` to be satisfied. If `fetch.min.bytes=1MB` but the topic only produces 100KB/second, the broker would wait up to `fetch.max.wait.ms` before returning 100KB.
 
@@ -834,13 +834,13 @@ These two settings work together:
 response_time = min(time_to_accumulate_fetch.min.bytes, fetch.max.wait.ms)
 ```
 
-For high-throughput topics: `fetch.min.bytes=1MB`, `fetch.max.wait.ms=1000ms` — reduces round trips without causing long idle waits.
+For high-throughput topics: `fetch.min.bytes=1MB`, `fetch.max.wait.ms=1000ms`  reduces round trips without causing long idle waits.
 
-For latency-sensitive topics: `fetch.min.bytes=1`, `fetch.max.wait.ms=100ms` — always respond quickly.
+For latency-sensitive topics: `fetch.min.bytes=1`, `fetch.max.wait.ms=100ms`  always respond quickly.
 
-For mixed topics: `fetch.min.bytes=64KB`, `fetch.max.wait.ms=500ms` — balanced.
+For mixed topics: `fetch.min.bytes=64KB`, `fetch.max.wait.ms=500ms`  balanced.
 
-### 6.3 `max.partition.fetch.bytes` — Per-Partition Response Size
+### 6.3 `max.partition.fetch.bytes`  Per-Partition Response Size
 
 `max.partition.fetch.bytes` (default 1,048,576 = 1MB) limits the data returned per partition in a single fetch response. The total fetch response size is bounded by `fetch.max.bytes` (default 52,428,800 = 50MB) across all partitions.
 
@@ -852,7 +852,7 @@ max.partition.fetch.bytes = 1MB (default)
 messages_per_fetch = 1MB / 500KB = 2 messages per fetch cycle
 ```
 
-At `fetch.max.wait.ms=500ms`, this consumer processes 4 messages/second — clearly inadequate for a topic with 100 messages/second.
+At `fetch.max.wait.ms=500ms`, this consumer processes 4 messages/second  clearly inadequate for a topic with 100 messages/second.
 
 Fix:
 
@@ -863,9 +863,9 @@ fetch.max.bytes=104857600            # 100MB total per fetch
 
 For topics with variable message sizes, set `max.partition.fetch.bytes` to at least 10x the 99th percentile message size to ensure full fetch cycles.
 
-### 6.4 `max.poll.records` — Processing Flow Control
+### 6.4 `max.poll.records`  Processing Flow Control
 
-`max.poll.records` (default 500) controls the maximum records returned by a single `poll()` call. This is a flow control mechanism, not a throughput mechanism — it controls how many records the consumer processes between heartbeats.
+`max.poll.records` (default 500) controls the maximum records returned by a single `poll()` call. This is a flow control mechanism, not a throughput mechanism  it controls how many records the consumer processes between heartbeats.
 
 The interaction with `max.poll.interval.ms` (default 300,000ms) from Part 4: if processing `max.poll.records` records takes longer than `max.poll.interval.ms`, the coordinator removes the consumer from the group, triggering a rebalance.
 
@@ -901,7 +901,7 @@ Implications:
 2. A consumer group with 8 consumers but 32 partitions: each consumer handles 4 partitions. Each consumer's throughput is the sum of its 4 partitions' throughput.
 3. To increase parallelism beyond current consumer count: increase partitions (requires topic recreation or online partition addition) then add consumers.
 
-**Note on partition count permanence:** partitions can be added but not removed. Increasing partitions changes the hash-based routing of keyed messages — keys that previously mapped to partition 3 may now map to partition 17. Applications relying on key-based ordering across the entire topic (not just per-partition) must handle this transition.
+**Note on partition count permanence:** partitions can be added but not removed. Increasing partitions changes the hash-based routing of keyed messages  keys that previously mapped to partition 3 may now map to partition 17. Applications relying on key-based ordering across the entire topic (not just per-partition) must handle this transition.
 
 ### 6.6 Processing Parallelism Pattern
 
@@ -932,7 +932,7 @@ flowchart LR
     WN -->|write| DB
 ```
 
-The consumer threads (one per partition) are responsible only for Kafka I/O: polling records and enqueuing to the work queue. Worker threads process without blocking the Kafka poll loop. The work queue backpressure (`queue.remainingCapacity() == 0`) pauses consumer threads, allowing the Kafka heartbeat to continue while processing catches up — avoiding rebalance triggering from slow processing.
+The consumer threads (one per partition) are responsible only for Kafka I/O: polling records and enqueuing to the work queue. Worker threads process without blocking the Kafka poll loop. The work queue backpressure (`queue.remainingCapacity() == 0`) pauses consumer threads, allowing the Kafka heartbeat to continue while processing catches up  avoiding rebalance triggering from slow processing.
 
 Committing offsets in this pattern requires care: offsets should only be committed after the corresponding records have been fully processed by worker threads. An unprocessed-offset tracker (per partition, minimum unacked offset) ensures exactly-once or at-least-once semantics are maintained.
 
@@ -957,19 +957,19 @@ follower_replication_throughput = replica.fetch.max.bytes / replica.fetch.wait.m
 # With defaults: 1MB / 500ms × 1000 = 2 MB/s per follower (pathetically low)
 # With tuned values: 10MB / 500ms × 1000 = 20 MB/s per follower
 # For 500 MB/s write rate with RF=3: each follower needs 500 MB/s
-# Required: replica.fetch.max.bytes = 500MB per fetch — too large
+# Required: replica.fetch.max.bytes = 500MB per fetch  too large
 # Solution: reduce replica.fetch.wait.max.ms = 10ms
-#   10MB / 10ms × 1000 = 1 GB/s per follower — sufficient
+#   10MB / 10ms × 1000 = 1 GB/s per follower  sufficient
 ```
 
 ### 7.2 Follower Fetch Wait Time
 
-`replica.fetch.wait.max.ms` (default 500ms) — the follower's long-poll timeout. The follower sends a `FetchRequest` and waits up to this value for data before returning an empty response.
+`replica.fetch.wait.max.ms` (default 500ms)  the follower's long-poll timeout. The follower sends a `FetchRequest` and waits up to this value for data before returning an empty response.
 
 The interaction with `replica.fetch.max.bytes` determines replication throughput. For high-throughput brokers:
 
 ```properties
-replica.fetch.wait.max.ms=10    # 10ms — fetch more frequently
+replica.fetch.wait.max.ms=10    # 10ms  fetch more frequently
 replica.fetch.max.bytes=10485760  # 10MB per fetch
 ```
 
@@ -984,18 +984,18 @@ Kafka's durability model (from Part 3 and Part 5) relies on **replication, not f
 The correct production configuration:
 
 ```properties
-log.flush.interval.messages=9223372036854775807   # Long.MAX_VALUE — never
-log.flush.interval.ms=9223372036854775807          # Long.MAX_VALUE — never
+log.flush.interval.messages=9223372036854775807   # Long.MAX_VALUE  never
+log.flush.interval.ms=9223372036854775807          # Long.MAX_VALUE  never
 ```
 
-This tells Kafka to never explicitly fsync. The OS page cache manages flushing via the dirty page settings from Section 2.6. Data safety comes from having multiple replicas — if a broker crashes before the OS flushes a dirty page, the data is already on the leader's other ISR members.
+This tells Kafka to never explicitly fsync. The OS page cache manages flushing via the dirty page settings from Section 2.6. Data safety comes from having multiple replicas  if a broker crashes before the OS flushes a dirty page, the data is already on the leader's other ISR members.
 
 Why explicit fsync destroys performance: `fsync()` is a synchronous operation that blocks until all dirty pages for the file are written to durable storage. On an HDD, this can take 5-50ms. If every Kafka write triggers an fsync, maximum throughput is limited to:
 
 ```
 fsync_throughput = segment_size / fsync_duration
-= 1GB / 20ms = 50 GB/s  # NVMe — fsync is fast, acceptable
-= 1GB / 5000ms = 200 MB/s  # HDD — fsync takes seconds, devastating
+= 1GB / 20ms = 50 GB/s  # NVMe  fsync is fast, acceptable
+= 1GB / 5000ms = 200 MB/s  # HDD  fsync takes seconds, devastating
 ```
 
 On HDD-based brokers, enabling `log.flush.interval.messages=1` (fsync every message) reduces throughput by 100-1000x. On NVMe, it is less catastrophic but still unnecessary given replication durability.
@@ -1024,7 +1024,7 @@ kafka-configs.sh --bootstrap-server localhost:9092 \
   --add-config follower.replication.throttled.rate=52428800
 ```
 
-52,428,800 bytes/second = 50 MB/s. This allows reassignment to complete while consuming only 50 MB/s of network bandwidth — leaving 25 Gbps - 400 Mbps = ~24.6 Gbps for production traffic.
+52,428,800 bytes/second = 50 MB/s. This allows reassignment to complete while consuming only 50 MB/s of network bandwidth  leaving 25 Gbps - 400 Mbps = ~24.6 Gbps for production traffic.
 
 Remove throttling after reassignment completes:
 
@@ -1050,7 +1050,7 @@ kafka-topics.sh --bootstrap-server localhost:9092 \
 
 Look at the `Leader` column. If broker 0 leads 80% of partitions, it handles 80% of write traffic.
 
-The controller (from Part 3) tracks the "preferred replica" for each partition — the first replica in the replica assignment list. After broker failures and restarts, actual leaders may drift from preferred replicas.
+The controller (from Part 3) tracks the "preferred replica" for each partition  the first replica in the replica assignment list. After broker failures and restarts, actual leaders may drift from preferred replicas.
 
 Trigger preferred replica election:
 
@@ -1059,11 +1059,11 @@ kafka-preferred-replica-election.sh \
   --bootstrap-server localhost:9092
 ```
 
-This is safe to run in production — it moves leadership to the preferred replica, which is already in the ISR. The transition involves an ISR change notification but no data loss or replication gap.
+This is safe to run in production  it moves leadership to the preferred replica, which is already in the ISR. The transition involves an ISR change notification but no data loss or replication gap.
 
 For automated rebalancing, configure `auto.leader.rebalance.enable=true` and `leader.imbalance.check.interval.seconds=300` (default). The controller periodically checks for leader imbalance and triggers preferred replica elections automatically.
 
-Metric: `kafka.controller:type=KafkaController,name=ActiveControllerCount` — should always be 1 in a healthy cluster. `kafka.server:type=ReplicaManager,name=LeaderCount` per broker — should be approximately equal across brokers for uniform write load distribution.
+Metric: `kafka.controller:type=KafkaController,name=ActiveControllerCount`  should always be 1 in a healthy cluster. `kafka.server:type=ReplicaManager,name=LeaderCount` per broker  should be approximately equal across brokers for uniform write load distribution.
 
 ---
 
@@ -1071,7 +1071,7 @@ Metric: `kafka.controller:type=KafkaController,name=ActiveControllerCount` — s
 
 ### 8.1 Breaking Down End-to-End Latency
 
-End-to-end latency — from the moment the application calls `producer.send()` to the moment the consumer's `poll()` returns the record — is the sum of multiple components:
+End-to-end latency  from the moment the application calls `producer.send()` to the moment the consumer's `poll()` returns the record  is the sum of multiple components:
 
 ```
 Total latency =
@@ -1183,7 +1183,7 @@ NVMe latency for a 4KB write is 50-100 microseconds. SATA SSD is 100-300 microse
 Request queue time (`RequestQueueTimeMs`) represents records waiting for an available I/O thread. With a generously sized thread pool, the queue drains immediately even during burst periods:
 
 ```properties
-num.io.threads=64    # Oversize intentionally — idle threads have near-zero cost
+num.io.threads=64    # Oversize intentionally  idle threads have near-zero cost
 ```
 
 The cost of idle threads is the thread stack memory (approximately 1MB per thread × 64 = 64MB) plus GC overhead for thread-local allocations. This is negligible compared to the p99 latency improvement from eliminating queue wait time.
@@ -1206,7 +1206,7 @@ Cluster sizing works backwards from requirements. The inputs:
 | Disk capacity per broker | Available in chosen server spec |
 | Single-partition throughput ceiling | 50 MB/s (empirically measured) |
 
-### 9.2 Step 1 — Network Requirement
+### 9.2 Step 1  Network Requirement
 
 Total network bandwidth required per broker:
 
@@ -1237,7 +1237,7 @@ broker_count = max(ceil(total_traffic / NIC_bandwidth), RF) × headroom_factor
              → Use 6 brokers (multiples of RF for even partition distribution)
 ```
 
-### 9.3 Step 2 — Disk Requirement
+### 9.3 Step 2  Disk Requirement
 
 ```
 disk_per_broker_GB =
@@ -1268,7 +1268,7 @@ Add 20% headroom for index files, segment overhead, and burst absorption:
 disk_per_broker_with_headroom = 144TB × 1.2 = 173TB per broker
 ```
 
-### 9.4 Step 3 — Partition Count
+### 9.4 Step 3  Partition Count
 
 ```
 partitions = max(
@@ -1285,7 +1285,7 @@ balance_partitions = 6 × 10 = 60  # 10 partitions per broker minimum for good b
 partitions = max(10, 10, 60) = 60
 ```
 
-60 partitions across 6 brokers = 10 partitions per broker — good balance. Each partition leads on its assigned broker, distributing write load evenly.
+60 partitions across 6 brokers = 10 partitions per broker  good balance. Each partition leads on its assigned broker, distributing write load evenly.
 
 ### 9.5 Worked Example Summary
 
@@ -1313,7 +1313,7 @@ partitions = max(10, 10, 60) = 60
 Operators calculate disk based on average throughput, not peak. If peak throughput is 3x average, retention fills 3x faster during peak periods. Always size for peak throughput sustained for the full retention period.
 
 **Oversizing JVM heap:**
-A 32GB heap on a 128GB server leaves 96GB for page cache — acceptable. But the GC pauses on a 32GB heap with G1GC can reach 5-10 seconds. This violates `replica.lag.time.max.ms` and causes constant ISR churn. Counterintuitively, reducing heap to 8GB improves stability.
+A 32GB heap on a 128GB server leaves 96GB for page cache  acceptable. But the GC pauses on a 32GB heap with G1GC can reach 5-10 seconds. This violates `replica.lag.time.max.ms` and causes constant ISR churn. Counterintuitively, reducing heap to 8GB improves stability.
 
 **Single NIC for all traffic:**
 Client writes (500 MB/s) + replication (1,000 MB/s for RF=3) + client reads (1,000 MB/s for 2 consumers) = 2,500 MB/s. A 10 Gbps NIC (1,250 MB/s) is immediately saturated. Always size NICs for `write × (RF + read_multiplier)`.
@@ -1338,7 +1338,7 @@ index_overhead = 4,000 × 10 × (10MB + 10MB) = 800GB
 
 - **Disk I/O tuning is the highest-impact lever for most clusters.** JBOD over RAID-5, XFS or ext4 with `noatime`, `vm.swappiness=1`, and `vm.dirty_ratio=80` collectively can double broker throughput compared to default configurations on the same hardware.
 
-- **Never size the JVM heap above 8-10GB.** Kafka's data lives in the OS page cache, not heap. Oversized heap reduces page cache capacity and increases GC pause duration — both harmful. The 4-8GB heap recommendation is correct even on 256GB servers.
+- **Never size the JVM heap above 8-10GB.** Kafka's data lives in the OS page cache, not heap. Oversized heap reduces page cache capacity and increases GC pause duration  both harmful. The 4-8GB heap recommendation is correct even on 256GB servers.
 
 - **ZGC eliminates GC-induced ISR instability.** A 1-second GC pause on a follower can trigger ISR removal, degrading `acks=all` to effective `acks=1`. ZGC's sub-millisecond pauses eliminate this failure mode entirely. On JDK 17+, ZGC is the correct default for Kafka.
 
@@ -1356,31 +1356,31 @@ index_overhead = 4,000 × 10 × (10MB + 10MB) = 800GB
 
 | Concept | Mental Model |
 |---|---|
-| Bottleneck identification | Water flowing through a pipe — the narrowest section (disk, network, CPU, application) limits total flow. Add water pressure elsewhere has no effect. |
+| Bottleneck identification | Water flowing through a pipe  the narrowest section (disk, network, CPU, application) limits total flow. Add water pressure elsewhere has no effect. |
 | Page cache vs. heap | Kafka is an OS-aware application: it stores data in kernel memory (page cache), not JVM heap. Giving Kafka more heap steals from its actual storage layer. |
-| linger.ms / batch.size | A postal service with two strategies: (1) deliver every letter immediately by motorcycle; (2) wait for a truckload. Latency vs. fuel efficiency trade-off — the dial adjusts the wait time and truck capacity. |
+| linger.ms / batch.size | A postal service with two strategies: (1) deliver every letter immediately by motorcycle; (2) wait for a truckload. Latency vs. fuel efficiency trade-off  the dial adjusts the wait time and truck capacity. |
 | GC → ISR cascade | A domino chain: GC pause → missed fetch heartbeat → ISR removal → durability downgrade → leader crash during this window → data loss. ZGC removes the first domino. |
 | JBOD vs. RAID-5 | Kafka replication is the redundancy layer. RAID-5 adds a second redundancy layer with 75% write amplification. Redundancy should be managed once, at the application layer, where Kafka can make intelligent decisions about placement. |
 | Dirty page buffering | A shock absorber: `vm.dirty_ratio=80` creates a large buffer between Kafka's write speed and disk flush speed. Write bursts are absorbed; the background flusher drains them at sustained disk speed. |
-| NIC sizing formula | `write × (RF + read_multiplier)` — replication is invisible to monitoring tools that only show client traffic, but consumes (RF-1) × write throughput of network bandwidth. |
-| P99 vs. P50 | P50 is how the system performs. P99 is the promise you make to every user. A system with good P50 and bad P99 breaks its promise 1% of the time — which, at scale, is a constant stream of broken promises. |
+| NIC sizing formula | `write × (RF + read_multiplier)`  replication is invisible to monitoring tools that only show client traffic, but consumes (RF-1) × write throughput of network bandwidth. |
+| P99 vs. P50 | P50 is how the system performs. P99 is the promise you make to every user. A system with good P50 and bad P99 breaks its promise 1% of the time  which, at scale, is a constant stream of broken promises. |
 
 ---
 
 ## Coming Up in Part 8
 
-**Part 8: Stream Processing — Kafka Streams, ksqlDB, and Apache Flink**
+**Part 8: Stream Processing  Kafka Streams, ksqlDB, and Apache Flink**
 
-Part 7 tuned Kafka's data plane for maximum throughput and minimum latency. Part 8 addresses what to do with that data once it is in Kafka — transforming, joining, and aggregating streams in real time.
+Part 7 tuned Kafka's data plane for maximum throughput and minimum latency. Part 8 addresses what to do with that data once it is in Kafka  transforming, joining, and aggregating streams in real time.
 
 We will cover:
 
 - **Kafka Streams architecture**: the embedded stream processing library that runs inside your application process. Its topology model, stateful operations (KTable, aggregations), and RocksDB-backed state stores.
 - **Changelog topics and fault tolerance**: how Kafka Streams checkpoints state to Kafka, enabling recovery after process failure without losing aggregation state.
-- **KStream vs. KTable semantics**: event streams vs. changelog streams — the fundamental duality that determines join behavior, aggregation semantics, and compaction requirements.
+- **KStream vs. KTable semantics**: event streams vs. changelog streams  the fundamental duality that determines join behavior, aggregation semantics, and compaction requirements.
 - **ksqlDB**: SQL-over-Kafka for teams that need stream processing without writing Java. Its push queries vs. pull queries, persistent queries, and operationalization.
 - **Apache Flink**: the industrial-strength stream processor for exactly-once stateful computation at scale. Flink's checkpointing protocol, watermarks and event-time processing, and when to choose Flink over Kafka Streams.
-- **Joining streams**: stream-stream joins (windowed), stream-table joins (enrichment), and table-table joins — and the subtle semantics that determine correctness.
+- **Joining streams**: stream-stream joins (windowed), stream-table joins (enrichment), and table-table joins  and the subtle semantics that determine correctness.
 - **When Kafka Streams is not enough**: partition count constraints, cross-partition aggregations, and the scenarios that require a dedicated stream processing cluster rather than embedded processing.
 
 Part 8 assumes the replication and storage internals from Parts 3 and 5, the consumer group mechanics from Part 4, and the exactly-once semantics from Part 6. By the end, you will be able to architect end-to-end stream processing pipelines that are both correct and performant.

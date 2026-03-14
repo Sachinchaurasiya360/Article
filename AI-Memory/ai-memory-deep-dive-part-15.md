@@ -1,21 +1,21 @@
-# Memory in AI Systems Deep Dive — Part 15: Multi-Modal Memory — Beyond Text
+# Memory in AI Systems Deep Dive  Part 15: Multi-Modal Memory  Beyond Text
 
 ---
 
-**Series:** Memory in AI Systems — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Memory in AI Systems  A Developer's Deep Dive from Fundamentals to Production
 **Part:** 15 of 19 (Multi-Modal Memory)
 **Audience:** Developers with programming experience who want to understand AI memory systems from the ground up
 **Reading time:** ~50 minutes
 
 ---
 
-In Part 14, we explored personalization — how memory systems learn individual users, adapt communication styles, detect expertise levels, and deliver experiences that feel genuinely personal. Personalization transformed memory from a filing cabinet into an assistant that *knows you*.
+In Part 14, we explored personalization  how memory systems learn individual users, adapt communication styles, detect expertise levels, and deliver experiences that feel genuinely personal. Personalization transformed memory from a filing cabinet into an assistant that *knows you*.
 
 But there was a hidden assumption running through everything we built: **all memory was text.** Every embedding we computed was a text embedding. Every retrieval query was a text query. Every stored memory was a string of characters.
 
 The real world is not made of text.
 
-The real world is made of images — screenshots of error messages, diagrams of system architectures, photos of whiteboards after brainstorming sessions. It is made of audio — voice memos recorded during commutes, recorded meetings where key decisions were made, podcast episodes that sparked ideas. It is made of video — screen recordings of bugs being reproduced, tutorial walkthroughs, security camera footage. And it is made of code — not natural language descriptions of what code does, but the code itself, with its own structure, semantics, and relationships.
+The real world is made of images  screenshots of error messages, diagrams of system architectures, photos of whiteboards after brainstorming sessions. It is made of audio  voice memos recorded during commutes, recorded meetings where key decisions were made, podcast episodes that sparked ideas. It is made of video  screen recordings of bugs being reproduced, tutorial walkthroughs, security camera footage. And it is made of code  not natural language descriptions of what code does, but the code itself, with its own structure, semantics, and relationships.
 
 **An AI memory system that only understands text is like a human who can read but cannot see, hear, or understand diagrams.** It functions, but it misses enormous amounts of information that real users work with every day.
 
@@ -40,7 +40,7 @@ Let's teach memory to see, hear, and read code.
 ## Table of Contents
 
 1. [Why Memory Must Go Beyond Text](#1-why-memory-must-go-beyond-text)
-2. [CLIP — Bridging Vision and Language](#2-clip--bridging-vision-and-language)
+2. [CLIP  Bridging Vision and Language](#2-clip--bridging-vision-and-language)
 3. [Image Embeddings and Visual Memory](#3-image-embeddings-and-visual-memory)
 4. [Audio Embeddings](#4-audio-embeddings)
 5. [Code Embeddings](#5-code-embeddings)
@@ -66,7 +66,7 @@ Most AI memory systems today follow a simple pattern: text in, embedding out, ve
 | **Code** | Source files, notebooks, configurations | Syntactic structure, execution semantics, type relationships |
 | **Documents** | PDFs with figures, slides with images, web pages | Layout, embedded visuals, visual hierarchy |
 
-> **Key Insight:** A text-only memory system does not merely miss some information — it systematically loses the information that is hardest to express in words. The architecture diagram that would take five paragraphs to describe in text. The tone of voice that changes the meaning of "that's fine" from agreement to frustration. The visual pattern in a chart that no amount of data description can replace.
+> **Key Insight:** A text-only memory system does not merely miss some information  it systematically loses the information that is hardest to express in words. The architecture diagram that would take five paragraphs to describe in text. The tone of voice that changes the meaning of "that's fine" from agreement to frustration. The visual pattern in a chart that no amount of data description can replace.
 
 ### The Multi-Modal Memory Architecture
 
@@ -124,20 +124,20 @@ graph TB
 
 ### Cross-Modal Retrieval: The Key Capability
 
-The most powerful feature of multi-modal memory is **cross-modal retrieval** — using a query in one modality to find memories stored in another:
+The most powerful feature of multi-modal memory is **cross-modal retrieval**  using a query in one modality to find memories stored in another:
 
 - **Text query, image result**: "Show me the architecture diagram from last week's meeting" retrieves the actual whiteboard photo
 - **Image query, text result**: Upload a screenshot of an error, retrieve the documentation that explains it
 - **Text query, code result**: "Find the function that handles user authentication" retrieves the actual code, not a description of it
 - **Audio query, text result**: Play a voice memo and find the meeting notes that correspond to what was discussed
 
-This is only possible when different modalities share a **common embedding space** — a vector space where semantically similar items are close together, regardless of their original modality.
+This is only possible when different modalities share a **common embedding space**  a vector space where semantically similar items are close together, regardless of their original modality.
 
 Let's build this, starting with the model that made cross-modal embeddings practical.
 
 ---
 
-## 2. CLIP — Bridging Vision and Language
+## 2. CLIP  Bridging Vision and Language
 
 ### What CLIP Actually Does
 
@@ -376,7 +376,7 @@ class CLIPEmbedder:
         """
         Compute cosine similarity between two embeddings.
 
-        Works across modalities — you can compare an image embedding
+        Works across modalities  you can compare an image embedding
         with a text embedding directly.
 
         Args:
@@ -445,7 +445,7 @@ def demo_cross_modal_search():
     print("Query: 'system design diagram'")
     print("Results (ranked by similarity):")
     for idx, score in results[:3]:
-        print(f"  {score:.4f} — {image_descriptions[idx]}")
+        print(f"  {score:.4f}  {image_descriptions[idx]}")
 
     # --- Example 2: Cross-modal similarity ---
     text_emb = embedder.encode_text("a cute puppy")
@@ -607,7 +607,7 @@ class CLIPLimitationHandler:
 
 ### Building a Visual Memory System
 
-Now let's build a complete visual memory system — one that can store images, retrieve them by text queries, find similar images, and generate captions for hybrid search:
+Now let's build a complete visual memory system  one that can store images, retrieve them by text queries, find similar images, and generate captions for hybrid search:
 
 ```python
 """
@@ -1098,7 +1098,7 @@ class ImageCaptioner:
         return results
 ```
 
-> **Key Insight:** Hybrid retrieval — combining visual embeddings with text captions — consistently outperforms either approach alone. The visual embedding captures what a human eye sees (composition, color, spatial arrangement). The caption captures what a human mind interprets (objects, actions, relationships). Together, they provide both perceptual and semantic understanding of images.
+> **Key Insight:** Hybrid retrieval  combining visual embeddings with text captions  consistently outperforms either approach alone. The visual embedding captures what a human eye sees (composition, color, spatial arrangement). The caption captures what a human mind interprets (objects, actions, relationships). Together, they provide both perceptual and semantic understanding of images.
 
 ---
 
@@ -1106,7 +1106,7 @@ class ImageCaptioner:
 
 ### The Audio Memory Challenge
 
-Audio is fundamentally different from text and images. It is **temporal** — meaning unfolds over time, not across spatial dimensions. A single audio clip might contain speech, music, environmental sounds, or all three at once. And the information in audio has multiple layers:
+Audio is fundamentally different from text and images. It is **temporal**  meaning unfolds over time, not across spatial dimensions. A single audio clip might contain speech, music, environmental sounds, or all three at once. And the information in audio has multiple layers:
 
 | Layer | What It Contains | Example |
 |---|---|---|
@@ -1640,7 +1640,7 @@ class AudioMemory:
         return f"{minutes:02d}:{secs:02d}"
 ```
 
-> **Key Insight:** Audio memory is uniquely valuable because humans produce audio far more quickly than text. A one-hour meeting generates roughly 10,000 words of transcript — content that would take hours to write but seconds to speak. Audio memory makes this vast stream of information searchable and retrievable.
+> **Key Insight:** Audio memory is uniquely valuable because humans produce audio far more quickly than text. A one-hour meeting generates roughly 10,000 words of transcript  content that would take hours to write but seconds to speak. Audio memory makes this vast stream of information searchable and retrievable.
 
 ---
 
@@ -2562,7 +2562,7 @@ class MultiModalMemoryStore:
         }
 ```
 
-> **Key Insight:** The unified multi-modal memory store is not just a convenience wrapper around separate memory systems. It is architecturally different because it projects all modalities into a shared embedding space, enabling true cross-modal discovery. A text query can find an image, an audio clip, AND a code snippet — all in a single search operation.
+> **Key Insight:** The unified multi-modal memory store is not just a convenience wrapper around separate memory systems. It is architecturally different because it projects all modalities into a shared embedding space, enabling true cross-modal discovery. A text query can find an image, an audio clip, AND a code snippet  all in a single search operation.
 
 ---
 
@@ -2897,7 +2897,7 @@ class VisionLanguageMemory:
 
 ### RAG That Sees, Hears, and Reads Code
 
-The ultimate application of multi-modal memory is **Multi-Modal RAG** — Retrieval-Augmented Generation that can pull context from any modality to generate informed responses. This is not just text RAG with images bolted on. It is a fundamentally different architecture:
+The ultimate application of multi-modal memory is **Multi-Modal RAG**  Retrieval-Augmented Generation that can pull context from any modality to generate informed responses. This is not just text RAG with images bolted on. It is a fundamentally different architecture:
 
 ```mermaid
 graph TB
@@ -3349,8 +3349,8 @@ class ConnectionPoolHandler:
 |---|---|
 | **Multi-modal** | Involving or combining multiple modalities (text, image, audio, video, code) |
 | **Modality** | A type or channel of information (e.g., visual, auditory, textual) |
-| **CLIP** | Contrastive Language-Image Pre-training — OpenAI model that creates a shared embedding space for images and text |
-| **CLAP** | Contrastive Language-Audio Pre-training — analogous to CLIP but for audio and text |
+| **CLIP** | Contrastive Language-Image Pre-training  OpenAI model that creates a shared embedding space for images and text |
+| **CLAP** | Contrastive Language-Audio Pre-training  analogous to CLIP but for audio and text |
 | **Cross-modal retrieval** | Using a query in one modality (e.g., text) to retrieve results in another modality (e.g., images) |
 | **Shared embedding space** | A vector space where representations from different modalities can be directly compared |
 | **Contrastive learning** | Training approach that learns by pushing similar pairs together and dissimilar pairs apart in embedding space |
@@ -3363,8 +3363,8 @@ class ConnectionPoolHandler:
 | **Modality router** | Component that detects the modality of input and routes it to the appropriate encoder |
 | **Projection head** | A neural network layer that maps embeddings from one dimension to another (used for alignment) |
 | **Zero-shot transfer** | Ability to work with categories or concepts not seen during training |
-| **OCR** | Optical Character Recognition — extracting text from images |
-| **BLIP** | Bootstrapping Language-Image Pre-training — model for image captioning and visual question answering |
+| **OCR** | Optical Character Recognition  extracting text from images |
+| **BLIP** | Bootstrapping Language-Image Pre-training  model for image captioning and visual question answering |
 | **Embedding alignment** | Ensuring that embeddings from different models or modalities are comparable in the same space |
 | **Temporal embedding** | An embedding that captures time-dependent information (important for audio and video) |
 
@@ -3405,7 +3405,7 @@ In this part, we built a complete multi-modal memory system from the ground up:
 
 ### What's Next
 
-In **Part 16: Autonomous Agents With Memory**, we will take everything we have built — from basic embeddings to multi-modal memory — and put it in the hands of autonomous agents. We will explore:
+In **Part 16: Autonomous Agents With Memory**, we will take everything we have built  from basic embeddings to multi-modal memory  and put it in the hands of autonomous agents. We will explore:
 
 - How **working memory** keeps agents on task across multi-step plans
 - How **episodic memory** lets agents learn from past task attempts
@@ -3413,8 +3413,8 @@ In **Part 16: Autonomous Agents With Memory**, we will take everything we have b
 - How to build a **ReAct loop with persistent memory** that maintains purpose across long-running tasks
 - The critical role of memory in **agent safety and reliability**
 
-Agents do not just remember conversations — they remember actions, outcomes, and strategies. Memory is what transforms a chatbot into a capable, autonomous system.
+Agents do not just remember conversations  they remember actions, outcomes, and strategies. Memory is what transforms a chatbot into a capable, autonomous system.
 
 ---
 
-*Next up: Part 16 — Autonomous Agents With Memory: From Chat to Action*
+*Next up: Part 16  Autonomous Agents With Memory: From Chat to Action*

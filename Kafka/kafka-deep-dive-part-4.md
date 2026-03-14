@@ -1,8 +1,8 @@
-# Apache Kafka Deep Dive — Part 4: Consumer Groups — Coordination, Rebalancing, and Offset Management
+# Apache Kafka Deep Dive  Part 4: Consumer Groups  Coordination, Rebalancing, and Offset Management
 
 ---
 
-**Series:** Apache Kafka Deep Dive — From First Principles to Planet-Scale Event Streaming
+**Series:** Apache Kafka Deep Dive  From First Principles to Planet-Scale Event Streaming
 **Part:** 4 of 10
 **Audience:** Senior backend engineers, distributed systems engineers, data platform architects
 **Reading time:** ~45 minutes
@@ -13,7 +13,7 @@
 
 Parts 1 through 3 established the foundations: why the distributed log exists, how brokers store data on disk using segments and the page cache, and how replication keeps data durable across broker failures using the ISR protocol. You now understand how Kafka *produces* and *stores* data reliably.
 
-This part focuses on the other side of the coin: how Kafka delivers data to consumers at scale, and why this turns out to be one of the most operationally interesting problems in the entire system. Consumer groups are Kafka's horizontal scaling primitive for consumption — but the coordination protocol that keeps them consistent is a sophisticated state machine that, when it misfires, produces some of Kafka's most frustrating failure modes.
+This part focuses on the other side of the coin: how Kafka delivers data to consumers at scale, and why this turns out to be one of the most operationally interesting problems in the entire system. Consumer groups are Kafka's horizontal scaling primitive for consumption  but the coordination protocol that keeps them consistent is a sophisticated state machine that, when it misfires, produces some of Kafka's most frustrating failure modes.
 
 We will go deep on every layer: the group coordinator and its relationship to `__consumer_offsets`, the full JoinGroup/SyncGroup protocol state machine, the concrete difference between eager and cooperative rebalancing (with sequence diagrams showing exactly what stops and what keeps running), all four partition assignment strategies, the three timeout parameters and why confusing them causes production incidents, and offset management from auto-commit all the way to exactly-once semantics. By the end of this article, you will be able to diagnose a rebalance storm from first principles, choose the right assignment strategy for your workload, and tune consumer configuration for your specific processing latency profile.
 
@@ -25,15 +25,15 @@ We will go deep on every layer: the group coordinator and its relationship to `_
 
 A consumer group is a named collection of consumer instances that cooperate to consume a topic. The defining invariant of a consumer group is **exclusive partition assignment**: at any moment, each partition of a subscribed topic is assigned to exactly one consumer within the group. No two consumers in the same group will ever process the same partition simultaneously.
 
-This invariant is enforced by the group coordinator (covered in Section 2), and it is what makes consumer groups safe for parallel processing — each partition is an ordered log, and if two consumers processed the same partition concurrently, they would interleave record processing in ways that would likely violate application ordering guarantees.
+This invariant is enforced by the group coordinator (covered in Section 2), and it is what makes consumer groups safe for parallel processing  each partition is an ordered log, and if two consumers processed the same partition concurrently, they would interleave record processing in ways that would likely violate application ordering guarantees.
 
-When you call `subscribe(Collection<String> topics)` in the consumer API, you are not reserving any specific partitions. You are declaring membership in a group and letting the group coordinator assign partitions to you dynamically. The assignment can change whenever the group membership changes — that is what a rebalance does.
+When you call `subscribe(Collection<String> topics)` in the consumer API, you are not reserving any specific partitions. You are declaring membership in a group and letting the group coordinator assign partitions to you dynamically. The assignment can change whenever the group membership changes  that is what a rebalance does.
 
 ### 1.2 Why Groups Exist: Horizontal Scaling of Consumption
 
-Kafka topics are partitioned precisely to enable parallel processing. A topic with 12 partitions has 12 independent ordered sub-streams. A single consumer reading all 12 partitions will be serialized through one thread, one network connection, and one processing loop. Add a second consumer in the same group, and the 12 partitions are divided between them — each consumer handles 6. Add a third, and each handles 4. At N consumers, each consumer handles 12/N partitions in parallel.
+Kafka topics are partitioned precisely to enable parallel processing. A topic with 12 partitions has 12 independent ordered sub-streams. A single consumer reading all 12 partitions will be serialized through one thread, one network connection, and one processing loop. Add a second consumer in the same group, and the 12 partitions are divided between them  each consumer handles 6. Add a third, and each handles 4. At N consumers, each consumer handles 12/N partitions in parallel.
 
-This is the fundamental scaling model. Throughput scales with the number of consumers up to the number of partitions. Beyond that, adding more consumers provides no additional throughput — but it does provide redundancy, as idle consumers can take over partitions from failed consumers without operator intervention.
+This is the fundamental scaling model. Throughput scales with the number of consumers up to the number of partitions. Beyond that, adding more consumers provides no additional throughput  but it does provide redundancy, as idle consumers can take over partitions from failed consumers without operator intervention.
 
 ### 1.3 Multiple Groups Reading the Same Topic
 
@@ -51,9 +51,9 @@ This "fan-out by consumer group" pattern is one of the architectural advantages 
 
 ### 1.4 The Partition-Consumer Assignment Constraint
 
-The exclusive assignment invariant creates a hard upper bound on consumer group parallelism: **you cannot have more active consumers than partitions**. If a topic has 6 partitions and you deploy 8 consumers in the same group, 6 consumers receive one partition each and 2 consumers receive zero partitions — they sit completely idle, consuming memory and network connections but processing nothing.
+The exclusive assignment invariant creates a hard upper bound on consumer group parallelism: **you cannot have more active consumers than partitions**. If a topic has 6 partitions and you deploy 8 consumers in the same group, 6 consumers receive one partition each and 2 consumers receive zero partitions  they sit completely idle, consuming memory and network connections but processing nothing.
 
-This is not a bug; it is a consequence of the ordering guarantee. If you need more consumer parallelism, you need more partitions — and increasing partition count on an existing topic has its own trade-offs (covered in Part 7).
+This is not a bug; it is a consequence of the ordering guarantee. If you need more consumer parallelism, you need more partitions  and increasing partition count on an existing topic has its own trade-offs (covered in Part 7).
 
 The inverse is not symmetric: fewer consumers than partitions works fine. A single consumer can handle multiple partitions. A group of 2 consumers handling a 6-partition topic will have each consumer handling 3 partitions. Performance degrades linearly as consumers are removed below the partition count.
 
@@ -110,7 +110,7 @@ graph TB
     P5 --> AuC5
 ```
 
-In this diagram, `fraud-detection-group` has 3 consumers serving 6 partitions (2 partitions each), `analytics-group` has 2 consumers (3 partitions each), and `audit-group` has exactly 6 consumers (1 partition each — maximally parallel). All three groups read the same 6 partitions with completely independent offsets.
+In this diagram, `fraud-detection-group` has 3 consumers serving 6 partitions (2 partitions each), `analytics-group` has 2 consumers (3 partitions each), and `audit-group` has exactly 6 consumers (1 partition each  maximally parallel). All three groups read the same 6 partitions with completely independent offsets.
 
 ---
 
@@ -118,7 +118,7 @@ In this diagram, `fraud-detection-group` has 3 consumers serving 6 partitions (2
 
 ### 2.1 What the Group Coordinator Is
 
-The Group Coordinator is a broker-side component responsible for managing the lifecycle of a specific consumer group: tracking membership, driving rebalances, and storing committed offsets. Every consumer group has exactly one Group Coordinator at any given time, and that coordinator is a specific broker — not necessarily the controller, not a special-purpose broker, just whichever broker happens to be the leader for a specific partition of `__consumer_offsets`.
+The Group Coordinator is a broker-side component responsible for managing the lifecycle of a specific consumer group: tracking membership, driving rebalances, and storing committed offsets. Every consumer group has exactly one Group Coordinator at any given time, and that coordinator is a specific broker  not necessarily the controller, not a special-purpose broker, just whichever broker happens to be the leader for a specific partition of `__consumer_offsets`.
 
 This is a key architectural point: the Group Coordinator is not a centralized service. Its responsibility is distributed across all brokers, with each broker acting as coordinator for the groups that hash to partitions it leads. A 10-broker cluster with the default 50-partition `__consumer_offsets` topic will have each broker coordinating approximately 5 groups per partition it leads, spread across the `__consumer_offsets` partitions.
 
@@ -133,7 +133,7 @@ coordinator_broker    = leader_of(__consumer_offsets[coordinator_partition])
 
 When a consumer starts up, it doesn't know which broker is its coordinator. It sends a `FindCoordinatorRequest` to any broker (typically the bootstrap server). That broker computes the hash, looks up which broker leads the corresponding `__consumer_offsets` partition, and returns that broker's address. The consumer then connects directly to the coordinator for all subsequent group protocol messages.
 
-This design means coordinator assignment changes only when the leader of a `__consumer_offsets` partition changes — that is, when that partition's leader broker fails and the ISR protocol elects a new leader. Normal broker restarts, topic configuration changes, and partition leader elections on user topics do not affect coordinator assignments.
+This design means coordinator assignment changes only when the leader of a `__consumer_offsets` partition changes  that is, when that partition's leader broker fails and the ISR protocol elects a new leader. Normal broker restarts, topic configuration changes, and partition leader elections on user topics do not affect coordinator assignments.
 
 ### 2.3 The `__consumer_offsets` Topic
 
@@ -142,7 +142,7 @@ This design means coordinator assignment changes only when the leader of a `__co
 1. **Offset storage**: committed consumer offsets are stored here as ordinary Kafka messages
 2. **Group metadata storage**: group membership, generation numbers, and protocol metadata are stored here as well
 
-The topic has 50 partitions by default (configurable via `offsets.topic.num.partitions`). It is a **compacted** topic: for each unique key, only the latest value is retained. The key for an offset commit message is the tuple `(group_id, topic, partition)`. This means that regardless of how many times a group commits its offset for a given partition, the `__consumer_offsets` topic only retains the most recent commit — old commits are garbage collected during log compaction.
+The topic has 50 partitions by default (configurable via `offsets.topic.num.partitions`). It is a **compacted** topic: for each unique key, only the latest value is retained. The key for an offset commit message is the tuple `(group_id, topic, partition)`. This means that regardless of how many times a group commits its offset for a given partition, the `__consumer_offsets` topic only retains the most recent commit  old commits are garbage collected during log compaction.
 
 Message format:
 
@@ -154,7 +154,7 @@ Message format:
 | Value: commit_timestamp | int64 | When this offset was committed |
 | Value: expire_timestamp | int64 | When this offset expires (for `offsets.retention.minutes`) |
 
-When consumers read their last committed offset on startup (or after a rebalance), they query `__consumer_offsets` — not the user topic itself. The coordinator fetches the latest compacted value for the consumer's `(group_id, topic, partition)` key and returns it in the `OffsetFetch` response.
+When consumers read their last committed offset on startup (or after a rebalance), they query `__consumer_offsets`  not the user topic itself. The coordinator fetches the latest compacted value for the consumer's `(group_id, topic, partition)` key and returns it in the `OffsetFetch` response.
 
 ### 2.4 Group Coordinator Responsibilities
 
@@ -203,7 +203,7 @@ The Group Coordinator tracks every consumer group through a state machine with f
 | Empty | New member sends JoinGroup | PreparingRebalance |
 | Stable | Any member sends JoinGroup (new member joining) | PreparingRebalance |
 | Stable | Member leaves group (explicit `LeaveGroup` request) | PreparingRebalance |
-| Stable | Member heartbeat timeout — coordinator marks member dead | PreparingRebalance |
+| Stable | Member heartbeat timeout  coordinator marks member dead | PreparingRebalance |
 | Stable | Subscribed topic gains new partitions | PreparingRebalance |
 | PreparingRebalance | All members joined OR rebalance timeout expires | CompletingRebalance |
 | CompletingRebalance | Group leader sends SyncGroup with assignment | Stable |
@@ -224,7 +224,7 @@ stateDiagram-v2
     Dead --> [*]
 ```
 
-The key insight in this state machine is that `PreparingRebalance` is a barrier: the coordinator cannot proceed to `CompletingRebalance` until all currently known members have submitted a JoinGroup request. This is the "stop-the-world" gate of eager rebalancing — the coordinator will not complete the rebalance until it hears from every member (or gives up waiting after `rebalance.timeout.ms`).
+The key insight in this state machine is that `PreparingRebalance` is a barrier: the coordinator cannot proceed to `CompletingRebalance` until all currently known members have submitted a JoinGroup request. This is the "stop-the-world" gate of eager rebalancing  the coordinator will not complete the rebalance until it hears from every member (or gives up waiting after `rebalance.timeout.ms`).
 
 ### 3.3 Consumer-Side States During Protocol
 
@@ -247,19 +247,19 @@ Eager rebalancing is the original Kafka consumer group protocol, and it earns it
 
 **Step-by-step sequence for a 3-consumer group when Consumer C3 joins:**
 
-**Step 1 — Trigger**: Consumer C3 starts up and sends JoinGroup to the coordinator. The coordinator, currently in Stable state with C1 and C2, transitions to PreparingRebalance. It notifies C1 and C2 of the pending rebalance (via the next heartbeat response or poll response, setting `REBALANCE_IN_PROGRESS`).
+**Step 1  Trigger**: Consumer C3 starts up and sends JoinGroup to the coordinator. The coordinator, currently in Stable state with C1 and C2, transitions to PreparingRebalance. It notifies C1 and C2 of the pending rebalance (via the next heartbeat response or poll response, setting `REBALANCE_IN_PROGRESS`).
 
-**Step 2 — Revoke everything**: C1 and C2 revoke all their partitions. They call `onPartitionsRevoked()` with their full current assignment. Critically, they revoke partitions regardless of whether those partitions will be reassigned to them after the rebalance. A consumer that had P0 and P1, and will be given P0 and P1 again after the rebalance, still revokes P0 and P1 before the rebalance and re-acquires them after. This is the fundamental inefficiency of eager rebalancing.
+**Step 2  Revoke everything**: C1 and C2 revoke all their partitions. They call `onPartitionsRevoked()` with their full current assignment. Critically, they revoke partitions regardless of whether those partitions will be reassigned to them after the rebalance. A consumer that had P0 and P1, and will be given P0 and P1 again after the rebalance, still revokes P0 and P1 before the rebalance and re-acquires them after. This is the fundamental inefficiency of eager rebalancing.
 
-**Step 3 — JoinGroup from all members**: C1, C2, and C3 all send JoinGroup to the coordinator. The coordinator waits until all three have joined (or `rebalance.timeout.ms` expires and it kicks the non-responsive member). Each consumer's JoinGroup request includes its supported protocols and, for newer versions, its current assignment.
+**Step 3  JoinGroup from all members**: C1, C2, and C3 all send JoinGroup to the coordinator. The coordinator waits until all three have joined (or `rebalance.timeout.ms` expires and it kicks the non-responsive member). Each consumer's JoinGroup request includes its supported protocols and, for newer versions, its current assignment.
 
-**Step 4 — Coordinator selects leader and responds**: The coordinator picks one consumer as the group leader (usually the first one to join or the existing leader if still present). It responds to all members. The leader's response contains the full list of members and their metadata. The followers receive only their own member ID and generation number.
+**Step 4  Coordinator selects leader and responds**: The coordinator picks one consumer as the group leader (usually the first one to join or the existing leader if still present). It responds to all members. The leader's response contains the full list of members and their metadata. The followers receive only their own member ID and generation number.
 
-**Step 5 — Leader computes assignment**: The group leader runs the partition assignment algorithm locally (the `PartitionAssignor`). It knows the full member list, all subscribed topics, and all partitions. It produces a `Map<String, List<TopicPartition>>` mapping each member ID to its assigned partitions.
+**Step 5  Leader computes assignment**: The group leader runs the partition assignment algorithm locally (the `PartitionAssignor`). It knows the full member list, all subscribed topics, and all partitions. It produces a `Map<String, List<TopicPartition>>` mapping each member ID to its assigned partitions.
 
-**Step 6 — SyncGroup**: The leader sends this assignment map to the coordinator via a SyncGroup request. All other members also send (empty) SyncGroup requests to the coordinator, waiting for their individual assignment in the response. The coordinator distributes the assignments: each member receives exactly the partitions assigned to it by the leader.
+**Step 6  SyncGroup**: The leader sends this assignment map to the coordinator via a SyncGroup request. All other members also send (empty) SyncGroup requests to the coordinator, waiting for their individual assignment in the response. The coordinator distributes the assignments: each member receives exactly the partitions assigned to it by the leader.
 
-**Step 7 — Resumption**: Consumers call `onPartitionsAssigned()` with their new partitions, seek to committed offsets, and begin fetching. Group transitions to Stable.
+**Step 7  Resumption**: Consumers call `onPartitionsAssigned()` with their new partitions, seek to committed offsets, and begin fetching. Group transitions to Stable.
 
 ```
 ┌──────────────┐   ┌──────────────┐   ┌──────────────┐   ┌─────────────────┐
@@ -313,16 +313,16 @@ Cooperative rebalancing, introduced in Kafka 2.4 via the `CooperativeStickyAssig
 
 The protocol requires two rounds of JoinGroup/SyncGroup:
 
-**Round 1 — Announce and compute diff**:
+**Round 1  Announce and compute diff**:
 - All consumers send JoinGroup, this time including their *current* partition assignment in the request
 - The coordinator responds with the full member list including everyone's current assignments
 - The group leader runs the assignment algorithm and computes not just the new assignment, but the *diff*: which partitions move from which consumer to which other consumer
 - The leader submits this to the coordinator via SyncGroup. Each consumer's SyncGroup response contains: "keep these partitions, revoke these partitions"
-- Consumers whose partitions are not changing receive a response saying "keep everything, revoke nothing" — they continue processing without interruption
+- Consumers whose partitions are not changing receive a response saying "keep everything, revoke nothing"  they continue processing without interruption
 
-**Round 2 — Execute revocations and redistribute**:
+**Round 2  Execute revocations and redistribute**:
 - Consumers that received revocations call `onPartitionsRevoked()` for only the specific partitions being moved, commit their offsets for those partitions, and wait
-- Another JoinGroup/SyncGroup round is triggered (because some members revoked partitions — this is a membership change)
+- Another JoinGroup/SyncGroup round is triggered (because some members revoked partitions  this is a membership change)
 - In Round 2, the consumers that revoked their partitions no longer own them. The leader can now assign those free partitions to their new owners
 - Consumers that are receiving new partitions call `onPartitionsAssigned()` and begin fetching
 
@@ -470,9 +470,9 @@ Balance requires: each consumer gets 3. P2→C0, P3→C2.
 After: C0→P0,P1,P2 | C2→P3,P4,P5
 ```
 
-Without stickiness, `RoundRobinAssignor` might have produced: `C0→P0,P2,P4 | C2→P1,P3,P5` — moving P1, P4, P5 unnecessarily.
+Without stickiness, `RoundRobinAssignor` might have produced: `C0→P0,P2,P4 | C2→P1,P3,P5`  moving P1, P4, P5 unnecessarily.
 
-The trade-off with `StickyAssignor`: it uses the **eager protocol**. Despite minimizing partition movement in the assignment, all consumers still revoke all partitions before the new assignment is distributed. You get stickiness (which helps the application layer — less state to reload, fewer `onPartitionsRevoked`/`onPartitionsAssigned` transitions), but you still pay the full stop-the-world cost at the protocol level.
+The trade-off with `StickyAssignor`: it uses the **eager protocol**. Despite minimizing partition movement in the assignment, all consumers still revoke all partitions before the new assignment is distributed. You get stickiness (which helps the application layer  less state to reload, fewer `onPartitionsRevoked`/`onPartitionsAssigned` transitions), but you still pay the full stop-the-world cost at the protocol level.
 
 ### 5.4 CooperativeStickyAssignor
 
@@ -516,11 +516,11 @@ The `assign()` method receives the full `Cluster` metadata (including broker rac
 
 ### 6.1 The Heartbeat Thread
 
-Kafka consumer clients maintain a dedicated background thread — separate from the application's poll thread — solely for sending periodic `HeartbeatRequest` messages to the group coordinator. This separation is intentional and important.
+Kafka consumer clients maintain a dedicated background thread  separate from the application's poll thread  solely for sending periodic `HeartbeatRequest` messages to the group coordinator. This separation is intentional and important.
 
 The heartbeat thread runs independently of your processing code. It fires every `heartbeat.interval.ms` (default 3,000ms). Even if your application is blocked in a slow database write for 10 seconds, the heartbeat thread continues to fire, telling the coordinator "this consumer is still alive." This prevents the coordinator from falsely declaring the consumer dead due to slow processing.
 
-`HeartbeatRequest` carries the current generation ID and member ID. The coordinator validates these against its current group state. If they match, it responds with `NONE` (all good) or `REBALANCE_IN_PROGRESS` (a rebalance has been triggered — stop what you're doing and call JoinGroup). If the consumer's generation ID is stale (it missed a rebalance), it receives `ILLEGAL_GENERATION` and must re-join.
+`HeartbeatRequest` carries the current generation ID and member ID. The coordinator validates these against its current group state. If they match, it responds with `NONE` (all good) or `REBALANCE_IN_PROGRESS` (a rebalance has been triggered  stop what you're doing and call JoinGroup). If the consumer's generation ID is stale (it missed a rebalance), it receives `ILLEGAL_GENERATION` and must re-join.
 
 ### 6.2 Session Timeout
 
@@ -534,7 +534,7 @@ There is a hard constraint from the broker side: `session.timeout.ms` must be be
 
 ### 6.3 `max.poll.interval.ms`
 
-`max.poll.interval.ms` (default 300,000ms — 5 minutes) is a completely different mechanism from session timeout, and conflating them is the source of many production incidents.
+`max.poll.interval.ms` (default 300,000ms  5 minutes) is a completely different mechanism from session timeout, and conflating them is the source of many production incidents.
 
 The background heartbeat thread can keep sending heartbeats even while the application thread is not calling `poll()`. This means a consumer can appear alive from the coordinator's perspective while actually being stuck: the application thread is blocked in processing a record batch, or a downstream call is hanging, or the application is simply not consuming.
 
@@ -588,7 +588,7 @@ A common rule of thumb: set `heartbeat.interval.ms` to 1/3 of `session.timeout.m
 
 ### 6.6 Static Membership (`group.instance.id`)
 
-Normal consumer group membership is ephemeral: when a consumer leaves (gracefully or due to failure) and rejoins, it receives a new member ID and triggers a rebalance. This is wasteful for **stateful consumers** — applications that maintain local state derived from their assigned partitions (caches, local RocksDB state stores in Kafka Streams, pre-computed aggregations). After a rebalance, the consumer must reload its state before it can process records efficiently.
+Normal consumer group membership is ephemeral: when a consumer leaves (gracefully or due to failure) and rejoins, it receives a new member ID and triggers a rebalance. This is wasteful for **stateful consumers**  applications that maintain local state derived from their assigned partitions (caches, local RocksDB state stores in Kafka Streams, pre-computed aggregations). After a rebalance, the consumer must reload its state before it can process records efficiently.
 
 Static membership allows a consumer to declare a persistent identity:
 
@@ -598,7 +598,7 @@ props.put(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG, "consumer-zone-a-01");
 
 With `group.instance.id` set:
 - If the consumer disconnects and reconnects **within `session.timeout.ms`**, the coordinator recognizes its identity and **does not trigger a rebalance**. The consumer resumes with the same partition assignment.
-- If the consumer is absent for longer than `session.timeout.ms`, the coordinator declares it dead and triggers a rebalance — same as dynamic membership.
+- If the consumer is absent for longer than `session.timeout.ms`, the coordinator declares it dead and triggers a rebalance  same as dynamic membership.
 
 This is specifically designed for Kafka Streams and similar stateful processing frameworks where restarting a processing instance (e.g., for a deployment rollout) should not trigger a group-wide rebalance. The `session.timeout.ms` effectively becomes a "grace period for restarts."
 
@@ -610,7 +610,7 @@ The `group.instance.id` must be unique within the group. If two consumers start 
 
 ### 7.1 What Offsets Are
 
-A Kafka offset is a 64-bit integer that uniquely identifies a record's position within a partition. Offsets are monotonically increasing and immutable — once a record is written at offset N, it remains at offset N until it is deleted from the log (via retention or compaction). They are not reused.
+A Kafka offset is a 64-bit integer that uniquely identifies a record's position within a partition. Offsets are monotonically increasing and immutable  once a record is written at offset N, it remains at offset N until it is deleted from the log (via retention or compaction). They are not reused.
 
 **Committed offset semantics**: The committed offset is the offset of the **next record to fetch**, not the offset of the last processed record. If your consumer has successfully processed the record at offset 999, you commit offset 1000 (not 999). This is a common source of off-by-one errors in custom offset management code.
 
@@ -633,7 +633,7 @@ Auto-commit is the default behavior (`enable.auto.commit=true`). The consumer cl
 
 The commit happens at the start of each `poll()` call: before returning new records, the Kafka client internally commits the offset of the last record returned by the *previous* `poll()` call. This is a subtle timing: the commit represents "I have *received* these records," not "I have *processed* these records."
 
-**At-least-once semantics with auto-commit** — The common failure scenario:
+**At-least-once semantics with auto-commit**  The common failure scenario:
 
 ```
 t=0:  poll() returns records 1000-1049
@@ -675,7 +675,7 @@ while (true) {
 }
 ```
 
-`commitSync()` retries on retriable errors (`RetriableCommitFailedException`). This means it will block indefinitely if the coordinator is unavailable — a consideration for applications with strict latency SLAs.
+`commitSync()` retries on retriable errors (`RetriableCommitFailedException`). This means it will block indefinitely if the coordinator is unavailable  a consideration for applications with strict latency SLAs.
 
 The performance cost: one synchronous network round-trip per poll batch. For a consumer making 10 polls per second, that's 10 additional round-trips per second to the coordinator. In practice, this is rarely a bottleneck for throughput-oriented workloads, but can add meaningful latency in latency-sensitive pipelines.
 
@@ -698,8 +698,8 @@ consumer.commitAsync((offsets, exception) -> {
 t=0: consumer at offset 1000, sends commitAsync(1000)
 t=1: consumer processes more records, at offset 1200
 t=2: commit for 1000 fails (network error)
-t=2: consumer sends commitAsync(1200)  — succeeds immediately
-t=3: retry for offset 1000 arrives at broker — OVERWRITES 1200 with 1000!
+t=2: consumer sends commitAsync(1200)   succeeds immediately
+t=3: retry for offset 1000 arrives at broker  OVERWRITES 1200 with 1000!
 ```
 
 An automatic retry would potentially overwrite a newer commit with a stale one, causing records 1000-1199 to be reprocessed even though they were already committed. By not retrying, `commitAsync()` avoids this hazard. You monitor failures via the callback and handle them based on your application's requirements.
@@ -730,11 +730,11 @@ try {
 }
 ```
 
-Normal operation uses `commitAsync()` — fast, no blocking, failures logged but not fatal (the next successful commit will cover the same or later offset). On shutdown (or on `onPartitionsRevoked` during rebalance), `commitSync()` ensures the final committed state is durably written before the consumer exits. This hybrid gives high throughput with a strong durability guarantee at boundaries.
+Normal operation uses `commitAsync()`  fast, no blocking, failures logged but not fatal (the next successful commit will cover the same or later offset). On shutdown (or on `onPartitionsRevoked` during rebalance), `commitSync()` ensures the final committed state is durably written before the consumer exits. This hybrid gives high throughput with a strong durability guarantee at boundaries.
 
 ### 7.7 Committing Specific Offsets
 
-The default `commitSync()` / `commitAsync()` commits the offset returned by `consumer.position(partition)` — that is, the offset after the last record returned by the most recent `poll()`. But you can commit specific offsets for specific partitions:
+The default `commitSync()` / `commitAsync()` commits the offset returned by `consumer.position(partition)`  that is, the offset after the last record returned by the most recent `poll()`. But you can commit specific offsets for specific partitions:
 
 ```java
 Map<TopicPartition, OffsetAndMetadata> offsetsToCommit = new HashMap<>();
@@ -757,7 +757,7 @@ The `OffsetAndMetadata` value accepts an optional metadata string. This can carr
 
 ### 7.8 Exactly-Once Consumption
 
-True exactly-once semantics — where each input record produces exactly one effect in the output system, even if the consumer fails mid-batch — requires transactions. The pattern is:
+True exactly-once semantics  where each input record produces exactly one effect in the output system, even if the consumer fails mid-batch  requires transactions. The pattern is:
 
 1. Consume records from input topic (within a transaction)
 2. Process and produce output records to output topic (within the same transaction)
@@ -765,7 +765,7 @@ True exactly-once semantics — where each input record produces exactly one eff
 
 If the consumer crashes after step 2 but before step 3, the transaction is rolled back. On restart, the consumer re-reads from the last committed offset and reprocesses, but the output topic's transactional consumer will see the previous (rolled-back) attempt as an abort and skip it.
 
-This is Kafka's "read-process-write" exactly-once pattern, enabled by the transactional API (`KafkaProducer.beginTransaction()`, `sendOffsetsToTransaction()`, `commitTransaction()`). It has real costs: transactions add write amplification, commit overhead, and abort handling complexity. Exactly-once semantics in full detail — including the two-phase commit protocol, producer fencing, epoch numbers, and zombie producer prevention — is covered in Part 6.
+This is Kafka's "read-process-write" exactly-once pattern, enabled by the transactional API (`KafkaProducer.beginTransaction()`, `sendOffsetsToTransaction()`, `commitTransaction()`). It has real costs: transactions add write amplification, commit overhead, and abort handling complexity. Exactly-once semantics in full detail  including the two-phase commit protocol, producer fencing, epoch numbers, and zombie producer prevention  is covered in Part 6.
 
 ---
 
@@ -779,7 +779,7 @@ Consumer lag for a partition is:
 lag(partition) = log_end_offset(partition) - committed_offset(group, partition)
 ```
 
-`log_end_offset` is the offset that will be assigned to the next record written to this partition — effectively, the current end of the log. `committed_offset` is the offset stored in `__consumer_offsets` for this group/partition pair.
+`log_end_offset` is the offset that will be assigned to the next record written to this partition  effectively, the current end of the log. `committed_offset` is the offset stored in `__consumer_offsets` for this group/partition pair.
 
 Total group lag is the sum of lag across all partitions:
 
@@ -798,7 +798,7 @@ Consumer lag measured in record count is not directly meaningful without knowing
 | Slow pipeline | 10,000 records | 10 records/sec | 1,000 seconds (~17 min) |
 | Fast pipeline | 10,000 records | 10,000 records/sec | 1 second |
 
-A consumer group with 10,000 records of lag that is processing at the same rate as production (steady state) is fine — it's just permanently behind by 10,000 records. A consumer group with 500 records of lag that is processing slower than production is in trouble — the lag is growing and will eventually exhaust available memory and potentially disk.
+A consumer group with 10,000 records of lag that is processing at the same rate as production (steady state) is fine  it's just permanently behind by 10,000 records. A consumer group with 500 records of lag that is processing slower than production is in trouble  the lag is growing and will eventually exhaust available memory and potentially disk.
 
 Meaningful lag alerting should be **rate-of-change of lag**, not absolute lag level. Alert when lag is growing faster than a threshold, not when lag exceeds an absolute number. Some teams also track **lag-in-seconds** (lag / production rate per second) as a more intuitive metric.
 
@@ -880,7 +880,7 @@ spec:
       offsetResetPolicy: latest
 ```
 
-KEDA queries the lag, computes the desired replica count as `ceil(total_lag / lagThreshold)`, and adjusts the deployment. The `maxReplicaCount` must not exceed the partition count — adding more consumers than partitions yields idle pods, not additional throughput.
+KEDA queries the lag, computes the desired replica count as `ceil(total_lag / lagThreshold)`, and adjusts the deployment. The `maxReplicaCount` must not exceed the partition count  adding more consumers than partitions yields idle pods, not additional throughput.
 
 Important: autoscaling adds consumers, which triggers a rebalance. With eager rebalancing, adding one pod to reduce lag may briefly increase lag (due to the rebalance pause) before it decreases. With `CooperativeStickyAssignor`, the new consumer picks up its partitions without disrupting existing consumers, so the lag trajectory is monotonically improving.
 
@@ -931,7 +931,7 @@ public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
         consumer.commitSync(offsetsToCommit);  // sync: must complete before handoff
     } catch (CommitFailedException e) {
         log.warn("Commit failed during revocation", e);
-        // Log but don't rethrow — rebalance must proceed
+        // Log but don't rethrow  rebalance must proceed
     }
 }
 ```
@@ -966,11 +966,11 @@ public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
 
 ### 9.3 `onPartitionsLost`
 
-`onPartitionsLost(Collection<TopicPartition> partitions)` is a newer callback (Kafka 2.4+) called when the consumer has been forcibly removed from the group — the coordinator declared this consumer dead due to heartbeat timeout. Unlike `onPartitionsRevoked`, this callback is called when it is too late to commit: the coordinator has already assigned these partitions to another consumer.
+`onPartitionsLost(Collection<TopicPartition> partitions)` is a newer callback (Kafka 2.4+) called when the consumer has been forcibly removed from the group  the coordinator declared this consumer dead due to heartbeat timeout. Unlike `onPartitionsRevoked`, this callback is called when it is too late to commit: the coordinator has already assigned these partitions to another consumer.
 
-The correct behavior in `onPartitionsLost` is **cleanup only** — close file handles, release resources, clear in-memory state. Do not attempt to commit offsets (the commit will fail with `ILLEGAL_GENERATION` since the consumer's generation is now stale).
+The correct behavior in `onPartitionsLost` is **cleanup only**  close file handles, release resources, clear in-memory state. Do not attempt to commit offsets (the commit will fail with `ILLEGAL_GENERATION` since the consumer's generation is now stale).
 
-If you do not override `onPartitionsLost`, it defaults to calling `onPartitionsRevoked` with the lost partitions — which will attempt a commit that will fail. Overriding `onPartitionsLost` explicitly to skip the commit is the cleaner pattern.
+If you do not override `onPartitionsLost`, it defaults to calling `onPartitionsRevoked` with the lost partitions  which will attempt a commit that will fail. Overriding `onPartitionsLost` explicitly to skip the commit is the cleaner pattern.
 
 ### 9.4 The `onPartitionsRevoked` Trap
 
@@ -1000,7 +1000,7 @@ Remediation strategies:
 
 With cooperative rebalancing and `CooperativeStickyAssignor`, the semantics of callbacks change significantly:
 
-- `onPartitionsRevoked` is called **only for partitions actually being moved** — not all partitions. Partitions remaining with this consumer are not included. Your revocation callback must not assume it has all of the consumer's partitions.
+- `onPartitionsRevoked` is called **only for partitions actually being moved**  not all partitions. Partitions remaining with this consumer are not included. Your revocation callback must not assume it has all of the consumer's partitions.
 - `onPartitionsAssigned` is called for the newly acquired partitions in Round 2, **while the consumer is still processing its unchanged partitions**. The assigned callback runs while the consumer is mid-stream on other partitions.
 
 This means any state you maintain per-partition (in-flight offset tracking, per-partition caches) must be partition-scoped, not consumer-scoped. A consumer-scoped flush in `onPartitionsRevoked` ("flush everything") will incorrectly clear state for partitions the consumer is keeping:
@@ -1041,9 +1041,9 @@ This is one of the correctness differences that makes migrating from eager to co
 
 - **Consumer lag without production rate is meaningless.** 100,000 records of lag at 100,000 records/second is 1 second of latency. The same lag at 100 records/second is 1,000 seconds. Lag-based alerting should monitor rate-of-change, not absolute count.
 
-- **Static membership (`group.instance.id`) is critical for stateful consumers.** Without it, every rolling restart of a Kafka Streams application triggers a full rebalance and state restoration cycle. With it, restarts within `session.timeout.ms` are invisible to the group coordinator — no rebalance, no state restoration.
+- **Static membership (`group.instance.id`) is critical for stateful consumers.** Without it, every rolling restart of a Kafka Streams application triggers a full rebalance and state restoration cycle. With it, restarts within `session.timeout.ms` are invisible to the group coordinator  no rebalance, no state restoration.
 
-- **`onPartitionsRevoked` must be fast and partition-scoped.** Slow work in revocation callbacks causes the JoinGroup timeout to expire, kicking the consumer from the group mid-rebalance, creating a rebalance loop. With cooperative rebalancing, revocation callbacks must operate on only the revoked partitions — not the full current assignment.
+- **`onPartitionsRevoked` must be fast and partition-scoped.** Slow work in revocation callbacks causes the JoinGroup timeout to expire, kicking the consumer from the group mid-rebalance, creating a rebalance loop. With cooperative rebalancing, revocation callbacks must operate on only the revoked partitions  not the full current assignment.
 
 ---
 
@@ -1052,25 +1052,25 @@ This is one of the correctness differences that makes migrating from eager to co
 | Concept | Mental Model |
 |---|---|
 | Consumer group | A named team of workers collectively processing a task queue (topic), where each queue shard (partition) has exactly one worker at a time |
-| Group Coordinator | A broker that acts as the "team manager" for specific groups — determined by hashing the group name, not by any global election |
+| Group Coordinator | A broker that acts as the "team manager" for specific groups  determined by hashing the group name, not by any global election |
 | `__consumer_offsets` | A compacted Kafka topic that is its own persistent state store; the coordinator's memory survives broker restarts because it's just a Kafka log |
-| Eager rebalance | A team standup where everyone drops everything, gathers in a room, redistributes all tasks, then everyone starts fresh — even if your task list doesn't change |
+| Eager rebalance | A team standup where everyone drops everything, gathers in a room, redistributes all tasks, then everyone starts fresh  even if your task list doesn't change |
 | Cooperative rebalance | A team standup where only the people whose tasks are changing step out; everyone else keeps working while the redistribution happens |
 | `session.timeout.ms` | A dead-man's switch: if I don't hear from you within this window, I assume you crashed |
 | `max.poll.interval.ms` | A productivity watchdog: if you haven't checked in on your work queue in this long, you're considered stuck and removed |
 | Committed offset | A bookmark: the page number where you will START reading next time, not the last page you finished |
-| Consumer lag | Distance behind the front of the queue — only meaningful in context of how fast the queue is growing |
+| Consumer lag | Distance behind the front of the queue  only meaningful in context of how fast the queue is growing |
 | Static membership | A reserved seat: your spot at the table is held for you for up to `session.timeout.ms` if you step away, even if others are waiting |
-| `onPartitionsRevoked` | Handing keys back to the front desk before you leave — if this takes too long, you get locked out and someone else gets the keys without any handoff |
+| `onPartitionsRevoked` | Handing keys back to the front desk before you leave  if this takes too long, you get locked out and someone else gets the keys without any handoff |
 
 ---
 
 ## Coming Up in Part 5
 
-Part 5 dives into **Kafka's Storage Engine Internals**: how data actually lives on disk. We will cover the log segment file structure (`.log`, `.index`, `.timeindex` files), how Kafka achieves sequential I/O performance at extreme write rates, the role of the OS page cache in Kafka's read performance, zero-copy data transfer via `sendfile()`, how offset indexes enable O(log n) position lookup without reading the entire log, time-based indexes and their role in `offsetsForTimes()`, and the log compaction algorithm — including tombstone records, the "dirty" vs. "clean" segment distinction, and how compaction correctness is maintained during concurrent writes.
+Part 5 dives into **Kafka's Storage Engine Internals**: how data actually lives on disk. We will cover the log segment file structure (`.log`, `.index`, `.timeindex` files), how Kafka achieves sequential I/O performance at extreme write rates, the role of the OS page cache in Kafka's read performance, zero-copy data transfer via `sendfile()`, how offset indexes enable O(log n) position lookup without reading the entire log, time-based indexes and their role in `offsetsForTimes()`, and the log compaction algorithm  including tombstone records, the "dirty" vs. "clean" segment distinction, and how compaction correctness is maintained during concurrent writes.
 
 If you have ever wondered why Kafka recommends dedicated disks rather than SSDs, why your broker memory configuration matters less than OS memory configuration, or how `--from-beginning` replays gigabytes of data in seconds, Part 5 has the answers.
 
 ---
 
-*Part 4 of 10 — Apache Kafka Deep Dive*
+*Part 4 of 10  Apache Kafka Deep Dive*

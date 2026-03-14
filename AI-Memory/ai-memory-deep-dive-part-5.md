@@ -1,8 +1,8 @@
-# Memory in AI Systems Deep Dive — Part 5: Why Context Length Is Limited — The Memory Wall and How We're Breaking Through It
+# Memory in AI Systems Deep Dive  Part 5: Why Context Length Is Limited  The Memory Wall and How We're Breaking Through It
 
 ---
 
-**Series:** Memory in AI Systems — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Memory in AI Systems  A Developer's Deep Dive from Fundamentals to Production
 **Part:** 5 of 19
 **Audience:** Developers with programming experience who want to understand AI memory systems from the ground up
 **Reading time:** ~50 minutes
@@ -11,11 +11,11 @@
 
 ## Recap of Part 4
 
-In Part 4, we explored the Transformer architecture and its revolutionary self-attention mechanism. We saw how attention allows every token to "look at" every other token in the sequence, creating the context window — the model's working memory. We built attention from scratch, understood positional encodings, and watched multi-head attention capture different relationship types simultaneously.
+In Part 4, we explored the Transformer architecture and its revolutionary self-attention mechanism. We saw how attention allows every token to "look at" every other token in the sequence, creating the context window  the model's working memory. We built attention from scratch, understood positional encodings, and watched multi-head attention capture different relationship types simultaneously.
 
 But we left a critical question unanswered: **if attention is so powerful, why can't we just make the context window infinitely large?**
 
-The answer is a wall — a memory wall — built from quadratic computational costs, exploding memory requirements, and degrading attention quality. In this part, we will understand exactly why this wall exists, measure its dimensions precisely, and then explore every major technique engineers have developed to break through it.
+The answer is a wall  a memory wall  built from quadratic computational costs, exploding memory requirements, and degrading attention quality. In this part, we will understand exactly why this wall exists, measure its dimensions precisely, and then explore every major technique engineers have developed to break through it.
 
 This is where theory meets engineering reality.
 
@@ -73,7 +73,7 @@ At n = 32,768:  2 * 80 * 64 * 32768^2 * 128   = ~1,126 TFLOPs
 At n = 131,072: 2 * 80 * 64 * 131072^2 * 128  = ~18,014 TFLOPs
 ```
 
-That last number — 18 petaFLOPs — just for the attention portion of a single forward pass.
+That last number  18 petaFLOPs  just for the attention portion of a single forward pass.
 
 ### Benchmarking the Quadratic Growth
 
@@ -146,7 +146,7 @@ Benchmarking on: cuda
       32,768       369.18        12,306.0x
 ```
 
-The measured ratios closely track the theoretical quadratic prediction. The quadratic wall is not a theoretical concern — it is the single most important constraint shaping how we build and deploy language models today.
+The measured ratios closely track the theoretical quadratic prediction. The quadratic wall is not a theoretical concern  it is the single most important constraint shaping how we build and deploy language models today.
 
 ---
 
@@ -154,9 +154,9 @@ The measured ratios closely track the theoretical quadratic prediction. The quad
 
 ### Why We Cache Keys and Values
 
-During autoregressive generation (producing one token at a time), without caching, generating the nth token requires recomputing attention over all n-1 previous tokens from scratch — O(n^3) total for a full sequence.
+During autoregressive generation (producing one token at a time), without caching, generating the nth token requires recomputing attention over all n-1 previous tokens from scratch  O(n^3) total for a full sequence.
 
-The **KV cache** stores Key and Value projections for all previously generated tokens. When generating the next token, we only compute Q, K, V for the new token and look up cached K, V for all previous tokens. This reduces generation from O(n^3) to O(n^2) — but at a steep memory cost.
+The **KV cache** stores Key and Value projections for all previously generated tokens. When generating the next token, we only compute Q, K, V for the new token and look up cached K, V for all previous tokens. This reduces generation from O(n^3) to O(n^2)  but at a steep memory cost.
 
 ```mermaid
 graph TD
@@ -268,7 +268,7 @@ if __name__ == "__main__":
     gpu_feasibility_check("llama2-70b", 32768, 1, 80, 35)
 ```
 
-A LLaMA-2-7B model with 128K context at FP16 needs **32 GB just for the KV cache** — more than many GPUs can hold for model weights alone. Batch serving makes it worse: 32 concurrent requests at 4K context need 32 GB of KV cache on top of 14 GB model weights.
+A LLaMA-2-7B model with 128K context at FP16 needs **32 GB just for the KV cache**  more than many GPUs can hold for model weights alone. Batch serving makes it worse: 32 concurrent requests at 4K context need 32 GB of KV cache on top of 14 GB model weights.
 
 ---
 
@@ -452,14 +452,14 @@ The key insight: most attention weights end up near zero anyway. Instead of comp
 Combined, these give each token both local context and global reach:
 
 ```
-Full attention (n=16): 256 computations — every token sees every token
-Local (window=4):      ~64 computations — each token sees 4 neighbors
-Strided (stride=4):    ~64 computations — each token sees every 4th token
-Combined:              ~128 computations — local detail + global coverage
+Full attention (n=16): 256 computations  every token sees every token
+Local (window=4):      ~64 computations  each token sees 4 neighbors
+Strided (stride=4):    ~64 computations  each token sees every 4th token
+Combined:              ~128 computations  local detail + global coverage
 ```
 
 ```python
-"""sparse_attention.py — Local + strided sparse attention."""
+"""sparse_attention.py  Local + strided sparse attention."""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -519,7 +519,7 @@ Linear:    Attention = phi(Q) * (phi(K)^T * V)          -- O(n * d^2)
 By applying a feature map `phi` to Q and K independently, we rearrange the multiplication order. Instead of the n x n matrix (QK^T), we compute the d x d matrix (K^T * V) first. When `d << n`, this is dramatically cheaper.
 
 ```python
-"""linear_attention.py — O(n*d^2) attention using the kernel trick."""
+"""linear_attention.py  O(n*d^2) attention using the kernel trick."""
 import torch
 import torch.nn as nn
 
@@ -554,9 +554,9 @@ class LinearAttention(nn.Module):
 
 ### 4.3 Flash Attention
 
-Flash Attention (Dao et al., 2022) is the single most impactful engineering optimization for Transformers. It does not change **what** attention computes — it changes **how** to be dramatically faster.
+Flash Attention (Dao et al., 2022) is the single most impactful engineering optimization for Transformers. It does not change **what** attention computes  it changes **how** to be dramatically faster.
 
-**The key insight**: Modern GPUs have fast on-chip SRAM (~20 MB, ~19 TB/s) and slow off-chip HBM (~80 GB, ~2 TB/s). Standard attention is **memory-bound** — the bottleneck is reading/writing the n x n matrix from HBM. Flash Attention uses **tiling**: compute attention in small blocks that fit in SRAM, never materializing the full matrix.
+**The key insight**: Modern GPUs have fast on-chip SRAM (~20 MB, ~19 TB/s) and slow off-chip HBM (~80 GB, ~2 TB/s). Standard attention is **memory-bound**  the bottleneck is reading/writing the n x n matrix from HBM. Flash Attention uses **tiling**: compute attention in small blocks that fit in SRAM, never materializing the full matrix.
 
 ```
 Standard Attention:
@@ -594,7 +594,7 @@ graph TD
 **Using Flash Attention in PyTorch** (built in since PyTorch 2.0):
 
 ```python
-"""flash_attention_usage.py — Using Flash Attention via PyTorch SDPA."""
+"""flash_attention_usage.py  Using Flash Attention via PyTorch SDPA."""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -658,7 +658,7 @@ def benchmark_flash_vs_naive(device="cuda"):
         print(f"{n:>8} {flash_ms:>12.2f} {naive_ms:>12.2f} {naive_ms/flash_ms:>9.1f}x")
 ```
 
-Flash Attention delivers **2-5x speedup** and **4-14x memory reduction**. It computes the exact same result — a pure win with no quality trade-off.
+Flash Attention delivers **2-5x speedup** and **4-14x memory reduction**. It computes the exact same result  a pure win with no quality trade-off.
 
 ### 4.4 Multi-Query & Grouped-Query Attention (GQA)
 
@@ -671,7 +671,7 @@ MQA (1 group):  Q1,Q2,Q3,Q4 all share K_shared,V_shared         -> 1 KV set
 ```
 
 ```python
-"""grouped_query_attention.py — GQA as used in LLaMA 2/3, Mistral."""
+"""grouped_query_attention.py  GQA as used in LLaMA 2/3, Mistral."""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -751,7 +751,7 @@ In practice, modern production models combine **Flash Attention** (speed/memory 
 Store cached keys and values in INT8 (1 byte) instead of FP16 (2 bytes). Halves cache size with less than 1% quality degradation.
 
 ```python
-"""kv_cache_quantization.py — INT8 quantized KV cache."""
+"""kv_cache_quantization.py  INT8 quantized KV cache."""
 import torch
 
 class QuantizedKVCache:
@@ -817,7 +817,7 @@ Mistral-7B: 32 layers * 4096 window = 131,072 effective receptive field
 ```
 
 ```python
-"""sliding_window_kv_cache.py — Rolling KV cache with fixed memory."""
+"""sliding_window_kv_cache.py  Rolling KV cache with fixed memory."""
 import torch
 
 class SlidingWindowKVCache:
@@ -852,7 +852,7 @@ class SlidingWindowKVCache:
 
 # Demo: memory stays constant
 cache = SlidingWindowKVCache(512, 32, 8, 128)
-print(f"Fixed memory: {cache.memory_mb:.1f} MB — same at 100 tokens or 100,000 tokens")
+print(f"Fixed memory: {cache.memory_mb:.1f} MB  same at 100 tokens or 100,000 tokens")
 ```
 
 ### 5.3 PagedAttention (vLLM)
@@ -913,7 +913,7 @@ ALiBi:    score(i, j) = q_i * k_j / sqrt(d)  -  m * |i - j|
 Where `m` is a head-specific slope. No learned positional parameters needed, and it naturally extrapolates to longer sequences.
 
 ```python
-"""alibi_attention.py — Attention with Linear Biases."""
+"""alibi_attention.py  Attention with Linear Biases."""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -981,7 +981,7 @@ RoPE (Rotary Position Embeddings) encodes position by rotating Q and K vectors. 
 | **YaRN** | Per-frequency interpolation (low freqs scaled more) | ~16-32x | Very good |
 
 ```python
-"""rope_scaling.py — RoPE and extension techniques."""
+"""rope_scaling.py  RoPE and extension techniques."""
 import torch, math
 
 def rope_frequencies(d_head, max_len, base=10000.0):
@@ -1043,7 +1043,7 @@ graph LR
 ### 7.1 Cost Calculations
 
 ```python
-"""context_cost_calculator.py — Real-world cost of context window choices."""
+"""context_cost_calculator.py  Real-world cost of context window choices."""
 
 PRICING = {
     "gpt-4o":           {"input": 2.50, "output": 10.00, "max_ctx": 128_000},
@@ -1169,7 +1169,7 @@ No single memory layer is sufficient:
 - **External memory (RAG)**: cheap and boundless, but adds latency and retrieval errors
 - **Parametric memory (weights)**: captures general knowledge, but cannot learn new facts without retraining
 
-The art of building production AI systems is **orchestrating these layers together** — loading the right information into the right memory tier at the right time.
+The art of building production AI systems is **orchestrating these layers together**  loading the right information into the right memory tier at the right time.
 
 In Part 6, we will cross the bridge from internal to external memory, building complete RAG systems that extend AI memory far beyond what any context window can hold.
 
@@ -1314,7 +1314,7 @@ if __name__ == "__main__":
 
 ### "Efficient Transformers: A Survey" (Tay et al., 2022)
 
-Comprehensive taxonomy of efficient attention methods. Key insight: there is no single "best" method — the right choice depends on your task, hardware, and constraints.
+Comprehensive taxonomy of efficient attention methods. Key insight: there is no single "best" method  the right choice depends on your task, hardware, and constraints.
 
 ### "FlashAttention" (Dao et al., 2022)
 
@@ -1362,7 +1362,7 @@ Systematic evidence of the U-shaped retrieval curve. Models excel at beginning a
 
 ### What We Learned
 
-1. **The quadratic wall is real.** Standard attention costs O(n^2). Doubling context length quadruples cost — the fundamental reason context windows have limits.
+1. **The quadratic wall is real.** Standard attention costs O(n^2). Doubling context length quadruples cost  the fundamental reason context windows have limits.
 
 2. **KV cache is the silent memory killer.** For large models serving many users, KV cache often consumes more GPU memory than model weights. GQA and quantization are essential.
 
@@ -1382,14 +1382,14 @@ Systematic evidence of the U-shaped retrieval curve. Models excel at beginning a
 
 In **Part 6: Vector Databases and Similarity Search**, we cross the bridge from internal to external memory:
 
-- **Vector embeddings in production** — how to embed documents, queries, and structured data
-- **Similarity search algorithms** — exact search, ANN, HNSW, IVF, product quantization
-- **Vector database architectures** — Pinecone, Weaviate, Qdrant, Chroma, pgvector
-- **Building a complete indexing pipeline** — chunking, embedding models, metadata filtering
-- **Project** — Build a semantic search engine from scratch with HNSW indexing
+- **Vector embeddings in production**  how to embed documents, queries, and structured data
+- **Similarity search algorithms**  exact search, ANN, HNSW, IVF, product quantization
+- **Vector database architectures**  Pinecone, Weaviate, Qdrant, Chroma, pgvector
+- **Building a complete indexing pipeline**  chunking, embedding models, metadata filtering
+- **Project**  Build a semantic search engine from scratch with HNSW indexing
 
-We move from the model's internal memory to the vast world of external knowledge stores — the technology that makes RAG possible.
+We move from the model's internal memory to the vast world of external knowledge stores  the technology that makes RAG possible.
 
 ---
 
-*Next up: [Part 6 — Vector Databases and Similarity Search: Building the External Memory Layer](#)*
+*Next up: [Part 6  Vector Databases and Similarity Search: Building the External Memory Layer](#)*

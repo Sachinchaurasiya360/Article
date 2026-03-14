@@ -1,8 +1,8 @@
-# Apache Kafka Deep Dive — Part 3: Replication Deep Dive — ISR, Leader Election, and Durability
+# Apache Kafka Deep Dive  Part 3: Replication Deep Dive  ISR, Leader Election, and Durability
 
 ---
 
-**Series:** Apache Kafka Deep Dive — From First Principles to Planet-Scale Event Streaming
+**Series:** Apache Kafka Deep Dive  From First Principles to Planet-Scale Event Streaming
 **Part:** 3 of 10
 **Audience:** Senior backend engineers, distributed systems engineers, data platform architects
 **Reading time:** ~45 minutes
@@ -13,7 +13,7 @@
 
 Part 1 established the distributed log abstraction: why Kafka treats the append-only log as a first-class systems primitive, how sequential I/O enables millions of writes per second, and how partitioning enables horizontal scaling. Part 2 covered the broker's internal architecture: the network thread pool, IO thread pool, the controller role, and the migration from ZooKeeper-based metadata to KRaft consensus.
 
-This part builds directly on that foundation. When we say "controller" here, we mean the KRaft controller (or ZooKeeper-based controller in older deployments) from Part 2. When we say "partition leader," we mean the single broker that owns the partition's write path, which we introduced in Part 1. Everything in this part is about how Kafka keeps copies of your data alive across broker failures — and what the word "durable" actually means in practice.
+This part builds directly on that foundation. When we say "controller" here, we mean the KRaft controller (or ZooKeeper-based controller in older deployments) from Part 2. When we say "partition leader," we mean the single broker that owns the partition's write path, which we introduced in Part 1. Everything in this part is about how Kafka keeps copies of your data alive across broker failures  and what the word "durable" actually means in practice.
 
 ---
 
@@ -21,17 +21,17 @@ This part builds directly on that foundation. When we say "controller" here, we 
 
 ### 1.1 Why Replicate: Single Point of Failure, Durability, Availability
 
-A partition stored on a single broker is a liability. Disks fail. Kernel panics happen. Network cards stop responding. A broker running a JVM with a 16GB heap can stall for 30 seconds during a full GC cycle. If that broker is the only place your data lives, those 30 seconds mean your partition is unavailable for reads and writes — and if the broker fails entirely, your data is gone.
+A partition stored on a single broker is a liability. Disks fail. Kernel panics happen. Network cards stop responding. A broker running a JVM with a 16GB heap can stall for 30 seconds during a full GC cycle. If that broker is the only place your data lives, those 30 seconds mean your partition is unavailable for reads and writes  and if the broker fails entirely, your data is gone.
 
 Replication solves three distinct problems simultaneously:
 
-**Durability** — the property that committed data is not lost. A record acknowledged by Kafka must survive hardware failure. A single broker's page cache does not survive power loss. A disk does not survive a head crash. Replication distributes the data across independent failure domains so that no single hardware event can destroy it.
+**Durability**  the property that committed data is not lost. A record acknowledged by Kafka must survive hardware failure. A single broker's page cache does not survive power loss. A disk does not survive a head crash. Replication distributes the data across independent failure domains so that no single hardware event can destroy it.
 
-**Availability** — the property that the system remains operational when components fail. With a single broker, broker death means partition unavailability. With replicas on other brokers, another broker can take over the partition within seconds.
+**Availability**  the property that the system remains operational when components fail. With a single broker, broker death means partition unavailability. With replicas on other brokers, another broker can take over the partition within seconds.
 
-**Read scalability** — a secondary property. While Kafka 2.4+ supports follower reads (fetch from the nearest ISR member), the primary motivation for Kafka's replication design was durability and availability, not read throughput. Part 7 covers follower reads in depth.
+**Read scalability**  a secondary property. While Kafka 2.4+ supports follower reads (fetch from the nearest ISR member), the primary motivation for Kafka's replication design was durability and availability, not read throughput. Part 7 covers follower reads in depth.
 
-The tradeoff is latency. Replication means a write is not "done" until multiple brokers have received it. The question of exactly when the write is "done" — and how many brokers must acknowledge it — is the core tension that the rest of this part addresses.
+The tradeoff is latency. Replication means a write is not "done" until multiple brokers have received it. The question of exactly when the write is "done"  and how many brokers must acknowledge it  is the core tension that the rest of this part addresses.
 
 ### 1.2 Kafka's Replication Model: Leader-Follower
 
@@ -41,7 +41,7 @@ All writes go to the leader. A producer sending a `ProduceRequest` for partition
 
 All reads go to the leader (by default). Consumers issue `FetchRequests` to the partition leader. This is a deliberate design choice: reads from the leader see the most up-to-date committed data, and it simplifies consistency reasoning. Followers do not serve consumer requests under the default configuration.
 
-Followers replicate by issuing `FetchRequests` to the leader, identical in structure to consumer fetches. They receive batches of records in offset order and append them to their local log. This fetch-based pull model is central to how Kafka manages replication without complex push-side state management — we cover it in detail in Section 2.
+Followers replicate by issuing `FetchRequests` to the leader, identical in structure to consumer fetches. They receive batches of records in offset order and append them to their local log. This fetch-based pull model is central to how Kafka manages replication without complex push-side state management  we cover it in detail in Section 2.
 
 The replica set for a partition is determined at topic creation time and stored in the cluster metadata. The ordered list of brokers assigned to a partition is called the **replica assignment**. The first broker in that list is called the **preferred leader**.
 
@@ -51,7 +51,7 @@ The **replication factor (RF)** is the number of copies of each partition's data
 
 **RF=1**: One copy. No redundancy. The partition data exists only on the leader broker. Any failure of that broker results in data loss or prolonged unavailability. Suitable only for development environments or topics where data loss is explicitly acceptable (e.g., session data that can be regenerated).
 
-**RF=2**: Two copies. Survives one broker failure. The partition can tolerate the loss of one broker — either the leader or the single follower — and remain operational. However, during the period when a follower is down and the leader is the only copy, a subsequent leader failure means data loss. RF=2 is a minimum for production environments with low-risk topics.
+**RF=2**: Two copies. Survives one broker failure. The partition can tolerate the loss of one broker  either the leader or the single follower  and remain operational. However, during the period when a follower is down and the leader is the only copy, a subsequent leader failure means data loss. RF=2 is a minimum for production environments with low-risk topics.
 
 **RF=3**: Three copies. Survives two broker failures (though usually you only configure `min.insync.replicas=2`, which tolerates one failure before rejecting writes). This is the recommended production configuration for any topic where data loss is unacceptable. LinkedIn, Confluent, and most large-scale Kafka operators run RF=3 for their critical topics.
 
@@ -66,7 +66,7 @@ RF=3 is not just about surviving individual broker failures. It's about survivin
 | 3  | 2 broker failures (with min.isr=2, tolerates 1 before rejecting) | 3x | Moderate | All critical production topics |
 | 4+ | 3+ broker failures               | 4x+              | Higher               | Regulated industries, cross-DC setups |
 
-Note that "tolerated failures" and "write availability" are different. RF=3 with `min.insync.replicas=2` tolerates 1 broker failure while keeping writes alive. If 2 brokers fail simultaneously, writes are rejected (but no data is lost). If you want writes to survive 2 failures, you need RF=5 with `min.insync.replicas=3` — at that point you're approaching Paxos territory in cost.
+Note that "tolerated failures" and "write availability" are different. RF=3 with `min.insync.replicas=2` tolerates 1 broker failure while keeping writes alive. If 2 brokers fail simultaneously, writes are rejected (but no data is lost). If you want writes to survive 2 failures, you need RF=5 with `min.insync.replicas=3`  at that point you're approaching Paxos territory in cost.
 
 ---
 
@@ -76,7 +76,7 @@ Note that "tolerated failures" and "write availability" are different. RF=3 with
 
 Followers are consumers of the partition leader. This is the key insight into Kafka's replication design: the mechanism followers use to replicate is structurally identical to the mechanism consumers use to read data. Both issue `FetchRequests`. Both receive batches of records in response. Both track their position in the log (the offset they have fetched up to). The difference is in what the leader does with the information.
 
-This architectural choice pays several dividends. It reuses the same code path for both replication and consumption. It means the leader doesn't need to push data to followers or maintain per-follower send buffers. And it means follower replication can benefit from the same zero-copy optimization (`sendfile`) that consumer reads use — the kernel transfers data from the page cache file descriptor directly to the network socket without a userspace copy.
+This architectural choice pays several dividends. It reuses the same code path for both replication and consumption. It means the leader doesn't need to push data to followers or maintain per-follower send buffers. And it means follower replication can benefit from the same zero-copy optimization (`sendfile`) that consumer reads use  the kernel transfers data from the page cache file descriptor directly to the network socket without a userspace copy.
 
 Each follower broker runs one `ReplicaFetcherThread` per leader broker it is replicating from. If broker 2 is a follower for 50 partitions whose leader is broker 1, and 30 partitions whose leader is broker 3, broker 2 runs two `ReplicaFetcherThread` instances: one that fetches from broker 1 (batching requests for all 50 partitions) and one that fetches from broker 3 (batching for the 30 partitions). This broker-level batching is critical for efficient replication in large clusters.
 
@@ -85,7 +85,7 @@ Each follower broker runs one `ReplicaFetcherThread` per leader broker it is rep
 A follower's `FetchRequest` to the leader includes:
 
 - `replica_id`: Set to the follower's broker ID (a non-negative integer). Consumer `FetchRequests` use `replica_id=-1`, which is how the leader distinguishes a follower fetch from a consumer fetch. This distinction matters: follower fetches update the leader's replica tracking state; consumer fetches do not.
-- Per-partition fetch data: for each partition this follower is replicating, the request includes the `partition_id` and the `fetch_offset` — the log-end offset of the follower's local copy, which is the offset from which it wants the leader to start sending records.
+- Per-partition fetch data: for each partition this follower is replicating, the request includes the `partition_id` and the `fetch_offset`  the log-end offset of the follower's local copy, which is the offset from which it wants the leader to start sending records.
 - `max_bytes`: total bytes the follower is willing to receive across all partitions in this request.
 - `max_wait_ms` and `min_bytes`: the follower will wait up to `max_wait_ms` milliseconds if there are fewer than `min_bytes` available, allowing the leader to batch more data before responding. The default `replica.fetch.wait.max.ms` is 500ms.
 
@@ -171,19 +171,19 @@ sequenceDiagram
 
 The **Log-End Offset (LEO)** is the offset of the next message to be written. If a partition's log currently contains messages at offsets 0 through 1499, the LEO is 1500. It is the highest offset in the log plus one.
 
-Every replica — leader and followers alike — has its own LEO representing the state of its local copy of the partition log. The leader's LEO is always at or ahead of any follower's LEO, because followers replicate from the leader.
+Every replica  leader and followers alike  has its own LEO representing the state of its local copy of the partition log. The leader's LEO is always at or ahead of any follower's LEO, because followers replicate from the leader.
 
-The leader also tracks each follower's LEO. When a follower fetches with `fetch_offset=1450`, the leader records that follower's LEO as 1450 — the follower has confirmed it has records up through offset 1449.
+The leader also tracks each follower's LEO. When a follower fetches with `fetch_offset=1450`, the leader records that follower's LEO as 1450  the follower has confirmed it has records up through offset 1449.
 
 ### 3.2 High Watermark (HW)
 
 The **High Watermark (HW)** is the highest offset that has been replicated to all members of the ISR. It represents the "committed" frontier: the offset up to which all ISR replicas have a consistent copy of the data.
 
-Consumers can only read records up to (but not including) the HW. A consumer sees records at offsets 0 through HW-1. Records between HW and the leader's LEO exist in the leader's log but are not yet visible to consumers — they are "uncommitted" and could theoretically be lost if the leader fails before they are replicated.
+Consumers can only read records up to (but not including) the HW. A consumer sees records at offsets 0 through HW-1. Records between HW and the leader's LEO exist in the leader's log but are not yet visible to consumers  they are "uncommitted" and could theoretically be lost if the leader fails before they are replicated.
 
 ### 3.3 Why the HW Matters
 
-Consider what happens without the HW constraint. A producer sends record R at offset 1500. The leader appends it (leader LEO = 1501). A consumer fetches and reads R. Now the leader fails before any follower has replicated offset 1500. A follower is elected leader. Its LEO is 1499. Record R is gone — but the consumer already processed it.
+Consider what happens without the HW constraint. A producer sends record R at offset 1500. The leader appends it (leader LEO = 1501). A consumer fetches and reads R. Now the leader fails before any follower has replicated offset 1500. A follower is elected leader. Its LEO is 1499. Record R is gone  but the consumer already processed it.
 
 This is a phantom read: the consumer observed a record that the system subsequently lost. The HW prevents this by ensuring consumers only see records that have been replicated to all ISR members, meaning a subsequent leader election (which always promotes an ISR member) will not lose those records.
 
@@ -196,7 +196,7 @@ The leader advances the HW based on the follower fetch positions it tracks. Spec
 3. The leader recomputes the minimum LEO across all ISR members.
 4. The HW is set to `min(ISR member LEOs)`.
 
-In practice, the HW is bounded by the slowest ISR member. If one follower is consistently behind, it suppresses the HW, reducing consumer read availability. This is why ISR health directly affects consumer throughput even when producers are writing successfully — a lagging ISR member that stays within `replica.lag.time.max.ms` will slow down consumer reads without being ejected from the ISR.
+In practice, the HW is bounded by the slowest ISR member. If one follower is consistently behind, it suppresses the HW, reducing consumer read availability. This is why ISR health directly affects consumer throughput even when producers are writing successfully  a lagging ISR member that stays within `replica.lag.time.max.ms` will slow down consumer reads without being ejected from the ISR.
 
 ### 3.5 The HW Propagation Lag: One Extra Round-Trip
 
@@ -275,7 +275,7 @@ The pattern is clear: the HW advances one round-trip behind the leader's LEO. Wi
 
 ### 3.6 Epoch-Based Leader Tracking: Leader Epoch
 
-Prior to Kafka 0.11, there was a subtle correctness problem in the replication protocol. When a follower was elected leader after the old leader failed, it didn't know whether the old leader had written records beyond what the follower had replicated. The follower-turned-leader would begin accepting writes from its own LEO — but the old leader might have written (and possibly acknowledged) records at higher offsets that were now orphaned.
+Prior to Kafka 0.11, there was a subtle correctness problem in the replication protocol. When a follower was elected leader after the old leader failed, it didn't know whether the old leader had written records beyond what the follower had replicated. The follower-turned-leader would begin accepting writes from its own LEO  but the old leader might have written (and possibly acknowledged) records at higher offsets that were now orphaned.
 
 When the old leader recovered and rejoined as a follower, it needed to truncate its log to match the new leader. But how far to truncate? The old leader would query the new leader's HW and truncate to that. This was correct in simple failure scenarios but could lead to log divergence in specific split-brain edge cases, resulting in data that appeared committed being silently discarded.
 
@@ -313,13 +313,13 @@ Without Leader Epoch, the follower might have kept records 1451-1480 that were w
 
 The **In-Sync Replica set (ISR)** is the subset of a partition's replicas that are currently considered "in sync" with the leader. "In sync" means the replica has recently fetched from the leader and has not fallen significantly behind.
 
-The ISR is a dynamic set. At topic creation, all replicas start in the ISR. As follower behavior changes — due to GC pauses, disk saturation, network issues — replicas are evicted from and readmitted to the ISR in real time. The leader manages ISR membership and persists changes to the cluster metadata (ZooKeeper or KRaft log, depending on version).
+The ISR is a dynamic set. At topic creation, all replicas start in the ISR. As follower behavior changes  due to GC pauses, disk saturation, network issues  replicas are evicted from and readmitted to the ISR in real time. The leader manages ISR membership and persists changes to the cluster metadata (ZooKeeper or KRaft log, depending on version).
 
 The ISR is the fundamental unit of Kafka's durability guarantee. A record is **committed** when it is written to all members of the ISR. The HW marks the committed frontier. Consumers only see committed records.
 
 ### 4.2 ISR Join Condition
 
-A follower is eligible to join (or rejoin) the ISR when it has caught up to within `replica.lag.time.max.ms` of the leader. In practice, "caught up" means the follower's LEO equals the leader's LEO — the follower has all records the leader has at that moment.
+A follower is eligible to join (or rejoin) the ISR when it has caught up to within `replica.lag.time.max.ms` of the leader. In practice, "caught up" means the follower's LEO equals the leader's LEO  the follower has all records the leader has at that moment.
 
 The leader continuously monitors follower fetch positions. When a follower's LEO reaches the leader's LEO (meaning the follower is fully caught up), the leader adds it back to the ISR and updates the cluster metadata. This triggers an `IsrExpandsPerSec` metric increment.
 
@@ -363,11 +363,11 @@ T+46s: Broker 3 LEO == leader LEO.
 ```
 
 Relevant JMX metrics:
-- `kafka.server:type=ReplicaManager,name=IsrShrinksPerSec` — rate of ISR shrinkage events
-- `kafka.server:type=ReplicaManager,name=IsrExpandsPerSec` — rate of ISR expansion events
-- `kafka.server:type=ReplicaManager,name=UnderReplicatedPartitions` — count of partitions with ISR < RF
+- `kafka.server:type=ReplicaManager,name=IsrShrinksPerSec`  rate of ISR shrinkage events
+- `kafka.server:type=ReplicaManager,name=IsrExpandsPerSec`  rate of ISR expansion events
+- `kafka.server:type=ReplicaManager,name=UnderReplicatedPartitions`  count of partitions with ISR < RF
 
-During the 15-second window from T+31s to T+46s, the partition has ISR={1,2} with RF=3. The `UnderReplicatedPartitions` metric is non-zero. Any monitoring alert on this metric should fire. This is not a crisis — it's expected during rolling restarts and occasional GC — but sustained non-zero URP is a red flag.
+During the 15-second window from T+31s to T+46s, the partition has ISR={1,2} with RF=3. The `UnderReplicatedPartitions` metric is non-zero. Any monitoring alert on this metric should fire. This is not a crisis  it's expected during rolling restarts and occasional GC  but sustained non-zero URP is a red flag.
 
 ### 4.5 ISR and `acks=all`: The Degradation Trap
 
@@ -379,9 +379,9 @@ The `acks` producer configuration controls how many replicas must acknowledge a 
 
 Here is the critical subtlety: **`acks=all` waits for the current ISR, not all replicas.**
 
-If the ISR shrinks to `{leader}` — just the leader broker — then `acks=all` degrades to `acks=1`. The producer's `ProduceRequest` is acknowledged as soon as the leader writes to its log, with no replication having occurred. If the leader fails a millisecond later, the data is gone, despite the producer having used `acks=all`.
+If the ISR shrinks to `{leader}`  just the leader broker  then `acks=all` degrades to `acks=1`. The producer's `ProduceRequest` is acknowledged as soon as the leader writes to its log, with no replication having occurred. If the leader fails a millisecond later, the data is gone, despite the producer having used `acks=all`.
 
-This is not a bug. It is documented behavior. The ISR represents the set of replicas Kafka trusts to be in sync. If followers are down or lagging, Kafka cannot wait for them — that would block producers indefinitely. Instead, it proceeds with the replicas that are available and in-sync.
+This is not a bug. It is documented behavior. The ISR represents the set of replicas Kafka trusts to be in sync. If followers are down or lagging, Kafka cannot wait for them  that would block producers indefinitely. Instead, it proceeds with the replicas that are available and in-sync.
 
 The implication is that `acks=all` alone is insufficient for durability guarantees. You must pair it with `min.insync.replicas`.
 
@@ -423,7 +423,7 @@ retries=Integer.MAX_VALUE
 
 What this guarantees:
 - **Tolerates 1 broker failure**: if 1 of 3 brokers is down, the ISR is {2 remaining brokers}, ISR size (2) = min.isr (2), writes continue.
-- **Rejects writes if 2 brokers are down**: ISR would be {1}, ISR size (1) < min.isr (2), `NotEnoughReplicasException` — no silent data loss.
+- **Rejects writes if 2 brokers are down**: ISR would be {1}, ISR size (1) < min.isr (2), `NotEnoughReplicasException`  no silent data loss.
 - **No data loss**: every acknowledged record is on at least 2 brokers.
 
 | ISR Size | min.isr | acks | Result |
@@ -452,7 +452,7 @@ This is why high-throughput production systems tune `replica.lag.time.max.ms` ca
 
 The **preferred leader** is the first broker listed in the partition's replica assignment. It is "preferred" because it was originally chosen by Kafka's assignment algorithm to distribute leader responsibilities evenly across brokers.
 
-When a topic is created with RF=3 and 6 partitions across 3 brokers, the preferred leaders are distributed roughly evenly — 2 leader partitions per broker. This balances the write traffic, since all writes go to the partition leader.
+When a topic is created with RF=3 and 6 partitions across 3 brokers, the preferred leaders are distributed roughly evenly  2 leader partitions per broker. This balances the write traffic, since all writes go to the partition leader.
 
 ```
 Partition 0: replicas=[1,2,3], preferred leader=Broker 1
@@ -469,10 +469,10 @@ Over time, broker restarts cause leadership to migrate away from preferred leade
 
 **Preferred leader election** moves leadership back to the preferred replica when the preferred replica is alive and in the ISR. It can be triggered:
 
-- Automatically, if `auto.leader.rebalance.enable=true` (default: true) — Kafka's controller periodically checks leader distribution and triggers preferred leader elections to rebalance.
+- Automatically, if `auto.leader.rebalance.enable=true` (default: true)  Kafka's controller periodically checks leader distribution and triggers preferred leader elections to rebalance.
 - Manually, via `kafka-leader-election.sh --election-type PREFERRED`.
 
-Preferred leader election is a "clean" election — the preferred replica is already in the ISR and fully caught up. There is no data loss risk. The election is simply a metadata update: the controller sends `LeaderAndIsrRequests` informing all replicas that the preferred replica is now the leader.
+Preferred leader election is a "clean" election  the preferred replica is already in the ISR and fully caught up. There is no data loss risk. The election is simply a metadata update: the controller sends `LeaderAndIsrRequests` informing all replicas that the preferred replica is now the leader.
 
 The latency impact is minimal: a brief period during which the new leader is being set up, typically under a second.
 
@@ -489,12 +489,12 @@ In this scenario, there is no safe choice. Every available replica is behind the
 The configuration `unclean.leader.election.enable` controls the behavior:
 
 **`unclean.leader.election.enable=false` (default since Kafka 0.11):**
-The partition remains **UNAVAILABLE** — no reads, no writes — until an ISR member recovers. This is the CP side of the CAP tradeoff: consistency is preserved (no data loss), availability is sacrificed.
+The partition remains **UNAVAILABLE**  no reads, no writes  until an ISR member recovers. This is the CP side of the CAP tradeoff: consistency is preserved (no data loss), availability is sacrificed.
 
 The partition will stay down indefinitely if the ISR members are truly dead (e.g., all three brokers in a 3-broker cluster running RF=3 lost their disks simultaneously). Recovery requires manual intervention: replace the hardware, restore from backup, or explicitly enable unclean election.
 
 **`unclean.leader.election.enable=true`:**
-An out-of-sync replica is elected leader. The partition becomes **AVAILABLE**, but records that were acknowledged to producers but not replicated to this follower are **permanently lost**. Consumers will see a gap in the log. The offsets that existed on the dead leader but not on the new leader simply don't exist anymore — the new leader's records start from where the out-of-sync follower left off.
+An out-of-sync replica is elected leader. The partition becomes **AVAILABLE**, but records that were acknowledged to producers but not replicated to this follower are **permanently lost**. Consumers will see a gap in the log. The offsets that existed on the dead leader but not on the new leader simply don't exist anymore  the new leader's records start from where the out-of-sync follower left off.
 
 This is the AP side: availability is preserved, but consistency (durability) is sacrificed.
 
@@ -541,7 +541,7 @@ The time from broker failure to partition availability depends on two components
 
 **Failure detection latency**: how quickly the controller learns the broker is dead.
 - ZooKeeper-based: ZooKeeper session timeout is `zookeeper.session.timeout.ms`, typically 6,000–18,000ms. The broker's ZooKeeper session doesn't expire until this timeout elapses after the last heartbeat. In the worst case, this adds 18 seconds of detection latency.
-- KRaft-based (Kafka 3.3+): The active controller receives heartbeats from all brokers. The default `broker.heartbeat.interval.ms` is 2,000ms and `broker.session.timeout.ms` is 9,000ms. In practice, failure detection is much faster — on the order of 1-3 seconds.
+- KRaft-based (Kafka 3.3+): The active controller receives heartbeats from all brokers. The default `broker.heartbeat.interval.ms` is 2,000ms and `broker.session.timeout.ms` is 9,000ms. In practice, failure detection is much faster  on the order of 1-3 seconds.
 
 **Election and propagation latency**: how quickly the controller processes the election and propagates the `LeaderAndIsrRequest`. For a single partition election, this is milliseconds. For thousands of partitions (see Section 5.6), it can be the bottleneck.
 
@@ -553,7 +553,7 @@ Total expected election latency:
 
 ### 5.6 Election Storm
 
-An **election storm** occurs when a large number of partition leaders fail simultaneously — for example, when an entire broker hosting many partition leaders dies, or when a network partition isolates a datacenter.
+An **election storm** occurs when a large number of partition leaders fail simultaneously  for example, when an entire broker hosting many partition leaders dies, or when a network partition isolates a datacenter.
 
 Consider a cluster with 3 brokers and 10,000 partitions per broker, RF=3. If Broker 1 dies and it is the preferred (and actual) leader for 3,333 partitions, the controller must process 3,333 leader elections. Even at 1ms per election, that's 3.3 seconds. In practice, controller processing time, metadata propagation, and batching behavior mean real-world election storms can take 30-60 seconds for tens of thousands of partitions.
 
@@ -594,7 +594,7 @@ Leader count: Broker 1=2, Broker 2=2, Broker 3=2 (balanced)
 
 ### 6.2 Rack-Aware Assignment
 
-The default algorithm assigns replicas across brokers but doesn't consider physical locality. In a multi-rack deployment, it's possible that all three replicas of a partition land on brokers in the same rack. A rack-level power or network failure would then take all replicas offline — defeating the purpose of RF=3.
+The default algorithm assigns replicas across brokers but doesn't consider physical locality. In a multi-rack deployment, it's possible that all three replicas of a partition land on brokers in the same rack. A rack-level power or network failure would then take all replicas offline  defeating the purpose of RF=3.
 
 **Rack-aware assignment** requires:
 1. Each broker configured with `broker.rack=<rack-id>`.
@@ -629,7 +629,7 @@ graph TB
 
 With this assignment:
 - Rack A fails: Partitions 0, 1, 2 each lose one replica (Broker 1). ISR shrinks from 3 to 2 for all partitions. With `min.insync.replicas=2`, writes continue. No data loss.
-- Rack A fails + Rack B fails: All partitions lose 2 replicas. ISR = {Rack C broker}. With `min.insync.replicas=2`, writes are rejected. But no data is lost — the Rack C broker has all committed records.
+- Rack A fails + Rack B fails: All partitions lose 2 replicas. ISR = {Rack C broker}. With `min.insync.replicas=2`, writes are rejected. But no data is lost  the Rack C broker has all committed records.
 
 Without rack-awareness, a rack failure could take all 3 replicas of a partition offline simultaneously, causing data unavailability or loss.
 
@@ -654,8 +654,8 @@ Topic: orders   PartitionCount: 6   ReplicationFactor: 3   Configs: min.insync.r
 
 Reading this output:
 - **Replicas**: the full replica assignment list. The first entry is the preferred leader.
-- **Isr**: current ISR. Partition 2 has ISR={3,2} — Broker 1 (a replica for partition 2) is out of the ISR. This is an under-replicated partition. The `UnderReplicatedPartitions` metric should be non-zero for this topic.
-- **Leader**: the current active leader. For partition 2, leader=3 matches the preferred leader (first in Replicas list) — Broker 3 was already the preferred leader.
+- **Isr**: current ISR. Partition 2 has ISR={3,2}  Broker 1 (a replica for partition 2) is out of the ISR. This is an under-replicated partition. The `UnderReplicatedPartitions` metric should be non-zero for this topic.
+- **Leader**: the current active leader. For partition 2, leader=3 matches the preferred leader (first in Replicas list)  Broker 3 was already the preferred leader.
 
 ### 6.4 Partition Reassignment
 
@@ -703,7 +703,7 @@ During reassignment, the partition's replica set is temporarily expanded (adding
 
 There is a common and dangerous misunderstanding about `acks=all`. It does not mean the record is written to disk. It means the record is written to the **OS page cache** (kernel buffer cache) of all ISR members.
 
-The page cache is memory. If a broker loses power — not a graceful restart, but a hard power loss — records in the page cache that haven't been flushed to disk are lost. The OS kernel's write-back mechanism flushes pages to disk on its own schedule, typically every 5-30 seconds (`dirty_expire_centisecs` on Linux).
+The page cache is memory. If a broker loses power  not a graceful restart, but a hard power loss  records in the page cache that haven't been flushed to disk are lost. The OS kernel's write-back mechanism flushes pages to disk on its own schedule, typically every 5-30 seconds (`dirty_expire_centisecs` on Linux).
 
 Kafka does not force synchronous disk flushes by default. The configuration `log.flush.interval.messages` and `log.flush.interval.ms` can be used to force periodic flushes, but Kafka's official documentation explicitly discourages relying on these, citing the performance cost and noting that replication is the preferred durability mechanism.
 
@@ -717,7 +717,7 @@ This is a conscious tradeoff: Kafka prioritizes throughput (avoiding synchronous
 |---------------|----------|------------------|------------------|
 | `acks=0` | Nothing | Any failure | Telemetry where loss is acceptable |
 | `acks=1` | Leader crash-restart (log on disk) | Leader power loss (page cache only) | Internal metrics, non-critical events |
-| `acks=all`, ISR=1 (min.isr not set or too low) | Same as acks=1 | Same as acks=1 | Misconfiguration — dangerous |
+| `acks=all`, ISR=1 (min.isr not set or too low) | Same as acks=1 | Same as acks=1 | Misconfiguration  dangerous |
 | `acks=all`, min.isr=2, RF=3 | Single broker power failure (2 copies survive) | Simultaneous power loss to 2+ brokers | Standard production |
 | `acks=all`, min.isr=2, RF=3, rack-aware | Rack-level failure | Simultaneous failure of 2 racks | High-availability production |
 | `acks=all`, min.isr=2, RF=3 + MirrorMaker 2 | Datacenter failure | Simultaneous datacenter failure | Disaster recovery setups |
@@ -731,9 +731,9 @@ These are the same thing in Kafka's model:
 
 With `acks=all`, acknowledgment and commitment happen simultaneously from the producer's perspective: the `ProduceResponse` comes back only after the message is in all ISR members.
 
-Non-committed messages — those between the HW and the leader's LEO — can be lost. They have been written to the leader's log and possibly some followers' logs, but not all ISR members. If the leader fails, the new leader (elected from the ISR) may not have these records. Consumers cannot see them because the HW is the visibility fence.
+Non-committed messages  those between the HW and the leader's LEO  can be lost. They have been written to the leader's log and possibly some followers' logs, but not all ISR members. If the leader fails, the new leader (elected from the ISR) may not have these records. Consumers cannot see them because the HW is the visibility fence.
 
-This is the correct behavior. A consumer that reads a non-committed message and the message is subsequently lost would observe a phantom read — a read of data that the system has no durable record of. Kafka's HW fence prevents this class of inconsistency entirely.
+This is the correct behavior. A consumer that reads a non-committed message and the message is subsequently lost would observe a phantom read  a read of data that the system has no durable record of. Kafka's HW fence prevents this class of inconsistency entirely.
 
 ### 7.4 Producer Retries and Ordering
 
@@ -757,26 +757,26 @@ The idempotent producer (`enable.idempotence=true`), covered in Part 6, uses seq
 Metric: kafka.server:type=ReplicaManager,name=UnderReplicatedPartitions
 Type: Gauge (count of partitions)
 Alert threshold: > 0 for more than 60 seconds
-Severity: HIGH — data is less durable than configured
+Severity: HIGH  data is less durable than configured
 ```
 
 URP is the single most important replication health metric. Any non-zero URP value means at least one partition has fewer replicas than it should. A brief URP during a rolling restart is expected and acceptable. Sustained URP indicates a follower that is down, lagging, or unable to catch up.
 
 Causes of sustained URP:
 - A broker is completely down (network failure, JVM crash).
-- A broker is running but its disks are full — it cannot append new records.
-- A broker has disk I/O saturation — it is falling behind and cannot catch up faster than the leader is writing.
+- A broker is running but its disks are full  it cannot append new records.
+- A broker has disk I/O saturation  it is falling behind and cannot catch up faster than the leader is writing.
 - A follower is experiencing severe GC pauses that keep it outside the `replica.lag.time.max.ms` window.
 
 ### 8.2 Under-MinISR Partitions
 
-Distinct from URP: **under-MinISR partitions** are partitions where the ISR size has fallen below `min.insync.replicas`. This is worse than URP — it means producers with `acks=all` are actively being rejected.
+Distinct from URP: **under-MinISR partitions** are partitions where the ISR size has fallen below `min.insync.replicas`. This is worse than URP  it means producers with `acks=all` are actively being rejected.
 
 ```
 Metric: kafka.server:type=ReplicaManager,name=UnderMinIsrPartitionCount
 Type: Gauge
 Alert threshold: > 0
-Severity: CRITICAL — produce requests are failing right now
+Severity: CRITICAL  produce requests are failing right now
 ```
 
 If this metric is non-zero, check:
@@ -793,7 +793,7 @@ Type: Rate (events per second)
 Alert: chronic IsrShrinksPerSec > 0 outside maintenance windows
 ```
 
-A small number of ISR shrink/expand events during rolling restarts is normal. Chronic ISR instability — shrinks and expands happening continuously during normal operation — indicates a structural problem with follower stability. Common causes:
+A small number of ISR shrink/expand events during rolling restarts is normal. Chronic ISR instability  shrinks and expands happening continuously during normal operation  indicates a structural problem with follower stability. Common causes:
 
 - **GC pauses** on follower brokers: tune JVM GC settings, consider ZGC or Shenandoah, increase `kafka_jvm_heap_opts`.
 - **Disk I/O contention**: the follower's disk is shared with log compaction, segment rolling, or other I/O-intensive operations.
@@ -852,13 +852,13 @@ kafka-leader-election.sh \
 
 ## Key Takeaways
 
-- **Followers are consumers**: Kafka's replication protocol reuses the `FetchRequest` mechanism — followers pull from leaders exactly as consumers do. This eliminates complex push-side state management and benefits from zero-copy I/O. The distinction is the non-negative `replica_id` field that signals follower behavior to the leader.
+- **Followers are consumers**: Kafka's replication protocol reuses the `FetchRequest` mechanism  followers pull from leaders exactly as consumers do. This eliminates complex push-side state management and benefits from zero-copy I/O. The distinction is the non-negative `replica_id` field that signals follower behavior to the leader.
 
-- **The HW is the consumer visibility fence**: consumers only read records up to the High Watermark — the offset confirmed by all ISR members. Records between HW and the leader's LEO are "uncommitted" and can be lost during leader failure. This prevents phantom reads.
+- **The HW is the consumer visibility fence**: consumers only read records up to the High Watermark  the offset confirmed by all ISR members. Records between HW and the leader's LEO are "uncommitted" and can be lost during leader failure. This prevents phantom reads.
 
 - **ISR is dynamic and shrinkage is normal**: ISR members are evicted on time-based criteria (`replica.lag.time.max.ms`, default 30s). A GC pause that exceeds this threshold causes ISR shrinkage. The ISR expands again when the follower catches up. Brief ISR instability is expected; chronic instability indicates follower problems.
 
-- **`acks=all` alone is not enough**: if the ISR shrinks to just the leader, `acks=all` degrades to `acks=1` — no replication, no redundancy. You must configure `min.insync.replicas` to set a floor below which Kafka rejects writes rather than accepting data with degraded durability.
+- **`acks=all` alone is not enough**: if the ISR shrinks to just the leader, `acks=all` degrades to `acks=1`  no replication, no redundancy. You must configure `min.insync.replicas` to set a floor below which Kafka rejects writes rather than accepting data with degraded durability.
 
 - **RF=3, min.isr=2, acks=all is the production gold standard**: this configuration tolerates one broker failure with writes continuing, rejects writes if two brokers fail (rather than silently accepting unredundant data), and guarantees acknowledged records are on at least two brokers.
 
@@ -874,15 +874,15 @@ kafka-leader-election.sh \
 
 | Concept | Mental Model |
 |---------|--------------|
-| Follower replication | Followers are consumers of the leader's log — same `FetchRequest` protocol, special `replica_id` field |
-| Log-End Offset (LEO) | The "write frontier" — where the next record will be written. Each replica has its own. |
-| High Watermark (HW) | The "read frontier" for consumers — the lowest LEO across all ISR members. Advances one round-trip behind the leader. |
-| ISR | The "trusted replicas" set. A record is committed when it's in all ISR members. Dynamic — shrinks and expands based on follower health. |
-| `acks=all` | "All currently trusted replicas must confirm" — not all replicas, not disk, just ISR page cache |
+| Follower replication | Followers are consumers of the leader's log  same `FetchRequest` protocol, special `replica_id` field |
+| Log-End Offset (LEO) | The "write frontier"  where the next record will be written. Each replica has its own. |
+| High Watermark (HW) | The "read frontier" for consumers  the lowest LEO across all ISR members. Advances one round-trip behind the leader. |
+| ISR | The "trusted replicas" set. A record is committed when it's in all ISR members. Dynamic  shrinks and expands based on follower health. |
+| `acks=all` | "All currently trusted replicas must confirm"  not all replicas, not disk, just ISR page cache |
 | `min.insync.replicas` | The ISR floor: below this, refuse writes rather than accept data with degraded durability |
-| Preferred leader | The replica Kafka originally intended to be leader — rebalancing restores leadership to the preferred list to maintain even write distribution |
-| Unclean leader election | The availability lever — elects a stale follower at the cost of data loss. CP vs AP decision made explicit. |
-| Leader Epoch | The log's "version counter" — used by recovering followers to find the safe truncation point without relying on potentially stale HW values |
+| Preferred leader | The replica Kafka originally intended to be leader  rebalancing restores leadership to the preferred list to maintain even write distribution |
+| Unclean leader election | The availability lever  elects a stale follower at the cost of data loss. CP vs AP decision made explicit. |
+| Leader Epoch | The log's "version counter"  used by recovering followers to find the safe truncation point without relying on potentially stale HW values |
 | Rack awareness | Cross-failure-domain distribution: guarantees that a rack failure hits at most one replica per partition |
 
 ---
@@ -897,11 +897,11 @@ Part 4 covers:
 
 - Consumer group internals: the Group Coordinator broker, the Group Leader consumer, and the `JoinGroup`/`SyncGroup` protocol
 - The rebalance lifecycle: what triggers a rebalance, what happens during one (the "stop the world" consumption pause), and how long it actually takes in production
-- Partition assignment strategies: `RangeAssignor`, `RoundRobinAssignor`, `StickyAssignor`, and `CooperativeStickyAssignor` — and why sticky assignment dramatically reduces rebalance impact
+- Partition assignment strategies: `RangeAssignor`, `RoundRobinAssignor`, `StickyAssignor`, and `CooperativeStickyAssignor`  and why sticky assignment dramatically reduces rebalance impact
 - Incremental cooperative rebalancing (KIP-429): how Kafka 2.4+ enables rolling partition hand-offs instead of full rebalance pauses
-- Consumer heartbeating: `heartbeat.interval.ms`, `session.timeout.ms`, `max.poll.interval.ms` — the triangle of consumer liveness detection and the subtle ways misconfiguration causes rebalance storms
+- Consumer heartbeating: `heartbeat.interval.ms`, `session.timeout.ms`, `max.poll.interval.ms`  the triangle of consumer liveness detection and the subtle ways misconfiguration causes rebalance storms
 - Static group membership (KIP-345): how to assign stable member IDs that survive consumer restarts without triggering a rebalance
 - The `__consumer_offsets` internal topic: how offset commits are stored, the compaction policy, and what happens when offset commits fail
 - Diagnosing and fixing rebalance storms in production
 
-If you've ever seen consumer lag spike during a deployment and wondered why all 20 consumer instances stopped processing for 45 seconds — Part 4 is the answer.
+If you've ever seen consumer lag spike during a deployment and wondered why all 20 consumer instances stopped processing for 45 seconds  Part 4 is the answer.

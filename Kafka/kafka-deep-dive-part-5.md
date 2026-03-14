@@ -1,8 +1,8 @@
-# Apache Kafka Deep Dive — Part 5: Storage Engine — Segments, Indexes, Log Compaction, and Retention
+# Apache Kafka Deep Dive  Part 5: Storage Engine  Segments, Indexes, Log Compaction, and Retention
 
 ---
 
-**Series:** Apache Kafka Deep Dive — From First Principles to Planet-Scale Event Streaming
+**Series:** Apache Kafka Deep Dive  From First Principles to Planet-Scale Event Streaming
 **Part:** 5 of 10
 **Audience:** Senior backend engineers, distributed systems engineers, data platform architects
 **Reading time:** ~45 minutes
@@ -13,7 +13,7 @@
 
 Parts 0–4 of this series established the foundations. Part 0 covered why Kafka exists and the distributed log abstraction. Part 1 introduced the concept of log segments at a high level. Parts 2–3 examined broker architecture and the replication protocol (ISR, leader election, high watermarks). Part 4 dove into consumer group coordination and rebalancing mechanics.
 
-This part goes much deeper into the storage engine than any of the preceding articles. When Part 1 told you "Kafka stores messages in segments on disk," this is where you learn exactly what that means — byte by byte, file by file, algorithm by algorithm.
+This part goes much deeper into the storage engine than any of the preceding articles. When Part 1 told you "Kafka stores messages in segments on disk," this is where you learn exactly what that means  byte by byte, file by file, algorithm by algorithm.
 
 If you have not read the earlier parts, the minimum context you need is this: Kafka organizes data into **topics**, partitions those topics into **partitions**, and each partition is a totally ordered, immutable, append-only log. Each broker stores the partition data it is responsible for on local disk. That local storage is what we are dissecting today.
 
@@ -29,7 +29,7 @@ Every partition replica stored on a broker gets its own directory on disk. The p
 {log.dirs}/{topic-name}-{partition-number}/
 ```
 
-Where `log.dirs` is the broker configuration property pointing to one or more mount points (e.g., `/var/kafka-logs`). If you configure multiple `log.dirs` entries — which you should for I/O parallelism across multiple disks — Kafka distributes partitions across them using a round-robin assignment during partition creation.
+Where `log.dirs` is the broker configuration property pointing to one or more mount points (e.g., `/var/kafka-logs`). If you configure multiple `log.dirs` entries  which you should for I/O parallelism across multiple disks  Kafka distributes partitions across them using a round-robin assignment during partition creation.
 
 For a topic named `orders` with 6 partitions, and a broker hosting partitions 0, 2, and 5, the directory layout would be:
 
@@ -48,33 +48,33 @@ Inside each partition directory you will find a set of file groups, one group pe
 
 | Extension | Purpose |
 |---|---|
-| `.log` | The actual message data — record batches stored sequentially |
+| `.log` | The actual message data  record batches stored sequentially |
 | `.index` | Sparse offset index mapping relative offsets to file positions in `.log` |
 | `.timeindex` | Sparse timestamp index mapping timestamps to offsets |
 | `.txnindex` | Aborted transaction index used by read_committed consumers |
 | `leader-epoch-checkpoint` | Per-partition file tracking leader epoch history for ISR divergence detection |
 | `partition.metadata` | Topic ID and partition ID, written during topic creation |
 
-The `leader-epoch-checkpoint` file is not a segment file but a partition-level metadata file. It stores a list of `(epoch, start_offset)` pairs representing every leader epoch transition the partition has experienced. This is critical for the replication protocol's leader epoch verification during follower fetch requests — covered in Part 3.
+The `leader-epoch-checkpoint` file is not a segment file but a partition-level metadata file. It stores a list of `(epoch, start_offset)` pairs representing every leader epoch transition the partition has experienced. This is critical for the replication protocol's leader epoch verification during follower fetch requests  covered in Part 3.
 
 ### 1.3 Segment Naming Convention
 
-The filename of every segment file (before the extension) is the **base offset** of that segment — the offset of the first record in that segment — zero-padded to exactly 20 digits. This is not arbitrary. Twenty digits is sufficient to represent any 64-bit unsigned integer (max value 18,446,744,073,709,551,615 — 20 digits), and zero-padding ensures that lexicographic sort order equals numeric sort order. This lets the broker find the correct segment for a given offset with a simple binary search on the filename list.
+The filename of every segment file (before the extension) is the **base offset** of that segment  the offset of the first record in that segment  zero-padded to exactly 20 digits. This is not arbitrary. Twenty digits is sufficient to represent any 64-bit unsigned integer (max value 18,446,744,073,709,551,615  20 digits), and zero-padding ensures that lexicographic sort order equals numeric sort order. This lets the broker find the correct segment for a given offset with a simple binary search on the filename list.
 
 Examples of segment filenames:
-- `00000000000000000000.log` — the first segment, containing offsets starting at 0
-- `00000000000001048576.log` — a segment whose first record has offset 1,048,576
-- `00000000000002097152.log` — a segment whose first record has offset 2,097,152
+- `00000000000000000000.log`  the first segment, containing offsets starting at 0
+- `00000000000001048576.log`  a segment whose first record has offset 1,048,576
+- `00000000000002097152.log`  a segment whose first record has offset 2,097,152
 
 ### 1.4 Active Segment vs. Closed Segments
 
-At any given moment, exactly one segment per partition is the **active segment**: the segment currently being written to. All other segments are **closed** (also called "frozen" or "inactive") and are immutable — Kafka never modifies a closed segment's `.log` file.
+At any given moment, exactly one segment per partition is the **active segment**: the segment currently being written to. All other segments are **closed** (also called "frozen" or "inactive") and are immutable  Kafka never modifies a closed segment's `.log` file.
 
 This immutability is architecturally crucial. It means:
 
 1. Closed segments can be safely read by multiple consumers concurrently with no locking.
-2. The OS page cache for closed segments is stable — pages are not being invalidated by writes.
-3. Replication of closed segments is trivially consistent — a follower that has fetched a segment fully will never see that segment change.
+2. The OS page cache for closed segments is stable  pages are not being invalidated by writes.
+3. Replication of closed segments is trivially consistent  a follower that has fetched a segment fully will never see that segment change.
 4. Log compaction and deletion operate on closed segments only; the active segment is never compacted or deleted mid-write.
 
 The active segment has an open file descriptor and accepts `append` operations. Its index files are also open and being extended as data is written.
@@ -144,7 +144,7 @@ Followed by: [Record 0][Record 1]...[Record N-1]
 
 - `BatchLength` measures from after the `BatchLength` field itself to the end of the batch. To compute the start of the next batch: `current_position + 8 (BaseOffset) + 4 (BatchLength field itself) + BatchLength`.
 - `Magic = 2` is the v2 record format introduced in Kafka 0.11 for exactly-once semantics. Earlier formats (magic 0 and 1) are no longer produced by modern clients.
-- `CRC32` covers everything from `Attributes` to the end of the batch. The `PartitionLeaderEpoch` and `Magic` fields are intentionally excluded from the CRC — they are broker-assigned metadata. `BaseOffset` and `BatchLength` are also excluded, allowing offset reassignment on the broker without CRC recalculation.
+- `CRC32` covers everything from `Attributes` to the end of the batch. The `PartitionLeaderEpoch` and `Magic` fields are intentionally excluded from the CRC  they are broker-assigned metadata. `BaseOffset` and `BatchLength` are also excluded, allowing offset reassignment on the broker without CRC recalculation.
 - `PartitionLeaderEpoch` is stamped by the leader when it receives the batch. Followers use it during epoch verification (see Part 3).
 - `ProducerID`, `ProducerEpoch`, and `BaseSequence` are the exactly-once metadata. For non-idempotent producers, all three are -1.
 - `LastOffsetDelta` is `(lastOffset - BaseOffset)`, which equals `RecordCount - 1` for a normal non-transactional batch. For control batches (commit/abort markers), it is always 0.
@@ -185,8 +185,8 @@ Consider a producer batch of 100 records. The offset deltas within that batch ar
 Varint encoding rules: values 0–127 encode in 1 byte. Values 128–16,383 encode in 2 bytes. Values 128^2 – 128^3-1 encode in 3 bytes. An absolute int64 offset like 5,000,000 would require 4 bytes in varint (it exceeds 16,383). But offset delta 47 (within a 100-record batch) encodes in 1 byte.
 
 Concrete savings per 100-record batch:
-- 100 timestamp deltas: ~1 byte each (deltas of 0–10ms) = 100 bytes total, vs. 800 bytes for absolute int64 timestamps — savings: 700 bytes
-- 100 offset deltas: 1 byte each = 100 bytes, vs. 800 bytes for absolute int64 offsets — savings: 700 bytes
+- 100 timestamp deltas: ~1 byte each (deltas of 0–10ms) = 100 bytes total, vs. 800 bytes for absolute int64 timestamps  savings: 700 bytes
+- 100 offset deltas: 1 byte each = 100 bytes, vs. 800 bytes for absolute int64 offsets  savings: 700 bytes
 - Net savings per 100-record batch: ~1,400 bytes, or ~14 bytes per record
 
 At a throughput of 1 million records/second, this translates to roughly 14 MB/s less disk I/O and 14 MB/s less network traffic. At scale, these savings compound significantly.
@@ -244,7 +244,7 @@ Why keep the header uncompressed? Because the broker needs to read `BaseOffset`,
 
 1. **Segment navigation**: `BatchLength` tells the broker where the next batch starts.
 2. **Time-based retention**: `MaxTimestamp` is consulted to determine segment age without decompressing every batch.
-3. **Offset index entries**: The index maps to physical byte positions, not record boundaries — the header provides the position anchor.
+3. **Offset index entries**: The index maps to physical byte positions, not record boundaries  the header provides the position anchor.
 4. **Consumer fetch response construction**: The broker can read batch headers to satisfy fetch requests without decompressing and recompressing payloads.
 
 This "header-visible, payload-opaque" design enables significant broker-side efficiency: the broker can route, index, and manage records without ever touching the compressed payload contents.
@@ -276,11 +276,11 @@ The two index files per segment exist to answer one question efficiently: **give
 
 ### 3.1 The `.index` File: Sparse Offset Index
 
-The `.index` file does **not** contain an entry for every record in the segment. If it did, the index for a 1 GB segment with 10-byte records would require 800 MB — larger than the segment itself.
+The `.index` file does **not** contain an entry for every record in the segment. If it did, the index for a 1 GB segment with 10-byte records would require 800 MB  larger than the segment itself.
 
-Instead, Kafka writes one index entry per `log.index.interval.bytes` (default 4,096 bytes) of log data. This means for a typical segment with 1 KB average record batches, you get one index entry roughly every 4 batches. The index is therefore **sparse** — it maps a sampled subset of offsets to their physical positions.
+Instead, Kafka writes one index entry per `log.index.interval.bytes` (default 4,096 bytes) of log data. This means for a typical segment with 1 KB average record batches, you get one index entry roughly every 4 batches. The index is therefore **sparse**  it maps a sampled subset of offsets to their physical positions.
 
-The trade-off: lookup is not O(1) but O(log(N) + scan). The scan distance is bounded by `log.index.interval.bytes` — you never scan more than 4KB of log data to find your target offset.
+The trade-off: lookup is not O(1) but O(log(N) + scan). The scan distance is bounded by `log.index.interval.bytes`  you never scan more than 4KB of log data to find your target offset.
 
 ### 3.2 Index Entry Format
 
@@ -295,11 +295,11 @@ Index Entry (8 bytes):
 └─────────────────────────┴──────────────────────────────────────┘
 ```
 
-Relative offsets (not absolute) are stored because the absolute offset could be very large (billions), requiring int64. By storing the delta from the segment's base offset, which is bounded by the maximum number of records in a segment (at 1 KB/record and 1 GB segment, at most ~1,000,000 records), int32 is sufficient — saving 4 bytes per entry.
+Relative offsets (not absolute) are stored because the absolute offset could be very large (billions), requiring int64. By storing the delta from the segment's base offset, which is bounded by the maximum number of records in a segment (at 1 KB/record and 1 GB segment, at most ~1,000,000 records), int32 is sufficient  saving 4 bytes per entry.
 
 Similarly, physical position uses int32 because segment sizes are bounded by `log.segment.bytes` (default 1 GB = 2^30 bytes), which fits in int32.
 
-The index file is **memory-mapped** using `mmap`. The broker maps the entire index file into virtual address space, so binary search on the index becomes a matter of pointer arithmetic and memory reads — no filesystem syscalls during the search itself. This is why index lookup is extremely fast even for large indexes.
+The index file is **memory-mapped** using `mmap`. The broker maps the entire index file into virtual address space, so binary search on the index becomes a matter of pointer arithmetic and memory reads  no filesystem syscalls during the search itself. This is why index lookup is extremely fast even for large indexes.
 
 ### 3.3 Lookup Algorithm: Finding Offset N in a Segment
 
@@ -322,7 +322,7 @@ Phase 2: Linear forward scan in the .log file
   8. If B > T: offset does not exist in this segment
 ```
 
-The maximum scan distance in Phase 2 is bounded by `log.index.interval.bytes` bytes of log data. With the default 4 KB interval, this is at most 4 KB of sequential reads — typically 1–4 batch headers.
+The maximum scan distance in Phase 2 is bounded by `log.index.interval.bytes` bytes of log data. With the default 4 KB interval, this is at most 4 KB of sequential reads  typically 1–4 batch headers.
 
 This is why Kafka's random-offset lookups are efficient despite the sparse index: the bounded scan means worst-case scan distance is known and small, while binary search on the mmapped index is O(log(M)) where M is the number of index entries (at most `log.index.size.max.bytes` / 8 entries ≈ 1.3 million entries for the 10 MB default, but in practice far fewer).
 
@@ -358,7 +358,7 @@ The Three-File Lookup Path:
 
 ### 3.4 The `.timeindex` File: Timestamp-to-Offset Mapping
 
-The `.timeindex` file enables the `offsetsForTimes()` API, which answers: "what is the earliest offset whose timestamp is ≥ T?" This is used by consumers to implement time-based replay — "replay all events since yesterday at noon."
+The `.timeindex` file enables the `offsetsForTimes()` API, which answers: "what is the earliest offset whose timestamp is ≥ T?" This is used by consumers to implement time-based replay  "replay all events since yesterday at noon."
 
 Like the offset index, it is sparse, with one entry per `log.index.interval.bytes` of data. Each entry is 12 bytes:
 
@@ -371,7 +371,7 @@ Timeindex Entry (12 bytes):
 └─────────────────────────┴──────────────────────────────────────┘
 ```
 
-The timestamp stored is the `MaxTimestamp` from the corresponding batch header — the latest timestamp within that batch. This is important: if you seek to time T, you may get a batch whose `BaseTimestamp` is slightly before T but whose `MaxTimestamp` is at or after T. The consumer must scan forward and filter by individual record timestamps if precision is required.
+The timestamp stored is the `MaxTimestamp` from the corresponding batch header  the latest timestamp within that batch. This is important: if you seek to time T, you may get a batch whose `BaseTimestamp` is slightly before T but whose `MaxTimestamp` is at or after T. The consumer must scan forward and filter by individual record timestamps if precision is required.
 
 The lookup algorithm is analogous to the offset lookup: binary search on `.timeindex` to find the largest entry with timestamp ≤ T, then use the corresponding relative offset to look up the physical position in `.index`, then linear scan in `.log`.
 
@@ -385,7 +385,7 @@ Pre-allocation means the broker creates the file and immediately writes zeros to
 
 When the segment rolls (transitions from active to closed), the broker **truncates** the index files to their actual content size. This is why closed segment indexes are smaller than active segment indexes in `ls -la` output.
 
-The index is full when the pre-allocated space is exhausted — this is one of the three conditions that triggers a segment roll (see Section 4.1).
+The index is full when the pre-allocated space is exhausted  this is one of the three conditions that triggers a segment roll (see Section 4.1).
 
 ---
 
@@ -401,11 +401,11 @@ An active segment transitions to closed (rolls) when any of three conditions are
 | Segment age exceeds threshold | `log.roll.ms` / `log.roll.hours` | 604,800,000 ms (7 days) |
 | Index file is full | `log.index.size.max.bytes` | 10,485,760 (10 MB) |
 
-The size threshold is checked after each batch is appended. If the current `.log` file size exceeds `log.segment.bytes`, the broker rolls the segment before the next write. This means segments can be slightly larger than the threshold — by at most one batch size.
+The size threshold is checked after each batch is appended. If the current `.log` file size exceeds `log.segment.bytes`, the broker rolls the segment before the next write. This means segments can be slightly larger than the threshold  by at most one batch size.
 
 The age threshold is checked periodically by the log manager background thread. A segment is considered "too old" when `now - BaseTimestamp_of_first_record > log.roll.ms`. Note that this uses the **record timestamp**, not the file modification time. For a topic with `log.message.timestamp.type=LogAppendTime`, this is the append time; for `CreateTime`, it is the producer-assigned timestamp (which could be manipulated or clock-skewed).
 
-The index full condition is triggered when a new index entry would exceed the pre-allocated file size. With 8 bytes per entry and a 10 MB allocation, this allows ~1.3 million index entries, which at 4 KB intervals represents ~5 GB of log data — much larger than the default 1 GB segment size. Index exhaustion is therefore rare with default settings, but becomes relevant if `log.segment.bytes` is set very high.
+The index full condition is triggered when a new index entry would exceed the pre-allocated file size. With 8 bytes per entry and a 10 MB allocation, this allows ~1.3 million index entries, which at 4 KB intervals represents ~5 GB of log data  much larger than the default 1 GB segment size. Index exhaustion is therefore rare with default settings, but becomes relevant if `log.segment.bytes` is set very high.
 
 ### 4.2 Segment Rolling Process
 
@@ -424,7 +424,7 @@ The rolling process is atomic from the perspective of external readers:
 7. Begin accepting writes to the new segment
 ```
 
-Between steps 3 and 7, the partition continues to accept fetch requests — they simply read from the most recently closed segment. There is no gap in availability.
+Between steps 3 and 7, the partition continues to accept fetch requests  they simply read from the most recently closed segment. There is no gap in availability.
 
 ### 4.3 Time-Based Retention
 
@@ -459,9 +459,9 @@ Kafka **never deletes individual records from within a segment**. Deletion alway
 Consider a segment created 30 days ago with `log.retention.hours=168` (7 days). If the last record written to that segment (the record that caused the roll to the next segment) has a `MaxTimestamp` from 6 days ago (perhaps due to producer clock drift or a batch that was buffered for a long time), the entire segment is retained for another day.
 
 In practice, this means:
-- Retention is not precise at the record level — it is approximate at the segment level.
+- Retention is not precise at the record level  it is approximate at the segment level.
 - A topic with large segments (`log.segment.bytes=1GB`) will have coarser retention granularity than one with small segments.
-- For topics requiring precise retention (e.g., GDPR deletion of specific user records), size-based or time-based retention alone is insufficient — log compaction with tombstones or a purpose-built solution is required.
+- For topics requiring precise retention (e.g., GDPR deletion of specific user records), size-based or time-based retention alone is insufficient  log compaction with tombstones or a purpose-built solution is required.
 
 ### 4.6 Log Deleter vs. Log Cleaner
 
@@ -542,15 +542,15 @@ The hybrid `compact,delete` policy is powerful: it compacts to keep the latest-p
 
 ### 5.4 Compaction Semantics and Consumer Guarantees
 
-Compaction provides the following guarantee: **a consumer reading a compacted topic from offset 0 will see at least one record per key — the latest one**.
+Compaction provides the following guarantee: **a consumer reading a compacted topic from offset 0 will see at least one record per key  the latest one**.
 
-The nuance "at least one" is important. In the dirty portion (segments not yet compacted), a consumer may see multiple records for the same key — all the historical versions written since the last compaction run. Compaction is not instantaneous; it runs periodically and asynchronously. During the window between compaction runs, the dirty portion accumulates duplicate keys.
+The nuance "at least one" is important. In the dirty portion (segments not yet compacted), a consumer may see multiple records for the same key  all the historical versions written since the last compaction run. Compaction is not instantaneous; it runs periodically and asynchronously. During the window between compaction runs, the dirty portion accumulates duplicate keys.
 
 After compaction of a segment group, only the latest record per key survives in those segments. Old records for those keys are permanently removed from disk.
 
 ### 5.5 Tombstones: Key Deletion
 
-To delete a key from a compacted topic — to signal that "this key no longer exists" — a producer writes a **tombstone** record: a record with a non-null key and a null value (`ValueLength = -1` in the record format).
+To delete a key from a compacted topic  to signal that "this key no longer exists"  a producer writes a **tombstone** record: a record with a non-null key and a null value (`ValueLength = -1` in the record format).
 
 Tombstones are not immediately removed. They must be visible to consumers long enough for all consumers to observe the deletion. The `delete.retention.ms` configuration (default 86,400,000 ms = 24 hours) controls how long tombstones are retained before the cleaner is allowed to remove them.
 
@@ -583,7 +583,7 @@ Cleaner Loop:
 10. Repeat from step 1.
 ```
 
-The key insight is in step 7: the cleaner reads dirty segments sequentially (optimal disk I/O) and builds an in-memory offset map. Then it writes output segments sequentially. The I/O pattern is two sequential passes over the dirty data — read once, write once — not random I/O.
+The key insight is in step 7: the cleaner reads dirty segments sequentially (optimal disk I/O) and builds an in-memory offset map. Then it writes output segments sequentially. The I/O pattern is two sequential passes over the dirty data  read once, write once  not random I/O.
 
 ### 5.7 Dirty Ratio and When Compaction Triggers
 
@@ -593,11 +593,11 @@ The **dirty ratio** is the fraction of a partition's total log size that is in t
 dirty_ratio = dirty_bytes / (clean_bytes + dirty_bytes)
 ```
 
-The cleaner runs on a partition when its dirty ratio exceeds `min.cleanable.dirty.ratio` (default 0.5 — 50% of the log must be dirty before compaction triggers).
+The cleaner runs on a partition when its dirty ratio exceeds `min.cleanable.dirty.ratio` (default 0.5  50% of the log must be dirty before compaction triggers).
 
 Setting `min.cleanable.dirty.ratio` lower causes more frequent compaction (better compactness, higher I/O overhead). Setting it higher allows more duplicate accumulation before compaction (lower I/O overhead, less compact log at any given moment).
 
-Monitor the metric `kafka.log:type=LogCleanerManager,name=max-dirty-percent` in production. If this metric is consistently at or near 100%, your cleaner is falling behind — the dirty portion is accumulating faster than the cleaner can process it. Remedies: increase `log.cleaner.threads`, reduce `min.cleanable.dirty.ratio`, or add more brokers to distribute the partition load.
+Monitor the metric `kafka.log:type=LogCleanerManager,name=max-dirty-percent` in production. If this metric is consistently at or near 100%, your cleaner is falling behind  the dirty portion is accumulating faster than the cleaner can process it. Remedies: increase `log.cleaner.threads`, reduce `min.cleanable.dirty.ratio`, or add more brokers to distribute the partition load.
 
 ### 5.8 Clean vs. Dirty Portions of the Log
 
@@ -618,7 +618,7 @@ Segment: [SEG-A ──────────][SEG-B ────────�
                     (tracked per partition)
 ```
 
-New writes always go to the active segment, which is always in the dirty portion. After a segment rolls, it becomes part of the dirty portion and will eventually be compacted. After compaction, it moves to the clean portion — but it may accumulate new dirt if a key that was compacted in that segment receives new writes in a later segment.
+New writes always go to the active segment, which is always in the dirty portion. After a segment rolls, it becomes part of the dirty portion and will eventually be compacted. After compaction, it moves to the clean portion  but it may accumulate new dirt if a key that was compacted in that segment receives new writes in a later segment.
 
 This is why the clean/dirty classification is not purely segment-based: a segment in the "clean" portion may still contain records for keys that have been updated again in the dirty portion. The cleaner handles this by re-compacting clean segments during compaction runs when needed.
 
@@ -658,7 +658,7 @@ graph TB
     Before -->|Discards| Removed
 ```
 
-**Offset gaps after compaction**: notice that the compacted log has gaps in the offset sequence (100, 101, 103 are gone; the remaining records retain their original offsets). Kafka offsets are immutable — compaction never renumbers records. Consumers reading a compacted topic must handle non-contiguous offsets gracefully, and they do by design: the consumer position is an offset, not a sequential index.
+**Offset gaps after compaction**: notice that the compacted log has gaps in the offset sequence (100, 101, 103 are gone; the remaining records retain their original offsets). Kafka offsets are immutable  compaction never renumbers records. Consumers reading a compacted topic must handle non-contiguous offsets gracefully, and they do by design: the consumer position is an offset, not a sequential index.
 
 ### 5.10 Compaction Does Not Guarantee Cross-Key Ordering
 
@@ -666,7 +666,7 @@ After compaction, the relative ordering of records for **different keys** is not
 
 Per-key ordering is maintained: all records for key A appear in the same order they were originally written. But the interleaving of records for key A and key B after compaction may differ from the original interleaving.
 
-This matters for consumers that depend on cross-key causal ordering — for example, a consumer processing a CDC stream where "UPDATE user SET status=active" must be observed before "INSERT order WHERE user.status=active." For such cases, log compaction is not appropriate; a time-windowed append-only topic with full history is required.
+This matters for consumers that depend on cross-key causal ordering  for example, a consumer processing a CDC stream where "UPDATE user SET status=active" must be observed before "INSERT order WHERE user.status=active." For such cases, log compaction is not appropriate; a time-windowed append-only topic with full history is required.
 
 ---
 
@@ -680,11 +680,11 @@ The cleaner builds an in-memory hash map during the "reading the dirty portion" 
 key_hash → (latestOffset, keySize)
 ```
 
-The map tracks `keySize` in addition to `latestOffset` to handle hash collisions — if two keys produce the same hash, the cleaner uses the actual key bytes to disambiguate. This is a space-efficiency optimization: storing full key bytes would require unbounded memory for large keys.
+The map tracks `keySize` in addition to `latestOffset` to handle hash collisions  if two keys produce the same hash, the cleaner uses the actual key bytes to disambiguate. This is a space-efficiency optimization: storing full key bytes would require unbounded memory for large keys.
 
 The hash function is SHA-256 of the key bytes. SHA-256 produces 256-bit hashes, but only the low-order bits are used to index into the hash map, with the remaining bits used for collision detection.
 
-The custom hash map used by the Kafka cleaner is optimized for sequential insertion (building the map by scanning the dirty portion sequentially) and sequential lookup (checking records during the output phase). It uses open addressing with linear probing — cache-friendly for sequential workloads.
+The custom hash map used by the Kafka cleaner is optimized for sequential insertion (building the map by scanning the dirty portion sequentially) and sequential lookup (checking records during the output phase). It uses open addressing with linear probing  cache-friendly for sequential workloads.
 
 ### 6.2 Memory Limit and Multi-Pass Compaction
 
@@ -703,9 +703,9 @@ Multi-pass compaction is less efficient than single-pass (it requires multiple r
 
 With a 128 MB buffer and 24 bytes per entry, the map holds approximately 5.3 million slots. The probability of a SHA-256 collision for any two distinct keys is negligible (SHA-256 has 2^256 possible values), but the hash map uses only a fraction of the SHA-256 output bits for bucketing (the number of bits equal to `log2(map_size)`). For a 5.3M-entry map, this is approximately 23 bits.
 
-The probability of a **bucket collision** (two distinct keys mapping to the same bucket) is governed by the birthday paradox. For 5.3 million entries in 5.3 million buckets, expected collisions ≈ n²/(2m) ≈ 2.65M — but these are resolved by linear probing and key comparison, not by silently assuming two keys are the same. The cleaner is correct even under hash collisions; it uses them only to locate candidate entries, and then compares actual key bytes.
+The probability of a **bucket collision** (two distinct keys mapping to the same bucket) is governed by the birthday paradox. For 5.3 million entries in 5.3 million buckets, expected collisions ≈ n²/(2m) ≈ 2.65M  but these are resolved by linear probing and key comparison, not by silently assuming two keys are the same. The cleaner is correct even under hash collisions; it uses them only to locate candidate entries, and then compares actual key bytes.
 
-True hash collisions (two distinct keys producing identical SHA-256 hashes) would cause incorrect compaction behavior. SHA-256 collision probability for any two distinct inputs is approximately 2^-128 — practically zero at any realistic key count.
+True hash collisions (two distinct keys producing identical SHA-256 hashes) would cause incorrect compaction behavior. SHA-256 collision probability for any two distinct inputs is approximately 2^-128  practically zero at any realistic key count.
 
 ### 6.4 Cleaner I/O Pattern
 
@@ -729,7 +729,7 @@ Compaction I/O Flow:
    (indexes are always derived from the log, never canonical)
 ```
 
-The rename-then-delete atomicity is critical. Kafka uses filesystem rename operations (atomic on POSIX filesystems) to swap in compacted segments, ensuring that a broker crash during compaction never leaves the partition in a corrupt state — it will either have the old segments or the new compacted segments, never a partial mix.
+The rename-then-delete atomicity is critical. Kafka uses filesystem rename operations (atomic on POSIX filesystems) to swap in compacted segments, ensuring that a broker crash during compaction never leaves the partition in a corrupt state  it will either have the old segments or the new compacted segments, never a partial mix.
 
 ---
 
@@ -737,7 +737,7 @@ The rename-then-delete atomicity is critical. Kafka uses filesystem rename opera
 
 ### 7.1 Transactional Markers: Control Batches
 
-When a transactional producer commits or aborts a transaction, the transaction coordinator instructs each partition leader involved in the transaction to write a **control batch** — a special record batch with `Attributes.isControlBatch = 1`.
+When a transactional producer commits or aborts a transaction, the transaction coordinator instructs each partition leader involved in the transaction to write a **control batch**  a special record batch with `Attributes.isControlBatch = 1`.
 
 Control batches are not delivered to consumers. They are infrastructure markers that tell consumer the fate of a transaction.
 
@@ -762,7 +762,7 @@ Control Batch:
 
 When a segment contains records that belong to aborted transactions, the broker maintains a `.txnindex` file for that segment. The txnindex records which byte ranges within the `.log` file belong to aborted transactions.
 
-When a `read_committed` consumer fetches from a segment, the broker consults the `.txnindex` to identify and exclude aborted transaction records from the response. This filtering happens on the broker side — the consumer does not receive aborted records at all; it receives only committed records and the COMMIT/ABORT markers themselves (which it uses to update its transaction state).
+When a `read_committed` consumer fetches from a segment, the broker consults the `.txnindex` to identify and exclude aborted transaction records from the response. This filtering happens on the broker side  the consumer does not receive aborted records at all; it receives only committed records and the COMMIT/ABORT markers themselves (which it uses to update its transaction state).
 
 The `.txnindex` format stores entries of the form:
 ```
@@ -778,9 +778,9 @@ TxnIndex Entry:
 
 Compaction interacts with transactions in a nuanced way. The cleaner must not remove transactional records until their fate (COMMIT or ABORT) is known. More specifically:
 
-- **Uncommitted transaction records**: the cleaner must not compact these — they may still be committed.
+- **Uncommitted transaction records**: the cleaner must not compact these  they may still be committed.
 - **Aborted transaction records**: the cleaner can remove them (they are logically deleted), but it must retain the ABORT marker long enough for all consumers to observe it.
-- **Committed transaction records**: the cleaner treats them like normal records — it retains the latest-per-key.
+- **Committed transaction records**: the cleaner treats them like normal records  it retains the latest-per-key.
 
 `log.cleaner.min.compaction.lag.ms` (default 0) sets the minimum time a message must remain uncompacted after being written. This helps ensure that consumers have time to observe records before the cleaner removes superseded versions. For transactional topics, setting this to a value larger than your maximum transaction duration ensures the cleaner does not compact records whose transaction fate is still unknown.
 
@@ -859,7 +859,7 @@ The numbers above assume uniform access patterns. Real-world savings depend on t
 
 **Latency**: local NVMe read latency is ~0.1–1 ms. S3 GET latency is 20–200 ms. For consumers reading cold data, this latency difference is significant. The broker can cache recently fetched remote segments in local disk or memory to amortize this, but the cache miss path is fundamentally slower.
 
-**Log compaction + tiered storage**: the interaction between log compaction and tiered storage is incomplete in Kafka 3.6. Compaction is fundamentally a local operation — the cleaner reads and rewrites segments on local disk. Segments that have been uploaded to the remote tier cannot be compacted without first downloading them. As of Kafka 3.6, remote segments are not eligible for compaction; compaction only applies to local segments. This means compacted topics with tiered storage may accumulate more data in the remote tier than a purely local deployment would.
+**Log compaction + tiered storage**: the interaction between log compaction and tiered storage is incomplete in Kafka 3.6. Compaction is fundamentally a local operation  the cleaner reads and rewrites segments on local disk. Segments that have been uploaded to the remote tier cannot be compacted without first downloading them. As of Kafka 3.6, remote segments are not eligible for compaction; compaction only applies to local segments. This means compacted topics with tiered storage may accumulate more data in the remote tier than a purely local deployment would.
 
 **Operational complexity**: tiered storage adds dependencies on object storage services (IAM roles, bucket policies, network connectivity, eventual consistency of object metadata), monitoring of the upload lag metric, and handling of S3/GCS API errors in the broker.
 
@@ -875,13 +875,13 @@ The numbers above assume uniform access patterns. Real-world savings depend on t
 
 - **Compression applies to the entire record payload within a batch**, not individual records, maximizing compression ratio while keeping the header readable for index building and segment navigation.
 
-- **Index files are sparse and memory-mapped** — one entry per 4 KB of log data, binary searched to find the closest anchor, then followed by a bounded linear scan in the `.log` file. Maximum scan distance is always ≤ `log.index.interval.bytes`.
+- **Index files are sparse and memory-mapped**  one entry per 4 KB of log data, binary searched to find the closest anchor, then followed by a bounded linear scan in the `.log` file. Maximum scan distance is always ≤ `log.index.interval.bytes`.
 
-- **Deletion is segment-granular** — Kafka never removes individual records from within a segment. A single record with a timestamp within the retention window keeps an entire 1 GB segment alive, making retention precise only at the segment boundary level.
+- **Deletion is segment-granular**  Kafka never removes individual records from within a segment. A single record with a timestamp within the retention window keeps an entire 1 GB segment alive, making retention precise only at the segment boundary level.
 
 - **Log compaction retains the latest value per key indefinitely** using a background cleaner thread that builds an in-memory offset map, sequentially reads dirty segments, and rewrites compacted output; tombstones (null-value records) are the mechanism for key deletion.
 
-- **After compaction, offsets are not renumbered** — compacted logs have gaps in the offset sequence. Consumers must handle non-contiguous offsets, and they do by design since consumer position is an absolute offset, not a sequential index.
+- **After compaction, offsets are not renumbered**  compacted logs have gaps in the offset sequence. Consumers must handle non-contiguous offsets, and they do by design since consumer position is an absolute offset, not a sequential index.
 
 - **Tiered storage (Kafka 3.6+) decouples retention period from local disk size** by offloading cold segments to object storage, potentially reducing storage costs by 80–90% for long-retention topics, at the cost of higher latency for cold reads and incomplete support for log compaction on remote segments.
 
@@ -909,14 +909,14 @@ The numbers above assume uniform access patterns. Real-world savings depend on t
 Part 6 takes the producer from its public API down to the last network byte. We will cover:
 
 - **The producer record accumulator**: how records are batched in memory, how `linger.ms` and `batch.size` control the buffering/throughput tradeoff, and what happens when the accumulator is full.
-- **The sender thread**: the background thread that drains the accumulator, groups batches by leader, and issues `ProduceRequest` RPCs — and how its pipelining interacts with `max.in.flight.requests.per.connection`.
+- **The sender thread**: the background thread that drains the accumulator, groups batches by leader, and issues `ProduceRequest` RPCs  and how its pipelining interacts with `max.in.flight.requests.per.connection`.
 - **Idempotent producers**: the ProducerID and sequence number mechanism that eliminates duplicates from network retries, and the precisely-once constraint it enables at the single-partition level.
 - **Transactions**: the two-phase protocol (BEGIN → write to partitions → write to offsets topic → COMMIT/ABORT), the transaction coordinator, and the exactly-once read-process-write pattern for stream processing.
 - **Compression in the producer**: when compression is applied, which algorithm to choose (LZ4 vs. Snappy vs. Zstandard) for different payload types, and the interaction between compression and the broker's batch format.
 - **Failure modes**: what happens when the leader fails mid-batch, when `acks=all` times out, when the transaction coordinator crashes, and when idempotent sequence numbers go out of sync after a producer restart.
 
-If you have wondered what "exactly-once semantics" actually guarantees — and more importantly, what it does not guarantee — Part 6 is where those answers live.
+If you have wondered what "exactly-once semantics" actually guarantees  and more importantly, what it does not guarantee  Part 6 is where those answers live.
 
 ---
 
-*Apache Kafka Deep Dive — Part 5 of 10. All benchmarks and byte-level specifications reference Kafka 3.6 unless otherwise noted.*
+*Apache Kafka Deep Dive  Part 5 of 10. All benchmarks and byte-level specifications reference Kafka 3.6 unless otherwise noted.*

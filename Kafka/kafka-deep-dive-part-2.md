@@ -1,8 +1,8 @@
-# Apache Kafka Deep Dive — Part 2: Architecture Internals — Brokers, Controllers, and KRaft
+# Apache Kafka Deep Dive  Part 2: Architecture Internals  Brokers, Controllers, and KRaft
 
 ---
 
-**Series:** Apache Kafka Deep Dive — From First Principles to Planet-Scale Event Streaming
+**Series:** Apache Kafka Deep Dive  From First Principles to Planet-Scale Event Streaming
 **Part:** 2 of 10
 **Audience:** Senior backend engineers, distributed systems engineers
 **Reading time:** ~45 minutes
@@ -11,11 +11,11 @@
 
 ## Series Recap and Where We Are
 
-Part 0 established the systems foundation: disk I/O physics, OS page cache mechanics, zero-copy `sendfile()`, delivery semantics, and the CAP theorem. Part 1 made the case for Kafka's existence — the distributed log abstraction, why sequential I/O enables millions of messages per second, storage engine segment structure, pull vs. push mechanics, partitioning and ordering tradeoffs, consumer group basics, and failure models.
+Part 0 established the systems foundation: disk I/O physics, OS page cache mechanics, zero-copy `sendfile()`, delivery semantics, and the CAP theorem. Part 1 made the case for Kafka's existence  the distributed log abstraction, why sequential I/O enables millions of messages per second, storage engine segment structure, pull vs. push mechanics, partitioning and ordering tradeoffs, consumer group basics, and failure models.
 
 We are not revisiting any of that. This article goes one level deeper: **how the cluster actually works**.
 
-Part 1 treated the broker as a black box that accepts ProduceRequests and serves FetchRequests. Part 2 opens the box. We will trace a ProduceRequest through every layer of the broker's request-handling pipeline, examine the Kafka wire protocol's binary anatomy, and then examine the two systems that coordinate the entire cluster: the Controller (the brain) and ZooKeeper/KRaft (the consensus substrate). By the end of this article you will be able to reason about broker startup sequencing, controller failover timing, partition administration, and why large clusters with ZooKeeper suffered catastrophically slow controller failovers — and exactly how KRaft fixes each of those problems.
+Part 1 treated the broker as a black box that accepts ProduceRequests and serves FetchRequests. Part 2 opens the box. We will trace a ProduceRequest through every layer of the broker's request-handling pipeline, examine the Kafka wire protocol's binary anatomy, and then examine the two systems that coordinate the entire cluster: the Controller (the brain) and ZooKeeper/KRaft (the consensus substrate). By the end of this article you will be able to reason about broker startup sequencing, controller failover timing, partition administration, and why large clusters with ZooKeeper suffered catastrophically slow controller failovers  and exactly how KRaft fixes each of those problems.
 
 ---
 
@@ -23,7 +23,7 @@ Part 1 treated the broker as a black box that accepts ProduceRequests and serves
 
 ### 1.1 Physical Architecture: What a Broker Is
 
-A Kafka broker is a JVM process — a single `kafka.Kafka` main class — listening on one or more TCP ports (default: 9092 for plaintext, 9093 for TLS). Its responsibilities are:
+A Kafka broker is a JVM process  a single `kafka.Kafka` main class  listening on one or more TCP ports (default: 9092 for plaintext, 9093 for TLS). Its responsibilities are:
 
 1. Accept incoming TCP connections from clients (producers, consumers, admin tools) and from other brokers (replication traffic)
 2. Parse and route incoming requests to the appropriate handler
@@ -41,7 +41,7 @@ The process has two classes of system resources it competes for:
 
 Kafka uses a **Reactor pattern** for network I/O, implemented in `kafka.network.SocketServer`. There are two distinct thread roles:
 
-**The Acceptor Thread.** There is exactly one acceptor thread per listener (per port). It does nothing except call `ServerSocketChannel.accept()` in a tight loop, accepting new TCP connections and assigning them to a network thread via round-robin. The acceptor thread never reads or writes data — it is purely a connection dispatcher.
+**The Acceptor Thread.** There is exactly one acceptor thread per listener (per port). It does nothing except call `ServerSocketChannel.accept()` in a tight loop, accepting new TCP connections and assigning them to a network thread via round-robin. The acceptor thread never reads or writes data  it is purely a connection dispatcher.
 
 **Network Threads (`num.network.threads`, default 3).** Each network thread runs a Java NIO `Selector` loop. It owns a set of connections and is responsible for:
 - Reading bytes from client sockets until a complete request is framed
@@ -56,11 +56,11 @@ For a broker serving 5,000 connections: each network thread owns ~1,667 sockets.
 A thread's NIO Selector handles all 1,667 as non-blocking multiplexed I/O.
 ```
 
-In practice, `num.network.threads` is rarely the bottleneck — network threads are not compute-intensive. You typically increase it only when you observe network thread utilization (via `kafka.network:type=Processor,name=IdlePercent`) consistently above 80%.
+In practice, `num.network.threads` is rarely the bottleneck  network threads are not compute-intensive. You typically increase it only when you observe network thread utilization (via `kafka.network:type=Processor,name=IdlePercent`) consistently above 80%.
 
 ### 1.3 Request Queue: The Bridge Between Network and I/O Threads
 
-The **request queue** is a Java `ArrayBlockingQueue` with a bounded capacity (configured via `queued.max.requests`, default 500). When a network thread receives a complete request, it wraps it in a `RequestChannel.Request` object — containing the raw bytes, the metadata about which network thread should receive the response, and a timestamp — and enqueues it.
+The **request queue** is a Java `ArrayBlockingQueue` with a bounded capacity (configured via `queued.max.requests`, default 500). When a network thread receives a complete request, it wraps it in a `RequestChannel.Request` object  containing the raw bytes, the metadata about which network thread should receive the response, and a timestamp  and enqueues it.
 
 If the queue is full (i.e., all 500 slots are occupied), the network thread **blocks** trying to enqueue. This is the intentional backpressure mechanism: when I/O threads cannot keep up, the queue fills, network threads stall, and TCP flow control backs pressure all the way to the client's send buffer. The producer's `send()` call will block, which ultimately signals the application to slow down.
 
@@ -78,7 +78,7 @@ The **I/O thread pool** (`num.io.threads`, default 8) consists of threads that d
 
 For a FetchRequest, the I/O thread calls `ReplicaManager.fetchMessages()`, which reads from the partition log and constructs a FetchResponse.
 
-The I/O threads are the ones that block on disk — on `FileChannel.write()` for produces and `FileChannel.transferTo()` (the zero-copy path) for fetches. This is the correct design: blocking is isolated to a thread pool that is explicitly sized for it, not bleeding into the network layer.
+The I/O threads are the ones that block on disk  on `FileChannel.write()` for produces and `FileChannel.transferTo()` (the zero-copy path) for fetches. This is the correct design: blocking is isolated to a thread pool that is explicitly sized for it, not bleeding into the network layer.
 
 `num.io.threads` is the most commonly tuned parameter for I/O-bound brokers. A broker on NVMe SSDs with fast random I/O may need only 4-8 threads. A broker on spinning HDDs where individual disk operations take 5-10ms may benefit from 16-32 threads to keep the disk pipeline saturated.
 
@@ -212,9 +212,9 @@ flowchart TD
 
 The Reactor pattern (also called the event-driven non-blocking I/O pattern) is the standard architecture for high-throughput servers. Nginx, Node.js, Redis, and Netty all use variants of it.
 
-The core insight: **blocking is expensive when it prevents other work from happening**. In a one-thread-per-connection model (what Java's original `ServerSocket` API encourages), a thread blocked waiting for disk I/O is occupying a stack (512KB-2MB by default), scheduler state, and CPU registers. At 10,000 connections, that's 10,000 threads — memory pressure, context switching overhead, and scheduler inefficiency.
+The core insight: **blocking is expensive when it prevents other work from happening**. In a one-thread-per-connection model (what Java's original `ServerSocket` API encourages), a thread blocked waiting for disk I/O is occupying a stack (512KB-2MB by default), scheduler state, and CPU registers. At 10,000 connections, that's 10,000 threads  memory pressure, context switching overhead, and scheduler inefficiency.
 
-In Kafka's model, the 3 network threads handle 10,000 connections via non-blocking NIO selectors. The 8 I/O threads block on disk I/O — which is unavoidable — but they're a small, bounded pool. The separation ensures that slow disk I/O does not cascade into slow network responsiveness.
+In Kafka's model, the 3 network threads handle 10,000 connections via non-blocking NIO selectors. The 8 I/O threads block on disk I/O  which is unavoidable  but they're a small, bounded pool. The separation ensures that slow disk I/O does not cascade into slow network responsiveness.
 
 ---
 
@@ -259,23 +259,23 @@ This versioning strategy allows rolling upgrades: a cluster with mixed broker ve
 ```
 Wire format of a Request:
 ┌──────────────────────────────────────────────────────────────────┐
-│ Length (int32)         — size of remaining request in bytes       │
+│ Length (int32)          size of remaining request in bytes       │
 ├──────────────────────────────────────────────────────────────────┤
-│ Api Key (int16)        — e.g., 0 = Produce, 1 = Fetch            │
-│ Api Version (int16)    — version of this API being used          │
-│ Correlation ID (int32) — client-assigned ID, echoed in response  │
-│ Client ID (nullable string) — client identifier for logging      │
+│ Api Key (int16)         e.g., 0 = Produce, 1 = Fetch            │
+│ Api Version (int16)     version of this API being used          │
+│ Correlation ID (int32)  client-assigned ID, echoed in response  │
+│ Client ID (nullable string)  client identifier for logging      │
 ├──────────────────────────────────────────────────────────────────┤
-│ Request Body           — varies by ApiKey and ApiVersion         │
+│ Request Body            varies by ApiKey and ApiVersion         │
 └──────────────────────────────────────────────────────────────────┘
 
 Wire format of a Response:
 ┌──────────────────────────────────────────────────────────────────┐
-│ Length (int32)         — size of remaining response in bytes     │
+│ Length (int32)          size of remaining response in bytes     │
 ├──────────────────────────────────────────────────────────────────┤
-│ Correlation ID (int32) — matches the request's CorrelationId     │
+│ Correlation ID (int32)  matches the request's CorrelationId     │
 ├──────────────────────────────────────────────────────────────────┤
-│ Response Body          — varies by ApiKey and ApiVersion         │
+│ Response Body           varies by ApiKey and ApiVersion         │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -285,14 +285,14 @@ A ProduceRequest (API key 0, version 9 schema) carries:
 
 ```
 ProduceRequest v9:
-  transactional_id:   nullable string   — null for non-transactional producers
-  acks:               int16             — 0, 1, or -1
-  timeout_ms:         int32             — max ms to wait for ISR acks
+  transactional_id:   nullable string    null for non-transactional producers
+  acks:               int16              0, 1, or -1
+  timeout_ms:         int32              max ms to wait for ISR acks
   topic_data:         array of:
-    name:             string            — topic name
+    name:             string             topic name
     partition_data:   array of:
-      index:          int32             — partition number
-      records:        bytes             — RecordBatch (see Part 1 for format)
+      index:          int32              partition number
+      records:        bytes              RecordBatch (see Part 1 for format)
 ```
 
 One ProduceRequest can contain batches for multiple topics and multiple partitions. This is important: a producer sending to 50 partitions simultaneously sends 1 TCP payload, not 50.
@@ -305,26 +305,26 @@ A FetchRequest (API key 1) is used by both clients and by follower brokers fetch
 
 ```
 FetchRequest v12:
-  replica_id:           int32    — -1 for clients; broker ID for follower replication
-  max_wait_ms:          int32    — long-poll timeout (fetch.max.wait.ms)
-  min_bytes:            int32    — minimum data to return before responding
-  max_bytes:            int32    — upper bound on response size
-  isolation_level:      int8     — 0=READ_UNCOMMITTED, 1=READ_COMMITTED
-  session_id:           int32    — fetch session ID (for incremental fetches)
-  session_epoch:        int32    — fetch session epoch
+  replica_id:           int32     -1 for clients; broker ID for follower replication
+  max_wait_ms:          int32     long-poll timeout (fetch.max.wait.ms)
+  min_bytes:            int32     minimum data to return before responding
+  max_bytes:            int32     upper bound on response size
+  isolation_level:      int8      0=READ_UNCOMMITTED, 1=READ_COMMITTED
+  session_id:           int32     fetch session ID (for incremental fetches)
+  session_epoch:        int32     fetch session epoch
   topics:               array of:
-    topic_id:           uuid     — topic UUID (replaces topic name in v13+)
+    topic_id:           uuid      topic UUID (replaces topic name in v13+)
     partitions:         array of:
-      partition:        int32    — partition number
-      current_leader_epoch: int32 — fencing against stale leaders
-      fetch_offset:     int64    — starting offset to fetch from
-      last_fetched_epoch: int32  — for follower divergence detection
-      log_start_offset: int64   — follower's log start (for leader divergence check)
-      partition_max_bytes: int32 — per-partition fetch size limit
-  forgotten_topics_data: array   — incremental fetch: partitions to stop fetching
+      partition:        int32     partition number
+      current_leader_epoch: int32  fencing against stale leaders
+      fetch_offset:     int64     starting offset to fetch from
+      last_fetched_epoch: int32   for follower divergence detection
+      log_start_offset: int64    follower's log start (for leader divergence check)
+      partition_max_bytes: int32  per-partition fetch size limit
+  forgotten_topics_data: array    incremental fetch: partitions to stop fetching
 ```
 
-The `replica_id` field distinguishes client fetches (value `-1`) from follower replication fetches (the follower's broker ID). This matters because follower replication fetches bypass consumer quotas and update the leader's knowledge of each follower's `LEO` (Log End Offset) — which drives ISR membership and High Watermark advancement.
+The `replica_id` field distinguishes client fetches (value `-1`) from follower replication fetches (the follower's broker ID). This matters because follower replication fetches bypass consumer quotas and update the leader's knowledge of each follower's `LEO` (Log End Offset)  which drives ISR membership and High Watermark advancement.
 
 The `session_id` / `session_epoch` fields enable **incremental fetch sessions** (Kafka 1.1+). Instead of sending the full topic-partition list on every fetch request, a client establishes a fetch session and then sends only deltas (which partitions changed). This reduces FetchRequest sizes dramatically for consumers subscribed to many partitions.
 
@@ -375,7 +375,7 @@ The Purgatory uses a **timer wheel** for timeout management (see Section 8 for t
 
 At any given moment, exactly one broker in a Kafka cluster is the **Controller**. It is a regular Kafka broker that has taken on the additional responsibility of cluster-wide coordination. The controller runs the **cluster-wide state machine**: it knows the definitive state of every partition, every broker, every ISR, and every topic configuration. All other brokers are followers of the controller's view of the world.
 
-The controller's responsibilities do not include serving client requests (ProduceRequest, FetchRequest). Those go to the partition's leader broker directly. The controller handles **administrative events** — events that change cluster topology or partition ownership.
+The controller's responsibilities do not include serving client requests (ProduceRequest, FetchRequest). Those go to the partition's leader broker directly. The controller handles **administrative events**  events that change cluster topology or partition ownership.
 
 ### 3.2 Controller Responsibilities
 
@@ -397,7 +397,7 @@ The controller's job list:
 
 In the ZooKeeper-based architecture (all Kafka versions before 3.3 in production, and optionally through 3.7), controller election uses ZooKeeper's ephemeral znode mechanism.
 
-When any broker starts up, it attempts to create the ZooKeeper znode `/controller` with an ephemeral node containing its broker ID. ZooKeeper guarantees that exactly one client can create an ephemeral node — the **first one wins**. All other brokers receive a `NodeExistsException` and become watchers on `/controller`.
+When any broker starts up, it attempts to create the ZooKeeper znode `/controller` with an ephemeral node containing its broker ID. ZooKeeper guarantees that exactly one client can create an ephemeral node  the **first one wins**. All other brokers receive a `NodeExistsException` and become watchers on `/controller`.
 
 ```
 ZooKeeper election sequence:
@@ -411,7 +411,7 @@ ZooKeeper election sequence:
   Broker 2 becomes new controller. Broker 3 watches /controller again.
 ```
 
-The `/controller` znode contains the controller's broker ID and a **controller epoch** — a monotonically increasing integer incremented on every election. This epoch is included in all controller-to-broker requests (`LeaderAndIsrRequest`, `UpdateMetadataRequest`, `StopReplicaRequest`). A broker that receives a request from a stale controller (one with a lower epoch) rejects it — this prevents a "zombie controller" from issuing commands after losing its ZooKeeper session.
+The `/controller` znode contains the controller's broker ID and a **controller epoch**  a monotonically increasing integer incremented on every election. This epoch is included in all controller-to-broker requests (`LeaderAndIsrRequest`, `UpdateMetadataRequest`, `StopReplicaRequest`). A broker that receives a request from a stale controller (one with a lower epoch) rejects it  this prevents a "zombie controller" from issuing commands after losing its ZooKeeper session.
 
 ### 3.4 Controller Failover Mechanics
 
@@ -420,9 +420,9 @@ After being elected, the new controller must reconstruct the complete cluster st
 ```
 Controller initialization sequence (ZK mode):
   1. Increment controller epoch in ZooKeeper /controller_epoch znode
-  2. Read /brokers/ids/* — list of live brokers and their metadata
-  3. Read /brokers/topics/* — all topic configurations and partition assignments
-  4. Read /brokers/topics/<topic>/partitions/<id>/state — leader, ISR per partition
+  2. Read /brokers/ids/*  list of live brokers and their metadata
+  3. Read /brokers/topics/*  all topic configurations and partition assignments
+  4. Read /brokers/topics/<topic>/partitions/<id>/state  leader, ISR per partition
   5. For every partition on every topic, build in-memory state:
        partitionLeaderState: Map[TopicPartition, PartitionLeaderState]
   6. Register ZooKeeper watchers on:
@@ -434,7 +434,7 @@ Controller initialization sequence (ZK mode):
   8. Trigger leader elections for partitions that need them
 ```
 
-For a large cluster — 100 brokers, 50,000 partitions — step 4 involves 50,000 ZooKeeper reads. ZooKeeper's read throughput is typically 10,000-100,000 operations per second. At the low end, this is 500ms to 5 seconds just for the ZooKeeper reads, before the new controller can begin issuing `LeaderAndIsrRequest` commands. This is the **controller failover bottleneck** that plagued large ZooKeeper-mode deployments.
+For a large cluster  100 brokers, 50,000 partitions  step 4 involves 50,000 ZooKeeper reads. ZooKeeper's read throughput is typically 10,000-100,000 operations per second. At the low end, this is 500ms to 5 seconds just for the ZooKeeper reads, before the new controller can begin issuing `LeaderAndIsrRequest` commands. This is the **controller failover bottleneck** that plagued large ZooKeeper-mode deployments.
 
 ### 3.5 The Controller Epoch
 
@@ -461,20 +461,20 @@ When a partition leadership change occurs, the controller sends `LeaderAndIsrReq
 ```
 LeaderAndIsrRequest:
   controller_id:      int32
-  controller_epoch:   int32    — fencing field
-  broker_epoch:       int64    — per-broker epoch (added in Kafka 2.2)
-  type:               int8     — 0=FULL, 1=INCREMENTAL
+  controller_epoch:   int32     fencing field
+  broker_epoch:       int64     per-broker epoch (added in Kafka 2.2)
+  type:               int8      0=FULL, 1=INCREMENTAL
   partition_states:   array of:
     topic_name:       string
     partition_index:  int32
     controller_epoch: int32
-    leader:           int32    — broker ID of new leader
-    leader_epoch:     int32    — per-partition epoch (incremented on each leader change)
-    isr:              array<int32>  — current ISR member broker IDs
+    leader:           int32     broker ID of new leader
+    leader_epoch:     int32     per-partition epoch (incremented on each leader change)
+    isr:              array<int32>   current ISR member broker IDs
     partition_epoch:  int32
-    replicas:         array<int32> — all replica broker IDs
-    adding_replicas:  array<int32> — replicas being added (during reassignment)
-    removing_replicas:array<int32> — replicas being removed
+    replicas:         array<int32>  all replica broker IDs
+    adding_replicas:  array<int32>  replicas being added (during reassignment)
+    removing_replicas:array<int32>  replicas being removed
     is_new:           bool
   live_brokers:       array of BrokerEndpoint
 ```
@@ -483,7 +483,7 @@ The **leader epoch** (per-partition, distinct from the controller epoch) is what
 
 ### 3.7 UpdateMetadataRequest: Propagating Cluster State
 
-In addition to `LeaderAndIsrRequest` (which goes only to brokers directly involved in a partition change), the controller sends `UpdateMetadataRequest` (API key 6) to **all live brokers** to update their `MetadataCache`. This ensures every broker knows the current leader for every partition — which it needs to correctly redirect clients that send requests to the wrong broker.
+In addition to `LeaderAndIsrRequest` (which goes only to brokers directly involved in a partition change), the controller sends `UpdateMetadataRequest` (API key 6) to **all live brokers** to update their `MetadataCache`. This ensures every broker knows the current leader for every partition  which it needs to correctly redirect clients that send requests to the wrong broker.
 
 ```
 UpdateMetadataRequest v8:
@@ -567,21 +567,21 @@ ZooKeeper was the right choice for Kafka in 2011. It provided a battle-tested di
 
 **The operational complexity problem.** Running a Kafka cluster requires running a ZooKeeper cluster in addition. ZooKeeper has its own upgrade cycle, configuration parameters, monitoring requirements, JVM tuning, disk requirements, and failure modes. On-call engineers debugging a Kafka incident must understand both systems. Operational burden is doubled.
 
-**The ZooKeeper session timeout cascade.** ZooKeeper's liveness detection relies on session timeouts. When a broker's ZooKeeper session expires (due to a network partition, GC pause, or overloaded ZooKeeper), ZooKeeper deletes the broker's ephemeral znode — the same signal as the broker dying. This can trigger unnecessary leader elections even when the broker itself is healthy. The default `zookeeper.session.timeout.ms=18000` means a 18-second GC pause (entirely possible without ZGC tuning on Java 11 brokers) appears as a broker death to ZooKeeper.
+**The ZooKeeper session timeout cascade.** ZooKeeper's liveness detection relies on session timeouts. When a broker's ZooKeeper session expires (due to a network partition, GC pause, or overloaded ZooKeeper), ZooKeeper deletes the broker's ephemeral znode  the same signal as the broker dying. This can trigger unnecessary leader elections even when the broker itself is healthy. The default `zookeeper.session.timeout.ms=18000` means a 18-second GC pause (entirely possible without ZGC tuning on Java 11 brokers) appears as a broker death to ZooKeeper.
 
-**The ZooKeeper write bottleneck.** ZooKeeper is a CP system with a single-leader write path. Its throughput for writes is limited — typically 10,000-50,000 writes per second. Every ISR change, every topic creation, every ACL update requires a ZooKeeper write through the ZooKeeper leader. For clusters with millions of partitions and frequent ISR changes (common under load), this bottleneck is real.
+**The ZooKeeper write bottleneck.** ZooKeeper is a CP system with a single-leader write path. Its throughput for writes is limited  typically 10,000-50,000 writes per second. Every ISR change, every topic creation, every ACL update requires a ZooKeeper write through the ZooKeeper leader. For clusters with millions of partitions and frequent ISR changes (common under load), this bottleneck is real.
 
 **The scalability ceiling on partition count.** Controller initialization requires reading all partition state from ZooKeeper. This limits practical cluster scale. The Kafka project's own target before KRaft was ~200,000 partitions per cluster as a practical limit. With KRaft, the target is millions.
 
-**The metadata propagation lag.** Controller failover requires re-reading all ZooKeeper state and rebroadcasting to all brokers. This creates a gap during which brokers have stale metadata — clients get `LEADER_NOT_AVAILABLE` errors. KRaft eliminates this gap.
+**The metadata propagation lag.** Controller failover requires re-reading all ZooKeeper state and rebroadcasting to all brokers. This creates a gap during which brokers have stale metadata  clients get `LEADER_NOT_AVAILABLE` errors. KRaft eliminates this gap.
 
 ### 4.2 KRaft Architecture: Raft-Based Metadata Quorum
 
-KRaft (Kafka Raft) embeds a Raft consensus algorithm directly inside Kafka brokers. There is no external consensus system. A subset of brokers form the **KRaft controller quorum** — they store and replicate the metadata log using Raft. Other brokers fetch metadata from the quorum leaders.
+KRaft (Kafka Raft) embeds a Raft consensus algorithm directly inside Kafka brokers. There is no external consensus system. A subset of brokers form the **KRaft controller quorum**  they store and replicate the metadata log using Raft. Other brokers fetch metadata from the quorum leaders.
 
 The metadata log is the single source of truth for all cluster state. Instead of writing partition state to ZooKeeper znodes, every state change (topic creation, leader election, ISR change) is **appended as a record to the metadata log**. Raft ensures this log is replicated to a majority of the quorum before being considered committed.
 
-The metadata log topic is `__cluster_metadata`, stored in the standard Kafka log format (segments, index files) on the controller quorum nodes. This is a Kafka topic that stores Kafka's own metadata — the system bootstraps itself.
+The metadata log topic is `__cluster_metadata`, stored in the standard Kafka log format (segments, index files) on the controller quorum nodes. This is a Kafka topic that stores Kafka's own metadata  the system bootstraps itself.
 
 ### 4.3 KRaft Roles: Broker-Only, Controller-Only, Combined
 
@@ -617,17 +617,17 @@ The metadata log is a Raft log of **typed records**, each representing a state c
 
 ```
 Record types in __cluster_metadata:
-  RegisterBrokerRecord       — a broker registered/re-registered with the cluster
-  UnregisterBrokerRecord     — a broker gracefully deregistered
-  TopicRecord                — a topic was created (stores topic name → topic ID mapping)
-  PartitionRecord            — a partition was created or its state changed
+  RegisterBrokerRecord        a broker registered/re-registered with the cluster
+  UnregisterBrokerRecord      a broker gracefully deregistered
+  TopicRecord                 a topic was created (stores topic name → topic ID mapping)
+  PartitionRecord             a partition was created or its state changed
                               (leader, ISR, replicas, partition epoch)
-  ConfigRecord               — a configuration change for a topic or broker
-  ProducerIdsRecord          — range of producer IDs allocated
-  AccessControlEntryRecord   — an ACL was created or deleted
-  RemoveTopicRecord          — a topic was deleted
-  FeatureLevelRecord         — a feature was enabled or the cluster metadata version changed
-  BrokerRegistrationChangeRecord — broker changed its endpoints or features
+  ConfigRecord                a configuration change for a topic or broker
+  ProducerIdsRecord           range of producer IDs allocated
+  AccessControlEntryRecord    an ACL was created or deleted
+  RemoveTopicRecord           a topic was deleted
+  FeatureLevelRecord          a feature was enabled or the cluster metadata version changed
+  BrokerRegistrationChangeRecord  broker changed its endpoints or features
 ```
 
 Each record has a monotonically increasing **offset** in the metadata log. Brokers track which offset they have replayed up to. When a broker's metadata image is at offset N, it has applied every state change up to N.
@@ -669,7 +669,7 @@ Compare this to ZooKeeper mode, where controller failover could take 10-60 secon
 
 ### 4.6 Metadata Replication: Snapshots and Incremental Fetches
 
-Brokers stay current with cluster metadata via a **metadata fetch loop** — effectively, the broker is a Kafka consumer of the `__cluster_metadata` topic:
+Brokers stay current with cluster metadata via a **metadata fetch loop**  effectively, the broker is a Kafka consumer of the `__cluster_metadata` topic:
 
 ```
 Broker metadata fetch loop:
@@ -686,7 +686,7 @@ Broker metadata fetch loop:
     If response was empty: back off (quorum.fetch.timeout.ms)
 ```
 
-When a broker is far behind (e.g., just started, or was down for a while), the controller may send a **snapshot** — a full serialized image of the current metadata state — instead of individual log records. The broker applies the snapshot, then continues with incremental fetches from the snapshot's end offset.
+When a broker is far behind (e.g., just started, or was down for a while), the controller may send a **snapshot**  a full serialized image of the current metadata state  instead of individual log records. The broker applies the snapshot, then continues with incremental fetches from the snapshot's end offset.
 
 This is dramatically more efficient than ZooKeeper mode's controller failover, where the new controller reads all state fresh from ZooKeeper on every election.
 
@@ -727,14 +727,14 @@ Kafka provided a migration path across versions 3.3-3.7:
 
 ### 5.1 MetadataCache: The Broker's View of the World
 
-Every broker maintains a `MetadataCache` — an in-memory snapshot of the cluster's current state. It answers questions like:
+Every broker maintains a `MetadataCache`  an in-memory snapshot of the cluster's current state. It answers questions like:
 - Which broker is the current leader for partition `(orders, 2)`?
 - What is the current ISR for partition `(payments, 7)`?
 - What are the endpoints (host:port) of all live brokers?
 
-The MetadataCache is what allows a broker to respond to `MetadataRequest` from clients without contacting the controller. It is also what a broker consults to correctly reject or redirect requests — if a client sends a ProduceRequest to the wrong broker (not the leader for that partition), the broker returns `NOT_LEADER_OR_FOLLOWER`, and the client uses its MetadataCache to find the correct leader (refreshing if needed).
+The MetadataCache is what allows a broker to respond to `MetadataRequest` from clients without contacting the controller. It is also what a broker consults to correctly reject or redirect requests  if a client sends a ProduceRequest to the wrong broker (not the leader for that partition), the broker returns `NOT_LEADER_OR_FOLLOWER`, and the client uses its MetadataCache to find the correct leader (refreshing if needed).
 
-The MetadataCache is not the broker's definitive truth about its own partitions — for that, each partition's `Partition` object is authoritative. The MetadataCache is the broker's knowledge about the cluster as a whole.
+The MetadataCache is not the broker's definitive truth about its own partitions  for that, each partition's `Partition` object is authoritative. The MetadataCache is the broker's knowledge about the cluster as a whole.
 
 ### 5.2 Keeping MetadataCache Current
 
@@ -784,7 +784,7 @@ The GroupCoordinator handles:
 - `LeaveGroup` requests
 - `OffsetCommit` and `OffsetFetch` (reading and writing committed offsets to `__consumer_offsets`)
 
-Consumer group state is durably stored in the `__consumer_offsets` internal topic — a compacted topic where the latest committed offset for each `(group_id, topic, partition)` tuple is the final record with that key.
+Consumer group state is durably stored in the `__consumer_offsets` internal topic  a compacted topic where the latest committed offset for each `(group_id, topic, partition)` tuple is the final record with that key.
 
 ---
 
@@ -820,7 +820,7 @@ A Kafka broker startup, step by step:
 
 6. Log recovery
    → For each partition log: find RecoveryPoint, validate, truncate if needed
-   (Section 6.2 — critical for data integrity)
+   (Section 6.2  critical for data integrity)
 
 7. Start network / I/O threads
    → SocketServer binds to configured listeners
@@ -839,7 +839,7 @@ A Kafka broker startup, step by step:
 
 ### 6.2 Log Recovery on Startup
 
-Log recovery is one of the most important — and most misunderstood — parts of the startup sequence. Its goal: ensure that the log only contains data that was durably committed to the ISR, not data that was written locally but not yet replicated.
+Log recovery is one of the most important  and most misunderstood  parts of the startup sequence. Its goal: ensure that the log only contains data that was durably committed to the ISR, not data that was written locally but not yet replicated.
 
 Kafka uses the **recovery point** (`recovery-point-offset-checkpoint` file in each log directory) and the **high watermark** to determine the safe recovery point.
 
@@ -851,7 +851,7 @@ Recovery sequence for a partition log:
    (Updated during normal operation and on controlled shutdown.)
 
 2. If the log's LEO (last written offset) > recovery point:
-   → Some data was written after the last checkpoint — unsafe to keep.
+   → Some data was written after the last checkpoint  unsafe to keep.
    → Truncate the log to the recovery point.
    → Why? Those writes may have been in-flight and never replicated.
      If we kept them and became the leader, we'd have data that
@@ -865,7 +865,7 @@ Recovery sequence for a partition log:
 4. Rebuild the offset and time indexes from the truncated log.
 ```
 
-This recovery logic ensures that even after an unclean shutdown (power loss, OOM kill), the broker starts with a consistent log state. The price is startup latency — large active segments require scanning from the last index entry to the end, which can take seconds on multi-GB segments.
+This recovery logic ensures that even after an unclean shutdown (power loss, OOM kill), the broker starts with a consistent log state. The price is startup latency  large active segments require scanning from the last index entry to the end, which can take seconds on multi-GB segments.
 
 **Why truncation is safe:** By the time the `RecoveryPoint` was written, that data had been durably written and acknowledged. Data after the recovery point was written locally but not necessarily replicated. When the broker comes back up as a follower, it will replicate whatever the leader has. When it comes back as a leader, it first needs to catch up with the ISR before accepting writes.
 
@@ -896,7 +896,7 @@ T=~102s: Broker 5 is in the ISR. ProduceRequests with acks=all now require
           acknowledgment from Broker 5 before responding to producers.
 ```
 
-The key metric is `replica.lag.time.max.ms` (default 30,000ms = 30 seconds). A replica is considered "in sync" if it has fetched from the leader within the last 30 seconds AND its LEO is within the leader's current LEO bounds. The second condition (LEO proximity) is what actually matters — a slow follower that fetches frequently but can't keep up still won't join the ISR.
+The key metric is `replica.lag.time.max.ms` (default 30,000ms = 30 seconds). A replica is considered "in sync" if it has fetched from the leader within the last 30 seconds AND its LEO is within the leader's current LEO bounds. The second condition (LEO proximity) is what actually matters  a slow follower that fetches frequently but can't keep up still won't join the ISR.
 
 ### 6.4 Controlled Shutdown: The Clean Path
 
@@ -1005,9 +1005,9 @@ Rack-aware assignment example:
   Brokers: 0 (rack=az-1), 1 (rack=az-1), 2 (rack=az-2), 3 (rack=az-2)
   Partition 0, RF=2:
     Leader: broker 0 (az-1)
-    Follower: broker 2 (az-2) — different rack, ensures rack failure tolerance
+    Follower: broker 2 (az-2)  different rack, ensures rack failure tolerance
 
-  NOT: broker 0 (az-1) + broker 1 (az-1) — same rack, no fault isolation
+  NOT: broker 0 (az-1) + broker 1 (az-1)  same rack, no fault isolation
 ```
 
 ### 7.3 Partition Count Limits: The Open File Descriptor Problem
@@ -1036,7 +1036,7 @@ Beyond file descriptors:
 - **Controller metadata overhead:** In ZooKeeper mode, each partition requires a ZooKeeper znode. At 1-10 KB per znode, 100,000 partitions is 100MB-1GB of ZooKeeper data.
 - **Controller election time:** In ZooKeeper mode, controller failover time scales linearly with partition count. At 100,000 partitions, failover takes 30-120 seconds.
 
-**Practical upper bound for ZooKeeper mode:** 4,000 partitions per broker, 50-100 brokers = ~200,000-400,000 partitions per cluster. Beyond this, KRaft is not optional — it's mandatory.
+**Practical upper bound for ZooKeeper mode:** 4,000 partitions per broker, 50-100 brokers = ~200,000-400,000 partitions per cluster. Beyond this, KRaft is not optional  it's mandatory.
 
 ### 7.4 ACLs and Quotas
 
@@ -1082,7 +1082,7 @@ This is a soft throttle: the data is written, but the response is delayed, which
 
 ### 8.1 The Purgatory Abstraction
 
-The **Purgatory** (`DelayedOperationPurgatory`) solves a fundamental problem: some requests must wait for an asynchronous condition before they can be completed. The naive solution — block the I/O thread until the condition is met — would tie up an I/O thread for the duration of `request.timeout.ms` (default 30 seconds). With 8 I/O threads and 1000 concurrent produce requests, that's a deadlock.
+The **Purgatory** (`DelayedOperationPurgatory`) solves a fundamental problem: some requests must wait for an asynchronous condition before they can be completed. The naive solution  block the I/O thread until the condition is met  would tie up an I/O thread for the duration of `request.timeout.ms` (default 30 seconds). With 8 I/O threads and 1000 concurrent produce requests, that's a deadlock.
 
 The correct solution is to **decouple the completion of a request from the thread that started processing it**. The Purgatory is that decoupling mechanism:
 
@@ -1091,7 +1091,7 @@ The correct solution is to **decouple the completion of a request from the threa
 3. Registers the operation in the Purgatory's key-based index
 4. I/O thread returns to process other requests
 
-When the completion condition occurs (e.g., a follower's LEO advances), the system looks up the relevant `DelayedOperation` in the Purgatory and completes it — typically from the same I/O thread processing the follow-up event that triggered completion.
+When the completion condition occurs (e.g., a follower's LEO advances), the system looks up the relevant `DelayedOperation` in the Purgatory and completes it  typically from the same I/O thread processing the follow-up event that triggered completion.
 
 ### 8.2 DelayedProduce: Waiting for ISR Acknowledgments
 
@@ -1101,11 +1101,11 @@ When the completion condition occurs (e.g., a follower's LEO advances), the syst
 DelayedProduce state:
   partitionStatus: Map[TopicPartition, ProducePartitionStatus]
     ProducePartitionStatus:
-      requiredOffset: Long       — followers must have LEO >= this offset
-      acksPending: Boolean       — false once this partition is satisfied
+      requiredOffset: Long        followers must have LEO >= this offset
+      acksPending: Boolean        false once this partition is satisfied
 
-  timeout: Long                  — from request's timeout_ms
-  produceMetadata: ProduceMetadata — the original request data
+  timeout: Long                   from request's timeout_ms
+  produceMetadata: ProduceMetadata  the original request data
 
 Completion condition:
   ALL partitions satisfy:
@@ -1117,7 +1117,7 @@ Expiry condition:
   → Return REQUEST_TIMED_OUT error for unsatisfied partitions
 ```
 
-When a follower's `FetchRequest` arrives and the leader updates that follower's LEO, `ReplicaManager.recordFollowerLogEndOffset()` checks if any `DelayedProduce` operations can now be completed. If so, it triggers completion — the `DelayedProduce` constructs the `ProduceResponse` and enqueues it in the response queue.
+When a follower's `FetchRequest` arrives and the leader updates that follower's LEO, `ReplicaManager.recordFollowerLogEndOffset()` checks if any `DelayedProduce` operations can now be completed. If so, it triggers completion  the `DelayedProduce` constructs the `ProduceResponse` and enqueues it in the response queue.
 
 ### 8.3 DelayedFetch: Accumulating Data for Consumers
 
@@ -1129,9 +1129,9 @@ This implements Kafka's **long polling** for consumers:
 
 ```
 DelayedFetch state:
-  fetchMetadata: FetchMetadata  — original request data
-  replicaId: Int                — -1 for clients, broker ID for followers
-  timeout: Long                 — fetch.max.wait.ms
+  fetchMetadata: FetchMetadata   original request data
+  replicaId: Int                 -1 for clients, broker ID for followers
+  timeout: Long                  fetch.max.wait.ms
 
 Completion condition (either):
   ANY partition has accumulated >= (min_bytes - already fetched bytes) of new data
@@ -1148,7 +1148,7 @@ This mechanism is how Kafka achieves low-latency delivery to real-time consumers
 
 Both `DelayedProduce` and `DelayedFetch` have timeouts. With 1 million concurrent delayed operations, managing timeouts efficiently is critical. Kafka uses a **hierarchical timing wheel** (implemented in `kafka.utils.timer.Timer`).
 
-A standard priority queue (Java's `PriorityQueue` or `TreeMap`) provides O(log n) insert and O(log n) remove-min. At 1 million operations, that's ~20 operations per insert — feasible, but becomes the bottleneck at high throughput.
+A standard priority queue (Java's `PriorityQueue` or `TreeMap`) provides O(log n) insert and O(log n) remove-min. At 1 million operations, that's ~20 operations per insert  feasible, but becomes the bottleneck at high throughput.
 
 A timing wheel provides **O(1) amortized insert and expiry**:
 
@@ -1198,7 +1198,7 @@ PriorityQueue cost:
   At 1M requests/sec: 20,000,000 comparisons/sec → ~1 CPU core just for timeout management
 
 Timing wheel cost:
-  Insert: O(1) — compute slot_index, append to list
+  Insert: O(1)  compute slot_index, append to list
   At 1M requests/sec: 1,000,000 operations/sec → trivial CPU cost
 ```
 
@@ -1231,11 +1231,11 @@ At 1 million messages per second, naive O(log n) timeout management would consum
 | Mental Model | Insight |
 |---|---|
 | **Broker = Reactor pattern** | Three roles with strict separation: Acceptor (connection dispatch), Network threads (non-blocking NIO), I/O threads (blocking disk work). Non-blocking everywhere except where blocking is unavoidable. |
-| **Request queue = backpressure valve** | The `ArrayBlockingQueue` between network and I/O threads is not an implementation detail — it is the system's natural backpressure mechanism. Full queue = disk is the bottleneck. |
+| **Request queue = backpressure valve** | The `ArrayBlockingQueue` between network and I/O threads is not an implementation detail  it is the system's natural backpressure mechanism. Full queue = disk is the bottleneck. |
 | **Controller = single-threaded state machine** | All cluster topology changes serialize through one thread on one broker. This makes correctness tractable but makes the controller the performance ceiling for cluster-wide administrative events. |
 | **ZooKeeper = external clock and registry** | In ZK mode, ZooKeeper's session timeout is the liveness detector. GC pauses > session timeout look like broker deaths. ZooKeeper is an external system that can fail independently of Kafka. |
 | **KRaft = Kafka stores its own metadata** | By making `__cluster_metadata` a Raft-replicated Kafka topic, Kafka eliminates the external dependency and makes metadata updates as fast as Raft consensus (milliseconds). |
-| **ISR join = the replication catch-up protocol** | After any restart, a broker is a follower-only participant until it has fully replicated the leader's log. It cannot join the ISR — and therefore cannot become leader — until it has proven it is current. |
+| **ISR join = the replication catch-up protocol** | After any restart, a broker is a follower-only participant until it has fully replicated the leader's log. It cannot join the ISR  and therefore cannot become leader  until it has proven it is current. |
 | **Purgatory = async completion engine** | Requests that must wait for external conditions (ISR replication, data accumulation) are parked in the Purgatory, freeing I/O threads to process other requests. The Purgatory's timer wheel is what makes this viable at scale. |
 | **Controller epoch + leader epoch = dual fencing** | The controller epoch prevents zombie controllers from corrupting cluster state. The per-partition leader epoch prevents consumers from reading from stale leaders. Two independent clocks at two different granularities. |
 
@@ -1247,16 +1247,16 @@ Part 3 goes deep into the mechanism that makes Kafka's durability promises real:
 
 We will examine:
 
-- **The fetch-based replication loop:** How follower brokers continuously replicate from leaders using the same FetchRequest API as consumers — and why this architectural choice was deliberate
-- **Log End Offset (LEO) vs. High Watermark (HW):** The two critical offsets that determine what is safe to expose to consumers and what can be acknowledged to producers — and the precise rules governing their advancement
+- **The fetch-based replication loop:** How follower brokers continuously replicate from leaders using the same FetchRequest API as consumers  and why this architectural choice was deliberate
+- **Log End Offset (LEO) vs. High Watermark (HW):** The two critical offsets that determine what is safe to expose to consumers and what can be acknowledged to producers  and the precise rules governing their advancement
 - **ISR mechanics in depth:** The exact algorithm for `replica.lag.time.max.ms` evaluation, what happens when a follower's disk falls behind under write pressure, and the ISR shrink/expand decision process
-- **Leader epoch and the log divergence problem:** What happens when a follower has data the new leader does not — and why the leader epoch was introduced in Kafka 0.11 to prevent this from causing data corruption
+- **Leader epoch and the log divergence problem:** What happens when a follower has data the new leader does not  and why the leader epoch was introduced in Kafka 0.11 to prevent this from causing data corruption
 - **Preferred leader election:** How Kafka periodically re-balances leadership to the "preferred" replica, why this matters for write throughput distribution, and how to tune `auto.leader.rebalance.enable`
 - **Rack-aware replication in practice:** Why `broker.rack` configuration is mandatory for multi-AZ deployments, and what rack-aware assignment actually looks like at the assignment algorithm level
-- **Unclean leader election revisited:** At the protocol level — exactly which records are lost, how the consumer detects the data gap via `OffsetOutOfRange`, and the correct operational response
+- **Unclean leader election revisited:** At the protocol level  exactly which records are lost, how the consumer detects the data gap via `OffsetOutOfRange`, and the correct operational response
 
 We will include protocol-level walkthroughs with precise byte-level illustrations, failure scenario analysis showing exactly which data is lost under each failure mode, and production configuration recommendations with quantitative justification.
 
 ---
 
-*This is Part 2 of a 10-part series. Part 3 will complete the architectural picture by covering the replication protocol in full — the mechanism that gives Kafka its durability properties under real-world failure conditions.*
+*This is Part 2 of a 10-part series. Part 3 will complete the architectural picture by covering the replication protocol in full  the mechanism that gives Kafka its durability properties under real-world failure conditions.*

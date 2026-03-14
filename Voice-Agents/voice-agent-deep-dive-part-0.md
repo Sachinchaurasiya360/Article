@@ -1,8 +1,8 @@
-# Voice Agents Deep Dive — Part 0: The Voice AI Landscape — How Machines Hear, Understand, and Speak
+# Voice Agents Deep Dive  Part 0: The Voice AI Landscape  How Machines Hear, Understand, and Speak
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** 0 of 19 (Foundation)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~45 minutes
@@ -22,13 +22,13 @@
 9. [Setup Instructions](#9-setup-instructions)
 10. [What You'll Build in This Series](#10-what-youll-build-in-this-series)
 11. [Vocabulary Cheat Sheet](#11-vocabulary-cheat-sheet)
-12. [What's Next — Preview of Part 1](#12-whats-next--preview-of-part-1)
+12. [What's Next  Preview of Part 1](#12-whats-next--preview-of-part-1)
 
 ---
 
 ## 1. What Voice AI Actually Is
 
-When most people hear "voice AI," they picture Siri answering a question or Alexa setting a timer. That mental model is dangerously incomplete. A voice agent is not a chatbot with a microphone taped to it. It is a **real-time, multi-stage signal processing and reasoning pipeline** that transforms acoustic pressure waves into meaningful action and back again — all within the brutally tight window of human conversational expectations.
+When most people hear "voice AI," they picture Siri answering a question or Alexa setting a timer. That mental model is dangerously incomplete. A voice agent is not a chatbot with a microphone taped to it. It is a **real-time, multi-stage signal processing and reasoning pipeline** that transforms acoustic pressure waves into meaningful action and back again  all within the brutally tight window of human conversational expectations.
 
 Let us break down what a voice agent actually does.
 
@@ -49,7 +49,7 @@ A production voice agent draws on six distinct technical disciplines. Each one i
 
 ### 1.2 The Voice Agent Pipeline
 
-Every voice agent — from the simplest prototype to a production system handling thousands of concurrent calls — follows the same fundamental pipeline:
+Every voice agent  from the simplest prototype to a production system handling thousands of concurrent calls  follows the same fundamental pipeline:
 
 ```mermaid
 graph LR
@@ -79,13 +79,13 @@ The journey begins with raw audio. A microphone converts air pressure variations
 
 - **Sample Rate:** How many times per second the signal is measured (typically 16,000 Hz for speech, 44,100 Hz for music)
 - **Bit Depth:** The precision of each sample (typically 16-bit, giving 65,536 possible values)
-- **Channels:** Mono (1) or stereo (2) — speech processing almost always uses mono
+- **Channels:** Mono (1) or stereo (2)  speech processing almost always uses mono
 
 ```python
 # What raw audio data looks like
 import numpy as np
 
-sample_rate = 16000  # 16 kHz — standard for speech
+sample_rate = 16000  # 16 kHz  standard for speech
 duration = 1.0       # 1 second
 bit_depth = 16       # 16-bit PCM
 
@@ -106,15 +106,15 @@ That is roughly **1.9 MB per minute** of uncompressed mono speech audio. Not muc
 
 #### Stage 2: Voice Activity Detection (VAD)
 
-Before you transcribe anything, you need to know *when someone is actually speaking*. VAD is the unsung hero of voice agents. Without it, you would be sending silence, background noise, and your own agent's TTS output back into the ASR engine — creating a feedback loop of nonsense.
+Before you transcribe anything, you need to know *when someone is actually speaking*. VAD is the unsung hero of voice agents. Without it, you would be sending silence, background noise, and your own agent's TTS output back into the ASR engine  creating a feedback loop of nonsense.
 
 A good VAD answers three questions:
 1. **Is someone speaking right now?** (speech vs. non-speech)
 2. **When did they start?** (speech onset detection)
-3. **When did they stop?** (endpoint detection — critical for knowing when to respond)
+3. **When did they stop?** (endpoint detection  critical for knowing when to respond)
 
 ```python
-# Silero VAD — the most popular open-source VAD model
+# Silero VAD  the most popular open-source VAD model
 # We will explore this in depth in Part 3
 import torch
 
@@ -139,7 +139,7 @@ for segment in speech_timestamps:
 
 #### Stage 3: Automatic Speech Recognition (ASR)
 
-ASR is the big one — converting audio into text. Modern ASR uses deep neural networks (typically Transformer-based architectures) trained on hundreds of thousands of hours of transcribed speech.
+ASR is the big one  converting audio into text. Modern ASR uses deep neural networks (typically Transformer-based architectures) trained on hundreds of thousands of hours of transcribed speech.
 
 The two dominant approaches today:
 
@@ -149,7 +149,7 @@ The two dominant approaches today:
 | **Local Model** | Whisper, faster-whisper | Free, private, offline capable | Higher latency, requires GPU, less accurate on edge cases |
 
 ```python
-# Whisper — OpenAI's open-source ASR model
+# Whisper  OpenAI's open-source ASR model
 import whisper
 
 model = whisper.load_model("base")  # Options: tiny, base, small, medium, large
@@ -170,7 +170,7 @@ Once you have text, you need to understand what the user *means*. This goes beyo
 - **Intent Classification:** What does the user want to do? (book_table, cancel_reservation, ask_hours)
 - **Entity Extraction:** What are the key details? (party_size=2, time=19:00, date=tonight)
 - **Sentiment Analysis:** Is the user happy, frustrated, confused?
-- **Context Resolution:** "Make it for three instead" — what does "it" refer to?
+- **Context Resolution:** "Make it for three instead"  what does "it" refer to?
 
 In modern voice agents, this is increasingly handled by the LLM itself, but understanding the NLU layer is critical for building reliable systems.
 
@@ -230,13 +230,13 @@ This is where the reasoning happens. The LLM receives the conversation context, 
 - A **system prompt** defining the agent's persona, capabilities, and constraints
 - The **conversation history** (often summarized to save tokens)
 - Any **tool/function definitions** the agent can call (book a table, look up inventory, transfer to a human)
-- **Response format instructions** (keep it concise — people cannot re-read voice output)
+- **Response format instructions** (keep it concise  people cannot re-read voice output)
 
 > **Key Insight:** Responses for voice must be fundamentally different from text chat responses. No bullet points. No markdown. No "Here are 5 options." Voice responses must be conversational, concise, and structured for the ear, not the eye.
 
 #### Stage 7: Text-to-Speech (TTS)
 
-The LLM's text response is converted back into audio. Modern TTS has gotten remarkably good — ElevenLabs and OpenAI's TTS models produce speech that is nearly indistinguishable from human recordings. The key metrics:
+The LLM's text response is converted back into audio. Modern TTS has gotten remarkably good  ElevenLabs and OpenAI's TTS models produce speech that is nearly indistinguishable from human recordings. The key metrics:
 
 - **Time to First Byte (TTFB):** How quickly the first audio chunk is ready to play
 - **Naturalness:** Does it sound like a human or a robot?
@@ -251,7 +251,7 @@ The synthesized audio is sent to a speaker (or back through a phone line, WebRTC
 - **Audio format conversion** (sample rate, bit depth, codec)
 - **Buffer management** (underrun = clicks/silence, overrun = delays)
 - **Echo cancellation** (preventing the agent from hearing its own voice)
-- **Barge-in** (user interrupts the agent mid-sentence — you must stop playback immediately)
+- **Barge-in** (user interrupts the agent mid-sentence  you must stop playback immediately)
 
 ### 1.3 The Pipeline in Motion
 
@@ -275,13 +275,13 @@ Time    Event
 Total perceived latency: ~1900ms (from end of speech to hearing response)
 ```
 
-That 1.9 seconds is *too slow* for a natural conversation. Optimizing this pipeline — through streaming, parallelization, model selection, and architectural choices — is the central engineering challenge of voice AI. We will spend several parts of this series attacking this problem from every angle.
+That 1.9 seconds is *too slow* for a natural conversation. Optimizing this pipeline  through streaming, parallelization, model selection, and architectural choices  is the central engineering challenge of voice AI. We will spend several parts of this series attacking this problem from every angle.
 
 ---
 
 ## 2. How Humans Produce and Perceive Speech
 
-To build systems that process speech, you need a working mental model of how speech is produced and heard. You do not need a degree in linguistics or audiology — but you do need enough understanding to know *why* certain engineering decisions matter.
+To build systems that process speech, you need a working mental model of how speech is produced and heard. You do not need a degree in linguistics or audiology  but you do need enough understanding to know *why* certain engineering decisions matter.
 
 ### 2.1 Speech Production: The Human Voice as an Instrument
 
@@ -307,11 +307,11 @@ graph TB
 
 **1. The Power Source (Lungs and Diaphragm)**
 
-Your lungs push air upward through the trachea. This airflow is the raw energy that drives speech — no air, no sound. The rate and pressure of airflow control **volume** (loudness). Try whispering versus shouting — the difference is almost entirely in how much air pressure you apply.
+Your lungs push air upward through the trachea. This airflow is the raw energy that drives speech  no air, no sound. The rate and pressure of airflow control **volume** (loudness). Try whispering versus shouting  the difference is almost entirely in how much air pressure you apply.
 
 **2. The Sound Source (Larynx and Vocal Cords)**
 
-The larynx (voice box) sits at the top of the trachea. Inside it are the **vocal folds** (commonly called vocal cords) — two small flaps of tissue that can vibrate when air passes through them.
+The larynx (voice box) sits at the top of the trachea. Inside it are the **vocal folds** (commonly called vocal cords)  two small flaps of tissue that can vibrate when air passes through them.
 
 - When relaxed and open: air passes freely → breathing (no sound)
 - When brought together: air pressure builds below, forces them apart, they snap back → vibration → sound
@@ -367,14 +367,14 @@ def estimate_f0(audio: np.ndarray, sample_rate: int = 16000) -> float:
 
 **3. The Filter (Vocal Tract)**
 
-The vocal tract — the tube from your larynx to your lips — shapes the raw buzzing sound into recognizable speech sounds. It acts as a **resonant filter**, amplifying certain frequencies and dampening others.
+The vocal tract  the tube from your larynx to your lips  shapes the raw buzzing sound into recognizable speech sounds. It acts as a **resonant filter**, amplifying certain frequencies and dampening others.
 
 The frequencies that get amplified are called **formants**:
 - **F1** (first formant): ~300–1000 Hz, controlled mainly by jaw openness
 - **F2** (second formant): ~800–2500 Hz, controlled mainly by tongue position (front/back)
 - **F3** (third formant): ~1500–3500 Hz, helps distinguish specific consonants
 
-> **Why This Matters for Developers:** Formants are the reason the Mel scale exists. The Mel scale warps frequency to match how humans perceive pitch — and it is the foundation of virtually every speech processing feature (MFCCs, mel spectrograms, etc.). Understanding formants helps you understand why mel spectrograms look the way they do.
+> **Why This Matters for Developers:** Formants are the reason the Mel scale exists. The Mel scale warps frequency to match how humans perceive pitch  and it is the foundation of virtually every speech processing feature (MFCCs, mel spectrograms, etc.). Understanding formants helps you understand why mel spectrograms look the way they do.
 
 **4. The Articulators (Lips, Teeth, Tongue, Palate)**
 
@@ -393,7 +393,7 @@ These shape the vocal tract into different configurations, producing different s
 This distinction is crucial for speech processing:
 
 - **Voiced sounds:** Vocal cords vibrate. Includes all vowels and consonants like /b/, /d/, /g/, /z/, /v/. These have periodic waveforms and clear pitch.
-- **Unvoiced sounds:** Vocal cords do not vibrate. Includes /p/, /t/, /k/, /s/, /f/, /sh/. These look like noise — aperiodic, no clear pitch.
+- **Unvoiced sounds:** Vocal cords do not vibrate. Includes /p/, /t/, /k/, /s/, /f/, /sh/. These look like noise  aperiodic, no clear pitch.
 
 ```python
 # Visualizing voiced vs. unvoiced sounds
@@ -406,11 +406,11 @@ def demonstrate_voiced_vs_unvoiced():
     Generate synthetic examples of voiced and unvoiced sounds.
     """
     sample_rate = 16000
-    duration = 0.05  # 50ms window — enough to see periodicity
+    duration = 0.05  # 50ms window  enough to see periodicity
     t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
 
     # Voiced sound: periodic signal (like a vowel)
-    f0 = 150  # Hz — typical male fundamental frequency
+    f0 = 150  # Hz  typical male fundamental frequency
     voiced = np.zeros_like(t)
     for harmonic in range(1, 20):
         amplitude = 1.0 / harmonic  # Harmonics decrease in amplitude
@@ -422,13 +422,13 @@ def demonstrate_voiced_vs_unvoiced():
     fig, axes = plt.subplots(2, 1, figsize=(12, 6))
 
     axes[0].plot(t * 1000, voiced, color="steelblue", linewidth=0.8)
-    axes[0].set_title("Voiced Sound (e.g., vowel /a/) — Periodic", fontsize=13)
+    axes[0].set_title("Voiced Sound (e.g., vowel /a/)  Periodic", fontsize=13)
     axes[0].set_ylabel("Amplitude")
     axes[0].set_xlabel("Time (ms)")
     axes[0].grid(True, alpha=0.3)
 
     axes[1].plot(t * 1000, unvoiced, color="coral", linewidth=0.8)
-    axes[1].set_title("Unvoiced Sound (e.g., /s/) — Aperiodic (Noise)", fontsize=13)
+    axes[1].set_title("Unvoiced Sound (e.g., /s/)  Aperiodic (Noise)", fontsize=13)
     axes[1].set_ylabel("Amplitude")
     axes[1].set_xlabel("Time (ms)")
     axes[1].grid(True, alpha=0.3)
@@ -458,9 +458,9 @@ The **cochlea** is the star of the show. It is a spiral-shaped, fluid-filled tub
 - Hair cells at the **apex** respond to **low frequencies** (~20 Hz)
 - The spacing is **logarithmic**, not linear
 
-This means the cochlea is literally performing a **frequency analysis** of the incoming sound — similar to a Fourier Transform, but with logarithmic frequency spacing.
+This means the cochlea is literally performing a **frequency analysis** of the incoming sound  similar to a Fourier Transform, but with logarithmic frequency spacing.
 
-> **Why This Matters:** This logarithmic frequency sensitivity is why we use the **Mel scale** in speech processing. The Mel scale is a perceptual scale that maps physical frequency (Hz) to perceived pitch (Mels). It is approximately linear below 1000 Hz and logarithmic above 1000 Hz — matching how the cochlea works.
+> **Why This Matters:** This logarithmic frequency sensitivity is why we use the **Mel scale** in speech processing. The Mel scale is a perceptual scale that maps physical frequency (Hz) to perceived pitch (Mels). It is approximately linear below 1000 Hz and logarithmic above 1000 Hz  matching how the cochlea works.
 
 ```python
 # The Mel scale: mapping Hz to human perception
@@ -511,12 +511,12 @@ for hz in frequencies:
 | Human Hearing Property | Engineering Implication |
 |----------------------|----------------------|
 | Frequency range: 20 Hz – 20,000 Hz | Speech energy is mostly in 300–3,400 Hz (telephone band) |
-| Most sensitive: 1,000 – 4,000 Hz | This is where consonant clarity lives — critical for intelligibility |
+| Most sensitive: 1,000 – 4,000 Hz | This is where consonant clarity lives  critical for intelligibility |
 | Logarithmic frequency perception | Use Mel scale or log frequency in feature extraction |
-| Temporal resolution: ~2–3 ms | We can hear clicks as short as 2ms — explains why audio glitches are so noticeable |
+| Temporal resolution: ~2–3 ms | We can hear clicks as short as 2ms  explains why audio glitches are so noticeable |
 | Gap detection: ~2–3 ms | Silence gaps shorter than 2ms are not perceived as silence |
-| Cocktail party effect | Humans can focus on one speaker in noise — a massive challenge for ASR |
-| McGurk effect | Visual cues (lip reading) alter what we *hear* — multimodal processing is real |
+| Cocktail party effect | Humans can focus on one speaker in noise  a massive challenge for ASR |
+| McGurk effect | Visual cues (lip reading) alter what we *hear*  multimodal processing is real |
 
 ### 2.3 Why This Biology Matters for Code
 
@@ -534,7 +534,7 @@ The biology gives you intuition. Intuition lets you make better engineering deci
 
 ## 3. History of Voice AI
 
-Voice AI did not spring into existence with ChatGPT. It has been a 70+ year journey of incremental breakthroughs, dead ends, and paradigm shifts. Understanding this history helps you appreciate why the current landscape looks the way it does — and where it is heading.
+Voice AI did not spring into existence with ChatGPT. It has been a 70+ year journey of incremental breakthroughs, dead ends, and paradigm shifts. Understanding this history helps you appreciate why the current landscape looks the way it does  and where it is heading.
 
 ### 3.1 The Timeline
 
@@ -597,7 +597,7 @@ timeline
 
 **The problem being solved:** Can a machine recognize any spoken words at all?
 
-The first speech recognition system, **Audrey** (1952, Bell Labs), could recognize spoken digits (0–9) from a single speaker. It used analog circuits to match formant frequencies. No learning, no statistics — pure electrical engineering.
+The first speech recognition system, **Audrey** (1952, Bell Labs), could recognize spoken digits (0–9) from a single speaker. It used analog circuits to match formant frequencies. No learning, no statistics  pure electrical engineering.
 
 Key limitations:
 - Single speaker only
@@ -605,7 +605,7 @@ Key limitations:
 - Tiny vocabularies (10–100 words)
 - Quiet room required
 
-**Why it matters today:** These systems established the fundamental approach of converting speech to frequency representations and matching patterns — the same basic idea behind modern ASR, just implemented with neural networks instead of hand-crafted rules.
+**Why it matters today:** These systems established the fundamental approach of converting speech to frequency representations and matching patterns  the same basic idea behind modern ASR, just implemented with neural networks instead of hand-crafted rules.
 
 #### Era 2: The Statistical Era (1980s–2010s)
 
@@ -643,7 +643,7 @@ The landmark products of this era:
 
 | Product | Year | Significance |
 |---------|------|-------------|
-| Dragon NaturallySpeaking | 1997 | First consumer dictation software. Required "training" — reading text aloud for 30+ minutes so it could learn your voice. |
+| Dragon NaturallySpeaking | 1997 | First consumer dictation software. Required "training"  reading text aloud for 30+ minutes so it could learn your voice. |
 | IVR Systems | 1990s | "Press 1 for billing, or say 'billing.'" The first time most people talked to a machine. Universally despised. |
 | Google Voice Search | 2007 | GOOG-411: free directory assistance. The hidden purpose was collecting massive voice data for training. |
 
@@ -655,11 +655,11 @@ The landmark products of this era:
 
 Deep neural networks replaced GMMs for acoustic modeling, then gradually replaced HMMs entirely. Key milestones:
 
-- **2012:** Deep neural networks for acoustic modeling (Microsoft, Google) — 30% relative error reduction overnight
-- **2014:** Baidu's DeepSpeech — end-to-end neural ASR (audio in, text out, no phonemes)
+- **2012:** Deep neural networks for acoustic modeling (Microsoft, Google)  30% relative error reduction overnight
+- **2014:** Baidu's DeepSpeech  end-to-end neural ASR (audio in, text out, no phonemes)
 - **2016:** CTC loss function enables training without pre-aligned transcripts
-- **2017:** Transformers ("Attention Is All You Need") — would eventually reshape everything
-- **2018:** Google Duplex — an AI system that could call restaurants and book reservations, complete with "um" and "uh" — the first time an AI passed an informal Turing test in conversation
+- **2017:** Transformers ("Attention Is All You Need")  would eventually reshape everything
+- **2018:** Google Duplex  an AI system that could call restaurants and book reservations, complete with "um" and "uh"  the first time an AI passed an informal Turing test in conversation
 
 ```python
 # The shift from HMM to end-to-end deep learning
@@ -730,7 +730,7 @@ These systems proved the market but exposed the fundamental limitations of pipel
 The integration of Large Language Models changed everything:
 
 - **GPT-4 + voice** (2023): LLMs replace the rigid NLU/dialog manager with flexible reasoning
-- **GPT-4o** (May 2024): Native multimodal model — speech in, speech out, without separate ASR/TTS pipeline
+- **GPT-4o** (May 2024): Native multimodal model  speech in, speech out, without separate ASR/TTS pipeline
 - **Real-time Voice API** (October 2024): OpenAI's API for building voice agents with GPT-4o's native voice
 - **Open-source frameworks** (2024–2025): LiveKit Agents, Pipecat, Vocode make it possible to build production voice agents
 - **Specialized models** (2025): Dedicated voice agent models optimized for low latency and natural conversation
@@ -741,7 +741,7 @@ The integration of Large Language Models changed everything:
 
 ## 4. Types of Voice Applications
 
-Voice AI is not one market — it is a dozen different markets with different requirements, constraints, and success metrics. Understanding the landscape helps you choose the right architecture for your use case.
+Voice AI is not one market  it is a dozen different markets with different requirements, constraints, and success metrics. Understanding the landscape helps you choose the right architecture for your use case.
 
 ### 4.1 Application Categories
 
@@ -803,7 +803,7 @@ graph TB
 2. **Emotion detection:** An angry customer needs empathy, not efficiency. Detecting frustration and adjusting tone is critical.
 3. **Compliance:** "This call may be recorded..." is a legal requirement. Certain industries (healthcare, finance) have strict rules about what an AI can and cannot say.
 4. **Escalation intelligence:** Knowing *when* to transfer to a human is as important as handling the call.
-5. **Telephony integration:** Working with SIP, PSTN, hold/transfer/conference — a whole world of complexity.
+5. **Telephony integration:** Working with SIP, PSTN, hold/transfer/conference  a whole world of complexity.
 
 ### 4.3 Deep Dive: Real-Time Voice Assistants
 
@@ -828,13 +828,13 @@ Research in conversational analysis has established these benchmarks:
 
 | Response Delay | Human Perception |
 |---------------|-----------------|
-| 0–200ms | Natural, comfortable — this is the normal gap between turns in conversation |
-| 200–500ms | Noticeable but acceptable — listener may feel slight unease |
-| 500–1000ms | Awkward — feels like the agent is slow or confused |
-| 1000–2000ms | Frustrating — listener starts to wonder if connection is lost |
-| > 2000ms | Broken — listener will repeat themselves or hang up |
+| 0–200ms | Natural, comfortable  this is the normal gap between turns in conversation |
+| 200–500ms | Noticeable but acceptable  listener may feel slight unease |
+| 500–1000ms | Awkward  feels like the agent is slow or confused |
+| 1000–2000ms | Frustrating  listener starts to wonder if connection is lost |
+| > 2000ms | Broken  listener will repeat themselves or hang up |
 
-The average turn-taking gap in human conversation is approximately **200 milliseconds**. Some studies measure it at 200–300ms. This means that in natural conversation, the listener begins formulating their response *before the speaker finishes* — they are predicting the endpoint and pre-planning their reply.
+The average turn-taking gap in human conversation is approximately **200 milliseconds**. Some studies measure it at 200–300ms. This means that in natural conversation, the listener begins formulating their response *before the speaker finishes*  they are predicting the endpoint and pre-planning their reply.
 
 A voice agent cannot do that (yet). It must wait for the speaker to finish, then process everything sequentially. This is the fundamental disadvantage.
 
@@ -1005,7 +1005,7 @@ graph TB
 
 ### 6.3 Voice Agent Frameworks
 
-These frameworks handle the orchestration — connecting ASR, LLM, and TTS into a working pipeline with proper streaming, interruption handling, and turn-taking.
+These frameworks handle the orchestration  connecting ASR, LLM, and TTS into a working pipeline with proper streaming, interruption handling, and turn-taking.
 
 | Framework | Type | Key Features | Best For |
 |-----------|------|-------------|----------|
@@ -1070,10 +1070,10 @@ import matplotlib.pyplot as plt
 from scipy.io import wavfile
 
 # ── Configuration ──────────────────────────────────────────────
-SAMPLE_RATE = 16000   # 16 kHz — standard for speech processing
+SAMPLE_RATE = 16000   # 16 kHz  standard for speech processing
 DURATION = 3.0        # Record for 3 seconds
 CHANNELS = 1          # Mono audio (single channel)
-DTYPE = "int16"       # 16-bit PCM — CD quality for speech
+DTYPE = "int16"       # 16-bit PCM  CD quality for speech
 
 # ── Step 1: Record ─────────────────────────────────────────────
 print(f"Recording {DURATION} seconds of audio...")
@@ -1117,7 +1117,7 @@ axes[0].set_ylabel("Amplitude")
 axes[0].grid(True, alpha=0.3)
 axes[0].set_xlim(0, DURATION)
 
-# Plot 2: Zoomed in (first 50ms) — shows individual oscillations
+# Plot 2: Zoomed in (first 50ms)  shows individual oscillations
 zoom_samples = int(0.05 * SAMPLE_RATE)  # 50ms
 axes[1].plot(
     time_axis[:zoom_samples] * 1000,  # Convert to milliseconds
@@ -1125,7 +1125,7 @@ axes[1].plot(
     color="coral",
     linewidth=1.0,
 )
-axes[1].set_title("Zoomed In: First 50ms — Individual Oscillations", fontsize=14)
+axes[1].set_title("Zoomed In: First 50ms  Individual Oscillations", fontsize=14)
 axes[1].set_xlabel("Time (milliseconds)")
 axes[1].set_ylabel("Amplitude")
 axes[1].grid(True, alpha=0.3)
@@ -1159,9 +1159,9 @@ print("\nWaveform visualization saved to waveform_analysis.png")
 
 When you run this code and say "Hello, world," here is what you should see:
 
-1. **Full waveform:** The overall shape of your speech — louder parts have larger oscillations, silences are flat
-2. **Zoomed view:** Individual pressure oscillations — you can see the periodicity of voiced sounds
-3. **RMS envelope:** The "volume" over time — you can clearly see where speech starts and stops (this is basically what VAD does)
+1. **Full waveform:** The overall shape of your speech  louder parts have larger oscillations, silences are flat
+2. **Zoomed view:** Individual pressure oscillations  you can see the periodicity of voiced sounds
+3. **RMS envelope:** The "volume" over time  you can clearly see where speech starts and stops (this is basically what VAD does)
 
 ### 7.4 Exploring Audio Properties
 
@@ -1344,7 +1344,7 @@ def generate_response(user_text: str) -> str:
                 "content": (
                     "You are a friendly voice assistant. Keep responses "
                     "short (1-2 sentences) and conversational. Do not use "
-                    "markdown, bullet points, or formatting — your response "
+                    "markdown, bullet points, or formatting  your response "
                     "will be spoken aloud."
                 ),
             },
@@ -1433,7 +1433,7 @@ Let us instrument our voice agent to measure the latency at each stage:
 
 ```python
 """
-Instrumented Voice Agent — Measures latency at each pipeline stage.
+Instrumented Voice Agent  Measures latency at each pipeline stage.
 
 This version adds timing measurements to understand where
 time is being spent. This is the first step toward optimization.
@@ -1488,13 +1488,13 @@ class LatencyReport:
 
         # Assessment
         if perceived < 1000:
-            assessment = "EXCELLENT — Near-conversational latency"
+            assessment = "EXCELLENT  Near-conversational latency"
         elif perceived < 2000:
-            assessment = "ACCEPTABLE — Noticeable but usable"
+            assessment = "ACCEPTABLE  Noticeable but usable"
         elif perceived < 3000:
-            assessment = "SLOW — Users will notice significant delay"
+            assessment = "SLOW  Users will notice significant delay"
         else:
-            assessment = "TOO SLOW — Unusable for real-time conversation"
+            assessment = "TOO SLOW  Unusable for real-time conversation"
 
         print(f"  Assessment: {assessment}")
         print("=" * 50)
@@ -1597,7 +1597,7 @@ class InstrumentedVoiceAgent:
 def main():
     agent = InstrumentedVoiceAgent(record_seconds=4)
 
-    print("Instrumented Voice Agent — Latency Measurement")
+    print("Instrumented Voice Agent  Latency Measurement")
     print("Press Ctrl+C to stop\n")
 
     reports = []
@@ -1640,7 +1640,7 @@ LATENCY BREAKDOWN
   Total............  9100ms
   Perceived........  2600ms
 
-  Assessment: SLOW — Users will notice significant delay
+  Assessment: SLOW  Users will notice significant delay
 ==================================================
 ```
 
@@ -1709,7 +1709,7 @@ pip install sounddevice numpy scipy matplotlib openai-whisper faster-whisper \
 Create a `.env` file in your project root:
 
 ```bash
-# .env — DO NOT commit this file to git!
+# .env  DO NOT commit this file to git!
 OPENAI_API_KEY=sk-your-openai-key-here
 DEEPGRAM_API_KEY=your-deepgram-key-here
 ELEVENLABS_API_KEY=your-elevenlabs-key-here
@@ -1781,9 +1781,9 @@ def check_audio_setup():
         print(f"  RMS amplitude: {rms:.4f}")
 
         if peak < 0.001:
-            print("  WARNING: Very low signal — microphone may be muted")
+            print("  WARNING: Very low signal  microphone may be muted")
         elif peak > 0.95:
-            print("  WARNING: Signal clipping — microphone level too high")
+            print("  WARNING: Signal clipping  microphone level too high")
         else:
             print("  Microphone is working correctly!")
 
@@ -1859,9 +1859,9 @@ This is a 20-part series that takes you from zero to production-ready voice agen
 | **1** | **Audio Fundamentals** | Sampling, quantization, PCM, WAV, frequency, Nyquist | Audio recorder and analyzer |
 | **2** | **Digital Signal Processing for Speech** | FFT, spectrograms, mel scale, MFCCs, filters | Spectrogram visualizer |
 | **3** | **Voice Activity Detection (VAD)** | Energy-based VAD, Silero VAD, WebRTC VAD, endpoint detection | Real-time VAD system |
-| **4** | **Automatic Speech Recognition — Foundations** | CTC, attention, encoder-decoder, Whisper architecture | Whisper from scratch |
+| **4** | **Automatic Speech Recognition  Foundations** | CTC, attention, encoder-decoder, Whisper architecture | Whisper from scratch |
 | **5** | **Streaming ASR** | Chunked transcription, partial results, faster-whisper, Deepgram | Streaming transcription engine |
-| **6** | **Text-to-Speech — Foundations** | Mel spectrogram generation, vocoders, VITS, Tacotron | TTS pipeline |
+| **6** | **Text-to-Speech  Foundations** | Mel spectrogram generation, vocoders, VITS, Tacotron | TTS pipeline |
 | **7** | **Streaming TTS** | Chunked synthesis, TTFB optimization, sentence splitting | Streaming TTS engine |
 | **8** | **LLM Integration for Voice** | Prompt engineering for voice, streaming responses, function calling | Voice-enabled LLM chat |
 | **9** | **Building the Pipeline** | Connecting ASR + LLM + TTS, streaming architecture, backpressure | Full voice pipeline |
@@ -1880,16 +1880,16 @@ This is a 20-part series that takes you from zero to production-ready voice agen
 
 By the end of this series, you will have built:
 
-1. **Audio Processing Toolkit** — Record, analyze, and visualize audio from scratch
-2. **Custom VAD System** — Detect speech in real-time with configurable sensitivity
-3. **Streaming ASR Engine** — Transcribe speech in real-time with sub-300ms latency
-4. **Streaming TTS Engine** — Generate speech with TTFB under 200ms
-5. **Full Voice Pipeline** — End-to-end voice agent with streaming at every stage
-6. **Interruptible Agent** — Handle barge-in and natural turn-taking
-7. **Phone Agent** — Voice agent that makes and receives real phone calls
-8. **Browser Agent** — Voice agent running in a web browser via WebRTC
-9. **Multi-Speaker System** — Identify and track multiple speakers in conversation
-10. **Production Agent** — Fully deployed, monitored, and tested voice agent
+1. **Audio Processing Toolkit**  Record, analyze, and visualize audio from scratch
+2. **Custom VAD System**  Detect speech in real-time with configurable sensitivity
+3. **Streaming ASR Engine**  Transcribe speech in real-time with sub-300ms latency
+4. **Streaming TTS Engine**  Generate speech with TTFB under 200ms
+5. **Full Voice Pipeline**  End-to-end voice agent with streaming at every stage
+6. **Interruptible Agent**  Handle barge-in and natural turn-taking
+7. **Phone Agent**  Voice agent that makes and receives real phone calls
+8. **Browser Agent**  Voice agent running in a web browser via WebRTC
+9. **Multi-Speaker System**  Identify and track multiple speakers in conversation
+10. **Production Agent**  Fully deployed, monitored, and tested voice agent
 
 ### 10.3 Prerequisites
 
@@ -1910,46 +1910,46 @@ You do NOT need:
 
 ## 11. Vocabulary Cheat Sheet
 
-Here is every key term introduced in this article. Bookmark this — you will reference it throughout the series.
+Here is every key term introduced in this article. Bookmark this  you will reference it throughout the series.
 
 | Term | Definition |
 |------|-----------|
-| **ASR** | Automatic Speech Recognition — converting audio waveforms into text |
-| **TTS** | Text-to-Speech — converting text into synthesized speech audio |
-| **VAD** | Voice Activity Detection — determining when someone is speaking vs. silence |
-| **NLU** | Natural Language Understanding — extracting meaning, intent, and entities from text |
-| **STT** | Speech-to-Text — synonym for ASR |
+| **ASR** | Automatic Speech Recognition  converting audio waveforms into text |
+| **TTS** | Text-to-Speech  converting text into synthesized speech audio |
+| **VAD** | Voice Activity Detection  determining when someone is speaking vs. silence |
+| **NLU** | Natural Language Understanding  extracting meaning, intent, and entities from text |
+| **STT** | Speech-to-Text  synonym for ASR |
 | **F0 (Fundamental Frequency)** | The rate at which vocal cords vibrate; perceived as pitch |
 | **Formants** | Resonant frequencies of the vocal tract (F1, F2, F3); determine vowel identity |
 | **Mel Scale** | Perceptual scale mapping physical frequency to human pitch perception |
-| **MFCC** | Mel-Frequency Cepstral Coefficients — compact features representing speech spectral shape |
+| **MFCC** | Mel-Frequency Cepstral Coefficients  compact features representing speech spectral shape |
 | **Spectrogram** | Visual representation of frequency content over time |
 | **Sample Rate** | Number of audio samples captured per second (e.g., 16,000 Hz) |
 | **Bit Depth** | Number of bits per audio sample (e.g., 16-bit = 65,536 levels) |
-| **PCM** | Pulse Code Modulation — standard uncompressed digital audio format |
-| **TTFB** | Time to First Byte — how quickly the first chunk of output is available |
-| **TTFT** | Time to First Token — how quickly an LLM generates its first output token |
+| **PCM** | Pulse Code Modulation  standard uncompressed digital audio format |
+| **TTFB** | Time to First Byte  how quickly the first chunk of output is available |
+| **TTFT** | Time to First Token  how quickly an LLM generates its first output token |
 | **Endpoint Detection** | Determining when a speaker has finished their turn (related to VAD) |
 | **Barge-in** | When a user interrupts the agent while it is still speaking |
 | **Turn-Taking** | The conversational protocol of alternating between speaker and listener |
 | **Streaming** | Processing and outputting data incrementally rather than all at once |
-| **WebRTC** | Web Real-Time Communication — protocol for real-time audio/video in browsers |
-| **SIP** | Session Initiation Protocol — standard protocol for voice/video calls (telephony) |
-| **PSTN** | Public Switched Telephone Network — the traditional phone system |
-| **WER** | Word Error Rate — standard metric for ASR accuracy (lower is better) |
+| **WebRTC** | Web Real-Time Communication  protocol for real-time audio/video in browsers |
+| **SIP** | Session Initiation Protocol  standard protocol for voice/video calls (telephony) |
+| **PSTN** | Public Switched Telephone Network  the traditional phone system |
+| **WER** | Word Error Rate  standard metric for ASR accuracy (lower is better) |
 | **Prosody** | Rhythm, stress, and intonation patterns in speech |
 | **Diarization** | Identifying "who spoke when" in multi-speaker audio |
-| **CTC** | Connectionist Temporal Classification — training method for sequence models without alignment |
-| **HMM** | Hidden Markov Model — statistical model used in classical speech recognition |
+| **CTC** | Connectionist Temporal Classification  training method for sequence models without alignment |
+| **HMM** | Hidden Markov Model  statistical model used in classical speech recognition |
 | **Vocoder** | Algorithm that converts spectral representations back into audio waveforms |
 | **Echo Cancellation** | Removing the agent's own audio output from the microphone input |
-| **IVR** | Interactive Voice Response — "Press 1 for billing" phone menu systems |
+| **IVR** | Interactive Voice Response  "Press 1 for billing" phone menu systems |
 | **Crest Factor** | Ratio of peak amplitude to RMS amplitude; measures signal dynamics |
 | **Zero Crossing Rate** | How often the audio signal changes sign; indicates frequency content |
 
 ---
 
-## 12. What's Next — Preview of Part 1
+## 12. What's Next  Preview of Part 1
 
 In **Part 1: Audio Fundamentals**, we dive deep into how sound becomes data. This is the foundation that everything else builds on.
 
@@ -1957,16 +1957,16 @@ Here is what you will learn:
 
 ### Sound as a Physical Phenomenon
 - What sound actually is (pressure waves in air)
-- Frequency, amplitude, and phase — the three properties of any sound
+- Frequency, amplitude, and phase  the three properties of any sound
 - Pure tones vs. complex sounds (real speech is complex)
 
 ### Analog to Digital Conversion
-- **Sampling:** Capturing snapshots of a continuous signal (the Nyquist theorem — why 16 kHz is enough for speech)
+- **Sampling:** Capturing snapshots of a continuous signal (the Nyquist theorem  why 16 kHz is enough for speech)
 - **Quantization:** Mapping continuous amplitudes to discrete values (why 16-bit is standard)
 - **PCM encoding:** How samples are stored as bytes
 
 ### Audio File Formats
-- WAV, FLAC, MP3, Opus, OGG — when to use each
+- WAV, FLAC, MP3, Opus, OGG  when to use each
 - Headers, metadata, and encoding schemes
 - Reading and writing audio files in Python from scratch
 
@@ -1974,7 +1974,7 @@ Here is what you will learn:
 - Waveform visualization and interpretation
 - Energy computation (RMS, peak, dB scale)
 - Zero crossing rate and what it tells you
-- Windowing and framing — chopping audio into analyzable chunks
+- Windowing and framing  chopping audio into analyzable chunks
 
 ### Hands-On Project: Audio Processing Toolkit
 You will build a complete audio processing toolkit in Python that can:
@@ -1992,7 +1992,7 @@ def read_wav(filepath: str) -> tuple[int, np.ndarray]:
     """
     Read a WAV file by parsing the RIFF header manually.
 
-    No libraries needed — just understanding the file format.
+    No libraries needed  just understanding the file format.
     This teaches you exactly what 'audio data' means at the byte level.
     """
     with open(filepath, "rb") as f:
@@ -2029,8 +2029,8 @@ def read_wav(filepath: str) -> tuple[int, np.ndarray]:
 
 ---
 
-**Next up:** [Part 1 — Audio Fundamentals: How Sound Becomes Data](/voice-agents/part-1-audio-fundamentals)
+**Next up:** [Part 1  Audio Fundamentals: How Sound Becomes Data](/voice-agents/part-1-audio-fundamentals)
 
 ---
 
-*This is Part 0 of the 20-part series "Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production." Follow along as we build production-grade voice agents from the ground up.*
+*This is Part 0 of the 20-part series "Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production." Follow along as we build production-grade voice agents from the ground up.*

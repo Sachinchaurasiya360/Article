@@ -1,8 +1,8 @@
-# Voice Agents Deep Dive — Part 3: Speech Recognition — From Sound Waves to Text
+# Voice Agents Deep Dive  Part 3: Speech Recognition  From Sound Waves to Text
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** 3 of 20 (Speech Recognition)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~55 minutes
@@ -20,21 +20,21 @@
 7. [Word Error Rate (WER)](#word-error-rate-wer)
 8. [Building a Multi-Engine Transcription Service](#building-a-multi-engine-transcription-service)
 9. [Vocabulary Cheat Sheet](#vocabulary-cheat-sheet)
-10. [What's Next — Part 4](#whats-next--part-4-real-time-asr-and-streaming-pipelines)
+10. [What's Next  Part 4](#whats-next--part-4-real-time-asr-and-streaming-pipelines)
 
 ---
 
 ## Recap of Part 2
 
-In **Part 2**, we explored the fascinating world of **digital audio fundamentals** — the hidden physics and mathematics that underpin every voice agent. We learned how sound travels as longitudinal pressure waves through air, how microphones convert those pressure variations into electrical signals, and how **Analog-to-Digital Converters (ADCs)** sample and quantize those signals into discrete numbers a computer can process. We implemented our own audio recording pipeline, visualized waveforms, and built spectrograms using the **Fast Fourier Transform (FFT)**.
+In **Part 2**, we explored the fascinating world of **digital audio fundamentals**  the hidden physics and mathematics that underpin every voice agent. We learned how sound travels as longitudinal pressure waves through air, how microphones convert those pressure variations into electrical signals, and how **Analog-to-Digital Converters (ADCs)** sample and quantize those signals into discrete numbers a computer can process. We implemented our own audio recording pipeline, visualized waveforms, and built spectrograms using the **Fast Fourier Transform (FFT)**.
 
-We also explored **Mel-Frequency Cepstral Coefficients (MFCCs)** — the feature representation that bridges the gap between raw audio and machine learning models. By the end of Part 2, you had a working pipeline that could:
+We also explored **Mel-Frequency Cepstral Coefficients (MFCCs)**  the feature representation that bridges the gap between raw audio and machine learning models. By the end of Part 2, you had a working pipeline that could:
 
 1. Record audio from a microphone
 2. Visualize the waveform and spectrogram
 3. Extract MFCC features suitable for speech recognition
 
-Now comes the moment of truth. We have features — numbers that describe what the audio *sounds like*. But how do we turn those numbers into **words**? That is the domain of **Automatic Speech Recognition (ASR)**, and it is one of the hardest problems in all of artificial intelligence.
+Now comes the moment of truth. We have features  numbers that describe what the audio *sounds like*. But how do we turn those numbers into **words**? That is the domain of **Automatic Speech Recognition (ASR)**, and it is one of the hardest problems in all of artificial intelligence.
 
 > **Where we are in the pipeline:**
 > Microphone → ADC → Digital Audio → **Feature Extraction** → **[ASR] → Text** → NLU → Agent Logic → TTS → Speaker
@@ -45,36 +45,36 @@ Let us begin.
 
 ## How Humans Recognize Speech
 
-Before we dive into algorithms and neural networks, it is worth pausing to appreciate just how *remarkable* human speech recognition truly is — and why replicating it in machines has been one of computing's greatest challenges for over 70 years.
+Before we dive into algorithms and neural networks, it is worth pausing to appreciate just how *remarkable* human speech recognition truly is  and why replicating it in machines has been one of computing's greatest challenges for over 70 years.
 
 ### The Miracle You Perform Every Day
 
 Right now, if someone spoke to you, your brain would:
 
 1. **Separate their voice** from background noise (air conditioning, traffic, music)
-2. **Segment a continuous stream** of sound into individual words — even though there are no "spaces" in spoken language
-3. **Handle massive variation** — the same word sounds completely different depending on who says it, how fast they speak, their accent, their emotional state, and what words surround it
-4. **Resolve ambiguity** in real time — "recognize speech" and "wreck a nice beach" are acoustically nearly identical
-5. **Fill in missing information** — you can understand someone even if you miss half the words, because your brain uses context, grammar, and world knowledge to reconstruct the message
+2. **Segment a continuous stream** of sound into individual words  even though there are no "spaces" in spoken language
+3. **Handle massive variation**  the same word sounds completely different depending on who says it, how fast they speak, their accent, their emotional state, and what words surround it
+4. **Resolve ambiguity** in real time  "recognize speech" and "wreck a nice beach" are acoustically nearly identical
+5. **Fill in missing information**  you can understand someone even if you miss half the words, because your brain uses context, grammar, and world knowledge to reconstruct the message
 
 You do all of this in **under 200 milliseconds**, while simultaneously planning your response, reading body language, and sipping coffee. Your brain makes it feel effortless, but the underlying computation is staggeringly complex.
 
 ### The Cocktail Party Problem
 
-Imagine you are at a crowded party. Dozens of conversations overlap. Music plays. Glasses clink. Yet you can **focus on a single speaker** and follow their words almost perfectly. If someone across the room says your name, you instantly notice — even though you were not consciously listening to them.
+Imagine you are at a crowded party. Dozens of conversations overlap. Music plays. Glasses clink. Yet you can **focus on a single speaker** and follow their words almost perfectly. If someone across the room says your name, you instantly notice  even though you were not consciously listening to them.
 
 This is the **cocktail party problem**, first described by Colin Cherry in 1953. It remains one of the hardest unsolved problems in audio processing. Humans solve it effortlessly using a combination of:
 
-- **Binaural processing** — using tiny differences in arrival time and volume between your two ears to locate sound sources in 3D space
-- **Spectral segregation** — each voice has a unique frequency profile (timbre), and your auditory cortex separates overlapping sources by their spectral signatures
-- **Top-down prediction** — your brain predicts what the speaker is likely to say next and uses those predictions to filter out noise
-- **Visual cues** — lip reading contributes significantly to speech perception (the McGurk effect demonstrates this dramatically)
+- **Binaural processing**  using tiny differences in arrival time and volume between your two ears to locate sound sources in 3D space
+- **Spectral segregation**  each voice has a unique frequency profile (timbre), and your auditory cortex separates overlapping sources by their spectral signatures
+- **Top-down prediction**  your brain predicts what the speaker is likely to say next and uses those predictions to filter out noise
+- **Visual cues**  lip reading contributes significantly to speech perception (the McGurk effect demonstrates this dramatically)
 
 For machines, separating overlapping speakers remains extremely difficult. Modern **source separation** models (like Meta's Demucs or Google's VoiceFilter) have made impressive progress, but they still fall far short of human performance in noisy, multi-speaker environments.
 
-### Coarticulation — Why Words Blur Together
+### Coarticulation  Why Words Blur Together
 
-When you say the word "don't," the "d" sound at the beginning is already shaped by the "oh" vowel that follows it. When you say "boot," your lips start rounding for the "oo" *before* you finish the "b." This phenomenon is called **coarticulation** — the sounds in speech are not produced as isolated, discrete units. They blend, overlap, and influence each other.
+When you say the word "don't," the "d" sound at the beginning is already shaped by the "oh" vowel that follows it. When you say "boot," your lips start rounding for the "oo" *before* you finish the "b." This phenomenon is called **coarticulation**  the sounds in speech are not produced as isolated, discrete units. They blend, overlap, and influence each other.
 
 This means that:
 
@@ -110,7 +110,7 @@ And these are just *regional* variations. Within each region, there are further 
 
 ### Homophones and Ambiguity
 
-Speech recognition is not just an acoustic problem — it is fundamentally a **language understanding** problem. Consider:
+Speech recognition is not just an acoustic problem  it is fundamentally a **language understanding** problem. Consider:
 
 | Phrase | Alternative |
 |--------|------------|
@@ -122,9 +122,9 @@ Speech recognition is not just an acoustic problem — it is fundamentally a **l
 | "a tax" | "attacks" |
 | "the stuffy nose" | "the stuff he knows" |
 
-Without understanding the **context** — the topic of conversation, the grammar of the sentence, the likelihood of different word sequences — an ASR system has no way to choose the correct interpretation.
+Without understanding the **context**  the topic of conversation, the grammar of the sentence, the likelihood of different word sequences  an ASR system has no way to choose the correct interpretation.
 
-> **Key Insight:** Speech recognition is not just "pattern matching on audio." It requires integrating acoustic evidence with linguistic knowledge — phonetics, phonology, morphology, syntax, semantics, and pragmatics. This is why modern ASR systems are so large and complex: they must implicitly learn all of these levels of language.
+> **Key Insight:** Speech recognition is not just "pattern matching on audio." It requires integrating acoustic evidence with linguistic knowledge  phonetics, phonology, morphology, syntax, semantics, and pragmatics. This is why modern ASR systems are so large and complex: they must implicitly learn all of these levels of language.
 
 ### The Performance Gap
 
@@ -157,7 +157,7 @@ graph LR
     A --> E --> J
 ```
 
-In clean, controlled conditions (quiet room, close microphone, standard accent, common vocabulary), modern ASR systems achieve **Word Error Rates (WER)** below 5% — approaching or sometimes matching human transcriptionist performance. But in the messy real world of voice agents — where users speak in noisy environments, with diverse accents, using domain-specific vocabulary — error rates can climb to 15-30% or higher.
+In clean, controlled conditions (quiet room, close microphone, standard accent, common vocabulary), modern ASR systems achieve **Word Error Rates (WER)** below 5%  approaching or sometimes matching human transcriptionist performance. But in the messy real world of voice agents  where users speak in noisy environments, with diverse accents, using domain-specific vocabulary  error rates can climb to 15-30% or higher.
 
 Understanding this gap is critical for voice agent developers. You cannot simply plug in an ASR engine and assume it will work perfectly. You must design your system to **handle errors gracefully**, provide opportunities for correction, and optimize for your specific use case.
 
@@ -186,7 +186,7 @@ flowchart LR
 
 Let us walk through each stage:
 
-### Stage 1 — Preprocessing
+### Stage 1  Preprocessing
 
 Before any recognition happens, the raw audio signal must be cleaned up:
 
@@ -267,7 +267,7 @@ def trim_silence(
 
 > **Why pre-emphasis?** Human speech naturally has more energy at low frequencies than high frequencies. The pre-emphasis filter (`y[n] = x[n] - 0.97 * x[n-1]`) boosts high-frequency components, which carry important information for distinguishing consonants. This simple step measurably improves ASR accuracy.
 
-### Stage 2 — Feature Extraction
+### Stage 2  Feature Extraction
 
 We covered this in detail in Part 2. The two most common feature representations for ASR are:
 
@@ -360,7 +360,7 @@ if __name__ == "__main__":
     print(f"Filter bank shape: {fbank.shape}")        # (80, T)
 ```
 
-### Stage 3 — Acoustic Model
+### Stage 3  Acoustic Model
 
 The acoustic model is the core of the ASR system. It takes features as input and produces a probability distribution over possible linguistic units (phonemes, characters, or word pieces) for each frame of audio.
 
@@ -388,9 +388,9 @@ flowchart TB
 
 We will explore acoustic model architectures in detail in the Traditional ASR section below.
 
-### Stage 4 — Decoder
+### Stage 4  Decoder
 
-The decoder takes the frame-level probability distributions from the acoustic model and produces the most likely sequence of words. This is a **search problem** — finding the best path through an enormous space of possibilities.
+The decoder takes the frame-level probability distributions from the acoustic model and produces the most likely sequence of words. This is a **search problem**  finding the best path through an enormous space of possibilities.
 
 Common decoding strategies:
 
@@ -401,12 +401,12 @@ Common decoding strategies:
 | **Beam Search + LM** | Beam search with language model rescoring | Slower | Best |
 | **CTC Beam Search** | Beam search specialized for CTC outputs | Moderate | Good |
 
-### Stage 5 — Language Model
+### Stage 5  Language Model
 
 The language model assigns probabilities to word sequences, helping the decoder choose between acoustically similar alternatives. For example:
 
-- P("recognize speech") >> P("wreck a nice beach") — because "recognize speech" is a far more common phrase
-- P("I scream when scared") >> P("ice cream when scared") — context resolves ambiguity
+- P("recognize speech") >> P("wreck a nice beach")  because "recognize speech" is a far more common phrase
+- P("I scream when scared") >> P("ice cream when scared")  context resolves ambiguity
 
 Language models range from simple **n-gram** models (count-based probabilities of word sequences) to massive **neural language models** (transformers that understand deep context).
 
@@ -463,13 +463,13 @@ timeline
                  : Near-human accuracy
 ```
 
-### Hidden Markov Models (HMMs) — The Foundation
+### Hidden Markov Models (HMMs)  The Foundation
 
 For nearly 30 years, **Hidden Markov Models** were the dominant approach to speech recognition. While they have been largely superseded by neural networks, understanding HMMs gives you crucial intuition about the structure of the ASR problem.
 
 #### The Core Idea
 
-An HMM models speech as a sequence of **hidden states** (phonemes or sub-phoneme units) that produce **observable outputs** (acoustic features). The "hidden" part is that we cannot directly observe which phoneme is being spoken at any given moment — we can only observe the acoustic features and must *infer* the hidden state sequence.
+An HMM models speech as a sequence of **hidden states** (phonemes or sub-phoneme units) that produce **observable outputs** (acoustic features). The "hidden" part is that we cannot directly observe which phoneme is being spoken at any given moment  we can only observe the acoustic features and must *infer* the hidden state sequence.
 
 ```
 Hidden states:  [silence] → [/h/] → [/ɛ/] → [/l/] → [/oʊ/] → [silence]
@@ -655,14 +655,14 @@ def demo_hmm():
 demo_hmm()
 ```
 
-> **Why left-to-right?** Speech is inherently sequential — you do not go back and re-pronounce earlier phonemes. HMMs for speech use a **left-to-right** topology where states can only transition to themselves (self-loop, to model variable duration) or to the next state. You never jump backward.
+> **Why left-to-right?** Speech is inherently sequential  you do not go back and re-pronounce earlier phonemes. HMMs for speech use a **left-to-right** topology where states can only transition to themselves (self-loop, to model variable duration) or to the next state. You never jump backward.
 
 #### GMM-HMM: The Classic Pairing
 
 In the classic GMM-HMM system:
 
 - The **HMM** models the temporal structure of speech (sequence of phonemes)
-- **Gaussian Mixture Models (GMMs)** model the emission probabilities — the distribution of acoustic features within each state
+- **Gaussian Mixture Models (GMMs)** model the emission probabilities  the distribution of acoustic features within each state
 
 ```python
 from scipy.stats import multivariate_normal
@@ -726,11 +726,11 @@ GMM-HMM → DNN-HMM
   that predicts P(state | features) for each frame
 ```
 
-The DNN takes acoustic features (e.g., a window of MFCC frames) and outputs a probability distribution over HMM states. This was trained using the **cross-entropy loss** — the same loss used in modern classification networks.
+The DNN takes acoustic features (e.g., a window of MFCC frames) and outputs a probability distribution over HMM states. This was trained using the **cross-entropy loss**  the same loss used in modern classification networks.
 
 The key insight: DNNs can learn much more complex, nonlinear decision boundaries than GMMs, leading to better discrimination between similar-sounding phonemes.
 
-### CTC — Connectionist Temporal Classification
+### CTC  Connectionist Temporal Classification
 
 **CTC** (Connectionist Temporal Classification), introduced by Alex Graves in 2006, was a breakthrough that enabled **end-to-end** ASR training without requiring pre-aligned training data.
 
@@ -958,7 +958,7 @@ def train_ctc_model():
 train_ctc_model()
 ```
 
-> **Key Insight:** CTC was revolutionary because it eliminated the need for frame-level alignment labels. Before CTC, training an ASR model required first running a GMM-HMM system to generate alignments — a complex and error-prone bootstrapping process. CTC allowed training directly from (audio, text) pairs.
+> **Key Insight:** CTC was revolutionary because it eliminated the need for frame-level alignment labels. Before CTC, training an ASR model required first running a GMM-HMM system to generate alignments  a complex and error-prone bootstrapping process. CTC allowed training directly from (audio, text) pairs.
 
 ### Attention-Based Encoder-Decoder for ASR
 
@@ -1131,8 +1131,8 @@ class AttentionASR(nn.Module):
 ```
 
 > **CTC vs. Attention: Complementary Strengths**
-> - **CTC** makes *independent* predictions at each frame — fast and simple, but cannot model output dependencies (e.g., language patterns)
-> - **Attention** generates outputs *autoregressively* — can model output dependencies, but slower and prone to alignment errors
+> - **CTC** makes *independent* predictions at each frame  fast and simple, but cannot model output dependencies (e.g., language patterns)
+> - **Attention** generates outputs *autoregressively*  can model output dependencies, but slower and prone to alignment errors
 > - Modern systems like Whisper use attention-based encoder-decoder with various techniques to get the best of both worlds
 
 ---
@@ -1143,12 +1143,12 @@ In September 2022, OpenAI released **Whisper**, a speech recognition model that 
 
 ### What Made Whisper Special
 
-Whisper's breakthrough was not architectural innovation — it used a standard encoder-decoder Transformer. The innovation was in **scale and training approach**:
+Whisper's breakthrough was not architectural innovation  it used a standard encoder-decoder Transformer. The innovation was in **scale and training approach**:
 
 1. **680,000 hours** of labeled audio data from the internet (compared to ~1,000-10,000 hours for most prior models)
-2. **Multitask training** — the same model performs transcription, translation, language identification, and timestamp prediction
-3. **Weakly supervised** — much of the training data was automatically labeled (not human-verified), but the sheer volume compensated for noise
-4. **Multilingual** — trained on 99 languages simultaneously
+2. **Multitask training**  the same model performs transcription, translation, language identification, and timestamp prediction
+3. **Weakly supervised**  much of the training data was automatically labeled (not human-verified), but the sheer volume compensated for noise
+4. **Multilingual**  trained on 99 languages simultaneously
 
 ### Architecture
 
@@ -1204,8 +1204,8 @@ This clever design allows a single model to handle multiple tasks by simply chan
 | `base` | 74M | `base.en` | `base` | ~16x | ~1 GB | ~10% |
 | `small` | 244M | `small.en` | `small` | ~6x | ~2 GB | ~7% |
 | `medium` | 769M | `medium.en` | `medium` | ~2x | ~5 GB | ~5.5% |
-| `large-v3` | 1550M | — | `large-v3` | 1x | ~10 GB | ~4.2% |
-| `turbo` | 809M | — | `turbo` | ~8x | ~6 GB | ~4.5% |
+| `large-v3` | 1550M |  | `large-v3` | 1x | ~10 GB | ~4.2% |
+| `turbo` | 809M |  | `turbo` | ~8x | ~6 GB | ~4.5% |
 
 > **Choosing a model size:** For real-time voice agents, `turbo` offers the best balance of accuracy and speed. For offline batch processing where accuracy is paramount, `large-v3` is the best choice. For resource-constrained environments (edge devices, mobile), `base` or `small` are practical options.
 
@@ -1472,9 +1472,9 @@ def multilingual_transcription(audio_path: str) -> dict:
 detect_language("audio.wav")
 ```
 
-### faster-whisper — Production-Grade Optimization
+### faster-whisper  Production-Grade Optimization
 
-The original Whisper implementation is straightforward but not optimized for production use. **faster-whisper** uses **CTranslate2** — an optimized inference engine — to achieve 4x faster transcription with 2x less memory:
+The original Whisper implementation is straightforward but not optimized for production use. **faster-whisper** uses **CTranslate2**  an optimized inference engine  to achieve 4x faster transcription with 2x less memory:
 
 ```python
 from faster_whisper import WhisperModel
@@ -1820,8 +1820,8 @@ def fine_tune_whisper():
 ```
 
 > **Fine-tuning tips for voice agents:**
-> - Start with `whisper-base` or `whisper-small` — they fine-tune faster and the relative improvement is often larger than with bigger models
-> - You need surprisingly little data — even 1-2 hours of domain-specific audio can make a noticeable difference
+> - Start with `whisper-base` or `whisper-small`  they fine-tune faster and the relative improvement is often larger than with bigger models
+> - You need surprisingly little data  even 1-2 hours of domain-specific audio can make a noticeable difference
 > - Use a low learning rate (1e-5 to 5e-5) to avoid catastrophic forgetting
 > - Always evaluate on a held-out test set that represents your real-world distribution
 > - Consider using **LoRA** (Low-Rank Adaptation) for parameter-efficient fine-tuning if memory is limited
@@ -2772,7 +2772,7 @@ raw_wer = word_error_rate(ref, hyp)["wer"]
 norm_wer = normalized_word_error_rate(ref, hyp)
 
 print(f"Raw WER:        {raw_wer:.1%}")    # Higher due to punctuation and formatting
-print(f"Normalized WER: {norm_wer:.1%}")    # Lower — the meaning is actually captured well
+print(f"Normalized WER: {norm_wer:.1%}")    # Lower  the meaning is actually captured well
 ```
 
 ---
@@ -3376,7 +3376,7 @@ async def demo_multi_engine():
 ```
 
 > **Production Best Practices:**
-> - Always implement **circuit breakers** — if an engine fails N times in a row, stop trying it for a cooldown period
+> - Always implement **circuit breakers**  if an engine fails N times in a row, stop trying it for a cooldown period
 > - Use **health checks** to verify engine availability before routing traffic
 > - Log every transcription with its engine, confidence, latency, and cost for monitoring and optimization
 > - Consider running multiple engines in parallel for critical use cases and using **consensus voting** (majority wins) for maximum accuracy
@@ -3388,14 +3388,14 @@ async def demo_multi_engine():
 
 | Term | Definition |
 |------|-----------|
-| **ASR** | Automatic Speech Recognition — converting spoken audio into written text |
+| **ASR** | Automatic Speech Recognition  converting spoken audio into written text |
 | **Acoustic Model** | The component of an ASR system that maps audio features to linguistic units (phonemes, characters, or word pieces) |
 | **Attention Mechanism** | A neural network technique that learns to focus on relevant parts of the input sequence when generating each output token |
 | **Beam Search** | A decoding algorithm that maintains the top-K most probable hypotheses at each step, exploring multiple paths simultaneously |
 | **Blank Token** | A special token in CTC that represents "no output" at a given frame, enabling variable-length alignment |
 | **Coarticulation** | The phenomenon where adjacent speech sounds influence each other's acoustic realization |
 | **Cocktail Party Problem** | The challenge of separating and recognizing a single speaker's voice in a noisy, multi-speaker environment |
-| **CTC** | Connectionist Temporal Classification — a loss function that enables training ASR without pre-aligned data by marginalizing over all possible alignments |
+| **CTC** | Connectionist Temporal Classification  a loss function that enables training ASR without pre-aligned data by marginalizing over all possible alignments |
 | **CTranslate2** | An optimized inference engine for Transformer models, used by faster-whisper to accelerate Whisper |
 | **Decoder** | The component that searches for the most likely word sequence given frame-level acoustic scores |
 | **Diarization** | The task of determining "who spoke when" in a multi-speaker audio recording |
@@ -3407,31 +3407,31 @@ async def demo_multi_engine():
 | **Feature Extraction** | Converting raw audio into compact numerical representations (mel spectrograms, MFCCs) suitable for machine learning |
 | **Fine-tuning** | Adapting a pre-trained model to a specific domain by continuing training on domain-specific data |
 | **Forced Alignment** | The process of determining the exact time boundaries of each word or phoneme in an audio recording given its transcript |
-| **GMM** | Gaussian Mixture Model — a probabilistic model that represents a distribution as a weighted sum of Gaussian components |
+| **GMM** | Gaussian Mixture Model  a probabilistic model that represents a distribution as a weighted sum of Gaussian components |
 | **Greedy Decoding** | The simplest decoding strategy that selects the most probable token at each timestep |
-| **HMM** | Hidden Markov Model — a statistical model where the system transitions between hidden states that produce observable outputs |
+| **HMM** | Hidden Markov Model  a statistical model where the system transitions between hidden states that produce observable outputs |
 | **Homophone** | Words that sound the same but have different meanings and/or spellings (e.g., "their" / "there" / "they're") |
 | **Hypothesis** | The ASR system's output text, as opposed to the reference (correct) text |
 | **Keyword Boosting** | A technique to increase the probability of recognizing specific domain terms by biasing the decoder |
 | **Language Model** | A model that assigns probabilities to word sequences, used to resolve acoustic ambiguity |
-| **LoRA** | Low-Rank Adaptation — a parameter-efficient fine-tuning technique that adds small trainable matrices to frozen model weights |
+| **LoRA** | Low-Rank Adaptation  a parameter-efficient fine-tuning technique that adds small trainable matrices to frozen model weights |
 | **Mel Spectrogram** | A time-frequency representation of audio where frequencies are mapped to the perceptual mel scale |
 | **Multitask Training** | Training a single model to perform multiple tasks simultaneously (e.g., transcription, translation, language ID) |
 | **Nova-2** | Deepgram's latest ASR model, known for low latency and high accuracy |
 | **Phoneme** | The smallest unit of sound that distinguishes meaning in a language (e.g., /b/ and /p/ in "bat" vs. "pat") |
 | **Pre-emphasis** | A preprocessing filter that boosts high-frequency components in speech to compensate for natural spectral roll-off |
-| **Real-Time Factor (RTF)** | Processing time divided by audio duration — RTF < 1 means faster than real-time |
+| **Real-Time Factor (RTF)** | Processing time divided by audio duration  RTF < 1 means faster than real-time |
 | **Reference** | The correct (ground truth) transcription, used to evaluate ASR accuracy |
-| **Seq2Seq** | Sequence-to-sequence — a framework where a model transforms one sequence (audio) into another (text) |
+| **Seq2Seq** | Sequence-to-sequence  a framework where a model transforms one sequence (audio) into another (text) |
 | **Speaker Diarization** | See Diarization |
 | **Streaming ASR** | ASR that provides results incrementally as audio arrives, rather than waiting for the complete recording |
 | **Teacher Forcing** | A training technique where the model receives ground truth tokens as input to the decoder, rather than its own predictions |
 | **Transition Probability** | In an HMM, the probability of moving from one hidden state to another |
 | **Universal-2** | AssemblyAI's latest ASR model, known for strong accuracy and built-in analysis features |
-| **VAD** | Voice Activity Detection — determining which parts of an audio signal contain speech vs. silence or noise |
+| **VAD** | Voice Activity Detection  determining which parts of an audio signal contain speech vs. silence or noise |
 | **Viterbi Algorithm** | A dynamic programming algorithm for finding the most likely sequence of hidden states in an HMM |
 | **Weakly Supervised** | Training with labels that may contain noise or errors, relying on data volume to overcome label quality issues |
-| **WER** | Word Error Rate — the standard metric for ASR accuracy, measuring (substitutions + insertions + deletions) / reference words |
+| **WER** | Word Error Rate  the standard metric for ASR accuracy, measuring (substitutions + insertions + deletions) / reference words |
 | **Whisper** | OpenAI's open-source ASR model trained on 680K hours of multilingual audio, known for robustness and multilingual support |
 | **Word Pieces** | Sub-word tokenization units used by modern models (e.g., "playing" might be tokenized as "play" + "##ing") |
 
@@ -3439,22 +3439,22 @@ async def demo_multi_engine():
 
 ## What's Next -- Part 4: Real-Time ASR and Streaming Pipelines
 
-In this part, we built a comprehensive understanding of **Automatic Speech Recognition** — from the fundamental challenges of human speech perception to production-ready transcription services. We explored the evolution from GMM-HMMs through CTC to modern Transformer-based models like Whisper, and we surveyed the cloud ASR landscape.
+In this part, we built a comprehensive understanding of **Automatic Speech Recognition**  from the fundamental challenges of human speech perception to production-ready transcription services. We explored the evolution from GMM-HMMs through CTC to modern Transformer-based models like Whisper, and we surveyed the cloud ASR landscape.
 
-But everything we have built so far operates in **batch mode** — we give it a complete audio file and wait for the full transcription. For a voice agent that holds real-time conversations, this is not sufficient. Users expect to be heard and responded to *while they are still speaking*.
+But everything we have built so far operates in **batch mode**  we give it a complete audio file and wait for the full transcription. For a voice agent that holds real-time conversations, this is not sufficient. Users expect to be heard and responded to *while they are still speaking*.
 
 In **Part 4: Real-Time ASR and Streaming Pipelines**, we will tackle the challenge of making ASR truly real-time:
 
-- **Streaming ASR architectures** — how to process audio incrementally as it arrives
-- **Voice Activity Detection (VAD)** — detecting when the user starts and stops speaking, and the critical concept of "endpointing"
-- **WebSocket streaming protocols** — connecting your voice agent to streaming ASR services
-- **Partial results and interim hypotheses** — showing the user what you are hearing in real-time
-- **Turn-taking and barge-in detection** — knowing when the user wants to interrupt the agent
-- **Latency optimization** — achieving sub-300ms response times from speech to first token
-- **Building a complete streaming ASR pipeline** — from microphone to real-time text with code you can run
+- **Streaming ASR architectures**  how to process audio incrementally as it arrives
+- **Voice Activity Detection (VAD)**  detecting when the user starts and stops speaking, and the critical concept of "endpointing"
+- **WebSocket streaming protocols**  connecting your voice agent to streaming ASR services
+- **Partial results and interim hypotheses**  showing the user what you are hearing in real-time
+- **Turn-taking and barge-in detection**  knowing when the user wants to interrupt the agent
+- **Latency optimization**  achieving sub-300ms response times from speech to first token
+- **Building a complete streaming ASR pipeline**  from microphone to real-time text with code you can run
 
 The jump from batch to streaming is where voice agents come alive. See you in Part 4.
 
 ---
 
-*Next up: **Part 4 — Real-Time ASR and Streaming Pipelines** — Making your voice agent truly conversational.*
+*Next up: **Part 4  Real-Time ASR and Streaming Pipelines**  Making your voice agent truly conversational.*

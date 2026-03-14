@@ -1,8 +1,8 @@
-# Redis Deep Dive Series — Part 5: Replication, High Availability, and Sentinel Architecture
+# Redis Deep Dive Series  Part 5: Replication, High Availability, and Sentinel Architecture
 
 ---
 
-**Series:** Redis Deep Dive — Engineering the World's Most Misunderstood Data Structure Server
+**Series:** Redis Deep Dive  Engineering the World's Most Misunderstood Data Structure Server
 **Part:** 5 of 10
 **Audience:** Senior backend engineers, distributed systems engineers, infrastructure architects
 **Reading time:** ~50 minutes
@@ -11,14 +11,14 @@
 
 ## Where We Are in the Series
 
-Parts 1-4 treated Redis as a single-node system. We mastered the event loop (Part 1), internal data structures (Part 2), memory management and persistence (Part 3), and the client-facing layer — protocol, pipelining, transactions, scripting, and performance tools (Part 4).
+Parts 1-4 treated Redis as a single-node system. We mastered the event loop (Part 1), internal data structures (Part 2), memory management and persistence (Part 3), and the client-facing layer  protocol, pipelining, transactions, scripting, and performance tools (Part 4).
 
 But a single Redis instance is a single point of failure. If it crashes, you lose your cache. If its server dies, you lose everything that wasn't persisted. Even with perfect RDB/AOF configuration, recovery means minutes of downtime while Redis loads data from disk.
 
 This is where replication and high availability enter the picture. This part answers three questions:
-1. **How does Redis copy data to other machines?** (Replication — the PSYNC protocol)
-2. **How does Redis detect and recover from failures?** (Sentinel — automatic failover)
-3. **What data can Redis lose, and when?** (Consistency model — the gaps that bite in production)
+1. **How does Redis copy data to other machines?** (Replication  the PSYNC protocol)
+2. **How does Redis detect and recover from failures?** (Sentinel  automatic failover)
+3. **What data can Redis lose, and when?** (Consistency model  the gaps that bite in production)
 
 Part 1 warned that Redis replication is asynchronous and can lose data. Here we'll see exactly *how* data loss happens, *how much* you can lose, and *what you can do about it*.
 
@@ -49,9 +49,9 @@ flowchart TD
 
 Key properties:
 - **Writes are only accepted by the master** (by default; replicas reject writes unless `replica-read-only no` is set)
-- **Replication is asynchronous** — the master does not wait for replicas to acknowledge writes before responding to the client
-- **Replicas can serve reads** — enabling horizontal read scaling
-- **A replica can be a master to other replicas** — forming a replication chain
+- **Replication is asynchronous**  the master does not wait for replicas to acknowledge writes before responding to the client
+- **Replicas can serve reads**  enabling horizontal read scaling
+- **A replica can be a master to other replicas**  forming a replication chain
 
 ### Configuring Replication
 
@@ -117,7 +117,7 @@ For a 50 GB dataset, full sync can take 5-15 minutes depending on network and di
 
 ### Partial Resynchronization (PSYNC)
 
-When a replica disconnects briefly (network glitch, restart), it doesn't need a full sync — it just needs the commands it missed. This is **partial resynchronization**, introduced in Redis 2.8 and improved with PSYNC2 in Redis 4.0.
+When a replica disconnects briefly (network glitch, restart), it doesn't need a full sync  it just needs the commands it missed. This is **partial resynchronization**, introduced in Redis 2.8 and improved with PSYNC2 in Redis 4.0.
 
 The mechanism relies on two components:
 
@@ -157,7 +157,7 @@ repl-backlog-size 512mb
 repl-backlog-ttl 3600    # 1 hour
 ```
 
-The backlog is a **circular buffer** — when it fills, oldest entries are overwritten. If a replica is disconnected longer than the backlog can cover, partial sync fails and a full sync is required.
+The backlog is a **circular buffer**  when it fills, oldest entries are overwritten. If a replica is disconnected longer than the backlog can cover, partial sync fails and a full sync is required.
 
 ### PSYNC2: Surviving Failovers
 
@@ -177,7 +177,7 @@ When a replica is promoted to master:
 2. It generates a new `master_replid`
 3. Other replicas connecting with the old replication ID can still partial-sync using `master_replid2`
 
-This means failovers no longer trigger full resyncs on all replicas — a massive operational improvement.
+This means failovers no longer trigger full resyncs on all replicas  a massive operational improvement.
 
 ### Diskless Replication
 
@@ -199,7 +199,7 @@ Diskless replication is beneficial when:
 - Network is fast (10 Gbps+)
 - Multiple replicas need syncing simultaneously (one RDB stream serves all)
 
-We've now seen the mechanical details of how data flows from master to replica. But understanding the *mechanics* isn't enough — you need to understand the *guarantees*. When your application writes to Redis and receives `+OK`, is that data safe? The answer is nuanced, and getting it wrong leads to the kind of data loss that's invisible until a failure event.
+We've now seen the mechanical details of how data flows from master to replica. But understanding the *mechanics* isn't enough  you need to understand the *guarantees*. When your application writes to Redis and receives `+OK`, is that data safe? The answer is nuanced, and getting it wrong leads to the kind of data loss that's invisible until a failure event.
 
 ---
 
@@ -361,7 +361,7 @@ flowchart TD
 port 26379
 
 # Monitor a master named "mymaster" at 192.168.1.10:6379
-# Quorum of 2 — at least 2 Sentinels must agree the master is down
+# Quorum of 2  at least 2 Sentinels must agree the master is down
 sentinel monitor mymaster 192.168.1.10 6379 2
 
 # Consider master down after 5 seconds of no response
@@ -407,9 +407,9 @@ flowchart TD
     style FAILOVER fill:#4a9,color:#fff
 ```
 
-**Subjective Down (+sdown):** A single Sentinel believes the master is down because it hasn't responded to PING within `down-after-milliseconds`. This is a local opinion — the Sentinel's own network might be the problem.
+**Subjective Down (+sdown):** A single Sentinel believes the master is down because it hasn't responded to PING within `down-after-milliseconds`. This is a local opinion  the Sentinel's own network might be the problem.
 
-**Objective Down (+odown):** At least `quorum` Sentinels agree the master is down. This requires consensus — reducing the probability of false failovers due to network issues affecting a single Sentinel.
+**Objective Down (+odown):** At least `quorum` Sentinels agree the master is down. This requires consensus  reducing the probability of false failovers due to network issues affecting a single Sentinel.
 
 ### Failover Process
 
@@ -425,7 +425,7 @@ Once `+odown` is declared:
    - Filter out replicas that are disconnected or have too much replication lag
    - Sort by priority (`replica-priority`; lower = preferred; 0 = never promote)
    - Among equal priority, sort by replication offset (most up-to-date wins)
-   - Among equal offset, sort by run ID (lexicographic — deterministic tiebreaker)
+   - Among equal offset, sort by run ID (lexicographic  deterministic tiebreaker)
 
 3. **Promotion:** The leader sends `REPLICAOF NO ONE` to the selected replica, making it a master.
 
@@ -479,7 +479,7 @@ value = replica.get('key')
 ```
 
 ```javascript
-// Node.js (ioredis) — Sentinel support
+// Node.js (ioredis)  Sentinel support
 const Redis = require('ioredis');
 
 const redis = new Redis({
@@ -497,7 +497,7 @@ redis.on('error', (err) => console.error('Redis error:', err));
 redis.on('+switch-master', () => console.log('Master switched!'));
 ```
 
-Sentinel handles the common failure case well: master dies, a replica is promoted, and the system continues. But there's a far more dangerous failure mode — one that Sentinel cannot fully prevent, and that has caused real data loss at production companies. It's the scenario where *both* the old master and the new master accept writes simultaneously.
+Sentinel handles the common failure case well: master dies, a replica is promoted, and the system continues. But there's a far more dangerous failure mode  one that Sentinel cannot fully prevent, and that has caused real data loss at production companies. It's the scenario where *both* the old master and the new master accept writes simultaneously.
 
 ---
 
@@ -558,9 +558,9 @@ min-replicas-to-write 1        # Require at least 1 connected replica
 min-replicas-max-lag 10        # Replica must have ACKed within 10 seconds
 ```
 
-With these settings, when the old master is partitioned from all replicas, it stops accepting writes — preventing the split-brain write divergence.
+With these settings, when the old master is partitioned from all replicas, it stops accepting writes  preventing the split-brain write divergence.
 
-**Tradeoff:** If replicas go down (not just partitioned), the master also stops accepting writes. This reduces availability for the sake of consistency — a deliberate trade per the CAP theorem.
+**Tradeoff:** If replicas go down (not just partitioned), the master also stops accepting writes. This reduces availability for the sake of consistency  a deliberate trade per the CAP theorem.
 
 #### Option 2: Client-Side Detection
 
@@ -574,14 +574,14 @@ def safe_write(sentinel_client, key, value):
     connected_replicas = info.get('connected_slaves', 0)
 
     if connected_replicas == 0:
-        raise Exception("No replicas connected — possible split-brain!")
+        raise Exception("No replicas connected  possible split-brain!")
 
     master.set(key, value)
 
     # Optionally, wait for replication
     acked = master.wait(1, 500)  # Wait for 1 replica, 500ms timeout
     if acked == 0:
-        raise Exception("Write not replicated — possible data loss risk")
+        raise Exception("Write not replicated  possible data loss risk")
 ```
 
 ---
@@ -672,7 +672,7 @@ replica-serve-stale-data yes    # Default: continue serving reads (stale data)
 replica-serve-stale-data no     # Reject all reads except INFO, PING, etc.
 ```
 
-Setting `replica-serve-stale-data no` is safer for consistency but reduces availability — reads fail during master disconnection even though the replica has data.
+Setting `replica-serve-stale-data no` is safer for consistency but reduces availability  reads fail during master disconnection even though the replica has data.
 
 ### Lazy Expiry on Replicas
 
@@ -924,17 +924,17 @@ With `min-replicas-to-write`, Redis trades some availability for consistency:
 
 ## Coming Up in Part 6: Redis Cluster and Distributed Systems Concepts
 
-Sentinel + replication solves the single-point-of-failure problem: if the master dies, a replica takes over. But it doesn't solve the *capacity* problem. You still have one master holding all the data. When your dataset exceeds what a single node can hold in RAM, or when your write throughput exceeds what a single thread can handle, you need to *shard* — split the data across multiple masters.
+Sentinel + replication solves the single-point-of-failure problem: if the master dies, a replica takes over. But it doesn't solve the *capacity* problem. You still have one master holding all the data. When your dataset exceeds what a single node can hold in RAM, or when your write throughput exceeds what a single thread can handle, you need to *shard*  split the data across multiple masters.
 
 That's what Redis Cluster does. Part 6 covers:
 
-- **Hash slots and data distribution** — how 16,384 slots map keys to nodes, and the `CRC16(key) mod 16384` formula
-- **Cluster topology and gossip protocol** — how nodes discover each other and propagate state without a central coordinator
-- **Resharding** — moving slots between nodes without downtime, and the ASK/MOVED redirection dance
-- **Cluster failover** — how Cluster handles node failures differently from Sentinel (built-in, no separate process)
-- **Cross-slot operations** — why `MULTI/EXEC` doesn't work across slots, and how hash tags (`{...}`) provide a workaround
-- **CAP tradeoffs** — the real consistency guarantees (spoiler: Redis Cluster is AP, not CP)
+- **Hash slots and data distribution**  how 16,384 slots map keys to nodes, and the `CRC16(key) mod 16384` formula
+- **Cluster topology and gossip protocol**  how nodes discover each other and propagate state without a central coordinator
+- **Resharding**  moving slots between nodes without downtime, and the ASK/MOVED redirection dance
+- **Cluster failover**  how Cluster handles node failures differently from Sentinel (built-in, no separate process)
+- **Cross-slot operations**  why `MULTI/EXEC` doesn't work across slots, and how hash tags (`{...}`) provide a workaround
+- **CAP tradeoffs**  the real consistency guarantees (spoiler: Redis Cluster is AP, not CP)
 
 ---
 
-*This is Part 5 of the Redis Deep Dive series. Parts 1-4 covered Redis as a single node. This part introduced replication and Sentinel for high availability. Part 6 takes us from "one master, many replicas" to "many masters, each owning a slice of the data" — the fully distributed Redis Cluster.*
+*This is Part 5 of the Redis Deep Dive series. Parts 1-4 covered Redis as a single node. This part introduced replication and Sentinel for high availability. Part 6 takes us from "one master, many replicas" to "many masters, each owning a slice of the data"  the fully distributed Redis Cluster.*

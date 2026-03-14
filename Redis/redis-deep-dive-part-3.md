@@ -1,8 +1,8 @@
-# Redis Deep Dive Series — Part 3: Memory Management, Persistence, and Storage Mechanics
+# Redis Deep Dive Series  Part 3: Memory Management, Persistence, and Storage Mechanics
 
 ---
 
-**Series:** Redis Deep Dive — Engineering the World's Most Misunderstood Data Structure Server
+**Series:** Redis Deep Dive  Engineering the World's Most Misunderstood Data Structure Server
 **Part:** 3 of 10
 **Audience:** Senior backend engineers, distributed systems engineers, infrastructure architects
 **Reading time:** ~50 minutes
@@ -11,17 +11,17 @@
 
 ## Where We Are in the Series
 
-Part 1 gave us the event loop, the client lifecycle, and the `redisObject` system. Part 2 went inside every data type — strings (INT/EMBSTR/RAW), lists (listpack/quicklist), hashes, sets, sorted sets (skip list + dict), and streams (radix tree). We saw how Redis's encoding duality saves 2-4x memory for small collections by using compact, cache-friendly structures.
+Part 1 gave us the event loop, the client lifecycle, and the `redisObject` system. Part 2 went inside every data type  strings (INT/EMBSTR/RAW), lists (listpack/quicklist), hashes, sets, sorted sets (skip list + dict), and streams (radix tree). We saw how Redis's encoding duality saves 2-4x memory for small collections by using compact, cache-friendly structures.
 
 But throughout Part 2, we kept saying things like "jemalloc allocates in 64-byte size classes" and "the encoding transition happens at 128 entries" without explaining *why* these numbers matter at the allocator level. We also deferred the question that every production engineer eventually asks: what happens when you run out of memory? And how does in-memory data survive a crash?
 
-This part answers all of those questions. We'll cover the complete lifecycle of memory in Redis — from allocation (jemalloc) through expiration and eviction (what happens when memory runs out) to disk persistence (RDB snapshots and AOF logs) — with kernel-level mechanics, production telemetry analysis, and real failure scenarios.
+This part answers all of those questions. We'll cover the complete lifecycle of memory in Redis  from allocation (jemalloc) through expiration and eviction (what happens when memory runs out) to disk persistence (RDB snapshots and AOF logs)  with kernel-level mechanics, production telemetry analysis, and real failure scenarios.
 
 ---
 
 ## 1. jemalloc: The Memory Allocator Behind Redis
 
-Redis does not call `malloc()` from glibc directly. By default, it uses **jemalloc** — a memory allocator designed by Jason Evans (originally for FreeBSD) that provides low fragmentation, scalable concurrent allocation, and detailed introspection.
+Redis does not call `malloc()` from glibc directly. By default, it uses **jemalloc**  a memory allocator designed by Jason Evans (originally for FreeBSD) that provides low fragmentation, scalable concurrent allocation, and detailed introspection.
 
 ### Why jemalloc Matters
 
@@ -55,13 +55,13 @@ flowchart TD
 
 Key concepts:
 
-1. **Size classes.** jemalloc rounds up allocation requests to the nearest size class. For example, if Redis requests 40 bytes, jemalloc allocates 48 bytes (the nearest size class). The 8-byte difference is **internal fragmentation** — wasted space within the allocation.
+1. **Size classes.** jemalloc rounds up allocation requests to the nearest size class. For example, if Redis requests 40 bytes, jemalloc allocates 48 bytes (the nearest size class). The 8-byte difference is **internal fragmentation**  wasted space within the allocation.
 
 2. **Arenas.** Each thread is bound to an arena to minimize lock contention. Redis's main thread uses one arena; I/O threads use others.
 
-3. **Thread-local caches (tcache).** Small allocations are served from per-thread caches without any locking. This is crucial for Redis's performance — most Redis operations allocate and free small objects (SDS strings, robj wrappers, dictEntry nodes).
+3. **Thread-local caches (tcache).** Small allocations are served from per-thread caches without any locking. This is crucial for Redis's performance  most Redis operations allocate and free small objects (SDS strings, robj wrappers, dictEntry nodes).
 
-4. **Page runs.** Medium allocations come from page runs — contiguous groups of 4 KB pages. Large allocations (>4 MB by default) use direct `mmap()` calls.
+4. **Page runs.** Medium allocations come from page runs  contiguous groups of 4 KB pages. Large allocations (>4 MB by default) use direct `mmap()` calls.
 
 ### jemalloc Size Classes and Redis
 
@@ -75,7 +75,7 @@ null:      1 byte (C string terminator)
 Total:    64 bytes → jemalloc size class 64
 ```
 
-If the total were 65 bytes, jemalloc would round up to 80 bytes — wasting 15 bytes (19% overhead). The 44-byte EMBSTR limit is specifically chosen to hit the 64-byte size class exactly.
+If the total were 65 bytes, jemalloc would round up to 80 bytes  wasting 15 bytes (19% overhead). The 44-byte EMBSTR limit is specifically chosen to hit the 64-byte size class exactly.
 
 ### Inspecting jemalloc Stats
 
@@ -97,13 +97,13 @@ resident: 3280896, mapped: 4194304, retained: 0
 
 The ratio `active / allocated` indicates internal fragmentation from size class rounding. A ratio of 1.0 is perfect (impossible in practice); 1.1-1.2 is healthy; above 1.5 indicates significant fragmentation.
 
-Understanding jemalloc's size classes explains many of the "magic numbers" from Part 2 — like why EMBSTR's 44-byte threshold aligns with a 64-byte size class. But knowing how the allocator works is only half the picture. You also need to know what Redis *reports* about its memory usage, and crucially, what it *doesn't* report.
+Understanding jemalloc's size classes explains many of the "magic numbers" from Part 2  like why EMBSTR's 44-byte threshold aligns with a 64-byte size class. But knowing how the allocator works is only half the picture. You also need to know what Redis *reports* about its memory usage, and crucially, what it *doesn't* report.
 
 ---
 
 ## 2. Memory Accounting: What INFO Memory Actually Reports
 
-The `INFO memory` command is your primary tool for understanding Redis memory usage. But its fields are frequently misunderstood — and misunderstanding them is one of the most common causes of production OOM kills (Part 1, Section 8 warned about `maxmemory` not meaning what you think).
+The `INFO memory` command is your primary tool for understanding Redis memory usage. But its fields are frequently misunderstood  and misunderstanding them is one of the most common causes of production OOM kills (Part 1, Section 8 warned about `maxmemory` not meaning what you think).
 
 ```bash
 127.0.0.1:6379> INFO memory
@@ -185,7 +185,7 @@ This is a source of frequent production incidents:
 
 4. **OS page cache for persistence files.** RDB and AOF files are cached by the OS in RAM. This doesn't show up in Redis metrics but consumes physical memory.
 
-5. **Copy-on-write pages during BGSAVE.** When a background save is running, written pages are duplicated. This memory is charged to the child process, not the parent — so `used_memory_rss` may not reflect the true memory pressure.
+5. **Copy-on-write pages during BGSAVE.** When a background save is running, written pages are duplicated. This memory is charged to the child process, not the parent  so `used_memory_rss` may not reflect the true memory pressure.
 
 **The safe formula for `maxmemory`:**
 
@@ -202,13 +202,13 @@ maxmemory ≈ 64 GB - 2 GB - 1 MB - 500 MB - 10 GB - 5 GB ≈ 46 GB
 # Conservative: set maxmemory to ~45 GB (70% of total RAM)
 ```
 
-Now that we understand how memory is allocated and accounted for, the next question is: how does memory get *freed*? Redis has two mechanisms for reclaiming memory — expiration (keys with a TTL that have outlived their usefulness) and eviction (forced removal when memory runs out). Let's start with expiration.
+Now that we understand how memory is allocated and accounted for, the next question is: how does memory get *freed*? Redis has two mechanisms for reclaiming memory  expiration (keys with a TTL that have outlived their usefulness) and eviction (forced removal when memory runs out). Let's start with expiration.
 
 ---
 
 ## 3. Key Expiration: Two Strategies Working Together
 
-Redis supports key expiration via TTL (Time-To-Live). Understanding the expiration mechanism is critical because it affects latency, memory reclamation speed, and correctness. Part 1 mentioned `serverCron`'s role in active expiry sampling — here we'll see exactly how that algorithm works.
+Redis supports key expiration via TTL (Time-To-Live). Understanding the expiration mechanism is critical because it affects latency, memory reclamation speed, and correctness. Part 1 mentioned `serverCron`'s role in active expiry sampling  here we'll see exactly how that algorithm works.
 
 ### Strategy 1: Lazy Expiration (Passive)
 
@@ -239,7 +239,7 @@ Every 100ms (at hz=10):
 3. If >25% of the sample was expired:
    - Repeat from step 1 (more keys likely expired)
    - But don't exceed 25ms of wall-clock time (ACTIVE_EXPIRE_CYCLE_SLOW_TIME_PERC)
-4. If ≤25% expired, stop — the key space is reasonably clean
+4. If ≤25% expired, stop  the key space is reasonably clean
 ```
 
 ```mermaid
@@ -250,7 +250,7 @@ flowchart TD
     DELETE --> TIME_CHECK{"Exceeded 25ms?"}
     TIME_CHECK -->|"No"| SAMPLE
     TIME_CHECK -->|"Yes"| STOP["Stop cycle<br/>Resume next serverCron"]
-    CHECK -->|"≤ 25% (≤ 5 keys)"| DONE["Done — keyspace is clean<br/>Wait for next cycle"]
+    CHECK -->|"≤ 25% (≤ 5 keys)"| DONE["Done  keyspace is clean<br/>Wait for next cycle"]
 
     style START fill:#36a,color:#fff
     style STOP fill:#a64,color:#fff
@@ -261,7 +261,7 @@ flowchart TD
 
 1. **Expiration is not precise.** A key with TTL of exactly 60 seconds might live for 60.0 to 60.1 seconds, depending on when the active expiry cycle runs. For most applications, this imprecision is irrelevant.
 
-2. **Mass expiration can cause latency spikes.** If you set millions of keys with the same TTL at the same time (e.g., cache warming after a deploy), they all expire simultaneously. The active expiry cycle goes into overdrive, potentially consuming 25ms per serverCron invocation — visible as latency jitter.
+2. **Mass expiration can cause latency spikes.** If you set millions of keys with the same TTL at the same time (e.g., cache warming after a deploy), they all expire simultaneously. The active expiry cycle goes into overdrive, potentially consuming 25ms per serverCron invocation  visible as latency jitter.
 
    **Mitigation:** Add random jitter to TTLs:
    ```python
@@ -272,9 +272,9 @@ flowchart TD
    r.setex(key, base_ttl + jitter, value)
    ```
 
-3. **Replicas don't expire keys independently.** On a replica, expired keys are only deleted when the master sends an explicit `DEL` command via the replication stream. This means replicas may temporarily serve expired keys if the master's active expiry hasn't processed them yet. This is by design — it prevents replication divergence — but can surprise applications that expect identical behavior from master and replica.
+3. **Replicas don't expire keys independently.** On a replica, expired keys are only deleted when the master sends an explicit `DEL` command via the replication stream. This means replicas may temporarily serve expired keys if the master's active expiry hasn't processed them yet. This is by design  it prevents replication divergence  but can surprise applications that expect identical behavior from master and replica.
 
-4. **AOF and expiration.** When a key expires, Redis writes a `DEL` command to the AOF. On replay (restart), the keys that expired before the crash are correctly deleted. But keys that would have expired *during* the crash window (between last AOF flush and crash) may reappear — they're re-created by the AOF but have past-timestamp expiries, so they're lazily deleted on first access.
+4. **AOF and expiration.** When a key expires, Redis writes a `DEL` command to the AOF. On replay (restart), the keys that expired before the crash are correctly deleted. But keys that would have expired *during* the crash window (between last AOF flush and crash) may reappear  they're re-created by the AOF but have past-timestamp expiries, so they're lazily deleted on first access.
 
 ### Monitoring Expiration
 
@@ -296,12 +296,12 @@ expired_time_cap_reached_count:0 # Times the 25ms time cap was hit
 ...
 ```
 
-If `expired_time_cap_reached_count` is increasing, active expiry is hitting its time limit — meaning there are more expired keys than the cycle can clean in 25ms. Solutions:
+If `expired_time_cap_reached_count` is increasing, active expiry is hitting its time limit  meaning there are more expired keys than the cycle can clean in 25ms. Solutions:
 - Increase `hz` (e.g., to 100) to run expiry more frequently
 - Add TTL jitter to avoid mass expiration
 - Reduce the number of keys with very short TTLs
 
-Expiration handles keys that were *designed* to be temporary. But what happens when memory fills up with keys that haven't expired — or keys that have no TTL at all? That's the domain of eviction: the last line of defense before Redis starts rejecting writes.
+Expiration handles keys that were *designed* to be temporary. But what happens when memory fills up with keys that haven't expired  or keys that have no TTL at all? That's the domain of eviction: the last line of defense before Redis starts rejecting writes.
 
 ---
 
@@ -324,7 +324,7 @@ When Redis's `used_memory` exceeds `maxmemory`, it must either reject new writes
 
 ### LRU: Approximated, Not Exact
 
-Redis does not maintain a true LRU (Least Recently Used) linked list — that would require O(1) bookkeeping per access but significant pointer overhead per key (16 bytes for prev/next pointers × millions of keys = significant memory).
+Redis does not maintain a true LRU (Least Recently Used) linked list  that would require O(1) bookkeeping per access but significant pointer overhead per key (16 bytes for prev/next pointers × millions of keys = significant memory).
 
 Instead, Redis uses **approximated LRU**: when eviction is needed, it samples `maxmemory-samples` (default 5) random keys from the keyspace and evicts the one that was accessed least recently among the samples.
 
@@ -336,7 +336,7 @@ State:  [B, E, A, D, C] ← exact ordering, high overhead
 Approximated LRU (sample 5):
 - Need to evict → sample 5 random keys
 - Got: {A (used 10s ago), D (used 50s ago), X (used 30s ago), B (used 5s ago), Q (used 45s ago)}
-- Evict D (used 50s ago) — oldest in sample
+- Evict D (used 50s ago)  oldest in sample
 ```
 
 The accuracy improves with larger sample sizes:
@@ -376,7 +376,7 @@ Redis LFU uses a **logarithmic counter** with **time decay**:
 // Counter 255 (max): essentially never increments
 ```
 
-The logarithmic counter means a key accessed 1 million times has a counter of ~255, while a key accessed 100 times has a counter of ~20. The **time decay** gradually reduces the counter over time — a key that was hot an hour ago but hasn't been accessed since will have its counter decayed, making it eligible for eviction.
+The logarithmic counter means a key accessed 1 million times has a counter of ~255, while a key accessed 100 times has a counter of ~20. The **time decay** gradually reduces the counter over time  a key that was hot an hour ago but hasn't been accessed since will have its counter decayed, making it eligible for eviction.
 
 ```bash
 # LFU configuration
@@ -415,9 +415,9 @@ flowchart TD
 
 ### Production Considerations
 
-1. **`volatile-*` policies can fail silently.** If you use `volatile-lru` but no keys have TTLs set, Redis has nothing to evict — it behaves like `noeviction` and rejects writes. This is a common misconfiguration.
+1. **`volatile-*` policies can fail silently.** If you use `volatile-lru` but no keys have TTLs set, Redis has nothing to evict  it behaves like `noeviction` and rejects writes. This is a common misconfiguration.
 
-2. **Eviction is synchronous (by default).** When Redis evicts a key, it frees the memory in the main thread. For a hash with 1 million fields, this can take milliseconds — blocking all other clients. Redis 4.0+ offers **lazy eviction** (`lazyfree-lazy-eviction yes`) which delegates the actual memory free to a background thread.
+2. **Eviction is synchronous (by default).** When Redis evicts a key, it frees the memory in the main thread. For a hash with 1 million fields, this can take milliseconds  blocking all other clients. Redis 4.0+ offers **lazy eviction** (`lazyfree-lazy-eviction yes`) which delegates the actual memory free to a background thread.
 
 3. **Eviction creates write amplification.** Every evicted key generates a `DEL` command propagated to replicas and AOF. Under heavy eviction pressure, the replication stream becomes dominated by `DEL` commands.
 
@@ -441,16 +441,16 @@ Ideal memory layout:
 
 Fragmented memory layout:
 [███░░███░███░░░░███░░███░░░███░] ← allocated blocks with gaps
- ↑ used  ↑ free (fragmented — can't be combined)
+ ↑ used  ↑ free (fragmented  can't be combined)
 ```
 
 Redis fragmentation is caused by:
 
 1. **Mixed allocation sizes.** When small and large keys are created and deleted intermittently, the freed space from small keys can't be reused for large allocations.
 
-2. **Key deletion patterns.** Deleting keys doesn't return memory to the OS — jemalloc keeps it in its pools. The memory is reusable for new allocations of similar sizes, but appears as "wasted" in RSS.
+2. **Key deletion patterns.** Deleting keys doesn't return memory to the OS  jemalloc keeps it in its pools. The memory is reusable for new allocations of similar sizes, but appears as "wasted" in RSS.
 
-3. **Encoding transitions.** When a hash transitions from listpack to hashtable, the listpack memory is freed and new hashtable memory is allocated — at a different size class. The freed listpack slots may not be reusable.
+3. **Encoding transitions.** When a hash transitions from listpack to hashtable, the listpack memory is freed and new hashtable memory is allocated  at a different size class. The freed listpack slots may not be reusable.
 
 4. **SDS growth.** When strings grow (via `APPEND` or `SETRANGE`), the old SDS is freed and a new, larger one is allocated elsewhere. The old location becomes a fragment.
 
@@ -501,9 +501,9 @@ active_defrag_key_misses:98765          # Keys checked but not needing relocatio
 
 **Important limitation:** Active defragmentation only works with jemalloc. If Redis was compiled with libc malloc or tcmalloc, this feature is unavailable.
 
-We've now covered how Redis manages memory during normal operation: allocating it (jemalloc), accounting for it (INFO memory), reclaiming it (expiry and eviction), and compacting it (defragmentation). But all of this is in RAM — which is volatile. If Redis crashes, everything is gone.
+We've now covered how Redis manages memory during normal operation: allocating it (jemalloc), accounting for it (INFO memory), reclaiming it (expiry and eviction), and compacting it (defragmentation). But all of this is in RAM  which is volatile. If Redis crashes, everything is gone.
 
-The next three sections cover Redis's two persistence mechanisms — RDB and AOF — which solve this problem using the forking and copy-on-write concepts we introduced back in Part 0, Section 5.
+The next three sections cover Redis's two persistence mechanisms  RDB and AOF  which solve this problem using the forking and copy-on-write concepts we introduced back in Part 0, Section 5.
 
 ---
 
@@ -539,7 +539,7 @@ sequenceDiagram
     CP->>DISK: Rename temp-<pid>.rdb → dump.rdb
     CP->>OS: Exit with success code
 
-    OS->>MT: SIGCHLD — child exited
+    OS->>MT: SIGCHLD  child exited
     MT->>MT: serverCron detects child exit
     MT->>MT: Log "Background saving terminated with success"
 ```
@@ -548,7 +548,7 @@ sequenceDiagram
 
 When Redis calls `fork()`, the operating system:
 
-1. **Duplicates the page table** — a mapping from virtual addresses to physical memory pages. For a Redis process with 100 GB RSS, the page table itself might be 200 MB (one 8-byte entry per 4 KB page = 8 × 100GB/4KB = 200 MB). This duplication takes 10-20ms on modern hardware and **blocks the main thread**.
+1. **Duplicates the page table**  a mapping from virtual addresses to physical memory pages. For a Redis process with 100 GB RSS, the page table itself might be 200 MB (one 8-byte entry per 4 KB page = 8 × 100GB/4KB = 200 MB). This duplication takes 10-20ms on modern hardware and **blocks the main thread**.
 
 2. **Marks all pages as copy-on-write (CoW).** Both parent and child share the same physical pages. When either process writes to a page, the kernel:
    - Traps the write (page fault)
@@ -641,13 +641,13 @@ dbfilename dump.rdb
 dir /var/lib/redis/
 ```
 
-RDB gives you compact snapshots but with a data loss window between snapshots. If you need finer-grained durability — losing at most 1 second of data instead of minutes — you need AOF.
+RDB gives you compact snapshots but with a data loss window between snapshots. If you need finer-grained durability  losing at most 1 second of data instead of minutes  you need AOF.
 
 ---
 
 ## 7. AOF Persistence: Write-Ahead Logging
 
-AOF (Append-Only File) takes a fundamentally different approach from RDB. Instead of capturing the *state* at a point in time, it captures the *operations* — every write command received by the server. On restart, Redis replays the AOF to reconstruct the dataset. Part 0, Section 10 introduced the basic concept; here we cover the full mechanics including the AOF rewrite process and the hybrid RDB+AOF model.
+AOF (Append-Only File) takes a fundamentally different approach from RDB. Instead of capturing the *state* at a point in time, it captures the *operations*  every write command received by the server. On restart, Redis replays the AOF to reconstruct the dataset. Part 0, Section 10 introduced the basic concept; here we cover the full mechanics including the AOF rewrite process and the hybrid RDB+AOF model.
 
 ### AOF Write Path
 
@@ -688,7 +688,7 @@ flowchart TD
 
 ### AOF Rewrite: Compacting the Log
 
-The AOF file grows indefinitely as commands accumulate. An `INCR counter` executed 1 million times produces 1 million lines in the AOF — but the final state is just `SET counter 1000000`. AOF rewriting compacts the log:
+The AOF file grows indefinitely as commands accumulate. An `INCR counter` executed 1 million times produces 1 million lines in the AOF  but the final state is just `SET counter 1000000`. AOF rewriting compacts the log:
 
 ```mermaid
 flowchart LR
@@ -745,7 +745,7 @@ appendonlydir/
 ```
 
 Benefits:
-- **Atomic rewrite completion.** The new base file is written completely before the manifest is updated — no risk of partial rewrites.
+- **Atomic rewrite completion.** The new base file is written completely before the manifest is updated  no risk of partial rewrites.
 - **RDB preamble by default.** The base file uses RDB format for faster loading.
 - **Incremental files are smaller.** Only new commands since the last rewrite.
 
@@ -808,7 +808,7 @@ auto-aof-rewrite-percentage 100
 auto-aof-rewrite-min-size 64mb
 ```
 
-Both RDB and AOF use forking for their background operations — BGSAVE for RDB, and AOF rewrite for compacting the AOF. Part 0 introduced copy-on-write conceptually. Now let's go to the kernel level and understand exactly what happens to memory pages during these operations — because this is where the most common Redis production memory problems originate.
+Both RDB and AOF use forking for their background operations  BGSAVE for RDB, and AOF rewrite for compacting the AOF. Part 0 introduced copy-on-write conceptually. Now let's go to the kernel level and understand exactly what happens to memory pages during these operations  because this is where the most common Redis production memory problems originate.
 
 ---
 
@@ -961,7 +961,7 @@ Redis 4.0 introduced the `MEMORY` command family for production memory analysis.
 # Force jemalloc to release unused memory back to OS
 127.0.0.1:6379> MEMORY PURGE
 OK
-# Uses jemalloc's arena purging — releases pages that are fully empty
+# Uses jemalloc's arena purging  releases pages that are fully empty
 # Does NOT free fragmented pages (use activedefrag for that)
 ```
 
@@ -1042,7 +1042,7 @@ def check_memory_health(r):
         if usage_pct > 90:
             alerts.append(f"WARNING: Memory usage at {usage_pct:.1f}% of maxmemory")
         if usage_pct > 95:
-            alerts.append(f"CRITICAL: Memory usage at {usage_pct:.1f}% — eviction imminent")
+            alerts.append(f"CRITICAL: Memory usage at {usage_pct:.1f}%  eviction imminent")
 
     # Check eviction rate
     if stats.get("evicted_keys", 0) > 0:
@@ -1051,7 +1051,7 @@ def check_memory_health(r):
     # Check peak memory
     peak_ratio = info["used_memory_peak"] / info["used_memory"] if info["used_memory"] > 0 else 1
     if peak_ratio > 2.0:
-        alerts.append(f"INFO: Peak memory is {peak_ratio:.1f}x current — consider MEMORY PURGE")
+        alerts.append(f"INFO: Peak memory is {peak_ratio:.1f}x current  consider MEMORY PURGE")
 
     return alerts
 ```
@@ -1124,10 +1124,10 @@ def audit_memory_by_prefix(r, prefixes, sample_size=1000):
 **Fix:**
 ```bash
 # Before (wrong)
-maxmemory 55gb    # 86% of 64 GB — no headroom for CoW
+maxmemory 55gb    # 86% of 64 GB  no headroom for CoW
 
 # After (correct)
-maxmemory 40gb    # 62% of 64 GB — 24 GB headroom for CoW + OS + buffers
+maxmemory 40gb    # 62% of 64 GB  24 GB headroom for CoW + OS + buffers
 ```
 
 ### Scenario 2: Latency Spike from Mass Expiration
@@ -1145,7 +1145,7 @@ for key, value in cache_data.items():
 
 ### Scenario 3: Memory Fragmentation After Months of Operation
 
-**What happened:** A Redis instance running for 6 months showed `mem_fragmentation_ratio: 2.8` — RSS was 2.8x the actual data size. The instance had 10 GB of data but consumed 28 GB of RSS.
+**What happened:** A Redis instance running for 6 months showed `mem_fragmentation_ratio: 2.8`  RSS was 2.8x the actual data size. The instance had 10 GB of data but consumed 28 GB of RSS.
 
 **Root cause:** Frequent creation and deletion of variable-size keys caused jemalloc fragmentation. Old freed slots couldn't accommodate new allocations of different sizes.
 
@@ -1213,18 +1213,18 @@ This inversion means:
 
 ## Coming Up in Part 4: Networking, Transactions, and Performance Engineering
 
-Parts 1-3 covered Redis's internals: the event loop, data structures, memory management, and persistence. You now understand what happens *inside* Redis when it stores, manages, and persists data. But there's a critical layer we've only touched on: the interface between your application and Redis — the wire protocol, pipelining, transactions, and scripting.
+Parts 1-3 covered Redis's internals: the event loop, data structures, memory management, and persistence. You now understand what happens *inside* Redis when it stores, manages, and persists data. But there's a critical layer we've only touched on: the interface between your application and Redis  the wire protocol, pipelining, transactions, and scripting.
 
 Part 4 goes deep into this layer:
 
-- **RESP3 protocol** — the next-generation wire format with typed responses, and how it changes client library design
-- **Pipelining deep dive** — how pipelining interacts with the event loop and why it can 10x your throughput
-- **Transactions (MULTI/EXEC)** — the real atomicity guarantees, why they're not "database transactions," and the WATCH optimistic locking pattern
-- **Lua scripting internals** — how Redis executes Lua atomically, the performance implications, and the transition to Redis Functions (7.0+)
-- **Connection management** — pooling strategies, `CLIENT` commands, and Pub/Sub internals
-- **Performance benchmarking** — using `redis-benchmark` correctly and interpreting results
-- **Latency diagnosis** — `LATENCY` framework, `SLOWLOG`, and systematic debugging of the bottlenecks we identified in Part 1
+- **RESP3 protocol**  the next-generation wire format with typed responses, and how it changes client library design
+- **Pipelining deep dive**  how pipelining interacts with the event loop and why it can 10x your throughput
+- **Transactions (MULTI/EXEC)**  the real atomicity guarantees, why they're not "database transactions," and the WATCH optimistic locking pattern
+- **Lua scripting internals**  how Redis executes Lua atomically, the performance implications, and the transition to Redis Functions (7.0+)
+- **Connection management**  pooling strategies, `CLIENT` commands, and Pub/Sub internals
+- **Performance benchmarking**  using `redis-benchmark` correctly and interpreting results
+- **Latency diagnosis**  `LATENCY` framework, `SLOWLOG`, and systematic debugging of the bottlenecks we identified in Part 1
 
 ---
 
-*This is Part 3 of the Redis Deep Dive series. Parts 1-3 form the "single-node internals" trilogy — architecture, data structures, and memory/persistence. Starting with Part 4, we shift focus from *how Redis works internally* to *how to use it effectively*, and by Part 5, we'll leave the single-node world entirely for replication and high availability.*
+*This is Part 3 of the Redis Deep Dive series. Parts 1-3 form the "single-node internals" trilogy  architecture, data structures, and memory/persistence. Starting with Part 4, we shift focus from *how Redis works internally* to *how to use it effectively*, and by Part 5, we'll leave the single-node world entirely for replication and high availability.*

@@ -1,15 +1,15 @@
-# Memory in AI Systems Deep Dive — Part 10: Chunking and Retrieval Optimization — The Art of Splitting Text for AI Memory
+# Memory in AI Systems Deep Dive  Part 10: Chunking and Retrieval Optimization  The Art of Splitting Text for AI Memory
 
 ---
 
-**Series:** Memory in AI Systems — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Memory in AI Systems  A Developer's Deep Dive from Fundamentals to Production
 **Part:** 10 of 19
 **Audience:** Developers with programming experience who want to understand AI memory systems from the ground up
 **Reading time:** ~50 minutes
 
 ---
 
-In Part 9, we built a complete RAG (Retrieval-Augmented Generation) pipeline from scratch. We learned how to take external documents, embed them into vectors, store them in a vector database, retrieve relevant chunks at query time, and feed them as context to an LLM. That pipeline worked — but if you tested it on real-world documents, you probably noticed something: **the quality of your answers depends enormously on how you split your documents into chunks**. A poorly chunked document can make a brilliant retrieval system look broken. A well-chunked document can make a simple retrieval system look magical.
+In Part 9, we built a complete RAG (Retrieval-Augmented Generation) pipeline from scratch. We learned how to take external documents, embed them into vectors, store them in a vector database, retrieve relevant chunks at query time, and feed them as context to an LLM. That pipeline worked  but if you tested it on real-world documents, you probably noticed something: **the quality of your answers depends enormously on how you split your documents into chunks**. A poorly chunked document can make a brilliant retrieval system look broken. A well-chunked document can make a simple retrieval system look magical.
 
 This part is about that critical middle layer: how you split text into chunks, how you enrich those chunks with metadata, and how you optimize the retrieval pipeline to find the *right* chunks for any query. We're moving from "it works" to "it works well."
 
@@ -57,13 +57,13 @@ Chunking seems trivial on the surface: take a document, split it into pieces, em
 
 **Chunks too small:**
 - Lose context. A sentence like "This approach significantly outperforms the baseline" means nothing without knowing what "this approach" and "the baseline" refer to.
-- Increase the number of chunks, making retrieval noisier — more irrelevant results compete for the top-K positions.
+- Increase the number of chunks, making retrieval noisier  more irrelevant results compete for the top-K positions.
 - Force the LLM to stitch together meaning from disconnected fragments.
 - Embeddings of tiny text snippets tend to be less semantically meaningful.
 
 **Chunks too large:**
 - Dilute relevance. A 5-page chunk about machine learning might contain one paragraph about gradient descent. The embedding of the whole chunk captures the general topic but not the specific detail.
-- Waste context window space. If your LLM has a 4K token window and you retrieve 3 chunks of 1000 tokens each, you've used 75% of your budget — but maybe only 10% of that retrieved text was actually relevant.
+- Waste context window space. If your LLM has a 4K token window and you retrieve 3 chunks of 1000 tokens each, you've used 75% of your budget  but maybe only 10% of that retrieved text was actually relevant.
 - Fewer chunks means fewer "entry points" for retrieval. If the user's question matches a specific detail buried in a large chunk, the overall chunk embedding might not be close enough in vector space.
 
 **Chunks just right:**
@@ -133,7 +133,7 @@ The hierarchy is:
 - Blocks: The actual memory given to Python objects
 
 This pooling system is why Python processes often don't return memory to the
-OS even after deleting many objects — the memory is kept in pools for reuse.
+OS even after deleting many objects  the memory is kept in pools for reuse.
 """
 ```
 
@@ -222,11 +222,11 @@ for name, chunks in [
 
 | Strategy | Top Result | Problem |
 |---|---|---|
-| **Small (100 chars)** | "their reference counts never reach zero." | Fragment — no explanation of *what* cycles are or *how* Python detects them |
-| **Large (1000 chars)** | A 1000-char block mixing reference counting details with cycle detection | Diluted — the cycle detection answer is buried in irrelevant ref-counting details |
-| **Paragraph** | The "Cycle Detection" paragraph | Focused — self-contained explanation of exactly what was asked |
+| **Small (100 chars)** | "their reference counts never reach zero." | Fragment  no explanation of *what* cycles are or *how* Python detects them |
+| **Large (1000 chars)** | A 1000-char block mixing reference counting details with cycle detection | Diluted  the cycle detection answer is buried in irrelevant ref-counting details |
+| **Paragraph** | The "Cycle Detection" paragraph | Focused  self-contained explanation of exactly what was asked |
 
-The paragraph-based approach wins here because the document's natural structure aligns with semantic boundaries. But this won't always be the case — not all documents have clean paragraphs, and not all questions align with natural sections. That's why we need a full toolkit of chunking strategies.
+The paragraph-based approach wins here because the document's natural structure aligns with semantic boundaries. But this won't always be the case  not all documents have clean paragraphs, and not all questions align with natural sections. That's why we need a full toolkit of chunking strategies.
 
 ### The Chunking Quality Chain
 
@@ -246,7 +246,7 @@ graph LR
     style E fill:#2980b9,stroke:#333,color:#fff
 ```
 
-A bad chunking strategy at the start cascades into bad answers at the end. No amount of sophisticated retrieval or prompting can fix fundamentally bad chunks. This is why chunking deserves its own dedicated section — it's the foundation everything else builds on.
+A bad chunking strategy at the start cascades into bad answers at the end. No amount of sophisticated retrieval or prompting can fix fundamentally bad chunks. This is why chunking deserves its own dedicated section  it's the foundation everything else builds on.
 
 ---
 
@@ -294,12 +294,12 @@ class FixedSizeChunker:
 
     Pros:
         - Dead simple. No edge cases.
-        - Predictable chunk sizes — easy to reason about costs and context budgets.
+        - Predictable chunk sizes  easy to reason about costs and context budgets.
         - Works on any text, regardless of structure.
 
     Cons:
         - Splits in the middle of sentences, paragraphs, even words.
-        - Chunks have no semantic coherence — they're just byte boundaries.
+        - Chunks have no semantic coherence  they're just byte boundaries.
         - Embeddings of arbitrarily cut text are less meaningful.
 
     When to use:
@@ -413,7 +413,7 @@ class SentenceChunker:
     Splits text into chunks along sentence boundaries.
 
     Pros:
-        - Every chunk contains complete sentences — grammatically coherent.
+        - Every chunk contains complete sentences  grammatically coherent.
         - Embeddings are more meaningful since sentences carry complete thoughts.
         - Respects natural language structure.
 
@@ -528,7 +528,7 @@ for c in chunks:
 
 ### Strategy 3: Paragraph-Based Chunking
 
-Split on paragraph boundaries — double newlines, which typically indicate topic shifts.
+Split on paragraph boundaries  double newlines, which typically indicate topic shifts.
 
 ```python
 class ParagraphChunker:
@@ -536,7 +536,7 @@ class ParagraphChunker:
     Splits text on paragraph boundaries (double newlines).
 
     Pros:
-        - Paragraphs are natural semantic units — they typically cover one idea.
+        - Paragraphs are natural semantic units  they typically cover one idea.
         - Very fast and simple to implement.
         - Works extremely well for well-structured documents.
         - Preserves the author's intended logical grouping.
@@ -683,7 +683,7 @@ class RecursiveChunker:
 
     Pros:
         - Balances semantic coherence with size constraints.
-        - Handles any text structure — degrades gracefully.
+        - Handles any text structure  degrades gracefully.
         - The most popular approach in production RAG systems.
         - Configurable separator hierarchy for different document types.
 
@@ -773,7 +773,7 @@ class RecursiveChunker:
                         if len(split) <= self.chunk_size:
                             result.append(split)
                         else:
-                            # This piece is still too large — recurse with
+                            # This piece is still too large  recurse with
                             # next separators
                             sub_chunks = self._recursive_split(
                                 split, separators[i + 1:]
@@ -877,12 +877,12 @@ class SemanticChunker:
 
     Pros:
         - Chunks correspond to actual semantic units, not arbitrary boundaries.
-        - Adapts to the content — chunk sizes vary based on topic structure.
+        - Adapts to the content  chunk sizes vary based on topic structure.
         - Doesn't require knowledge of document format.
         - Produces the most "meaningful" chunks for embedding and retrieval.
 
     Cons:
-        - Requires embedding every sentence — expensive for large documents.
+        - Requires embedding every sentence  expensive for large documents.
         - Depends on embedding model quality.
         - Breakpoint detection threshold needs tuning.
         - Slower than rule-based approaches.
@@ -1152,7 +1152,7 @@ class MarkdownChunker:
                     }
                 ))
             else:
-                # Section too large — fall back to paragraph splitting
+                # Section too large  fall back to paragraph splitting
                 paragraphs = contextualized.split("\n\n")
                 current = ""
                 for para in paragraphs:
@@ -1254,7 +1254,7 @@ or `sudo dnf install python3` on Fedora.
 ## Basic Syntax
 
 ### Variables
-Python uses dynamic typing. You don't declare types — they're inferred.
+Python uses dynamic typing. You don't declare types  they're inferred.
 Variables are created when you first assign to them.
 
 ```python
@@ -1321,14 +1321,14 @@ class AgenticChunker:
       or should it start a new one?"
 
     Pros:
-        - Highest quality chunks — LLM understands nuance, context, topics.
+        - Highest quality chunks  LLM understands nuance, context, topics.
         - Chunks come with LLM-generated titles and summaries.
         - Handles complex documents that defeat rule-based approaches.
 
     Cons:
-        - Very expensive — requires LLM calls per proposition.
-        - Slow — can't process documents in bulk quickly.
-        - Non-deterministic — same document may chunk differently each run.
+        - Very expensive  requires LLM calls per proposition.
+        - Slow  can't process documents in bulk quickly.
+        - Non-deterministic  same document may chunk differently each run.
         - Depends on LLM quality and prompt engineering.
 
     When to use:
@@ -1521,9 +1521,9 @@ for c in chunks:
 
 ### Why Overlap Exists
 
-When you split text at chunk boundaries, you inevitably sever connections. A sentence might reference something mentioned two sentences earlier — if they end up in different chunks, the second chunk loses that context.
+When you split text at chunk boundaries, you inevitably sever connections. A sentence might reference something mentioned two sentences earlier  if they end up in different chunks, the second chunk loses that context.
 
-Overlap creates redundancy by including the end of one chunk at the beginning of the next. This gives each chunk a "running start" — some shared context with its predecessor.
+Overlap creates redundancy by including the end of one chunk at the beginning of the next. This gives each chunk a "running start"  some shared context with its predecessor.
 
 ```
 Without overlap:
@@ -1733,7 +1733,7 @@ class SmartOverlapChunker:
 
 ## 4. Metadata Enrichment
 
-Raw text chunks are like books without titles or summaries — they contain the information, but they're hard to find and contextualize. Metadata enrichment adds structure that dramatically improves retrieval.
+Raw text chunks are like books without titles or summaries  they contain the information, but they're hard to find and contextualize. Metadata enrichment adds structure that dramatically improves retrieval.
 
 ### The ChunkEnricher
 
@@ -1992,7 +1992,7 @@ graph TD
     style Output fill:#27ae60,stroke:#333,color:#fff
 ```
 
-**Why hypothetical questions matter:** When a user asks "How does Python free memory?", the chunk about reference counting might not have high cosine similarity with that exact phrasing. But if we've generated the hypothetical question "How does Python free memory when objects are no longer used?" and embedded *that* alongside the chunk, we get a much better match. This technique (sometimes called **HyDE** — Hypothetical Document Embeddings) bridges the vocabulary gap between user queries and document content.
+**Why hypothetical questions matter:** When a user asks "How does Python free memory?", the chunk about reference counting might not have high cosine similarity with that exact phrasing. But if we've generated the hypothetical question "How does Python free memory when objects are no longer used?" and embedded *that* alongside the chunk, we get a much better match. This technique (sometimes called **HyDE**  Hypothetical Document Embeddings) bridges the vocabulary gap between user queries and document content.
 
 ---
 
@@ -2011,7 +2011,7 @@ from collections import Counter
 
 class BM25:
     """
-    BM25 (Best Matching 25) — the classic keyword relevance algorithm.
+    BM25 (Best Matching 25)  the classic keyword relevance algorithm.
 
     BM25 scores documents based on:
     - Term frequency (TF): How often the query term appears in the document.
@@ -2242,7 +2242,7 @@ for score, chunk in results:
 
 ### Technique 2: Re-Ranking Pipeline (Bi-Encoder + Cross-Encoder)
 
-The initial retrieval stage (whether BM25, vector, or hybrid) is optimized for **recall** — finding all potentially relevant documents quickly. But it's not optimized for **precision**. A re-ranker takes the top candidates and re-scores them with a more powerful (but slower) model.
+The initial retrieval stage (whether BM25, vector, or hybrid) is optimized for **recall**  finding all potentially relevant documents quickly. But it's not optimized for **precision**. A re-ranker takes the top candidates and re-scores them with a more powerful (but slower) model.
 
 ```mermaid
 graph LR
@@ -2257,7 +2257,7 @@ graph LR
 
 **Bi-encoder** (Stage 1): Encodes query and documents independently. Fast because document embeddings are precomputed. But it can't model fine-grained interactions between query and document tokens.
 
-**Cross-encoder** (Stage 2): Encodes query and document together, allowing full token-level interaction. Much more accurate but much slower — can't precompute document embeddings because they depend on the query.
+**Cross-encoder** (Stage 2): Encodes query and document together, allowing full token-level interaction. Much more accurate but much slower  can't precompute document embeddings because they depend on the query.
 
 ```python
 class ReRankingPipeline:
@@ -2643,7 +2643,7 @@ for c in compressed:
 
 ### The Problem with Single Embeddings
 
-A standard RAG system creates one embedding per chunk. But a single embedding is a lossy compression — it captures the *general* semantic meaning but may miss specific details, questions the text could answer, or high-level summaries.
+A standard RAG system creates one embedding per chunk. But a single embedding is a lossy compression  it captures the *general* semantic meaning but may miss specific details, questions the text could answer, or high-level summaries.
 
 **Multi-vector retrieval** creates multiple embeddings per chunk, each capturing a different "angle":
 
@@ -2847,7 +2847,7 @@ class MultiVectorRetriever:
 chunks = [
     Chunk(text="Reference counting tracks how many variables point to each "
                "Python object. When the count reaches zero, memory is freed."),
-    Chunk(text="The cyclic garbage collector detects reference cycles — groups "
+    Chunk(text="The cyclic garbage collector detects reference cycles  groups "
                "of objects that reference each other but are unreachable from "
                "the program's root objects."),
     Chunk(text="Python's memory allocator uses pools of fixed-size blocks within "
@@ -2872,7 +2872,7 @@ for score, chunk in results:
     print()
 ```
 
-The key insight: the user asked "When does Python automatically free an object's memory?" — this is phrased as a question. If we only had full-text embeddings, the match might be weak because the chunk text doesn't use the word "automatically" or "free" in the same phrasing. But the hypothetical question embedding "How does this mechanism work?" or "When does Python free an object's memory?" provides a much closer match.
+The key insight: the user asked "When does Python automatically free an object's memory?"  this is phrased as a question. If we only had full-text embeddings, the match might be weak because the chunk text doesn't use the word "automatically" or "free" in the same phrasing. But the hypothetical question embedding "How does this mechanism work?" or "When does Python free an object's memory?" provides a much closer match.
 
 ---
 
@@ -2883,7 +2883,7 @@ The key insight: the user asked "When does Python automatically free an object's
 We've seen that small chunks give precise retrieval (they match specific queries well) but lose context (the surrounding information needed to understand them). Large chunks preserve context but dilute retrieval precision. Parent-child chunking resolves this trade-off by maintaining **two levels of chunks simultaneously**:
 
 - **Child chunks** (small): Used for retrieval. Their focused content produces precise embeddings that match specific queries.
-- **Parent chunks** (large): Used for context. When a child chunk matches, the system returns its parent — giving the LLM the broader context needed to generate a complete answer.
+- **Parent chunks** (large): Used for context. When a child chunk matches, the system returns its parent  giving the LLM the broader context needed to generate a complete answer.
 
 ```mermaid
 graph TD
@@ -3162,7 +3162,7 @@ for score, chunk in results:
     print()
 ```
 
-The beauty of parent-child chunking: the query "What are the GC generations in Python?" matches the small child chunk about generations precisely. But instead of returning just that small snippet, we return the entire parent chunk — which includes the broader context about reference counting, the cyclic collector, and why generations exist. The LLM gets both precision and context.
+The beauty of parent-child chunking: the query "What are the GC generations in Python?" matches the small child chunk about generations precisely. But instead of returning just that small snippet, we return the entire parent chunk  which includes the broader context about reference counting, the cyclic collector, and why generations exist. The LLM gets both precision and context.
 
 ---
 
@@ -3170,7 +3170,7 @@ The beauty of parent-child chunking: the query "What are the GC generations in P
 
 ### The Problem
 
-LLMs have finite context windows. If you retrieve 10 chunks of 500 tokens each, that's 5,000 tokens of context — plus the system prompt, conversation history, and the query itself. You might exceed the model's limit, or you might waste budget on less relevant chunks when you could have included more relevant information.
+LLMs have finite context windows. If you retrieve 10 chunks of 500 tokens each, that's 5,000 tokens of context  plus the system prompt, conversation history, and the query itself. You might exceed the model's limit, or you might waste budget on less relevant chunks when you could have included more relevant information.
 
 A token budget manager ensures you make the most of every token in the context window.
 
@@ -3285,7 +3285,7 @@ class TokenBudgetManager:
                 remaining_tokens -= chunk_tokens
 
             elif remaining_tokens >= min_chunk_tokens:
-                # Chunk partially fits — truncate at sentence boundary
+                # Chunk partially fits  truncate at sentence boundary
                 max_chars = remaining_tokens * self.chars_per_token
                 truncated_text = self._truncate_at_sentence(
                     chunk.text, max_chars
@@ -3490,7 +3490,7 @@ class RetrievalEvaluator:
         """
         NDCG@K: Normalized Discounted Cumulative Gain.
 
-        Measures ranking quality — not just whether relevant docs are retrieved,
+        Measures ranking quality  not just whether relevant docs are retrieved,
         but whether they're ranked in the right order.
 
         DCG@K = Σ (relevance_i / log2(i + 1)) for i = 1..K
@@ -3646,10 +3646,10 @@ RETRIEVAL EVALUATION REPORT
 
 ### Interpreting the Metrics
 
-- **MRR 0.875**: On average, the first relevant document appears at position ~1.14 (1/0.875). Very good — users usually find what they need immediately.
+- **MRR 0.875**: On average, the first relevant document appears at position ~1.14 (1/0.875). Very good  users usually find what they need immediately.
 - **Recall@5 1.0**: All relevant documents are found within the top 5 results. Perfect recall.
 - **Precision@3 0.583**: About 58% of the top-3 results are relevant. There's some noise.
-- **NDCG@3 0.828**: Results are well-ordered within the top 3 — more relevant documents tend to rank higher.
+- **NDCG@3 0.828**: Results are well-ordered within the top 3  more relevant documents tend to rank higher.
 
 **Using metrics to guide optimization:**
 
@@ -3664,12 +3664,12 @@ RETRIEVAL EVALUATION REPORT
 
 ## 10. Project: Build an Optimized RAG Pipeline
 
-Let's bring everything together. We'll upgrade Part 9's basic RAG pipeline with semantic chunking, hybrid search, re-ranking, and token budget management — then compare before and after.
+Let's bring everything together. We'll upgrade Part 9's basic RAG pipeline with semantic chunking, hybrid search, re-ranking, and token budget management  then compare before and after.
 
 ```python
 class BasicRAGPipeline:
     """
-    The basic pipeline from Part 9 — our baseline.
+    The basic pipeline from Part 9  our baseline.
     Uses fixed-size chunking and simple vector search.
     """
 
@@ -3698,7 +3698,7 @@ class BasicRAGPipeline:
 
 class OptimizedRAGPipeline:
     """
-    The optimized pipeline — uses everything we built in this part.
+    The optimized pipeline  uses everything we built in this part.
 
     Improvements over basic:
     1. Semantic chunking (instead of fixed-size)
@@ -3830,7 +3830,7 @@ For example, consider this code:
     del y             # list refcount = 0 -> deallocated immediately
 
 Reference counting has two key advantages: it's simple to understand and
-it's immediate — objects are freed as soon as they become unreachable. This
+it's immediate  objects are freed as soon as they become unreachable. This
 means Python has more predictable memory behavior than languages like Java
 that use tracing collectors with periodic pauses.
 
@@ -3879,7 +3879,7 @@ The hierarchy is:
 When all objects in a pool are freed, the pool is returned to the arena.
 When all pools in an arena are freed, the arena is returned to the OS.
 However, if even one object in an arena is still alive, the entire 256 KB
-arena stays allocated — this is why Python processes often appear to use
+arena stays allocated  this is why Python processes often appear to use
 more memory than expected.
 
 Practical Tips for Memory Management
@@ -3953,7 +3953,7 @@ for query in test_queries:
 └──────────────────────┴──────────────────┴────────────────────────┘
 ```
 
-The optimized pipeline isn't just marginally better — it's a fundamentally different experience. Users get more relevant answers, less noise, and the LLM has better context to generate accurate responses.
+The optimized pipeline isn't just marginally better  it's a fundamentally different experience. Users get more relevant answers, less noise, and the LLM has better context to generate accurate responses.
 
 ---
 
@@ -3975,16 +3975,16 @@ The optimized pipeline isn't just marginally better — it's a fundamentally dif
 | **Semantic chunking** | Splitting text at semantic boundaries detected via embedding similarity between consecutive sentences |
 | **Recursive chunking** | Splitting text using a hierarchy of separators (paragraphs → sentences → words → characters) |
 | **Agentic chunking** | Using an LLM to decide chunk boundaries and generate chunk metadata |
-| **Parent-child chunking** | Maintaining two chunk levels — small children for precise retrieval, large parents for rich context |
+| **Parent-child chunking** | Maintaining two chunk levels  small children for precise retrieval, large parents for rich context |
 | **Multi-vector retrieval** | Creating multiple embeddings per chunk (full text, summary, questions) for broader matching |
-| **HyDE** | Hypothetical Document Embeddings — generating hypothetical answers/questions to bridge vocabulary gaps |
+| **HyDE** | Hypothetical Document Embeddings  generating hypothetical answers/questions to bridge vocabulary gaps |
 | **Contextual compression** | Extracting only the query-relevant sentences from retrieved chunks to reduce noise |
 | **Query decomposition** | Breaking complex queries into simpler sub-queries for more targeted retrieval |
 | **Token budget** | The number of tokens available for retrieved context within the LLM's context window |
 | **MRR (Mean Reciprocal Rank)** | Average of 1/rank-of-first-relevant-result across queries; measures how quickly users find relevant results |
 | **Recall@K** | Fraction of relevant documents found in the top K results |
 | **Precision@K** | Fraction of top K results that are relevant |
-| **NDCG (Normalized Discounted Cumulative Gain)** | Measures ranking quality — whether better results appear higher in the list |
+| **NDCG (Normalized Discounted Cumulative Gain)** | Measures ranking quality  whether better results appear higher in the list |
 | **Context window** | The maximum number of tokens an LLM can process in a single request |
 | **Proposition** | An atomic, self-contained statement of fact extracted from text (used in agentic chunking) |
 
@@ -4034,13 +4034,13 @@ Priority 3 (Refinement):
 └── Build comprehensive evaluation (MRR, NDCG, etc.)
 ```
 
-### What's Next: Part 11 — Agent Memory: Giving AI Systems Persistent Identity
+### What's Next: Part 11  Agent Memory: Giving AI Systems Persistent Identity
 
 In Parts 8-10, we built a complete external memory system: embedding documents, storing vectors, retrieving relevant chunks, and feeding context to LLMs. This is powerful for question-answering and document search. But there's a much bigger challenge ahead.
 
-What if the AI needs to **remember you**? Not just retrieve documents, but remember your preferences, past conversations, decisions, and context — across sessions, over weeks and months? What if the AI needs to maintain state while taking actions in the world — browsing the web, writing code, managing projects?
+What if the AI needs to **remember you**? Not just retrieve documents, but remember your preferences, past conversations, decisions, and context  across sessions, over weeks and months? What if the AI needs to maintain state while taking actions in the world  browsing the web, writing code, managing projects?
 
-In Part 11, we'll explore **agent memory** — the memory systems that power autonomous AI agents. We'll cover:
+In Part 11, we'll explore **agent memory**  the memory systems that power autonomous AI agents. We'll cover:
 
 - **Short-term memory**: How agents maintain context within a task (scratchpads, working memory)
 - **Long-term memory**: How agents remember across sessions (conversation summaries, user profiles, episodic memory)
@@ -4048,6 +4048,6 @@ In Part 11, we'll explore **agent memory** — the memory systems that power aut
 - **Memory architectures**: MemGPT, reflexion, generative agents, and other cutting-edge approaches
 - **Implementation**: Building a complete agent memory system with session persistence, memory consolidation, and retrieval
 
-We're moving from "AI that answers questions about documents" to "AI that learns, remembers, and evolves." The memory challenge gets much harder — and much more interesting.
+We're moving from "AI that answers questions about documents" to "AI that learns, remembers, and evolves." The memory challenge gets much harder  and much more interesting.
 
 See you in Part 11.

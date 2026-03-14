@@ -1,8 +1,8 @@
-# Memory in AI Systems Deep Dive — Part 9: Retrieval-Augmented Generation — Giving AI Perfect Memory
+# Memory in AI Systems Deep Dive  Part 9: Retrieval-Augmented Generation  Giving AI Perfect Memory
 
 ---
 
-**Series:** Memory in AI Systems — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Memory in AI Systems  A Developer's Deep Dive from Fundamentals to Production
 **Part:** 9 of 19 (RAG Systems)
 **Audience:** Developers with programming experience who want to understand AI memory systems from the ground up
 **Reading time:** ~55 minutes
@@ -11,16 +11,16 @@
 
 ## Recap of Part 8
 
-In Part 8, we explored vector databases — the specialized storage engines that make similarity search fast at scale. We built vector indexes from scratch, understood HNSW and IVF algorithms, compared Pinecone, Weaviate, Qdrant, ChromaDB, and pgvector, and learned how to choose the right vector database for our use case.
+In Part 8, we explored vector databases  the specialized storage engines that make similarity search fast at scale. We built vector indexes from scratch, understood HNSW and IVF algorithms, compared Pinecone, Weaviate, Qdrant, ChromaDB, and pgvector, and learned how to choose the right vector database for our use case.
 
 But a vector database by itself is just a library with no librarian. It can store millions of vectors and find similar ones quickly, but it doesn't know *what* to store, *how* to prepare documents for storage, *when* to search, or *how* to use what it finds. That's like having a massive warehouse of books with no catalog, no reading room, and no way to answer questions.
 
-This part puts the entire system together. We're building **Retrieval-Augmented Generation (RAG)** — the architecture pattern that gives AI models access to external knowledge. RAG is, by far, the most common pattern for AI memory in production today. It's how ChatGPT searches the web, how enterprise chatbots answer questions about internal documents, and how coding assistants understand your codebase.
+This part puts the entire system together. We're building **Retrieval-Augmented Generation (RAG)**  the architecture pattern that gives AI models access to external knowledge. RAG is, by far, the most common pattern for AI memory in production today. It's how ChatGPT searches the web, how enterprise chatbots answer questions about internal documents, and how coding assistants understand your codebase.
 
 By the end of this part, you will:
 
 - Understand **why RAG exists** and the fundamental insight behind it
-- Build a **complete RAG pipeline from scratch** — every stage, from document loading to answer generation
+- Build a **complete RAG pipeline from scratch**  every stage, from document loading to answer generation
 - Implement **5 different chunking strategies** and understand when to use each
 - Build **3 different retrieval strategies** (dense, sparse, hybrid) and compare their quality
 - Master **prompt engineering for RAG** including source attribution and conflict handling
@@ -55,11 +55,11 @@ Let's give AI a library card.
 
 ### The Fundamental Problem: Models Have Fixed Knowledge
 
-Large language models are trained on massive datasets — trillions of tokens of text from books, websites, code repositories, and more. After training, the model's knowledge is **frozen in its weights**. It knows what it learned during training, and nothing else.
+Large language models are trained on massive datasets  trillions of tokens of text from books, websites, code repositories, and more. After training, the model's knowledge is **frozen in its weights**. It knows what it learned during training, and nothing else.
 
 This creates three critical problems:
 
-**Problem 1: Knowledge cutoff.** A model trained in January 2024 doesn't know about events in February 2024. Ask it about recent news, new library versions, or latest research — it either hallucinates or admits ignorance.
+**Problem 1: Knowledge cutoff.** A model trained in January 2024 doesn't know about events in February 2024. Ask it about recent news, new library versions, or latest research  it either hallucinates or admits ignorance.
 
 **Problem 2: No private knowledge.** The model was trained on public data. It has never seen your company's internal documentation, your codebase, your customer records, or your proprietary research. It can't answer questions about information it was never trained on.
 
@@ -72,7 +72,7 @@ Model (without RAG): Based on common business practices, your refund
 policy likely allows returns within 30 days of purchase with a valid
 receipt. Customers can typically request a full refund or exchange...
 
-[This is a HALLUCINATION — the model is guessing, not referencing
+[This is a HALLUCINATION  the model is guessing, not referencing
 actual policy documents]
 
 Model (with RAG): According to your company's refund policy document
@@ -83,7 +83,7 @@ portal at support.example.com.
 
 [Source: refund-policy-v3.pdf, Section 2.1]
 
-[This is GROUNDED — every fact traces back to an actual document]
+[This is GROUNDED  every fact traces back to an actual document]
 ```
 
 ### The Fundamental Insight: Open-Book Exams
@@ -92,7 +92,7 @@ Think about two kinds of exams in school:
 
 **Closed-book exam:** You must memorize everything. You can only use what's in your head. If you didn't study a topic, you either guess or leave it blank.
 
-**Open-book exam:** You bring your textbooks and notes. When you encounter a question you're not sure about, you look it up. You don't need to memorize every fact — you need to know *where to find* the answer and *how to use* what you find.
+**Open-book exam:** You bring your textbooks and notes. When you encounter a question you're not sure about, you look it up. You don't need to memorize every fact  you need to know *where to find* the answer and *how to use* what you find.
 
 RAG turns AI from a closed-book exam taker into an open-book exam taker.
 
@@ -170,13 +170,13 @@ The key properties of this architecture:
 
 ## 2. The RAG Pipeline End to End
 
-Before diving into each component, let's build the entire pipeline from scratch. This gives you the complete picture — we'll refine each piece in later sections.
+Before diving into each component, let's build the entire pipeline from scratch. This gives you the complete picture  we'll refine each piece in later sections.
 
 ### The Core Pipeline Class
 
 ```python
 """
-Complete RAG Pipeline — Built from scratch.
+Complete RAG Pipeline  Built from scratch.
 This is the skeleton we'll flesh out throughout this article.
 """
 
@@ -557,13 +557,13 @@ That's the complete skeleton. Every section below dives deep into one stage.
 
 ## 3. Document Loading and Processing
 
-The first stage of any RAG pipeline is getting your data into a format the system can work with. This sounds trivial — just read the file, right? — but real-world documents come in dozens of formats, each with its own quirks.
+The first stage of any RAG pipeline is getting your data into a format the system can work with. This sounds trivial  just read the file, right?  but real-world documents come in dozens of formats, each with its own quirks.
 
 ### The Universal Document Loader
 
 ```python
 """
-Universal Document Loader — Handles PDF, HTML, Markdown, Code, JSON, CSV.
+Universal Document Loader  Handles PDF, HTML, Markdown, Code, JSON, CSV.
 """
 
 import csv
@@ -946,7 +946,7 @@ If this paragraph is split into 50-character chunks:
 - Chunk 5: `"ilable for an additional $15 and guarantees deli"`
 - Chunk 6: `"very within 2 business days for domestic orders."`
 
-The answer ("$15") is split across chunks 4 and 5. Neither chunk alone makes sense. The word "Express" is in chunk 4 and "$15" is in chunk 5 — the retriever might find chunk 4 (it mentions "Express shipping") but lose the price information.
+The answer ("$15") is split across chunks 4 and 5. Neither chunk alone makes sense. The word "Express" is in chunk 4 and "$15" is in chunk 5  the retriever might find chunk 4 (it mentions "Express shipping") but lose the price information.
 
 If the entire paragraph is kept as one chunk, the retriever finds it easily and the LLM has all the context it needs.
 
@@ -956,8 +956,8 @@ But if we keep *every* paragraph as one chunk, we might have 5,000-word chunks t
 
 | | Small Chunks | Large Chunks |
 |---|---|---|
-| **Precision** | High — each chunk is focused | Low — lots of irrelevant text mixed in |
-| **Context** | Low — chunks lack surrounding context | High — chunks are self-contained |
+| **Precision** | High  each chunk is focused | Low  lots of irrelevant text mixed in |
+| **Context** | Low  chunks lack surrounding context | High  chunks are self-contained |
 | **Retrieval noise** | More chunks to search through | Fewer chunks, less noise |
 | **LLM efficiency** | More focused context | Wasted tokens on irrelevant text |
 | **Best for** | Fact lookups, specific questions | Complex questions, reasoning tasks |
@@ -979,7 +979,7 @@ class FixedSizeChunker:
     Split text into fixed-size chunks with configurable overlap.
 
     Overlap ensures that information at chunk boundaries isn't lost.
-    A chunk boundary might split a sentence in half — overlap ensures
+    A chunk boundary might split a sentence in half  overlap ensures
     the complete sentence appears in at least one chunk.
     """
 
@@ -1205,7 +1205,7 @@ class RecursiveChunker:
     2. Single newline (line boundary)
     3. Sentence-ending punctuation
     4. Space (word boundary)
-    5. Empty string (character boundary — last resort)
+    5. Empty string (character boundary  last resort)
     """
 
     def __init__(
@@ -1384,7 +1384,7 @@ class MarkdownChunker:
                 if len(full_text.strip()) >= self.min_chunk_size:
                     chunks.append(full_text.strip())
             else:
-                # Section is too large — sub-chunk it
+                # Section is too large  sub-chunk it
                 sub_chunker = RecursiveChunker(
                     chunk_size=self.max_chunk_size,
                     chunk_overlap=50,
@@ -1576,7 +1576,7 @@ class SemanticChunker:
             elif len(chunk_text) >= self.min_chunk_size:
                 chunks.append(chunk_text)
             else:
-                # Chunk too small — will merge with next
+                # Chunk too small  will merge with next
                 if chunks:
                     chunks[-1] += " " + chunk_text
                 else:
@@ -1639,13 +1639,13 @@ flowchart TD
 
 ## 5. Indexing and Storage
 
-Once documents are chunked and embedded, we need to store them in a way that enables fast retrieval. In Part 8, we explored vector databases in depth. Here we'll focus on the practical integration — how to use ChromaDB (the most popular choice for getting started) as the storage layer for our RAG pipeline.
+Once documents are chunked and embedded, we need to store them in a way that enables fast retrieval. In Part 8, we explored vector databases in depth. Here we'll focus on the practical integration  how to use ChromaDB (the most popular choice for getting started) as the storage layer for our RAG pipeline.
 
 ### ChromaDB Integration
 
 ```python
 """
-Indexing with ChromaDB — Production-ready vector storage for RAG.
+Indexing with ChromaDB  Production-ready vector storage for RAG.
 """
 
 import hashlib
@@ -1781,7 +1781,7 @@ class ChromaIndex:
         """
         Update a document: delete old chunks and add new ones.
 
-        This is how you handle document updates in production —
+        This is how you handle document updates in production 
         re-index the changed document without touching others.
         """
         self.delete_by_source(source)
@@ -1841,7 +1841,7 @@ def demo_chroma_indexing():
     # 4. Search
     results = index.search("What is the refund policy?", top_k=3)
     for r in results:
-        print(f"  [{r.rank}] Score: {r.score:.3f} — {r.chunk.content[:100]}...")
+        print(f"  [{r.rank}] Score: {r.score:.3f}  {r.chunk.content[:100]}...")
 ```
 
 ### Metadata Management
@@ -1850,7 +1850,7 @@ Metadata is the unsung hero of RAG systems. Good metadata enables filtering that
 
 ```python
 """
-Metadata Enrichment — Make your chunks self-describing.
+Metadata Enrichment  Make your chunks self-describing.
 """
 
 from datetime import datetime
@@ -1908,7 +1908,7 @@ class MetadataEnricher:
 
 ## 6. Retrieval Strategies
 
-Retrieval is where the magic happens — or fails. The right retrieval strategy can mean the difference between a system that feels intelligent and one that gives irrelevant answers.
+Retrieval is where the magic happens  or fails. The right retrieval strategy can mean the difference between a system that feels intelligent and one that gives irrelevant answers.
 
 ### Strategy 1: Dense Retrieval (Vector Similarity)
 
@@ -2226,8 +2226,8 @@ def demo_retrieval_comparison():
     ]
 
     queries = [
-        "How do I get my money back?",    # Semantic — dense should win
-        "error E-4521",                   # Keyword — sparse should win
+        "How do I get my money back?",    # Semantic  dense should win
+        "error E-4521",                   # Keyword  sparse should win
         "refund policy for returns",      # Both should work
     ]
 

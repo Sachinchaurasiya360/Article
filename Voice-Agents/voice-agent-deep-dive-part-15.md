@@ -1,8 +1,8 @@
-# Voice Agents Deep Dive — Part 15: Advanced Voice Features — Authentication, Multi-Modal, and Proactive Agents
+# Voice Agents Deep Dive  Part 15: Advanced Voice Features  Authentication, Multi-Modal, and Proactive Agents
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** 15 of 19 (Advanced Voice Features)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~45 minutes
@@ -13,17 +13,17 @@ In Part 14, we built voice agents that detect and respond in the user's language
 
 Now we go further. Part 15 is about capabilities that transform a voice agent from a sophisticated chatbot into a truly useful, trustworthy system:
 
-- **Voice authentication** — prove who you are by speaking
-- **Anti-spoofing** — detect recorded or deepfake audio
-- **Multi-modal** — combine voice with screen and vision
-- **Proactive agents** — agents that initiate conversations, not just respond
-- **Voice commerce** — complete transactions entirely by voice
+- **Voice authentication**  prove who you are by speaking
+- **Anti-spoofing**  detect recorded or deepfake audio
+- **Multi-modal**  combine voice with screen and vision
+- **Proactive agents**  agents that initiate conversations, not just respond
+- **Voice commerce**  complete transactions entirely by voice
 
 ---
 
-## Section 1: Speaker Verification — Voice as a Password
+## Section 1: Speaker Verification  Voice as a Password
 
-> **The insight**: Every person has a unique "voiceprint" — the combination of their vocal tract anatomy, learned speech habits, and physiological characteristics. Speaker verification exploits this uniqueness to authenticate callers without passwords or PINs.
+> **The insight**: Every person has a unique "voiceprint"  the combination of their vocal tract anatomy, learned speech habits, and physiological characteristics. Speaker verification exploits this uniqueness to authenticate callers without passwords or PINs.
 
 ### How Voiceprint Matching Works
 
@@ -43,11 +43,11 @@ graph TD
     I -->|No| K[❌ Failed - Request PIN]
 ```
 
-The key component is the **speaker embedding** — a compact numerical vector (typically 192-512 dimensions) that captures the unique characteristics of a voice. Two recordings from the same speaker produce embeddings that are close in vector space; recordings from different speakers are far apart.
+The key component is the **speaker embedding**  a compact numerical vector (typically 192-512 dimensions) that captures the unique characteristics of a voice. Two recordings from the same speaker produce embeddings that are close in vector space; recordings from different speakers are far apart.
 
 ```python
 """
-voice_authenticator.py — Voiceprint-based speaker authentication.
+voice_authenticator.py  Voiceprint-based speaker authentication.
 """
 import numpy as np
 import asyncio
@@ -224,7 +224,7 @@ class LivenessDetector:
 
         # Check 4: High-frequency noise (microphones have characteristic noise)
         # Replays through speakers have reduced high-frequency content
-        # (This is a simplified check — production would use a trained model)
+        # (This is a simplified check  production would use a trained model)
         from scipy import signal as scipy_signal
         freqs, psd = scipy_signal.welch(audio, fs=sample_rate, nperseg=512)
         high_freq_mask = freqs > 4000  # Above 4kHz
@@ -490,7 +490,7 @@ When multiple people are on a call, you need to know who said what:
 
 ```python
 """
-diarization_auth.py — Combine diarization with voice authentication.
+diarization_auth.py  Combine diarization with voice authentication.
 """
 import asyncio
 import numpy as np
@@ -680,7 +680,7 @@ graph LR
 
 ```python
 """
-multimodal_agent.py — Voice agent that accepts audio, text, and images.
+multimodal_agent.py  Voice agent that accepts audio, text, and images.
 """
 import asyncio
 import base64
@@ -745,7 +745,7 @@ class MultiModalAgent:
             user_text = input_data.text
 
         elif input_data.modality == InputModality.IMAGE:
-            # Image only — ask LLM to describe it
+            # Image only  ask LLM to describe it
             user_text = "Please describe this image."
 
         elif input_data.modality == InputModality.VOICE_AND_IMAGE:
@@ -796,7 +796,7 @@ class MultiModalAgent:
             "You are a helpful voice assistant. "
             "When analyzing images, describe what you see concisely and conversationally. "
             "Keep responses brief and suitable for spoken audio. "
-            "Avoid markdown formatting — use natural speech."
+            "Avoid markdown formatting  use natural speech."
         )
 
         self.conversation_history.append({
@@ -856,7 +856,7 @@ class MultiModalAgent:
 
 ```python
 """
-multimodal_websocket_server.py — FastAPI server for multi-modal voice agent.
+multimodal_websocket_server.py  FastAPI server for multi-modal voice agent.
 """
 import asyncio
 import json
@@ -1046,7 +1046,7 @@ if __name__ == "__main__":
 
 ## Section 4: Proactive Voice Agents
 
-Most voice agents are **reactive** — they wait for the user to call. **Proactive agents** flip this: the agent calls the user when something important happens.
+Most voice agents are **reactive**  they wait for the user to call. **Proactive agents** flip this: the agent calls the user when something important happens.
 
 ```mermaid
 graph TD
@@ -1064,7 +1064,7 @@ graph TD
 
 ```python
 """
-proactive_agent_scheduler.py — Schedule and execute proactive outbound calls.
+proactive_agent_scheduler.py  Schedule and execute proactive outbound calls.
 """
 import asyncio
 import json
@@ -1316,11 +1316,11 @@ async def demo_proactive_calls():
 
 ## Section 5: Voice Commerce
 
-Voice commerce is one of the highest-value applications — letting customers complete purchases entirely by phone:
+Voice commerce is one of the highest-value applications  letting customers complete purchases entirely by phone:
 
 ```python
 """
-voice_commerce_agent.py — Handle e-commerce transactions via voice.
+voice_commerce_agent.py  Handle e-commerce transactions via voice.
 """
 import asyncio
 from dataclasses import dataclass, field
@@ -1400,7 +1400,7 @@ class ShoppingCart:
 
 class VoiceCommerceAgent:
     """
-    Full e-commerce agent for voice — browse, add to cart, checkout.
+    Full e-commerce agent for voice  browse, add to cart, checkout.
     PCI DSS compliant: never stores card numbers, uses tokenization.
     """
 
@@ -1640,7 +1640,7 @@ Voice agents should be accessible to all users:
 
 ```python
 """
-accessibility_features.py — Accessibility features for voice agents.
+accessibility_features.py  Accessibility features for voice agents.
 """
 import asyncio
 from dataclasses import dataclass
@@ -1823,13 +1823,13 @@ async def demo_accessibility():
 
 ---
 
-## Section 7: Project — Multi-Modal Agent with Voice + Screen
+## Section 7: Project  Multi-Modal Agent with Voice + Screen
 
 Here's the complete integration tying all of Part 15 together:
 
 ```python
 """
-complete_advanced_agent.py — Full agent with auth + multi-modal + proactive + commerce.
+complete_advanced_agent.py  Full agent with auth + multi-modal + proactive + commerce.
 """
 import asyncio
 from dataclasses import dataclass
@@ -1932,7 +1932,7 @@ class AdvancedVoiceAgentPlatform:
                         "authenticated": False,
                     }
             else:
-                # New caller — proceed without voice auth
+                # New caller  proceed without voice auth
                 session["authenticated"] = True
                 session["user_id"] = None
                 return {
@@ -1972,7 +1972,7 @@ class AdvancedVoiceAgentPlatform:
 | Term | Definition |
 |------|-----------|
 | **Speaker embedding** | A compact numerical vector representing the unique characteristics of a voice |
-| **ECAPA-TDNN** | Emphasized Channel Attention, Propagation and Aggregation TDNN — state-of-the-art speaker model |
+| **ECAPA-TDNN** | Emphasized Channel Attention, Propagation and Aggregation TDNN  state-of-the-art speaker model |
 | **TitaNet** | NVIDIA's speaker recognition model, alternative to ECAPA-TDNN |
 | **Cosine similarity** | Measure of angle between two vectors; 1.0 = identical direction, 0 = orthogonal |
 | **Liveness detection** | Anti-spoofing check to confirm audio comes from a live person, not a recording |
@@ -1980,11 +1980,11 @@ class AdvancedVoiceAgentPlatform:
 | **Voiceprint** | Unique acoustic characteristics of a person's voice (like a fingerprint) |
 | **Diarization** | Identifying "who spoke when" in multi-speaker audio |
 | **Proactive agent** | An agent that initiates conversations rather than waiting for user input |
-| **AMD** | Answering Machine Detection — determines if a call was answered by a human or voicemail |
+| **AMD** | Answering Machine Detection  determines if a call was answered by a human or voicemail |
 | **Voice commerce** | Completing e-commerce transactions entirely through voice interaction |
-| **PCI DSS** | Payment Card Industry Data Security Standard — rules for handling payment data |
-| **WebVTT** | Web Video Text Tracks — standard format for captions and subtitles in browsers |
-| **ARIA** | Accessible Rich Internet Applications — HTML attributes for screen reader support |
+| **PCI DSS** | Payment Card Industry Data Security Standard  rules for handling payment data |
+| **WebVTT** | Web Video Text Tracks  standard format for captions and subtitles in browsers |
+| **ARIA** | Accessible Rich Internet Applications  HTML attributes for screen reader support |
 | **Multi-modal** | Agent that processes multiple input types (voice, text, image) simultaneously |
 | **APScheduler** | Python scheduling library for running tasks at specified times or intervals |
 
@@ -1992,17 +1992,17 @@ class AdvancedVoiceAgentPlatform:
 
 ## What's Next
 
-In **Part 16: Latency Optimization**, we tackle the hardest problem in voice AI — making everything feel instant:
+In **Part 16: Latency Optimization**, we tackle the hardest problem in voice AI  making everything feel instant:
 
-- **Why latency kills voice agents** — the human perception curve (300ms threshold)
-- **TTFA metric** — Time to First Audio, the single number that matters most
-- **Streaming at every stage** — ASR → LLM → TTS all streaming simultaneously
-- **Speculative execution** — pre-generating likely responses before the user finishes speaking
-- **Filler word injection** — bridging the gap with natural "Hmm..." and "Let me check..."
-- **The full optimization journey** — from 3 second latency to under 800ms, step by step
+- **Why latency kills voice agents**  the human perception curve (300ms threshold)
+- **TTFA metric**  Time to First Audio, the single number that matters most
+- **Streaming at every stage**  ASR → LLM → TTS all streaming simultaneously
+- **Speculative execution**  pre-generating likely responses before the user finishes speaking
+- **Filler word injection**  bridging the gap with natural "Hmm..." and "Let me check..."
+- **The full optimization journey**  from 3 second latency to under 800ms, step by step
 
 By the end of Part 16, you'll have a voice agent that feels as responsive as talking to a human.
 
 ---
 
-*Part 15 of 19 — Building Voice Agents: A Developer's Deep Dive*
+*Part 15 of 19  Building Voice Agents: A Developer's Deep Dive*

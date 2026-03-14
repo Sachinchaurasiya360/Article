@@ -1,8 +1,8 @@
-# Apache Kafka Deep Dive — Part 8: Stream Processing — Kafka Streams, ksqlDB, and Flink
+# Apache Kafka Deep Dive  Part 8: Stream Processing  Kafka Streams, ksqlDB, and Flink
 
 ---
 
-**Series:** Apache Kafka Deep Dive — From First Principles to Planet-Scale Event Streaming
+**Series:** Apache Kafka Deep Dive  From First Principles to Planet-Scale Event Streaming
 **Part:** 8 of 10
 **Audience:** Senior backend engineers, distributed systems engineers, data platform architects
 **Reading time:** ~45 minutes
@@ -13,7 +13,7 @@
 
 Parts 0 through 7 established the full mechanical picture of Kafka as a distributed log. Part 0 framed the event streaming problem and why a commit log is the right abstraction. Part 1 covered the distributed log: sequential I/O, partitioning, and offset semantics. Part 2 examined broker internals: the network thread pool, IO threads, and the KRaft controller. Part 3 went deep on replication: ISR, leader election, and what durability actually means. Part 4 dissected consumer groups: the group coordinator, partition assignment, and rebalance protocols. Part 5 covered the storage engine: segment files, the index structure, log compaction, and tiered storage. Part 6 covered producers: batching, compression, idempotency, and transactions. Part 7 addressed performance engineering: tuning throughput, latency, and the interaction between producer, broker, and consumer configurations.
 
-This part builds on all of that. When we talk about producer transactions, we mean the exactly-once mechanism from Part 6. When we talk about consumer group rebalancing, we mean the protocol from Part 4. When we talk about log compaction for state store changelog topics, we mean the compaction mechanics from Part 5. Stream processing is not separate from Kafka — it is built on top of every mechanism you have already learned.
+This part builds on all of that. When we talk about producer transactions, we mean the exactly-once mechanism from Part 6. When we talk about consumer group rebalancing, we mean the protocol from Part 4. When we talk about log compaction for state store changelog topics, we mean the compaction mechanics from Part 5. Stream processing is not separate from Kafka  it is built on top of every mechanism you have already learned.
 
 ---
 
@@ -21,9 +21,9 @@ This part builds on all of that. When we talk about producer transactions, we me
 
 ### 1.1 Batch vs. Stream Processing
 
-Batch processing operates on **bounded datasets**. You accumulate data until some threshold is reached — a time interval (midnight), a size limit (10GB), or a trigger (job completion) — and then run a computation over the entire accumulated set. The result is correct as of the batch's end time, but it is always historical. A batch job that runs at midnight tells you what happened yesterday. If fraud occurred at 11:58 PM, you learn about it at midnight, not at 11:58.
+Batch processing operates on **bounded datasets**. You accumulate data until some threshold is reached  a time interval (midnight), a size limit (10GB), or a trigger (job completion)  and then run a computation over the entire accumulated set. The result is correct as of the batch's end time, but it is always historical. A batch job that runs at midnight tells you what happened yesterday. If fraud occurred at 11:58 PM, you learn about it at midnight, not at 11:58.
 
-Stream processing operates on **unbounded data as it arrives**. The dataset has no defined end. Events flow continuously, and the processor applies its logic to each event (or window of events) as it appears. The result is continuously updated — the model reflects the world as it is right now, not as it was when a batch last ran.
+Stream processing operates on **unbounded data as it arrives**. The dataset has no defined end. Events flow continuously, and the processor applies its logic to each event (or window of events) as it appears. The result is continuously updated  the model reflects the world as it is right now, not as it was when a batch last ran.
 
 The distinction is not merely latency. It is a difference in the fundamental shape of the data and the computation:
 
@@ -42,27 +42,27 @@ The practical consequence: when the business requires decisions or outputs in le
 
 Understanding what problems stream processing solves makes the engineering tradeoffs comprehensible. These are the canonical use cases that drive the design decisions you will encounter throughout this part.
 
-**Real-time fraud detection.** A payment processor must decide whether to approve or decline a transaction in the time it takes a user to wait at a point-of-sale terminal — typically under 200 milliseconds. This requires evaluating the transaction against recent behavioral patterns: is this card being used in two countries within 10 minutes? Have there been three declined transactions in the last 60 seconds? These questions require state (recent transaction history per card) and must be answered in milliseconds. Batch processing cannot answer them — the fraud has already succeeded by the time the job runs.
+**Real-time fraud detection.** A payment processor must decide whether to approve or decline a transaction in the time it takes a user to wait at a point-of-sale terminal  typically under 200 milliseconds. This requires evaluating the transaction against recent behavioral patterns: is this card being used in two countries within 10 minutes? Have there been three declined transactions in the last 60 seconds? These questions require state (recent transaction history per card) and must be answered in milliseconds. Batch processing cannot answer them  the fraud has already succeeded by the time the job runs.
 
 **Live dashboards.** A dashboard showing "orders placed in the last 5 minutes" or "active users right now" must reflect reality continuously. Querying a data warehouse on a schedule produces a dashboard that is always 15 minutes out of date. A stream processor that maintains a running count updated on each event produces a dashboard that reflects the last few seconds.
 
-**Sessionization.** Grouping a user's activity into sessions — a sequence of interactions bounded by inactivity gaps — is inherently a streaming problem. Sessions have no defined end time when you start processing them. A stream processor with session window support can open a session on the first event and close it only when the inactivity gap is exceeded.
+**Sessionization.** Grouping a user's activity into sessions  a sequence of interactions bounded by inactivity gaps  is inherently a streaming problem. Sessions have no defined end time when you start processing them. A stream processor with session window support can open a session on the first event and close it only when the inactivity gap is exceeded.
 
 **Anomaly detection.** Detecting that a metric has deviated more than three standard deviations from its rolling average requires maintaining that rolling average continuously. A batch job can compute it historically; a stream processor can evaluate it on each new data point.
 
-**Real-time recommendations.** E-commerce systems that adjust recommendations based on what a user just clicked require the recommendation model's input features to reflect events that occurred in the last few seconds. The feature pipeline — transforming raw click events into model inputs — must be a stream processor.
+**Real-time recommendations.** E-commerce systems that adjust recommendations based on what a user just clicked require the recommendation model's input features to reflect events that occurred in the last few seconds. The feature pipeline  transforming raw click events into model inputs  must be a stream processor.
 
-**Change Data Capture (CDC) materialization.** Databases emit a stream of row-level changes (inserts, updates, deletes) via CDC (Debezium being the most common Kafka CDC connector). A stream processor consumes this change stream and maintains a materialized view — a queryable, denormalized representation of the current database state — without touching the source database for reads.
+**Change Data Capture (CDC) materialization.** Databases emit a stream of row-level changes (inserts, updates, deletes) via CDC (Debezium being the most common Kafka CDC connector). A stream processor consumes this change stream and maintains a materialized view  a queryable, denormalized representation of the current database state  without touching the source database for reads.
 
 ### 1.3 Stream Processing Abstractions
 
 Three distinct processing models exist, with different tradeoffs between simplicity and correctness.
 
-**Record-at-a-time processing** is the simplest model. Each record is processed individually as it arrives. There is no windowing, no state (beyond what the application explicitly manages), and no notion of time. This model is correct for stateless transformations — filtering, projection, enrichment via point lookups. It is low-latency because there is no buffering. It is inadequate for aggregations over time windows.
+**Record-at-a-time processing** is the simplest model. Each record is processed individually as it arrives. There is no windowing, no state (beyond what the application explicitly manages), and no notion of time. This model is correct for stateless transformations  filtering, projection, enrichment via point lookups. It is low-latency because there is no buffering. It is inadequate for aggregations over time windows.
 
-**Micro-batch processing** (Spark Structured Streaming's default mode) buffers records for a configurable interval — say, 100 milliseconds — and then runs a batch computation over each micro-batch. The result is semantically equivalent to record-at-a-time processing but implemented as a sequence of small batch jobs. The advantage is that batch processing infrastructure (query planning, columnar execution) can be reused. The disadvantage is that latency is bounded below by the micro-batch interval — you cannot respond in 10 milliseconds if you batch for 100 milliseconds.
+**Micro-batch processing** (Spark Structured Streaming's default mode) buffers records for a configurable interval  say, 100 milliseconds  and then runs a batch computation over each micro-batch. The result is semantically equivalent to record-at-a-time processing but implemented as a sequence of small batch jobs. The advantage is that batch processing infrastructure (query planning, columnar execution) can be reused. The disadvantage is that latency is bounded below by the micro-batch interval  you cannot respond in 10 milliseconds if you batch for 100 milliseconds.
 
-**True streaming with windowing** (Kafka Streams, Flink) processes records as they arrive and maintains state that spans records. Time-based windows — "count all events in a 1-minute sliding window" — are first-class primitives. Late-arriving events (events whose event timestamp is earlier than the current processing frontier) can be handled explicitly. Watermarks allow the system to reason about time without waiting forever for stragglers. This is the most expressive and most complex model.
+**True streaming with windowing** (Kafka Streams, Flink) processes records as they arrive and maintains state that spans records. Time-based windows  "count all events in a 1-minute sliding window"  are first-class primitives. Late-arriving events (events whose event timestamp is earlier than the current processing frontier) can be handled explicitly. Watermarks allow the system to reason about time without waiting forever for stragglers. This is the most expressive and most complex model.
 
 ### 1.4 Why Process Streams in Kafka's Ecosystem
 
@@ -93,7 +93,7 @@ The constraint: Kafka Streams is JVM-only. If your team writes Python or Go, Kaf
 
 ### 2.2 Topology: The Processing Graph
 
-A Kafka Streams application is defined by its **topology** — a directed acyclic graph (DAG) of processing nodes.
+A Kafka Streams application is defined by its **topology**  a directed acyclic graph (DAG) of processing nodes.
 
 Three types of nodes exist:
 
@@ -105,7 +105,7 @@ Topologies are defined in one of two ways:
 
 The **Streams DSL** is a high-level, functional API. It provides `filter()`, `map()`, `flatMap()`, `groupBy()`, `aggregate()`, `join()`, and windowing operations. The DSL is expressive for the majority of use cases and is significantly more readable than the alternative.
 
-The **Processor API** is a low-level API. You implement the `Processor` interface directly, with explicit control over when to forward records, how to schedule punctuators (periodic callbacks), and how to access state stores. Use the Processor API when the DSL cannot express your logic — for example, when you need to emit records on a timer independent of incoming events, or when you need fine-grained control over state store access patterns.
+The **Processor API** is a low-level API. You implement the `Processor` interface directly, with explicit control over when to forward records, how to schedule punctuators (periodic callbacks), and how to access state stores. Use the Processor API when the DSL cannot express your logic  for example, when you need to emit records on a timer independent of incoming events, or when you need fine-grained control over state store access patterns.
 
 ```mermaid
 graph LR
@@ -129,13 +129,13 @@ graph LR
 
 The stream-table duality is one of the most important theoretical concepts in Kafka's design. It appears throughout Kafka Streams, ksqlDB, and informs the design of Kafka itself (log compaction exists because of it).
 
-**KStream** represents an **unbounded sequence of independent events**. Each record is a self-contained fact. Records with the same key are not related to each other by KStream semantics — they are separate events that happen to share a key. The mental model: a KStream is an append-only log of facts. "User 42 placed order #1001 for $150." "User 42 placed order #1002 for $75." Both records exist. Neither supersedes the other.
+**KStream** represents an **unbounded sequence of independent events**. Each record is a self-contained fact. Records with the same key are not related to each other by KStream semantics  they are separate events that happen to share a key. The mental model: a KStream is an append-only log of facts. "User 42 placed order #1001 for $150." "User 42 placed order #1002 for $75." Both records exist. Neither supersedes the other.
 
 **KTable** represents a **changelog stream interpreted as a materialized view**. Each record is an update to the current state of a key. The latest record for each key is the current value. Earlier records for the same key are superseded. The mental model: a KTable is a database table maintained by replaying a changelog. "User 42's profile is {name: Alice, tier: gold}." If a new record arrives with user_id=42 and tier=platinum, the KTable now reflects {name: Alice, tier: platinum}. The old record is gone from the materialized view (though it still exists in the topic).
 
-**GlobalKTable** is a KTable that is **replicated to every stream thread across all application instances** — not partitioned. A regular KTable partitions its state across tasks (and thus across instances). A GlobalKTable stores the complete dataset on every instance. This means you can join a KStream against a GlobalKTable without requiring co-partitioning (both topics having the same number of partitions and the same partitioning key). Use GlobalKTable for small reference datasets — country codes, product catalogs, configuration tables — where the full dataset fits comfortably in memory or RocksDB on each instance and where you need foreign-key-style joins.
+**GlobalKTable** is a KTable that is **replicated to every stream thread across all application instances**  not partitioned. A regular KTable partitions its state across tasks (and thus across instances). A GlobalKTable stores the complete dataset on every instance. This means you can join a KStream against a GlobalKTable without requiring co-partitioning (both topics having the same number of partitions and the same partitioning key). Use GlobalKTable for small reference datasets  country codes, product catalogs, configuration tables  where the full dataset fits comfortably in memory or RocksDB on each instance and where you need foreign-key-style joins.
 
-The duality: a KStream becomes a KTable by aggregation (every aggregate over a KStream produces a KTable). A KTable becomes a KStream by calling `.toStream()` — you get back the changelog of updates to the table.
+The duality: a KStream becomes a KTable by aggregation (every aggregate over a KStream produces a KTable). A KTable becomes a KStream by calling `.toStream()`  you get back the changelog of updates to the table.
 
 ### 2.4 KStream-KTable Join
 
@@ -194,7 +194,7 @@ The **stream task** is the fundamental unit of work in Kafka Streams. Each task 
 
 The rule: **one task per partition of the input topic** (for the source topics with the most partitions, when multiple source topics exist with different partition counts, task count equals the maximum partition count across co-partitioned topics).
 
-If your input topic has 12 partitions, your topology creates 12 tasks. This is not configurable — it is determined by the partition count of your input topics. Want more parallelism? Increase the partition count of your input topics (with the caveat from Part 4 that reducing partition counts is not supported without data migration).
+If your input topic has 12 partitions, your topology creates 12 tasks. This is not configurable  it is determined by the partition count of your input topics. Want more parallelism? Increase the partition count of your input topics (with the caveat from Part 4 that reducing partition counts is not supported without data migration).
 
 Each task:
 - Owns a specific set of input partition offsets
@@ -319,9 +319,9 @@ The tradeoff: standby replicas consume additional memory, disk, and changelog to
 
 ### 4.1 What State Stores Are
 
-A **state store** is a local, embedded key-value store that a Kafka Streams task uses to maintain state between records. The default implementation is **RocksDB** — an LSM-tree-based storage engine from Meta, designed for write-heavy workloads and embedded use cases. An in-memory alternative is available for workloads where state fits entirely in RAM and durability across restarts is not required.
+A **state store** is a local, embedded key-value store that a Kafka Streams task uses to maintain state between records. The default implementation is **RocksDB**  an LSM-tree-based storage engine from Meta, designed for write-heavy workloads and embedded use cases. An in-memory alternative is available for workloads where state fits entirely in RAM and durability across restarts is not required.
 
-State stores are **task-local**: each task has its own isolated state store instance. Task 1's state store has no shared state with Task 2's store. This isolation is what makes horizontal scaling possible — adding instances adds tasks, and each task brings its own isolated state. There is no shared mutable state requiring distributed locking.
+State stores are **task-local**: each task has its own isolated state store instance. Task 1's state store has no shared state with Task 2's store. This isolation is what makes horizontal scaling possible  adding instances adds tasks, and each task brings its own isolated state. There is no shared mutable state requiring distributed locking.
 
 State stores are created implicitly by the DSL when you call stateful operations:
 - `groupBy().aggregate()` creates a `KeyValueStore`
@@ -332,7 +332,7 @@ Or explicitly by the Processor API when you register stores with `builder.addSta
 
 ### 4.2 Changelog Topics
 
-Every write to a state store is **replicated to a compacted Kafka topic** — the changelog topic. The topic name follows the pattern:
+Every write to a state store is **replicated to a compacted Kafka topic**  the changelog topic. The topic name follows the pattern:
 
 ```
 [application.id]-[store-name]-changelog
@@ -355,17 +355,17 @@ The changelog write happens synchronously with the state store write when `proce
 ### 4.3 State Store Types
 
 **KeyValueStore** is the general-purpose store. It supports:
-- `put(key, value)` — insert or update
-- `get(key)` — point lookup by key
-- `delete(key)` — remove a key
-- `range(fromKey, toKey)` — range scan
-- `all()` — full scan (expensive, avoid in hot paths)
+- `put(key, value)`  insert or update
+- `get(key)`  point lookup by key
+- `delete(key)`  remove a key
+- `range(fromKey, toKey)`  range scan
+- `all()`  full scan (expensive, avoid in hot paths)
 
 **WindowStore** stores values keyed by both the record key and a time window boundary. Under the hood, it encodes the window timestamp into the RocksDB key. Supports:
-- `put(key, value, windowStartTimestamp)` — insert into a specific window
-- `fetch(key, fromTime, toTime)` — fetch all windows for a key within a time range
+- `put(key, value, windowStartTimestamp)`  insert into a specific window
+- `fetch(key, fromTime, toTime)`  fetch all windows for a key within a time range
 
-**SessionStore** stores values keyed by both the record key and a session window (represented as a start-time, end-time pair). The session merger logic — combining two overlapping sessions when a new event bridges them — is embedded in the session windowing operator.
+**SessionStore** stores values keyed by both the record key and a session window (represented as a start-time, end-time pair). The session merger logic  combining two overlapping sessions when a new event bridges them  is embedded in the session windowing operator.
 
 ### 4.4 State Restoration
 
@@ -388,7 +388,7 @@ The local checkpoint reduces restoration time on clean restarts: Kafka Streams r
 
 ### 4.5 RocksDB Tuning
 
-The default RocksDB configuration is conservative — it is designed to work correctly in a wide range of environments, not to maximize throughput on your specific hardware. Production deployments with high state write rates almost always require custom tuning via the `rocksdb.config.setter` configuration.
+The default RocksDB configuration is conservative  it is designed to work correctly in a wide range of environments, not to maximize throughput on your specific hardware. Production deployments with high state write rates almost always require custom tuning via the `rocksdb.config.setter` configuration.
 
 ```java
 public class MyRocksDBConfig implements RocksDBConfigSetter {
@@ -451,9 +451,9 @@ Long count = store.get("user-42");
 KeyValueIterator<String, Long> range = store.range("user-00", "user-99");
 ```
 
-For multi-instance deployments, a given key's state lives in the task assigned to that key's partition. An instance that does not own that partition cannot serve the query locally. Kafka Streams exposes metadata about which instance owns which keys via `KafkaStreams.queryMetadataForKey()`. Your application can use this metadata to route queries to the correct instance — or proxy them via an HTTP layer.
+For multi-instance deployments, a given key's state lives in the task assigned to that key's partition. An instance that does not own that partition cannot serve the query locally. Kafka Streams exposes metadata about which instance owns which keys via `KafkaStreams.queryMetadataForKey()`. Your application can use this metadata to route queries to the correct instance  or proxy them via an HTTP layer.
 
-This pattern — stream processor as a serving layer — eliminates a class of infrastructure: you do not need to write aggregated results to Redis or PostgreSQL and then serve from there. The Kafka Streams application is the database.
+This pattern  stream processor as a serving layer  eliminates a class of infrastructure: you do not need to write aggregated results to Redis or PostgreSQL and then serve from there. The Kafka Streams application is the database.
 
 ---
 
@@ -461,11 +461,11 @@ This pattern — stream processor as a serving layer — eliminates a class of i
 
 ### 5.1 The Windowing Problem
 
-Aggregating an infinite stream requires carving it into finite, manageable pieces. You cannot compute "the average order value" over an infinite stream without a starting point — the average would need to incorporate every event since the beginning of time. You can compute "the average order value in the last 5 minutes," which is bounded and meaningful.
+Aggregating an infinite stream requires carving it into finite, manageable pieces. You cannot compute "the average order value" over an infinite stream without a starting point  the average would need to incorporate every event since the beginning of time. You can compute "the average order value in the last 5 minutes," which is bounded and meaningful.
 
 Windowing is the mechanism that imposes finite structure on infinite data. But it introduces a hard problem: **when do you know a window is complete?**
 
-In batch processing, this question has a clean answer: when the batch is done. In stream processing, events can arrive out of order. An event timestamped 12:34:58 might arrive at the processor at 12:36:02 — after the window ending at 12:35:00 has nominally closed. Do you include it in the closed window or drop it? How long do you wait before closing a window?
+In batch processing, this question has a clean answer: when the batch is done. In stream processing, events can arrive out of order. An event timestamped 12:34:58 might arrive at the processor at 12:36:02  after the window ending at 12:35:00 has nominally closed. Do you include it in the closed window or drop it? How long do you wait before closing a window?
 
 This is the late arrival problem, and the windowing types and grace periods in this section are all answers to it.
 
@@ -473,9 +473,9 @@ This is the late arrival problem, and the windowing types and grace periods in t
 
 The timestamp used to place an event in a window is not obvious. Three interpretations exist:
 
-**Event time** is the timestamp embedded in the event payload — the time the event actually occurred in the real world. This is the most semantically correct interpretation. An order placed at 12:34:58 belongs in the window covering 12:34:00–12:35:00 regardless of when it arrives at the processor. Kafka Streams uses event time by default, sourced from the record's timestamp (which, by Kafka's default `CreateTime` timestamp type, is set by the producer at the moment of production — which is usually close to event time, but not identical if the event was buffered before being produced).
+**Event time** is the timestamp embedded in the event payload  the time the event actually occurred in the real world. This is the most semantically correct interpretation. An order placed at 12:34:58 belongs in the window covering 12:34:00–12:35:00 regardless of when it arrives at the processor. Kafka Streams uses event time by default, sourced from the record's timestamp (which, by Kafka's default `CreateTime` timestamp type, is set by the producer at the moment of production  which is usually close to event time, but not identical if the event was buffered before being produced).
 
-**Processing time** is the timestamp at the moment of processing — the wall clock time when the stream processor handles the record. Simple to implement (no timestamp extraction needed), but semantically incorrect for late arrivals. An event that was delayed in transit will be placed in a later window than the one it belongs to by event time. For systems that require accurate historical aggregations, processing time is wrong.
+**Processing time** is the timestamp at the moment of processing  the wall clock time when the stream processor handles the record. Simple to implement (no timestamp extraction needed), but semantically incorrect for late arrivals. An event that was delayed in transit will be placed in a later window than the one it belongs to by event time. For systems that require accurate historical aggregations, processing time is wrong.
 
 **Ingestion time** is the timestamp at which the record was written to Kafka. Kafka can stamp records with the broker's timestamp (`LogAppendTime` timestamp type). This is a compromise: it is not the true event time (there is still delay between event occurrence and Kafka write), but it is monotonically increasing within a partition (unlike event time, which can arrive out of order). Useful when you do not control the producer and cannot embed event timestamps in the payload.
 
@@ -514,7 +514,7 @@ orders.groupByKey()
     .to("order-counts-per-minute");
 ```
 
-Tumbling windows are the right choice when you want a complete, non-overlapping partition of time — daily reports, per-minute metrics, hourly summaries.
+Tumbling windows are the right choice when you want a complete, non-overlapping partition of time  daily reports, per-minute metrics, hourly summaries.
 
 ### 5.4 Hopping Windows
 
@@ -541,7 +541,7 @@ orders.groupByKey()
     .to("rolling-5min-order-counts");
 ```
 
-Hopping windows are the right choice for rolling metrics — "traffic in the last 5 minutes, updated every minute." The tradeoff: each event is stored in multiple windows simultaneously, increasing state store size by a factor of `size / advance`.
+Hopping windows are the right choice for rolling metrics  "traffic in the last 5 minutes, updated every minute." The tradeoff: each event is stored in multiple windows simultaneously, increasing state store size by a factor of `size / advance`.
 
 ### 5.5 Session Windows
 
@@ -599,7 +599,7 @@ gantt
 
 ### 5.6 Late Arrivals and Grace Periods
 
-Events can arrive at the stream processor significantly after their event timestamp — mobile clients that reconnect after hours offline, network partitions that buffer events, producers that retry with stale timestamps. Without special handling, these late arrivals would be silently dropped (placed in an already-closed window) or corrupt the current window (placed in a wrong window by processing time).
+Events can arrive at the stream processor significantly after their event timestamp  mobile clients that reconnect after hours offline, network partitions that buffer events, producers that retry with stale timestamps. Without special handling, these late arrivals would be silently dropped (placed in an already-closed window) or corrupt the current window (placed in a wrong window by processing time).
 
 Kafka Streams handles late arrivals via **grace periods**. A grace period keeps a closed window available for updates for a configured duration after the window's nominal end time.
 
@@ -624,11 +624,11 @@ watermark = max_observed_event_time - grace_period
 
 Events with timestamps below the watermark are considered late. Windows whose end time is below the watermark are considered closed.
 
-The watermark is a **heuristic**. The stream processor observes the maximum event timestamp seen so far and subtracts the grace period to estimate where "now" is. This is not a guarantee — it is an assumption that no events older than `grace_period` will arrive. If an event arrives with a timestamp older than the watermark, it is a late arrival.
+The watermark is a **heuristic**. The stream processor observes the maximum event timestamp seen so far and subtracts the grace period to estimate where "now" is. This is not a guarantee  it is an assumption that no events older than `grace_period` will arrive. If an event arrives with a timestamp older than the watermark, it is a late arrival.
 
 The fundamental uncertainty: the processor never knows for certain that a time window is complete. There could always be another event, delayed indefinitely by a network partition or a client that has been offline for days. At some point, you must decide to finalize results and accept that some events will be dropped. The grace period encodes that decision.
 
-In Flink, watermarks are explicit, per-stream, and configurable with fine-grained strategies (monotonically increasing timestamps, bounded out-of-orderness, etc.). In Kafka Streams, the watermark is implicit, derived from the maximum observed timestamp minus the grace period. The explicit watermark model in Flink is more powerful for handling highly out-of-order streams — another reason to consider Flink when Kafka Streams' windowing is insufficient.
+In Flink, watermarks are explicit, per-stream, and configurable with fine-grained strategies (monotonically increasing timestamps, bounded out-of-orderness, etc.). In Kafka Streams, the watermark is implicit, derived from the maximum observed timestamp minus the grace period. The explicit watermark model in Flink is more powerful for handling highly out-of-order streams  another reason to consider Flink when Kafka Streams' windowing is insufficient.
 
 ---
 
@@ -636,7 +636,7 @@ In Flink, watermarks are explicit, per-stream, and configurable with fine-graine
 
 ### 6.1 The Exactly-Once Requirement in Stream Processing
 
-A stream processor reads from input topics, processes records, and writes to output topics. With a `read-process-write` pipeline, exactly-once semantics requires that each input record is processed exactly once — even if the application crashes and restarts.
+A stream processor reads from input topics, processes records, and writes to output topics. With a `read-process-write` pipeline, exactly-once semantics requires that each input record is processed exactly once  even if the application crashes and restarts.
 
 Without exactly-once guarantees:
 - **At-most-once**: the application processes a record and then crashes before committing the consumer offset. On restart, Kafka delivers the same record again. The record is processed twice. For a running sum, this means double-counting.
@@ -679,7 +679,7 @@ EOS v2 requires Kafka brokers 2.5 or newer. Each **task** gets its own transacti
 
 EOS v1 (the original implementation, Kafka Streams 0.11+) had a critical limitation: it used **one transactional producer per stream thread**, not per task. This meant that if a zombie instance (a Streams instance that has been declared dead by the consumer group but has not actually stopped, due to a network partition or GC pause) attempts to produce records, it shares the `transactional.id` with the legitimate successor producer for that thread.
 
-Producer fencing via `transactional.id` and epochs (Part 6) handles this in theory — the zombie's produce attempt is rejected because its epoch is outdated. But because the `transactional.id` covered a thread (and thus multiple tasks), a zombie could potentially produce records for tasks it was no longer supposed to own.
+Producer fencing via `transactional.id` and epochs (Part 6) handles this in theory  the zombie's produce attempt is rejected because its epoch is outdated. But because the `transactional.id` covered a thread (and thus multiple tasks), a zombie could potentially produce records for tasks it was no longer supposed to own.
 
 EOS v2 eliminates this by assigning a unique `transactional.id` to each task. The zombie can only produce records for its specific tasks, and those tasks have been fenced at the task level. The scope of potential corruption is reduced from "all tasks on a thread" to "zero tasks" (because the task's epoch has been incremented by the new owner).
 
@@ -703,7 +703,7 @@ Tuning guidance:
 
 EOS in Kafka Streams provides **exactly-once within the Kafka-to-Kafka pipeline**. It guarantees that each input record is processed and its effects are written to output Kafka topics exactly once.
 
-It does **not** extend to external systems. If your topology reads from Kafka, processes records, and writes to a PostgreSQL database, Kafka's EOS does not prevent duplicate writes to PostgreSQL. A crash after the Kafka transaction commits but before the DB write commits (or after a DB write that failed to be confirmed) results in a processed record with no DB write — or an extra DB write on retry.
+It does **not** extend to external systems. If your topology reads from Kafka, processes records, and writes to a PostgreSQL database, Kafka's EOS does not prevent duplicate writes to PostgreSQL. A crash after the Kafka transaction commits but before the DB write commits (or after a DB write that failed to be confirmed) results in a processed record with no DB write  or an extra DB write on retry.
 
 To achieve true end-to-end exactly-once with external systems, you need:
 - **Idempotent DB writes**: include a unique record ID in each DB write; the DB upserts rather than inserts. Duplicate writes are harmless.
@@ -731,7 +731,7 @@ A ksqlDB deployment consists of one or more **ksqlDB Server** instances. Each se
 3. Executes those topologies as embedded Kafka Streams applications
 4. Exposes a REST API and interactive CLI for query submission and result retrieval
 
-Multiple ksqlDB Servers form a cluster by sharing the same `ksql.service.id` and thus the same Kafka consumer group. SQL queries submitted to any server in the cluster are replicated to all servers via the command topic — each server replays the command topic to reconstruct the full catalog of queries.
+Multiple ksqlDB Servers form a cluster by sharing the same `ksql.service.id` and thus the same Kafka consumer group. SQL queries submitted to any server in the cluster are replicated to all servers via the command topic  each server replays the command topic to reconstruct the full catalog of queries.
 
 Pull queries (Section 7.5) benefit from the cluster: each server can route a pull query to the server that owns the state for the queried key.
 
@@ -765,7 +765,7 @@ CREATE TABLE user_profiles (
 );
 ```
 
-`CREATE STREAM` and `CREATE TABLE` without `AS SELECT` register existing topics as ksqlDB metadata objects — no Kafka Streams topology is created, no processing happens. They are schema registrations.
+`CREATE STREAM` and `CREATE TABLE` without `AS SELECT` register existing topics as ksqlDB metadata objects  no Kafka Streams topology is created, no processing happens. They are schema registrations.
 
 `CREATE STREAM ... AS SELECT` and `CREATE TABLE ... AS SELECT` create **persistent queries**: Kafka Streams topologies that continuously process the source and write results to a new Kafka topic.
 
@@ -786,11 +786,11 @@ Push queries are the ksqlDB equivalent of a Kafka consumer combined with a filte
 - Alerting systems that trigger on specific events
 - Event-driven microservices that react to filtered streams
 
-Push queries execute continuously until the client disconnects or the query is terminated. They are not stored in the ksqlDB catalog — they are ephemeral, per-connection queries.
+Push queries execute continuously until the client disconnects or the query is terminated. They are not stored in the ksqlDB catalog  they are ephemeral, per-connection queries.
 
 ### 7.5 Pull Queries
 
-A **pull query** is a point-in-time query against a materialized state store. It returns the current state and exits — like a traditional SQL SELECT against a database.
+A **pull query** is a point-in-time query against a materialized state store. It returns the current state and exits  like a traditional SQL SELECT against a database.
 
 ```sql
 -- Pull query: what is the current order count for user-42 in the current minute?
@@ -803,7 +803,7 @@ Pull queries can only be executed against:
 - Tables created with `CREATE TABLE ... AS SELECT`
 - Materialized views backed by a state store
 
-They cannot be executed against streams (streams have no current state — only an unbounded history of events).
+They cannot be executed against streams (streams have no current state  only an unbounded history of events).
 
 Pull queries are served from the local state store, making them low-latency (sub-millisecond for in-memory stores, a few milliseconds for RocksDB). For pull queries against tables that span multiple ksqlDB server instances, the ksqlDB server routes the query to the server that owns the relevant partition.
 
@@ -825,9 +825,9 @@ CREATE TABLE order_counts_per_minute AS
 This creates a Kafka Streams topology with a tumbling 1-minute window and a 5-minute grace period. The results are written to a new Kafka topic and materialized in a state store. The state store is queryable via pull queries.
 
 Supported window types in ksqlDB:
-- `WINDOW TUMBLING (SIZE n unit)` — tumbling windows
-- `WINDOW HOPPING (SIZE n unit, ADVANCE BY n unit)` — hopping windows
-- `WINDOW SESSION (n unit)` — session windows
+- `WINDOW TUMBLING (SIZE n unit)`  tumbling windows
+- `WINDOW HOPPING (SIZE n unit, ADVANCE BY n unit)`  hopping windows
+- `WINDOW SESSION (n unit)`  session windows
 
 ```sql
 -- Hopping window: 5-minute window, updated every 1 minute
@@ -909,7 +909,7 @@ Use Kafka Streams when:
 
 ### 8.1 What Flink Is
 
-Apache Flink is a **distributed stream processing system** — not a library, not a SQL layer over another library, but a full cluster-based processing framework. It runs as its own cluster, independent of Kafka, and integrates with Kafka as a source and sink.
+Apache Flink is a **distributed stream processing system**  not a library, not a SQL layer over another library, but a full cluster-based processing framework. It runs as its own cluster, independent of Kafka, and integrates with Kafka as a source and sink.
 
 Architecture:
 - **JobManager**: the cluster coordinator. Accepts job submissions, generates execution plans, coordinates checkpointing, and manages fault recovery. Similar in role to Kafka's KRaft controller.
@@ -959,11 +959,11 @@ Flink is architecturally more complex and operationally more demanding than Kafk
 
 **Exactly-once with external systems via two-phase commit.** Flink's checkpointing mechanism coordinates a 2PC across all sources, operators, and sinks in a single job. A `FlinkKafkaProducer` configured with `Semantic.EXACTLY_ONCE` participates in Flink's checkpoint protocol, ensuring that Kafka output is committed if and only if the full checkpoint succeeds. A JDBC sink using the `TwoPhaseCommitSinkFunction` can extend this guarantee to a database. Kafka Streams EOS does not extend to external systems.
 
-**Complex Event Processing (CEP).** Flink includes the `FlinkCEP` library, which allows you to define patterns over event streams — "detect if event A is followed by event B within 5 minutes, unless interrupted by event C." This is used for network intrusion detection, compliance monitoring, and business process tracking. Kafka Streams has no equivalent.
+**Complex Event Processing (CEP).** Flink includes the `FlinkCEP` library, which allows you to define patterns over event streams  "detect if event A is followed by event B within 5 minutes, unless interrupted by event C." This is used for network intrusion detection, compliance monitoring, and business process tracking. Kafka Streams has no equivalent.
 
 **Higher throughput for CPU-intensive processing.** Flink's execution model is designed for high-throughput analytics. Its network stack uses credit-based flow control and off-heap memory management, avoiding GC pressure that can stall JVM-based processors. For CPU-intensive transformations (ML inference, heavy aggregations), Flink can sustain higher throughput than Kafka Streams.
 
-**Multi-source, multi-sink jobs.** A single Flink job can read from multiple Kafka clusters, Kafka topics, files, databases, and APIs simultaneously — and write to multiple sinks. Kafka Streams is designed around Kafka-to-Kafka pipelines.
+**Multi-source, multi-sink jobs.** A single Flink job can read from multiple Kafka clusters, Kafka topics, files, databases, and APIs simultaneously  and write to multiple sinks. Kafka Streams is designed around Kafka-to-Kafka pipelines.
 
 **Python (PyFlink).** Flink supports Python via the PyFlink API, enabling data science teams to write stream processing logic in Python. Kafka Streams requires JVM.
 
@@ -988,7 +988,7 @@ DataStream<Order> orders = env.fromSource(
 );
 ```
 
-The `WatermarkStrategy` is configured at the source. `forBoundedOutOfOrderness(Duration.ofSeconds(5))` tells Flink to assume that events are at most 5 seconds out of order — equivalent to a 5-second grace period, but the watermark is computed per-partition and advanced separately for each Kafka partition, then merged across partitions for windowing. This is more precise than Kafka Streams' global watermark.
+The `WatermarkStrategy` is configured at the source. `forBoundedOutOfOrderness(Duration.ofSeconds(5))` tells Flink to assume that events are at most 5 seconds out of order  equivalent to a 5-second grace period, but the watermark is computed per-partition and advanced separately for each Kafka partition, then merged across partitions for windowing. This is more precise than Kafka Streams' global watermark.
 
 Flink writes to Kafka via the `KafkaSink` connector:
 
@@ -1003,7 +1003,7 @@ KafkaSink<EnrichedOrder> sink = KafkaSink.<EnrichedOrder>builder()
 enrichedOrders.sinkTo(sink);
 ```
 
-Flink stores Kafka consumer offsets as part of its checkpoint state — not via the standard Kafka consumer group offset commit mechanism. The offsets are embedded in the Flink checkpoint and are restored atomically with all other state when Flink recovers from a failure.
+Flink stores Kafka consumer offsets as part of its checkpoint state  not via the standard Kafka consumer group offset commit mechanism. The offsets are embedded in the Flink checkpoint and are restored atomically with all other state when Flink recovers from a failure.
 
 ### 8.4 Flink Exactly-Once with Kafka: The Two-Phase Commit Protocol
 
@@ -1042,7 +1042,7 @@ Failure scenarios:
   Kafka's transaction coordinator handles the duplicate commit idempotently.
 ```
 
-The key property: the Kafka producer transaction and the Flink checkpoint state are committed atomically (via the 2PC protocol). Either both are committed or neither is. This is why Flink can provide exactly-once guarantees for Kafka output — and, with a `TwoPhaseCommitSinkFunction` for the database, extend the guarantee to external sinks.
+The key property: the Kafka producer transaction and the Flink checkpoint state are committed atomically (via the 2PC protocol). Either both are committed or neither is. This is why Flink can provide exactly-once guarantees for Kafka output  and, with a `TwoPhaseCommitSinkFunction` for the database, extend the guarantee to external sinks.
 
 ### 8.5 Flink vs. Kafka Streams Comparison
 
@@ -1070,7 +1070,7 @@ The key property: the Kafka producer transaction and the Flink checkpoint state 
 
 ### 9.1 Decision Framework
 
-The choice among ksqlDB, Kafka Streams, and Flink is not a matter of which is best in the abstract — it is a matter of which is best for your specific requirements and constraints.
+The choice among ksqlDB, Kafka Streams, and Flink is not a matter of which is best in the abstract  it is a matter of which is best for your specific requirements and constraints.
 
 ```mermaid
 flowchart TD
@@ -1112,7 +1112,7 @@ To make the decision concrete:
 - Deployment simplicity is a priority (ksqlDB is just another Java service)
 
 **Choose Kafka Streams when:**
-- Processing logic requires procedural code — complex conditional logic, recursive computations, custom algorithms
+- Processing logic requires procedural code  complex conditional logic, recursive computations, custom algorithms
 - You need fine-grained control over RocksDB configuration, memory management, or threading
 - You need to integrate with external systems within the processor (call a remote API, write to a local cache)
 - You want maximum testability with `TopologyTestDriver` (deterministic, clock-controlled unit tests)
@@ -1135,37 +1135,37 @@ To make the decision concrete:
 
 ### 9.2 Common Anti-Patterns
 
-**Using Kafka Streams for pure stateless filtering/routing.** If your "stream processing" consists of reading a topic, filtering records by a condition, and writing to another topic — with no state, no aggregations, and no joins — a Kafka Streams topology is overkill. A regular Kafka consumer with manual partition assignment and a producer is simpler, has lower overhead (no state store, no changelog topic, no RocksDB), and is easier to debug. The Kafka Streams topology adds operational complexity without providing value in the stateless case.
+**Using Kafka Streams for pure stateless filtering/routing.** If your "stream processing" consists of reading a topic, filtering records by a condition, and writing to another topic  with no state, no aggregations, and no joins  a Kafka Streams topology is overkill. A regular Kafka consumer with manual partition assignment and a producer is simpler, has lower overhead (no state store, no changelog topic, no RocksDB), and is easier to debug. The Kafka Streams topology adds operational complexity without providing value in the stateless case.
 
 **Using Flink for simple Kafka-to-Kafka transformations.** A Flink cluster requires provisioning, monitoring, and operational expertise. If your transformation is "filter orders over $1000 and write to a different topic," Flink's operational overhead is not justified. Use Kafka Streams or even a simple consumer-producer application.
 
 **Large KTable state without standby replicas.** A KTable that materializes 50 million user profiles has tens of gigabytes of state in RocksDB. If the instance holding that state crashes, and there are no standby replicas, the replacement instance must restore 50GB from the changelog topic before processing can resume. At 100MB/s, that is 8 minutes of downtime. This is a production incident. Configure `num.standby.replicas=1` for any stateful topology in production.
 
-**Unbounded joins without windows.** A KStream-KStream join that does not specify a time window creates a state store that buffers every unmatched event forever. If the two streams have different throughput rates or if matching events arrive with significant time gaps, the state store grows without bound until the application runs out of disk or memory. Always bound stream-stream joins with explicit time windows (`JoinWindows.ofTimeDifferenceWithNoGrace(Duration.ofHours(1))`). If events that need to match are more than the window duration apart, the match is not possible — accept this and design accordingly.
+**Unbounded joins without windows.** A KStream-KStream join that does not specify a time window creates a state store that buffers every unmatched event forever. If the two streams have different throughput rates or if matching events arrive with significant time gaps, the state store grows without bound until the application runs out of disk or memory. Always bound stream-stream joins with explicit time windows (`JoinWindows.ofTimeDifferenceWithNoGrace(Duration.ofHours(1))`). If events that need to match are more than the window duration apart, the match is not possible  accept this and design accordingly.
 
 **Ignoring partition count as a ceiling on parallelism.** A common mistake: deploy 20 Kafka Streams instances but forget that the input topic has only 8 partitions. 12 of the 20 instances are idle consumers in the consumer group. The fix is obvious once you understand the task-partition relationship, but it is frequently missed by engineers new to Kafka Streams. Review your partition counts against your target parallelism before deploying.
 
-**Processing time semantics where event time is required.** Using the default timestamp extractor is fine if your producers embed accurate event timestamps in record metadata and the `CreateTime` timestamp type is used. If producers set timestamps incorrectly, or if you are processing data from an external system with unreliable producer timestamps, your windowed aggregations will be wrong — silently. Validate your timestamp distribution early (check for skew, future timestamps, and zero-epoch timestamps) before relying on event-time windows in production.
+**Processing time semantics where event time is required.** Using the default timestamp extractor is fine if your producers embed accurate event timestamps in record metadata and the `CreateTime` timestamp type is used. If producers set timestamps incorrectly, or if you are processing data from an external system with unreliable producer timestamps, your windowed aggregations will be wrong  silently. Validate your timestamp distribution early (check for skew, future timestamps, and zero-epoch timestamps) before relying on event-time windows in production.
 
 ---
 
 ## Key Takeaways
 
-- **Kafka Streams is a library, not a cluster.** It runs inside your application process and requires only a Kafka cluster as external infrastructure. This makes it operationally simple — deploy it like any other microservice — but limits it to JVM languages and Kafka-to-Kafka pipelines.
+- **Kafka Streams is a library, not a cluster.** It runs inside your application process and requires only a Kafka cluster as external infrastructure. This makes it operationally simple  deploy it like any other microservice  but limits it to JVM languages and Kafka-to-Kafka pipelines.
 
 - **The stream-table duality is the central abstraction.** A KStream models an unbounded sequence of independent events; a KTable models the current state of the world (the latest value per key). Aggregating a KStream produces a KTable. Converting a KTable to a KStream yields its changelog. Every join and aggregation in Kafka Streams is built on this duality.
 
-- **Parallelism is bounded by partition count.** The number of Kafka Streams tasks equals the partition count of the input topics. The maximum useful number of application instances equals the task count. Partition count is a design decision with lasting consequences — plan it before launch.
+- **Parallelism is bounded by partition count.** The number of Kafka Streams tasks equals the partition count of the input topics. The maximum useful number of application instances equals the task count. Partition count is a design decision with lasting consequences  plan it before launch.
 
 - **State stores are local, RocksDB-backed, and fault-tolerant via changelog topics.** Every state mutation is replicated to a compacted Kafka topic. Restoration on failure replays this topic. Large state stores with long restoration times require standby replicas (`num.standby.replicas`) to maintain high availability.
 
-- **Exactly-once v2 (EOS v2) provides per-task transactional producers** that combine with consumer offset commits to deliver exactly-once Kafka-to-Kafka semantics. The overhead is 10–20% latency increase. EOS does not extend to external systems — idempotent DB writes or Flink's 2PC are required for that.
+- **Exactly-once v2 (EOS v2) provides per-task transactional producers** that combine with consumer offset commits to deliver exactly-once Kafka-to-Kafka semantics. The overhead is 10–20% latency increase. EOS does not extend to external systems  idempotent DB writes or Flink's 2PC are required for that.
 
-- **Windowing requires explicit decisions about time semantics and late arrivals.** Event time is more correct than processing time but requires accurate producer timestamps and a grace period for late arrivals. The watermark is a heuristic — you are always making a bet that events beyond `max_observed - grace_period` will not arrive. The grace period is how you tune that bet.
+- **Windowing requires explicit decisions about time semantics and late arrivals.** Event time is more correct than processing time but requires accurate producer timestamps and a grace period for late arrivals. The watermark is a heuristic  you are always making a bet that events beyond `max_observed - grace_period` will not arrive. The grace period is how you tune that bet.
 
 - **ksqlDB compiles SQL to Kafka Streams topologies.** It is the right tool for SQL-expressible transformations and rapid development. It is the wrong tool for complex stateful logic, custom SerDes, or scenarios requiring programmatic control of the processing topology.
 
-- **Flink's unique capabilities are exactly-once to external systems (via 2PC checkpointing), Complex Event Processing, Python support, and explicit per-partition watermarks.** These capabilities come with significant operational overhead — a Flink cluster is a substantial system to operate. Choose Flink only when Kafka Streams cannot satisfy the requirement.
+- **Flink's unique capabilities are exactly-once to external systems (via 2PC checkpointing), Complex Event Processing, Python support, and explicit per-partition watermarks.** These capabilities come with significant operational overhead  a Flink cluster is a substantial system to operate. Choose Flink only when Kafka Streams cannot satisfy the requirement.
 
 ---
 
@@ -1194,16 +1194,16 @@ To make the decision concrete:
 
 ## Coming Up in Part 9: Production Operations
 
-Part 8 covered how to build stream processing pipelines on top of Kafka — the programming models, the state management, the time semantics, and the tool selection tradeoffs. In production, building the pipeline is only half the problem. Operating it reliably is the other half.
+Part 8 covered how to build stream processing pipelines on top of Kafka  the programming models, the state management, the time semantics, and the tool selection tradeoffs. In production, building the pipeline is only half the problem. Operating it reliably is the other half.
 
-**Part 9: Production Operations — Monitoring, Tuning, and Operating Kafka at Scale** will cover:
+**Part 9: Production Operations  Monitoring, Tuning, and Operating Kafka at Scale** will cover:
 
-- **The metrics that matter**: which JMX metrics reveal broker health, consumer lag, and replication status — and which are noise. The three metrics you must alert on before anything else.
+- **The metrics that matter**: which JMX metrics reveal broker health, consumer lag, and replication status  and which are noise. The three metrics you must alert on before anything else.
 - **Consumer lag as a system health indicator**: how to interpret lag, why lag spikes are diagnostic signals, and how to distinguish a slow consumer from a slow broker.
 - **Broker tuning for throughput vs. latency**: the interplay between `num.io.threads`, `num.network.threads`, `socket.send.buffer.bytes`, and OS-level TCP tuning.
-- **Partition reassignment**: how to safely move partitions across brokers without impacting producers and consumers — the throttle settings that prevent reassignment from saturating inter-broker replication bandwidth.
+- **Partition reassignment**: how to safely move partitions across brokers without impacting producers and consumers  the throttle settings that prevent reassignment from saturating inter-broker replication bandwidth.
 - **Rolling upgrades and zero-downtime deployments**: the correct protocol for upgrading Kafka brokers, upgrading Kafka Streams applications, and rotating credentials without dropping messages.
 - **Multi-datacenter deployments**: MirrorMaker 2 architecture, active-passive vs. active-active replication topologies, and the offset translation problem for cross-datacenter consumer groups.
-- **Operational anti-patterns**: the configurations that look reasonable in development and cause production incidents — and the post-mortems that explain why.
+- **Operational anti-patterns**: the configurations that look reasonable in development and cause production incidents  and the post-mortems that explain why.
 
 The goal of Part 9 is to give you the operational knowledge to run Kafka confidently at scale, not just to build on top of it.

@@ -1,8 +1,8 @@
-# Voice Agents Deep Dive — Part 10: Dialog Management — Turn-Taking, Interruptions, and Conversation Flow
+# Voice Agents Deep Dive  Part 10: Dialog Management  Turn-Taking, Interruptions, and Conversation Flow
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** 10 of 20 (Dialog Management)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~55 minutes
@@ -11,11 +11,11 @@
 
 ## Introduction and Recap
 
-In **Part 9**, we explored **intent recognition and entity extraction** — the twin pillars that let our voice agent understand *what* the user wants and *what details* they provided. We built classifiers that could map raw transcriptions to structured intents and pull out named entities like dates, times, and names.
+In **Part 9**, we explored **intent recognition and entity extraction**  the twin pillars that let our voice agent understand *what* the user wants and *what details* they provided. We built classifiers that could map raw transcriptions to structured intents and pull out named entities like dates, times, and names.
 
 But here is the uncomfortable truth: **understanding individual utterances is not enough**.
 
-Think about a real conversation. When you call a restaurant to make a reservation, you do not dump all information in a single sentence. You engage in a *dialog* — a back-and-forth exchange where information flows in both directions, mistakes get corrected, clarifications are requested, and both parties track the evolving state of the conversation.
+Think about a real conversation. When you call a restaurant to make a reservation, you do not dump all information in a single sentence. You engage in a *dialog*  a back-and-forth exchange where information flows in both directions, mistakes get corrected, clarifications are requested, and both parties track the evolving state of the conversation.
 
 This is where **Dialog Management** enters the picture. It is the orchestration layer that transforms a sequence of isolated understanding events into a coherent, purposeful conversation.
 
@@ -98,14 +98,14 @@ VOICE_CHALLENGES = [
         text_chat_difficulty="trivial",
         voice_difficulty="hard",
         description="Knowing when the user has finished their turn",
-        example="User pauses for 500ms — are they thinking or done?"
+        example="User pauses for 500ms  are they thinking or done?"
     ),
     VoiceDialogChallenge(
         name="Interruption Handling",
         text_chat_difficulty="trivial",
         voice_difficulty="very_hard",
         description="User starts speaking while agent is still talking",
-        example="Agent: 'Your reservation is at—' User: 'Actually wait—'"
+        example="Agent: 'Your reservation is at' User: 'Actually wait'"
     ),
     VoiceDialogChallenge(
         name="Response Timing",
@@ -119,14 +119,14 @@ VOICE_CHALLENGES = [
         text_chat_difficulty="moderate",
         voice_difficulty="very_hard",
         description="Handling misrecognition gracefully",
-        example="ASR hears 'four people' as 'for people' — slot fill fails"
+        example="ASR hears 'four people' as 'for people'  slot fill fails"
     ),
 ]
 ```
 
 ### 1.2 The Dialog Management Stack
 
-Dialog management is not a single component — it is a **stack** of interacting systems. Here is how they layer:
+Dialog management is not a single component  it is a **stack** of interacting systems. Here is how they layer:
 
 ```mermaid
 graph TB
@@ -161,7 +161,7 @@ Each layer depends on those below it, and they all communicate in real time. Let
 
 ### 2.1 How Humans Take Turns
 
-Human conversation is a marvel of coordination. Two people manage to exchange speaking turns with an average gap of only **200 milliseconds** — faster than human reaction time. How?
+Human conversation is a marvel of coordination. Two people manage to exchange speaking turns with an average gap of only **200 milliseconds**  faster than human reaction time. How?
 
 Researchers have identified four primary cues that signal turn boundaries:
 
@@ -372,7 +372,7 @@ class TurnDetector:
 
         if self.state == TurnState.IDLE:
             if is_speech:
-                # Speech detected — potential turn start
+                # Speech detected  potential turn start
                 self._speech_start_time = current_time
                 self._silence_start_time = None
                 self.state = TurnState.USER_SPEAKING
@@ -386,17 +386,17 @@ class TurnDetector:
 
         elif self.state == TurnState.USER_SPEAKING:
             if is_speech:
-                # Still speaking — update last voice time
+                # Still speaking  update last voice time
                 self._last_voice_time = current_time
                 self._total_speech_ms += frame_duration_ms
             else:
-                # Silence detected — start silence timer
+                # Silence detected  start silence timer
                 self._silence_start_time = current_time
                 self.state = TurnState.USER_PAUSING
 
         elif self.state == TurnState.USER_PAUSING:
             if is_speech:
-                # Speech resumed — was just a pause
+                # Speech resumed  was just a pause
                 silence_duration = (current_time - self._silence_start_time) * 1000
                 self._silence_start_time = None
                 self._last_voice_time = current_time
@@ -410,7 +410,7 @@ class TurnDetector:
                         duration_ms=silence_duration
                     )
             else:
-                # Still silent — check if turn has ended
+                # Still silent  check if turn has ended
                 silence_duration_ms = (
                     (current_time - self._silence_start_time) * 1000
                 )
@@ -456,7 +456,7 @@ class TurnDetector:
                             }
                         )
                     else:
-                        # Too short — ignore as noise
+                        # Too short  ignore as noise
                         self.state = TurnState.IDLE
                         self._speech_start_time = None
                         self._silence_start_time = None
@@ -464,7 +464,7 @@ class TurnDetector:
         elif self.state == TurnState.AGENT_SPEAKING:
             if is_speech:
                 # User is trying to speak while agent speaks
-                # This is an interruption — handled by InterruptionHandler
+                # This is an interruption  handled by InterruptionHandler
                 pass
 
         return None
@@ -636,10 +636,10 @@ class AdaptiveTurnDetector:
         min_gap = np.percentile(recent_gaps, 10) if recent_gaps else 800
 
         if min_gap > max_pause:
-            # Clear separation — set threshold in the middle
+            # Clear separation  set threshold in the middle
             new_threshold = (max_pause + min_gap) / 2
         else:
-            # Overlap — use a conservative (longer) threshold
+            # Overlap  use a conservative (longer) threshold
             new_threshold = max(max_pause, min_gap) * 1.2
 
         # Clamp to bounds
@@ -688,7 +688,7 @@ class AdaptiveTurnDetector:
 
 ### 3.1 Why Interruptions Are the Hardest Voice Problem
 
-Interruption handling — also called **barge-in** — is arguably the single hardest problem in voice agent design. Here is why:
+Interruption handling  also called **barge-in**  is arguably the single hardest problem in voice agent design. Here is why:
 
 1. **Detection ambiguity**: Is the user interrupting, or is there background noise? A TV? Another person talking nearby?
 2. **Timing criticality**: You must stop speaking within ~100ms of detecting an interruption, or the user feels ignored.
@@ -752,7 +752,7 @@ class InterruptionStrategy(Enum):
     PAUSE_AND_RESUME = auto()  # Pause, handle, then resume
     RESTART = auto()         # Restart current response with new info
     PIVOT = auto()           # Abandon current response, handle new topic
-    ESCALATE = auto()        # User is frustrated — special handling
+    ESCALATE = auto()        # User is frustrated  special handling
 
 
 @dataclass
@@ -903,13 +903,13 @@ class InterruptionHandler:
                     current_time
                 )
         else:
-            # No speech — reset potential interruption if it was too short
+            # No speech  reset potential interruption if it was too short
             if self._potential_interrupt_start is not None:
                 speech_duration_ms = (
                     (current_time - self._potential_interrupt_start) * 1000
                 )
                 if speech_duration_ms < self.config.min_speech_duration_ms:
-                    # Too short — was probably noise
+                    # Too short  was probably noise
                     self._potential_interrupt_start = None
                     self._interrupt_audio_buffer.clear()
 
@@ -1239,7 +1239,7 @@ class InterruptionRecoveryEngine:
 - "Okay"
 - "Go on"
 
-Without backchanneling, a voice agent feels **dead** — the user speaks for 15 seconds and hears nothing but silence, wondering if the agent is even listening.
+Without backchanneling, a voice agent feels **dead**  the user speaks for 15 seconds and hears nothing but silence, wondering if the agent is even listening.
 
 ```python
 """
@@ -1344,7 +1344,7 @@ class BackchannelManager:
         """
         Called when a pause is detected in user speech.
 
-        This is a potential backchannel opportunity — the user has paused
+        This is a potential backchannel opportunity  the user has paused
         but has not ended their turn.
         """
         current_time = time.time()
@@ -1751,7 +1751,7 @@ class DialogStateManager:
                     r'\w+ \d{1,2}',              # January 15
                 ]
                 if not any(re.match(p, value) for p in date_patterns):
-                    # Could still be a natural language date — accept it
+                    # Could still be a natural language date  accept it
                     pass
 
         elif slot_def.slot_type == "time":
@@ -1884,7 +1884,7 @@ class DialogStateManager:
                     "message": self._generate_confirmation_message()
                 }
 
-        # No intent detected — ask what they need
+        # No intent detected  ask what they need
         self.transition_to(
             DialogPhase.INTENT_COLLECTION,
             reason="No intent in greeting"
@@ -1968,7 +1968,7 @@ class DialogStateManager:
         missing = self.state.get_missing_required_slots()
 
         if not missing:
-            # All slots filled — move to confirmation
+            # All slots filled  move to confirmation
             self.transition_to(
                 DialogPhase.CONFIRMATION,
                 reason="All required slots filled"
@@ -2009,7 +2009,7 @@ class DialogStateManager:
         ]
 
         if any(word in lower for word in affirmative_words):
-            # Confirmed — execute
+            # Confirmed  execute
             self.transition_to(
                 DialogPhase.EXECUTION,
                 reason="User confirmed"
@@ -2020,7 +2020,7 @@ class DialogStateManager:
             }
 
         elif any(word in lower for word in negative_words):
-            # Needs correction — back to slot filling
+            # Needs correction  back to slot filling
             self.transition_to(
                 DialogPhase.SLOT_FILLING,
                 reason="User wants to correct"
@@ -2033,7 +2033,7 @@ class DialogStateManager:
         # Unclear response
         return {
             "action": "re_confirm",
-            "message": "I just want to make sure — shall I go ahead with this?"
+            "message": "I just want to make sure  shall I go ahead with this?"
         }
 
     def _handle_error_recovery(
@@ -2096,8 +2096,8 @@ class DialogStateManager:
 Slot filling in voice is harder than in text for several reasons:
 
 1. **ASR errors**: "Four people" might be transcribed as "for people"
-2. **Ambiguity**: "Next Friday" — which Friday? Depends on today's date.
-3. **Partial information**: "Maybe around 7?" — is that 7:00 AM or PM?
+2. **Ambiguity**: "Next Friday"  which Friday? Depends on today's date.
+3. **Partial information**: "Maybe around 7?"  is that 7:00 AM or PM?
 4. **Multiple slots in one utterance**: "Table for four at 7 PM on Friday" contains three slots.
 5. **Corrections**: "Actually, make that five people, not four."
 
@@ -2362,7 +2362,7 @@ class VoiceSlotFiller:
                 "message": slot_spec.reprompt or f"Sorry about that. {slot_spec.prompt}"
             }
 
-        # Unclear — ask again
+        # Unclear  ask again
         return {
             "filled_slots": [],
             "next_action": "re_confirm",
@@ -2522,7 +2522,7 @@ class VoiceSlotFiller:
         if num_match:
             hour = int(num_match.group(1))
             if 1 <= hour <= 12:
-                return f"{hour}:00"  # Ambiguous — will need clarification
+                return f"{hour}:00"  # Ambiguous  will need clarification
 
         return text if text else None
 
@@ -2628,7 +2628,7 @@ Errors in voice dialog come in many forms. A robust system must handle all of th
 | **Low confidence** | ASR returns 0.4 confidence | Ask for explicit confirmation |
 | **Entity not found** | User said "sometime next week" | Ask for specific date |
 | **Invalid value** | Party size = 500 | Inform constraint and re-ask |
-| **Disambiguation** | "Smith" — which Smith? | Present options |
+| **Disambiguation** | "Smith"  which Smith? | Present options |
 | **Out of domain** | "What's the weather?" mid-reservation | Acknowledge and redirect |
 | **Silence timeout** | User says nothing for 10 seconds | Gentle re-prompt |
 | **Repeated failure** | Same slot fails 3 times | Escalate or offer alternatives |
@@ -3194,7 +3194,7 @@ class ConversationFlow:
         )
 
         if next_node_name is None:
-            # No matching edge — stay on current node (retry)
+            # No matching edge  stay on current node (retry)
             self._record_history("no_match", current.name)
             return {
                 "prompt": current.prompt_text,
@@ -3356,11 +3356,11 @@ class ConversationFlow:
 
 Humans constantly use shortcuts in conversation that assume shared context:
 
-- **Anaphora**: "Book *that* one" — which one?
-- **Ellipsis**: "And for Saturday too" — what for Saturday?
-- **Pronouns**: "Change *it* to 8 PM" — change what?
-- **Ordinals**: "The second option" — from a previous list
-- **Topic reference**: "Actually, go back to the time" — which conversation point?
+- **Anaphora**: "Book *that* one"  which one?
+- **Ellipsis**: "And for Saturday too"  what for Saturday?
+- **Pronouns**: "Change *it* to 8 PM"  change what?
+- **Ordinals**: "The second option"  from a previous list
+- **Topic reference**: "Actually, go back to the time"  which conversation point?
 
 A voice agent must maintain a **context model** that tracks these references across turns.
 
@@ -4171,7 +4171,7 @@ class RestaurantReservationAgent:
 
             # Use slot filler's recommended message if it has one
             if slot_result["next_action"] == "all_filled":
-                # All slots collected — confirm
+                # All slots collected  confirm
                 self.state_manager.transition_to(
                     DialogPhase.CONFIRMATION,
                     reason="All slots filled"
@@ -4499,4 +4499,4 @@ We will build a memory system that transforms our stateless reservation agent in
 
 ---
 
-*Next up: **Part 11 — Voice Agent Memory — Short-Term, Long-Term, and Episodic Recall***
+*Next up: **Part 11  Voice Agent Memory  Short-Term, Long-Term, and Episodic Recall***

@@ -1,8 +1,8 @@
-# Voice Agents Deep Dive — Part 4: Real-Time ASR — Streaming Transcription and Wake Word Detection
+# Voice Agents Deep Dive  Part 4: Real-Time ASR  Streaming Transcription and Wake Word Detection
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** 4 of 20 (Real-Time ASR)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~50 minutes
@@ -29,11 +29,11 @@
 
 ## Recap of Part 3
 
-In Part 3, we explored the fundamentals of Automatic Speech Recognition — how acoustic models map audio features to phonemes, how language models help disambiguate between candidate transcriptions, and how you can run both cloud-based and local ASR engines. We built a batch transcription pipeline that reads a complete audio file, sends it to an ASR engine, and returns a full transcript.
+In Part 3, we explored the fundamentals of Automatic Speech Recognition  how acoustic models map audio features to phonemes, how language models help disambiguate between candidate transcriptions, and how you can run both cloud-based and local ASR engines. We built a batch transcription pipeline that reads a complete audio file, sends it to an ASR engine, and returns a full transcript.
 
-That approach works perfectly when you already have a recorded file — podcasts, voicemails, meeting recordings. But voice **agents** do not have the luxury of waiting for the user to finish speaking, uploading a file, and then starting to think. They need to listen, understand, and respond in real time. The moment a user says "Hey, turn on the lights," the agent should already be processing "turn on the lights" before the silence at the end even arrives.
+That approach works perfectly when you already have a recorded file  podcasts, voicemails, meeting recordings. But voice **agents** do not have the luxury of waiting for the user to finish speaking, uploading a file, and then starting to think. They need to listen, understand, and respond in real time. The moment a user says "Hey, turn on the lights," the agent should already be processing "turn on the lights" before the silence at the end even arrives.
 
-This part is where we cross the bridge from **offline** speech recognition to **online** (real-time, streaming) speech recognition — and it changes everything about how we architect our audio pipelines.
+This part is where we cross the bridge from **offline** speech recognition to **online** (real-time, streaming) speech recognition  and it changes everything about how we architect our audio pipelines.
 
 > **Key insight:** Batch ASR is a *file processing* problem. Streaming ASR is a *systems engineering* problem. The model might be exactly the same; the plumbing around it is completely different.
 
@@ -82,7 +82,7 @@ Consider a 10-second utterance: "What's the weather like in San Francisco tomorr
 
 **Total latency from end-of-speech to response start:** 0.3-1 second.
 
-That difference — from 5+ seconds to under 1 second — is the difference between a clunky voice interface and one that feels magical.
+That difference  from 5+ seconds to under 1 second  is the difference between a clunky voice interface and one that feels magical.
 
 ```mermaid
 sequenceDiagram
@@ -116,7 +116,7 @@ In streaming ASR, you receive two types of results:
 - **Partial (interim) results**: The ASR engine's best guess so far, which may change as more audio arrives. These are marked `is_final=False`.
 - **Final results**: The ASR engine has committed to a transcription for a segment of audio. These will not change. Marked `is_final=True`.
 
-Why do partial results change? Because ASR models use context. The phrase "I need to" might be partially transcribed as "I need two" until the model hears the rest of the sentence and corrects itself. This self-correction is a feature, not a bug — it is the model incorporating more acoustic and language context.
+Why do partial results change? Because ASR models use context. The phrase "I need to" might be partially transcribed as "I need two" until the model hears the rest of the sentence and corrects itself. This self-correction is a feature, not a bug  it is the model incorporating more acoustic and language context.
 
 ```python
 # Example of how partial results evolve over time
@@ -138,7 +138,7 @@ partial_results_over_time = [
 
 ### The Need for Chunks
 
-A microphone produces a continuous stream of audio samples — thousands per second (typically 16,000 for speech). You cannot send each individual sample to an ASR engine; the overhead would be enormous. Instead, you collect samples into **chunks** and process each chunk as a unit.
+A microphone produces a continuous stream of audio samples  thousands per second (typically 16,000 for speech). You cannot send each individual sample to an ASR engine; the overhead would be enormous. Instead, you collect samples into **chunks** and process each chunk as a unit.
 
 The chunk size determines the fundamental tradeoff:
 - **Small chunks** (10-50ms): Lower latency, higher overhead, more network calls
@@ -173,7 +173,7 @@ class AudioChunk:
 
     @property
     def rms_energy(self) -> float:
-        """Root mean square energy — simple loudness measure."""
+        """Root mean square energy  simple loudness measure."""
         return float(np.sqrt(np.mean(self.data.astype(np.float64) ** 2)))
 
     def to_bytes(self, dtype: str = "int16") -> bytes:
@@ -314,7 +314,7 @@ class AudioChunker:
         overlap_ms: int = 0,
     ) -> Generator[AudioChunk, None, None]:
         """
-        Read an audio file and yield chunks — simulates streaming from a file.
+        Read an audio file and yield chunks  simulates streaming from a file.
 
         Useful for testing streaming pipelines with recorded audio.
         """
@@ -408,7 +408,7 @@ The tradeoff: overlap means you process some audio twice, increasing compute cos
 
 ### The Problem
 
-In a batch pipeline, the user clicks "stop recording" or the file ends. The boundary is explicit. In a streaming pipeline, the microphone is always on — you need to automatically detect when the user has finished speaking an utterance so you can:
+In a batch pipeline, the user clicks "stop recording" or the file ends. The boundary is explicit. In a streaming pipeline, the microphone is always on  you need to automatically detect when the user has finished speaking an utterance so you can:
 
 1. Commit the final transcription
 2. Send it to the language model for processing
@@ -416,7 +416,7 @@ In a batch pipeline, the user clicks "stop recording" or the file ends. The boun
 
 This is called **endpointing** or **end-of-utterance (EOU) detection**, and getting it right is one of the hardest problems in voice agent design:
 
-- **Too aggressive** (short timeout): You cut the user off mid-sentence during a natural pause. "I want to order... [ENDPOINT!]" — the agent starts responding before the user says what they want to order.
+- **Too aggressive** (short timeout): You cut the user off mid-sentence during a natural pause. "I want to order... [ENDPOINT!]"  the agent starts responding before the user says what they want to order.
 - **Too conservative** (long timeout): The user finishes speaking and waits... and waits... for the agent to realize they are done. The conversation feels sluggish.
 
 ### Approaches to Endpointing
@@ -738,9 +738,9 @@ def demo_endpoint_detection():
     # Simulate: 1s speech, 0.3s pause, 0.5s speech, 0.8s silence (endpoint!)
     segments = [
         ("speech", 1.0),
-        ("silence", 0.3),  # pause — should NOT trigger endpoint
+        ("silence", 0.3),  # pause  should NOT trigger endpoint
         ("speech", 0.5),
-        ("silence", 0.8),  # long silence — SHOULD trigger endpoint
+        ("silence", 0.8),  # long silence  SHOULD trigger endpoint
     ]
 
     for segment_type, duration_s in segments:
@@ -784,7 +784,7 @@ The choice of silence timeout has a massive impact on user experience:
 
 ## Building a Real-Time Transcription Pipeline
 
-Now let us connect the pieces: microphone capture, chunking, VAD, ASR, and display — into a complete real-time transcription system.
+Now let us connect the pieces: microphone capture, chunking, VAD, ASR, and display  into a complete real-time transcription system.
 
 ### Architecture Overview
 
@@ -944,7 +944,7 @@ class RealtimeTranscriber:
 
     def _capture_loop(self):
         """
-        Audio capture thread — reads from microphone and queues data.
+        Audio capture thread  reads from microphone and queues data.
 
         Uses PyAudio for cross-platform microphone access.
         """
@@ -995,7 +995,7 @@ class RealtimeTranscriber:
 
     def _process_loop(self):
         """
-        Processing thread — chunks audio, runs VAD and ASR.
+        Processing thread  chunks audio, runs VAD and ASR.
         """
         speech_buffer = np.array([], dtype=np.float32)
 
@@ -1159,7 +1159,7 @@ class LiveTranscriptDisplay:
         # Detect corrections (fewer words than before = model revised)
         current_words = len(text.split())
         if current_words < self._last_partial_word_count and self.use_colors:
-            # The model corrected itself — could highlight this
+            # The model corrected itself  could highlight this
             pass
         self._last_partial_word_count = current_words
         self._last_partial = text
@@ -1428,7 +1428,7 @@ class DeepgramStreamingClient:
                         on_vad_event("speech_started", data)
 
                 elif msg_type == "Metadata":
-                    # Connection metadata — log for debugging
+                    # Connection metadata  log for debugging
                     request_id = data.get("request_id", "unknown")
                     print(f"  [metadata] request_id={request_id}")
 
@@ -1543,7 +1543,7 @@ if __name__ == "__main__":
 
 ## Streaming with faster-whisper
 
-If you prefer to keep everything local — for privacy, cost, or offline operation — **faster-whisper** is an excellent choice. It is a CTranslate2-based reimplementation of OpenAI's Whisper that runs 4-8x faster than the original.
+If you prefer to keep everything local  for privacy, cost, or offline operation  **faster-whisper** is an excellent choice. It is a CTranslate2-based reimplementation of OpenAI's Whisper that runs 4-8x faster than the original.
 
 ### The Challenge of Local Streaming
 
@@ -1678,7 +1678,7 @@ class FasterWhisperStreamer:
             time.sleep(0.1)
 
     def _process_loop(self):
-        """Main processing loop — accumulate audio and transcribe."""
+        """Main processing loop  accumulate audio and transcribe."""
         last_transcribe_time = time.time()
 
         try:
@@ -2036,7 +2036,7 @@ def demo_porcupine():
         return
 
     def on_wake(index, keyword):
-        print(f"\n>>> WAKE WORD: '{keyword}' — activating voice agent...")
+        print(f"\n>>> WAKE WORD: '{keyword}'  activating voice agent...")
         # Here you would start your ASR pipeline
 
     with PorcupineWakeWord(
@@ -2215,7 +2215,7 @@ if __name__ == "__main__":
 
 ### Building a Custom Wake Word Detector
 
-For full control, you can build your own wake word detector using a small convolutional neural network (CNN). The key insight: wake word detection is a **binary classification** problem on short audio windows — "does this 1-2 second window contain the wake word or not?"
+For full control, you can build your own wake word detector using a small convolutional neural network (CNN). The key insight: wake word detection is a **binary classification** problem on short audio windows  "does this 1-2 second window contain the wake word or not?"
 
 ```python
 import numpy as np
@@ -2848,7 +2848,7 @@ class SpeakerDiarizer:
         segments = self.diarize(audio_path)
 
         if asr_model is None:
-            print("No ASR model provided — returning segments without text.")
+            print("No ASR model provided  returning segments without text.")
             return segments
 
         # Step 2: Load audio
@@ -3874,7 +3874,7 @@ if __name__ == "__main__":
 
 ## What's Next
 
-In **Part 5: Speech Synthesis (TTS) — Giving Your Agent a Voice**, we will cross to the output side of the voice pipeline. Now that our agent can listen, understand, and process commands in real time, it needs to talk back. We will cover:
+In **Part 5: Speech Synthesis (TTS)  Giving Your Agent a Voice**, we will cross to the output side of the voice pipeline. Now that our agent can listen, understand, and process commands in real time, it needs to talk back. We will cover:
 
 - **Text-to-Speech fundamentals**: How modern TTS models convert text to natural-sounding audio
 - **Cloud TTS services**: Google Cloud TTS, Amazon Polly, ElevenLabs, and OpenAI TTS
@@ -3888,4 +3888,4 @@ The combination of Parts 3-5 gives us a complete **voice I/O loop**: the user sp
 
 ---
 
-*Next up: [Part 5 — Speech Synthesis: Giving Your Agent a Voice](./voice-agent-deep-dive-part-5.md)*
+*Next up: [Part 5  Speech Synthesis: Giving Your Agent a Voice](./voice-agent-deep-dive-part-5.md)*

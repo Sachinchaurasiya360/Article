@@ -1,15 +1,15 @@
-# Memory in AI Systems Deep Dive — Part 17: Scaling Memory Systems in Production
+# Memory in AI Systems Deep Dive  Part 17: Scaling Memory Systems in Production
 
 ---
 
-**Series:** Memory in AI Systems — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Memory in AI Systems  A Developer's Deep Dive from Fundamentals to Production
 **Part:** 17 of 19 (Production Scaling)
 **Audience:** Developers with programming experience who want to understand AI memory systems from the ground up
 **Reading time:** ~50 minutes
 
 ---
 
-In Part 16, we explored evaluation and testing strategies for memory systems — how to measure retrieval quality, detect regressions, and build confidence that your system is working correctly. We had metrics, benchmarks, and test suites. Everything worked beautifully on your laptop with 10 test documents.
+In Part 16, we explored evaluation and testing strategies for memory systems  how to measure retrieval quality, detect regressions, and build confidence that your system is working correctly. We had metrics, benchmarks, and test suites. Everything worked beautifully on your laptop with 10 test documents.
 
 Then you deployed to production. Real users arrived. And everything changed.
 
@@ -181,7 +181,7 @@ Let's build a complete, production-ready memory API:
 
 ```python
 """
-memory_api.py — Production Memory Service API
+memory_api.py  Production Memory Service API
 
 A FastAPI-based service that provides RESTful endpoints for storing,
 retrieving, updating, and deleting memories. Designed for production
@@ -418,7 +418,7 @@ async def health_check():
 @app.get("/ready")
 async def readiness_check():
     """
-    Readiness check — returns 200 only when the service can handle traffic.
+    Readiness check  returns 200 only when the service can handle traffic.
     In production, this would verify database connectivity, cache availability, etc.
     """
     # In production, check actual dependencies:
@@ -788,7 +788,7 @@ This API provides all the essential operations:
 | `/memories/{id}` | DELETE | Delete a memory |
 | `/memories/stats/{user_id}` | GET | Usage statistics |
 
-> **Production Note:** The in-memory store used above is for demonstration. In production, you would replace it with a proper vector database (Qdrant, Weaviate, Pinecone) and a relational database (PostgreSQL) for metadata. The API contract stays the same — clients never need to know what's behind the interface.
+> **Production Note:** The in-memory store used above is for demonstration. In production, you would replace it with a proper vector database (Qdrant, Weaviate, Pinecone) and a relational database (PostgreSQL) for metadata. The API contract stays the same  clients never need to know what's behind the interface.
 
 ### Client SDK
 
@@ -796,7 +796,7 @@ A good API deserves a good client. Here is a Python SDK that wraps our memory se
 
 ```python
 """
-memory_client.py — Python SDK for the Memory Service API
+memory_client.py  Python SDK for the Memory Service API
 
 Provides a clean, Pythonic interface for interacting with the memory service.
 Handles retries, error handling, and response parsing.
@@ -900,7 +900,7 @@ class MemoryClient:
                 else:
                     raise
             except httpx.RequestError as e:
-                # Network errors — retryable
+                # Network errors  retryable
                 wait_time = (2 ** attempt) * 0.5
                 time.sleep(wait_time)
                 last_exception = e
@@ -1086,7 +1086,7 @@ with MemoryClient(
 
 ### Why Async Matters for Memory Systems
 
-Memory operations are inherently I/O-bound. Embedding generation calls an external API. Vector database queries go over the network. Cache lookups hit Redis. If you handle these synchronously, your server spends most of its time **waiting** — waiting for the embedding API to respond, waiting for the database query to complete, waiting for the cache to reply.
+Memory operations are inherently I/O-bound. Embedding generation calls an external API. Vector database queries go over the network. Cache lookups hit Redis. If you handle these synchronously, your server spends most of its time **waiting**  waiting for the embedding API to respond, waiting for the database query to complete, waiting for the cache to reply.
 
 Asynchronous processing lets your server do useful work while waiting for I/O:
 
@@ -1106,7 +1106,7 @@ Thread 3:       ───[Embed: 100ms]───[VectorDB: 50ms]───[LLM: 5
 
 ```python
 """
-async_embeddings.py — Async Embedding Generation Service
+async_embeddings.py  Async Embedding Generation Service
 
 Provides non-blocking embedding generation with batching,
 connection pooling, and automatic retry.
@@ -1139,7 +1139,7 @@ class AsyncEmbeddingService:
     single batch. This reduces API calls and latency.
 
     Architecture:
-    1. Callers submit text via generate() — returns immediately with a Future
+    1. Callers submit text via generate()  returns immediately with a Future
     2. A background loop collects pending requests
     3. Every batch_interval_ms (or when batch_size is reached), sends a batch
     4. Results are distributed back to waiting callers
@@ -1240,7 +1240,7 @@ class AsyncEmbeddingService:
                         self._process_batch(batch, futures)
                     )
                 else:
-                    # No requests — wait a bit before checking again
+                    # No requests  wait a bit before checking again
                     await asyncio.sleep(self.batch_interval_ms / 1000)
 
             except asyncio.CancelledError:
@@ -1340,7 +1340,7 @@ async def demo_async_embeddings():
     await service.start()
 
     try:
-        # Submit many requests concurrently — they'll be auto-batched
+        # Submit many requests concurrently  they'll be auto-batched
         texts = [
             f"This is document number {i} about topic {i % 5}"
             for i in range(100)
@@ -1367,11 +1367,11 @@ if __name__ == "__main__":
 
 ### Background Memory Consolidation
 
-In addition to async embedding generation, production systems need **background consolidation** — periodic processes that organize, compress, and optimize the memory store:
+In addition to async embedding generation, production systems need **background consolidation**  periodic processes that organize, compress, and optimize the memory store:
 
 ```python
 """
-memory_consolidation.py — Background Memory Consolidation Service
+memory_consolidation.py  Background Memory Consolidation Service
 
 Runs periodic tasks to maintain memory health:
 - Deduplication: Merge near-duplicate memories
@@ -1404,7 +1404,7 @@ class MemoryConsolidationService:
     Consolidation is essential for long-running systems because:
     1. Users create near-duplicate memories over time
     2. Old memories take up space but are rarely accessed
-    3. Embedding models improve — old embeddings become stale
+    3. Embedding models improve  old embeddings become stale
     4. TTL-based memories need cleanup
     """
 
@@ -1498,7 +1498,7 @@ class MemoryConsolidationService:
                     continue
                 content_hash = mem.get("content_hash", "")
                 if content_hash in seen_hashes:
-                    # Exact duplicate found — keep the older one
+                    # Exact duplicate found  keep the older one
                     existing_id = seen_hashes[content_hash]
                     existing = self.memory_store[existing_id]
                     current = self.memory_store[mem_id]
@@ -1571,7 +1571,7 @@ For heavier background tasks, use a proper task queue:
 
 ```python
 """
-memory_tasks.py — Celery Task Definitions for Memory Processing
+memory_tasks.py  Celery Task Definitions for Memory Processing
 
 Uses Celery with Redis as the broker for reliable, distributed
 background processing of memory operations.
@@ -1829,7 +1829,7 @@ We use a three-level cache, inspired by CPU cache hierarchies:
 
 ```python
 """
-memory_cache.py — Multi-Level Caching System for Memory Operations
+memory_cache.py  Multi-Level Caching System for Memory Operations
 
 Implements a three-tier cache (L1 in-process, L2 Redis, L3 vector DB)
 with intelligent invalidation and metrics tracking.
@@ -2148,7 +2148,7 @@ async def demo_caching():
     user_id = "user_42"
     query = "What are the user's preferences?"
 
-    # First search: cache miss — goes to vector DB
+    # First search: cache miss  goes to vector DB
     cached = await cache.get_search_results(query, user_id)
     print(f"First lookup: {'HIT' if cached else 'MISS'}")
 
@@ -2166,7 +2166,7 @@ async def demo_caching():
     # Cache the results
     await cache.cache_search_results(query, user_id, "default", 10, results)
 
-    # Second search: cache hit — returns from L1 (sub-millisecond)
+    # Second search: cache hit  returns from L1 (sub-millisecond)
     cached = await cache.get_search_results(query, user_id)
     print(f"Second lookup: {'HIT' if cached else 'MISS'}")
     print(f"Results: {len(cached['results'])} memories found")
@@ -2197,7 +2197,7 @@ Cache invalidation is famously one of the two hard problems in computer science 
 | **Version-based** | When embedding model changes | Forces full rebuild |
 | **Hybrid (TTL + Event)** | Production systems | Best balance of freshness and simplicity |
 
-> **Key Insight:** For memory systems, the cost of a stale cache hit is usually low — serving a slightly outdated set of relevant memories is better than the cost of no caching at all. Set TTLs based on how frequently memories change for typical users, not worst-case scenarios.
+> **Key Insight:** For memory systems, the cost of a stale cache hit is usually low  serving a slightly outdated set of relevant memories is better than the cost of no caching at all. Set TTLs based on how frequently memories change for typical users, not worst-case scenarios.
 
 ---
 

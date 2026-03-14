@@ -1,8 +1,8 @@
-# Voice Agents Deep Dive — Part 2: Audio Signal Processing — Spectrograms, MFCCs, and Feature Extraction
+# Voice Agents Deep Dive  Part 2: Audio Signal Processing  Spectrograms, MFCCs, and Feature Extraction
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** 2 of 20 (Signal Processing)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~55 minutes
@@ -32,7 +32,7 @@
 
 In Part 1 we built a solid foundation in audio fundamentals. We learned that **sound is a pressure wave** traveling through a medium, that **sampling** converts continuous analog signals into discrete digital values, and that the **Nyquist theorem** tells us we need at least twice the highest frequency to faithfully reconstruct a signal. We explored sample rates, bit depth, audio formats, and wrote Python code to generate, load, and manipulate raw audio.
 
-All of that work happened in the **time domain** — we plotted amplitude on the y-axis and time on the x-axis. But here is the problem: when a human speaks, the raw waveform is an incomprehensible tangle of overlapping frequencies. To build voice agents that actually understand speech, we need to decompose that tangle into its constituent frequencies. That is the job of **signal processing**, and it is the subject of this entire article.
+All of that work happened in the **time domain**  we plotted amplitude on the y-axis and time on the x-axis. But here is the problem: when a human speaks, the raw waveform is an incomprehensible tangle of overlapping frequencies. To build voice agents that actually understand speech, we need to decompose that tangle into its constituent frequencies. That is the job of **signal processing**, and it is the subject of this entire article.
 
 > **Key insight from Part 1:** Digital audio is just an array of numbers. Everything we do in signal processing is math on arrays. If you can multiply and sum arrays, you can do signal processing.
 
@@ -40,7 +40,7 @@ By the end of this article you will be able to:
 
 - Convert audio from the time domain to the frequency domain using the Fourier Transform
 - Build spectrograms that visualize how frequencies change over time
-- Extract MFCCs — the classic feature representation used in speech recognition for decades
+- Extract MFCCs  the classic feature representation used in speech recognition for decades
 - Implement noise reduction and voice activity detection from scratch
 - Understand every step well enough to debug real-world audio pipelines
 
@@ -59,9 +59,9 @@ Every audio signal can be viewed from two complementary perspectives:
 | **Time Domain** | Time (seconds) | Amplitude | How loud the signal is at each moment |
 | **Frequency Domain** | Frequency (Hz) | Magnitude | How much energy exists at each frequency |
 
-Think of it this way. You are at a concert and a band plays a chord — guitar, bass, and keyboard all sounding simultaneously. In the **time domain**, your microphone records a single, complex waveform that is the sum of all those instruments. It is nearly impossible to look at that waveform and say "the guitar is playing A4 at 440 Hz."
+Think of it this way. You are at a concert and a band plays a chord  guitar, bass, and keyboard all sounding simultaneously. In the **time domain**, your microphone records a single, complex waveform that is the sum of all those instruments. It is nearly impossible to look at that waveform and say "the guitar is playing A4 at 440 Hz."
 
-But in the **frequency domain**, that same chord becomes a set of clear, distinct peaks — one at the bass frequency, one at the guitar frequency, one at the keyboard frequency. The **Fourier Transform** is the mathematical tool that converts one view into the other.
+But in the **frequency domain**, that same chord becomes a set of clear, distinct peaks  one at the bass frequency, one at the guitar frequency, one at the keyboard frequency. The **Fourier Transform** is the mathematical tool that converts one view into the other.
 
 ```mermaid
 graph LR
@@ -76,7 +76,7 @@ graph LR
 
 ### Seeing It in Code
 
-Let us make this concrete. We will generate a "chord" — three sine waves at different frequencies added together — and look at it from both perspectives.
+Let us make this concrete. We will generate a "chord"  three sine waves at different frequencies added together  and look at it from both perspectives.
 
 ```python
 import numpy as np
@@ -108,7 +108,7 @@ fig, axes = plt.subplots(2, 1, figsize=(14, 8))
 axes[0].plot(t * 1000, chord, color='steelblue', linewidth=0.8)
 axes[0].set_xlabel('Time (ms)')
 axes[0].set_ylabel('Amplitude')
-axes[0].set_title('Time Domain — The "Chord" Waveform (Complex!)')
+axes[0].set_title('Time Domain  The "Chord" Waveform (Complex!)')
 axes[0].grid(True, alpha=0.3)
 
 # --- Compute FFT (Frequency Domain) ---
@@ -125,7 +125,7 @@ magnitude = np.abs(fft_result[positive_mask]) * 2 / N  # Normalize
 axes[1].plot(freqs_positive, magnitude, color='crimson', linewidth=0.8)
 axes[1].set_xlabel('Frequency (Hz)')
 axes[1].set_ylabel('Magnitude')
-axes[1].set_title('Frequency Domain — Clear Peaks at 200, 500, and 1200 Hz')
+axes[1].set_title('Frequency Domain  Clear Peaks at 200, 500, and 1200 Hz')
 axes[1].set_xlim(0, 2000)
 axes[1].grid(True, alpha=0.3)
 
@@ -144,7 +144,7 @@ plt.show()
 **What you will see:**
 
 - **Top plot (time domain):** A messy, complex waveform. You cannot easily tell which frequencies are present just by looking at it.
-- **Bottom plot (frequency domain):** Three sharp peaks at exactly 200 Hz, 500 Hz, and 1200 Hz — the frequencies we mixed together. Crystal clear.
+- **Bottom plot (frequency domain):** Three sharp peaks at exactly 200 Hz, 500 Hz, and 1200 Hz  the frequencies we mixed together. Crystal clear.
 
 This is the power of frequency-domain analysis. For speech processing, we need this power because human speech is a mixture of many frequencies that change rapidly over time.
 
@@ -200,7 +200,7 @@ def dft_from_scratch(signal):
     """
     Compute the Discrete Fourier Transform from scratch.
 
-    This is O(N^2) — slow but educational.
+    This is O(N^2)  slow but educational.
     For production, always use np.fft.fft which is O(N log N).
 
     Parameters
@@ -227,7 +227,7 @@ def dft_from_scratch(signal):
 
 def dft_vectorized(signal):
     """
-    Vectorized DFT — still O(N^2) but much faster than the loop version.
+    Vectorized DFT  still O(N^2) but much faster than the loop version.
     Uses NumPy broadcasting to eliminate the inner loop.
     """
     N = len(signal)
@@ -235,7 +235,7 @@ def dft_vectorized(signal):
     k = n.reshape(-1, 1)  # Column vector
 
     # Build the full matrix of complex exponentials
-    # Shape: (N, N) — each row k contains e^{-j*2pi*k*n/N} for all n
+    # Shape: (N, N)  each row k contains e^{-j*2pi*k*n/N} for all n
     W = np.exp(-2j * np.pi * k * n / N)
 
     # Matrix multiplication: X = W @ x
@@ -369,11 +369,11 @@ plt.show()
 ```
 
 **What you will see:**
-- **N = 256** (16 ms window): The two peaks at 440 and 460 Hz blur into a single broad lump. Frequency resolution is 62.5 Hz — far too coarse.
+- **N = 256** (16 ms window): The two peaks at 440 and 460 Hz blur into a single broad lump. Frequency resolution is 62.5 Hz  far too coarse.
 - **N = 1024** (64 ms window): You start to see two peaks emerging, but they are not fully separated.
-- **N = 4096** (256 ms window): Two distinct, sharp peaks. Frequency resolution is 3.9 Hz — plenty to resolve a 20 Hz gap.
+- **N = 4096** (256 ms window): Two distinct, sharp peaks. Frequency resolution is 3.9 Hz  plenty to resolve a 20 Hz gap.
 
-This tradeoff is exactly why we need the **Short-Time Fourier Transform** — it lets us choose a compromise.
+This tradeoff is exactly why we need the **Short-Time Fourier Transform**  it lets us choose a compromise.
 
 ---
 
@@ -381,12 +381,12 @@ This tradeoff is exactly why we need the **Short-Time Fourier Transform** — it
 
 ### Why FFT Alone Is Not Enough for Speech
 
-Speech is a **non-stationary** signal — its frequency content changes rapidly over time. Consider saying the word "hello":
+Speech is a **non-stationary** signal  its frequency content changes rapidly over time. Consider saying the word "hello":
 
-- "h" — mostly high-frequency noise (fricative)
-- "eh" — strong low-frequency formants (vowel)
-- "l" — mid-frequency resonance (liquid)
-- "oh" — different low-frequency formants (vowel)
+- "h"  mostly high-frequency noise (fricative)
+- "eh"  strong low-frequency formants (vowel)
+- "l"  mid-frequency resonance (liquid)
+- "oh"  different low-frequency formants (vowel)
 
 If you take a single FFT of the entire word, you get the average frequency content across the whole utterance. You lose all information about *when* each sound occurs. For speech recognition, we need to know both *what* frequencies are present and *when* they appear.
 
@@ -433,9 +433,9 @@ flowchart LR
 | **Window function** | Hann or Hamming | Applied to each frame before FFT |
 | **Overlap** | 75% typical | `1 - hop_length/frame_length` |
 
-### Window Functions — Why We Need Them
+### Window Functions  Why We Need Them
 
-When we chop a signal into frames, we create artificial discontinuities at the frame boundaries. These discontinuities cause **spectral leakage** — fake frequencies appear in the FFT output.
+When we chop a signal into frames, we create artificial discontinuities at the frame boundaries. These discontinuities cause **spectral leakage**  fake frequencies appear in the FFT output.
 
 **Window functions** solve this by smoothly tapering each frame to zero at the edges:
 
@@ -636,7 +636,7 @@ A **spectrogram** is a 2D image where:
 - **Y-axis** = frequency
 - **Color/intensity** = magnitude (how loud that frequency is at that moment)
 
-It is the single most important visualization in audio processing. When experienced audio engineers or speech scientists look at audio, they look at spectrograms — not waveforms.
+It is the single most important visualization in audio processing. When experienced audio engineers or speech scientists look at audio, they look at spectrograms  not waveforms.
 
 ```python
 import numpy as np
@@ -683,7 +683,7 @@ fig, axes = plt.subplots(3, 1, figsize=(14, 12))
 axes[0].plot(t, signal, color='steelblue', linewidth=0.3)
 axes[0].set_xlabel('Time (s)')
 axes[0].set_ylabel('Amplitude')
-axes[0].set_title('Waveform (Time Domain) — Hard to interpret!')
+axes[0].set_title('Waveform (Time Domain)  Hard to interpret!')
 axes[0].grid(True, alpha=0.3)
 
 # 2. Linear-scale spectrogram
@@ -792,7 +792,7 @@ plt.show()
 
 ### Why Human Hearing Is Logarithmic
 
-Human hearing does not perceive frequencies linearly. The difference between 100 Hz and 200 Hz sounds like a large jump (an octave). But the difference between 5000 Hz and 5100 Hz — the same 100 Hz gap — sounds tiny.
+Human hearing does not perceive frequencies linearly. The difference between 100 Hz and 200 Hz sounds like a large jump (an octave). But the difference between 5000 Hz and 5100 Hz  the same 100 Hz gap  sounds tiny.
 
 This is because our **cochlea** (the spiral-shaped organ in the inner ear) maps frequencies logarithmically. Low frequencies get a lot of "real estate" on the basilar membrane, while high frequencies are compressed together.
 
@@ -861,7 +861,7 @@ for i, (hz, mel) in enumerate(zip(hz_points, mel_points)):
     axes[1].annotate(f'{hz:.0f} Hz', xy=(hz, 1), fontsize=8,
                      rotation=45, ha='left', va='bottom')
 
-plt.suptitle('The Mel Scale — Matching Human Hearing Perception',
+plt.suptitle('The Mel Scale  Matching Human Hearing Perception',
              fontsize=14, fontweight='bold')
 plt.tight_layout()
 plt.savefig('mel_scale.png', dpi=150, bbox_inches='tight')
@@ -930,8 +930,8 @@ flowchart TD
     F --> G["6. DCT<br/>Discrete Cosine Transform"]
     G --> H["MFCCs<br/>(typically 13 coefficients per frame)"]
 
-    H --> I["Optional: Delta MFCCs<br/>(velocity — 1st derivative)"]
-    I --> J["Optional: Delta-Delta MFCCs<br/>(acceleration — 2nd derivative)"]
+    H --> I["Optional: Delta MFCCs<br/>(velocity  1st derivative)"]
+    I --> J["Optional: Delta-Delta MFCCs<br/>(acceleration  2nd derivative)"]
 
     style A fill:#4a90d9,stroke:#333,color:#fff
     style H fill:#d94a4a,stroke:#333,color:#fff
@@ -1227,7 +1227,7 @@ print(f"  - {filter_bank.shape[0]} filters")
 print(f"  - {filter_bank.shape[1]} frequency bins")
 ```
 
-> **Notice how the filters are narrow and closely spaced at low frequencies, and wide and spread apart at high frequencies.** This is the mel scale at work — more resolution where human hearing is most sensitive.
+> **Notice how the filters are narrow and closely spaced at low frequencies, and wide and spread apart at high frequencies.** This is the mel scale at work  more resolution where human hearing is most sensitive.
 
 ### Step 5: Log Compression
 
@@ -1332,7 +1332,7 @@ def extract_mfcc_from_scratch(signal, sample_rate=16000, n_mfcc=13,
                                 frame_length_ms=25, hop_length_ms=10,
                                 pre_emph_coeff=0.97):
     """
-    Extract MFCCs from an audio signal — implemented entirely from scratch.
+    Extract MFCCs from an audio signal  implemented entirely from scratch.
 
     Parameters
     ----------
@@ -1728,13 +1728,13 @@ signals = [
     (audio, 'Original Signal'),
     (lowpass, 'Low-Pass (< 1000 Hz)'),
     (highpass, 'High-Pass (> 1000 Hz)'),
-    (bandpass, 'Band-Pass (300-3400 Hz) — Telephone bandwidth'),
+    (bandpass, 'Band-Pass (300-3400 Hz)  Telephone bandwidth'),
 ]
 
 for i, (sig, title) in enumerate(signals):
     # Time domain
     axes[i, 0].plot(t[:800], sig[:800], color='steelblue', linewidth=0.8)
-    axes[i, 0].set_title(f'{title} — Waveform')
+    axes[i, 0].set_title(f'{title}  Waveform')
     axes[i, 0].set_xlabel('Time (s)')
     axes[i, 0].set_ylabel('Amplitude')
     axes[i, 0].grid(True, alpha=0.3)
@@ -1744,7 +1744,7 @@ for i, (sig, title) in enumerate(signals):
     freqs = np.fft.rfftfreq(N, d=1/sample_rate)
     magnitude = np.abs(np.fft.rfft(sig)) * 2 / N
     axes[i, 1].plot(freqs, magnitude, color='crimson', linewidth=0.8)
-    axes[i, 1].set_title(f'{title} — Spectrum')
+    axes[i, 1].set_title(f'{title}  Spectrum')
     axes[i, 1].set_xlabel('Frequency (Hz)')
     axes[i, 1].set_ylabel('Magnitude')
     axes[i, 1].set_xlim(0, 6000)
@@ -1776,7 +1776,7 @@ Real-world audio is noisy. Users speak to voice agents in cars, cafes, offices, 
 
 The goal of noise reduction is to **estimate the noise spectrum and subtract it from the signal**, leaving (mostly) clean speech behind.
 
-### Spectral Subtraction — From Scratch
+### Spectral Subtraction  From Scratch
 
 **Spectral subtraction** is the simplest and most intuitive noise reduction method:
 
@@ -2586,15 +2586,15 @@ Detected speech segments:
 | **Time Domain** | Signal represented as amplitude over time |
 | **Frequency Domain** | Signal represented as magnitude over frequency |
 | **Fourier Transform** | Mathematical operation that converts a signal from time domain to frequency domain |
-| **DFT** | Discrete Fourier Transform — Fourier Transform for sampled (discrete) signals |
-| **FFT** | Fast Fourier Transform — efficient O(N log N) algorithm for computing the DFT |
-| **STFT** | Short-Time Fourier Transform — FFT applied to overlapping frames of a signal |
+| **DFT** | Discrete Fourier Transform  Fourier Transform for sampled (discrete) signals |
+| **FFT** | Fast Fourier Transform  efficient O(N log N) algorithm for computing the DFT |
+| **STFT** | Short-Time Fourier Transform  FFT applied to overlapping frames of a signal |
 | **Spectrogram** | 2D visualization showing frequency content over time (output of STFT magnitude) |
 | **Mel Scale** | Perceptual frequency scale that approximates human hearing's logarithmic response |
 | **Mel Spectrogram** | Spectrogram with frequency axis warped to the mel scale using triangular filter banks |
-| **MFCCs** | Mel-Frequency Cepstral Coefficients — compact feature representation derived from mel spectrogram via DCT |
+| **MFCCs** | Mel-Frequency Cepstral Coefficients  compact feature representation derived from mel spectrogram via DCT |
 | **Cepstrum** | The spectrum of the log spectrum (inverse FFT of log magnitude spectrum) |
-| **DCT** | Discrete Cosine Transform — used to decorrelate mel filter bank energies in MFCC computation |
+| **DCT** | Discrete Cosine Transform  used to decorrelate mel filter bank energies in MFCC computation |
 | **Window Function** | Smooth taper (Hann, Hamming) applied to frames before FFT to reduce spectral leakage |
 | **Spectral Leakage** | Artifacts in FFT output caused by discontinuities at frame boundaries |
 | **Frame Length (n_fft)** | Number of samples per analysis frame (typically 25-64 ms) |
@@ -2604,7 +2604,7 @@ Detected speech segments:
 | **Filter Bank** | Set of overlapping bandpass filters (typically triangular) used to aggregate spectral energy |
 | **Spectral Flatness** | Ratio of geometric to arithmetic mean of spectrum; measures how noise-like a signal is |
 | **Zero-Crossing Rate (ZCR)** | Number of times a signal crosses zero per unit time; lower for voiced speech |
-| **VAD** | Voice Activity Detection — determining whether speech is present in an audio frame |
+| **VAD** | Voice Activity Detection  determining whether speech is present in an audio frame |
 | **Spectral Subtraction** | Noise reduction method that estimates and subtracts the noise spectrum from the signal |
 | **Hangover Scheme** | VAD smoothing technique that extends detected speech segments to avoid premature cutoff |
 | **Formant** | Resonant frequency of the vocal tract; formants define vowel identity |
@@ -2617,15 +2617,15 @@ Detected speech segments:
 
 ## What's Next
 
-In **Part 3: Speech Recognition — From HMMs to Transformers**, we will take the features we have learned to extract — spectrograms, MFCCs, and mel filter banks — and feed them into actual speech recognition systems. We will cover:
+In **Part 3: Speech Recognition  From HMMs to Transformers**, we will take the features we have learned to extract  spectrograms, MFCCs, and mel filter banks  and feed them into actual speech recognition systems. We will cover:
 
-- **Hidden Markov Models (HMMs)** — the classic statistical approach that dominated ASR for 30 years
-- **CTC (Connectionist Temporal Classification)** — the loss function that made end-to-end ASR possible
-- **Attention mechanisms and Transformers** — how modern models like Whisper and Wav2Vec 2.0 work
+- **Hidden Markov Models (HMMs)**  the classic statistical approach that dominated ASR for 30 years
+- **CTC (Connectionist Temporal Classification)**  the loss function that made end-to-end ASR possible
+- **Attention mechanisms and Transformers**  how modern models like Whisper and Wav2Vec 2.0 work
 - **Building a simple speech recognizer** using pre-trained models
 - **Evaluating ASR accuracy** with Word Error Rate (WER) and Character Error Rate (CER)
 
-The signal processing knowledge from this article is your foundation. Every ASR system — from 1990s HMMs to 2024's state-of-the-art Transformers — relies on the concepts we covered today: spectrograms, mel scaling, and careful feature extraction. You now understand what goes in. In Part 3, you will understand what comes out.
+The signal processing knowledge from this article is your foundation. Every ASR system  from 1990s HMMs to 2024's state-of-the-art Transformers  relies on the concepts we covered today: spectrograms, mel scaling, and careful feature extraction. You now understand what goes in. In Part 3, you will understand what comes out.
 
 ---
 

@@ -1,21 +1,21 @@
-# Voice Agents Deep Dive — Part 7: Real-Time Audio Pipelines — Streaming, Buffers, and WebSockets
+# Voice Agents Deep Dive  Part 7: Real-Time Audio Pipelines  Streaming, Buffers, and WebSockets
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** 7 of 20 (Audio Pipelines)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~55 minutes
 
 ---
 
-## Introduction — From Offline Processing to the Live Wire
+## Introduction  From Offline Processing to the Live Wire
 
-In Part 6, we explored Voice Activity Detection (VAD) — the critical gatekeeper that decides when someone is speaking and when they are not. We implemented energy-based, zero-crossing, and neural network-based VAD systems, learned about hangover schemes to prevent choppy segmentation, and built a system that could reliably extract speech segments from continuous audio. All of that work assumed a comfortable scenario: audio files sitting on disk, waiting patiently for us to process them.
+In Part 6, we explored Voice Activity Detection (VAD)  the critical gatekeeper that decides when someone is speaking and when they are not. We implemented energy-based, zero-crossing, and neural network-based VAD systems, learned about hangover schemes to prevent choppy segmentation, and built a system that could reliably extract speech segments from continuous audio. All of that work assumed a comfortable scenario: audio files sitting on disk, waiting patiently for us to process them.
 
 **Real-time changes everything.**
 
-When a human speaks to a voice agent, they expect a response in under 500 milliseconds. That is not a soft target — it is a biological expectation baked into decades of conversational habit. Exceed it, and the user starts repeating themselves, talking over the agent, or simply walking away. In this part, we dismantle the batch-processing mindset and rebuild our thinking around **streams, buffers, pipelines, and WebSockets** — the plumbing that makes voice agents feel alive.
+When a human speaks to a voice agent, they expect a response in under 500 milliseconds. That is not a soft target  it is a biological expectation baked into decades of conversational habit. Exceed it, and the user starts repeating themselves, talking over the agent, or simply walking away. In this part, we dismantle the batch-processing mindset and rebuild our thinking around **streams, buffers, pipelines, and WebSockets**  the plumbing that makes voice agents feel alive.
 
 We will cover:
 
@@ -28,7 +28,7 @@ We will cover:
 - Echo cancellation, noise suppression, and automatic gain control in live pipelines
 - A complete real-time audio streaming server project
 
-By the end, you will have a working WebSocket-based audio server that accepts live microphone streams, processes them through a configurable pipeline, and streams results back — the backbone of any production voice agent.
+By the end, you will have a working WebSocket-based audio server that accepts live microphone streams, processes them through a configurable pipeline, and streams results back  the backbone of any production voice agent.
 
 ---
 
@@ -39,7 +39,7 @@ By the end, you will have a working WebSocket-based audio server that accepts li
 In batch processing, life is simple. You have a file. You read the entire file into memory. You process it. You write the result. If something goes wrong, you start over. Time pressure is measured in minutes or hours, not milliseconds.
 
 ```python
-# Batch processing — the comfortable way
+# Batch processing  the comfortable way
 import wave
 import numpy as np
 
@@ -60,16 +60,16 @@ def batch_process(filepath: str) -> np.ndarray:
 
 This code makes three assumptions that real-time systems cannot afford:
 
-1. **All data is available upfront** — In real-time, data arrives continuously and unpredictably.
-2. **Memory is unlimited** — You cannot buffer an hour-long conversation in RAM.
-3. **Time is irrelevant** — The user is waiting. Every millisecond counts.
+1. **All data is available upfront**  In real-time, data arrives continuously and unpredictably.
+2. **Memory is unlimited**  You cannot buffer an hour-long conversation in RAM.
+3. **Time is irrelevant**  The user is waiting. Every millisecond counts.
 
 ### 1.2 The Streaming Mindset
 
 Real-time audio processing is a fundamentally different paradigm. Data arrives in small chunks (typically 10–30 ms of audio at a time), must be processed immediately, and results must be produced before the next chunk arrives.
 
 ```python
-# Real-time processing — the streaming way
+# Real-time processing  the streaming way
 import pyaudio
 import numpy as np
 from typing import Callable
@@ -93,11 +93,11 @@ def realtime_process(
 
     try:
         while True:
-            # Read exactly one chunk — this blocks until data is ready
+            # Read exactly one chunk  this blocks until data is ready
             raw = stream.read(chunk_size, exception_on_overflow=False)
             chunk = np.frombuffer(raw, dtype=np.float32)
 
-            # Process THIS chunk NOW — next chunk arrives in 20ms
+            # Process THIS chunk NOW  next chunk arrives in 20ms
             callback(chunk)
     except KeyboardInterrupt:
         pass
@@ -107,19 +107,19 @@ def realtime_process(
         pa.terminate()
 ```
 
-> **Key Insight:** In real-time processing, you are not processing data — you are **keeping up with time**. The audio source (microphone, network stream, telephony channel) does not pause because your algorithm is slow. If you fall behind, you either drop data or introduce latency — both are unacceptable.
+> **Key Insight:** In real-time processing, you are not processing data  you are **keeping up with time**. The audio source (microphone, network stream, telephony channel) does not pause because your algorithm is slow. If you fall behind, you either drop data or introduce latency  both are unacceptable.
 
 ### 1.3 Latency Budgets
 
-Every voice agent has a **latency budget** — the maximum acceptable delay between the user finishing a sentence and the agent beginning its response. Research consistently shows:
+Every voice agent has a **latency budget**  the maximum acceptable delay between the user finishing a sentence and the agent beginning its response. Research consistently shows:
 
 | Delay | User Perception |
 |-------|----------------|
-| < 200 ms | Imperceptible — feels instant |
-| 200–500 ms | Acceptable — natural conversational pause |
-| 500–1000 ms | Noticeable — user may start to feel the system is slow |
-| 1000–2000 ms | Frustrating — user may repeat themselves |
-| > 2000 ms | Unacceptable — user disengages |
+| < 200 ms | Imperceptible  feels instant |
+| 200–500 ms | Acceptable  natural conversational pause |
+| 500–1000 ms | Noticeable  user may start to feel the system is slow |
+| 1000–2000 ms | Frustrating  user may repeat themselves |
+| > 2000 ms | Unacceptable  user disengages |
 
 The total latency budget must be divided among all processing stages:
 
@@ -164,11 +164,11 @@ gantt
     Audio Playback      :a8, 470, 500
 ```
 
-> **Key Insight:** The latency budget is not just about making each stage fast — it is about making stages **overlap**. Streaming ASR can start transcribing before the user finishes speaking. Streaming TTS can start generating audio before the full response text is ready. This **pipelining** is the secret to sub-second response times.
+> **Key Insight:** The latency budget is not just about making each stage fast  it is about making stages **overlap**. Streaming ASR can start transcribing before the user finishes speaking. Streaming TTS can start generating audio before the full response text is ready. This **pipelining** is the secret to sub-second response times.
 
-### 1.4 Backpressure — When the Pipeline Backs Up
+### 1.4 Backpressure  When the Pipeline Backs Up
 
-**Backpressure** occurs when a downstream stage cannot keep up with the rate at which an upstream stage produces data. In audio pipelines, this is dangerous because audio is a continuous stream — it does not stop arriving just because your ASR model is running slowly.
+**Backpressure** occurs when a downstream stage cannot keep up with the rate at which an upstream stage produces data. In audio pipelines, this is dangerous because audio is a continuous stream  it does not stop arriving just because your ASR model is running slowly.
 
 ```python
 import time
@@ -182,7 +182,7 @@ class BackpressureMonitor:
     Monitor queue depths across pipeline stages to detect backpressure.
 
     When a stage's input queue grows beyond a threshold, it signals that
-    the stage is falling behind — a backpressure situation.
+    the stage is falling behind  a backpressure situation.
     """
 
     def __init__(self, warning_threshold: int = 50, critical_threshold: int = 100):
@@ -255,7 +255,7 @@ Strategies for handling backpressure:
 | **Backpressure signal** | Tell upstream to slow down | Not always possible with live audio |
 | **Dynamic scaling** | Spin up more workers | Adds complexity and cost |
 
-### 1.5 The Fundamental Constraint — You Cannot Buffer Forever
+### 1.5 The Fundamental Constraint  You Cannot Buffer Forever
 
 The core tension of real-time audio is this: **buffering improves quality but increases latency**. More buffered audio means better context for noise reduction, better accuracy for VAD, and smoother playback. But every frame you buffer is a frame of delay the user experiences.
 
@@ -415,11 +415,11 @@ print(f"  Size: {chunk.size_bytes} bytes")
 print(f"  Peak: {chunk.peak_amplitude:.4f}")
 ```
 
-### 2.2 Ring Buffers — The Workhorse of Real-Time Audio
+### 2.2 Ring Buffers  The Workhorse of Real-Time Audio
 
 A **ring buffer** (also called a circular buffer) is a fixed-size buffer that wraps around when it reaches the end. It is the fundamental data structure for real-time audio because:
 
-- It has a **fixed memory footprint** — no dynamic allocation during processing.
+- It has a **fixed memory footprint**  no dynamic allocation during processing.
 - **Writes never block** (oldest data is overwritten if the buffer is full).
 - **Reads** always get the most recent data.
 - It naturally implements a **sliding window** over the audio stream.
@@ -562,7 +562,7 @@ class AudioRingBuffer:
                     self._buffer[self._write_pos:] = samples[:first_part]
                     self._buffer[:n - first_part] = samples[first_part:]
             else:
-                # Data larger than buffer — keep only the last capacity samples
+                # Data larger than buffer  keep only the last capacity samples
                 samples = samples[-self.capacity:]
                 n = self.capacity
                 self._buffer[:] = samples
@@ -739,7 +739,7 @@ def demo_ring_buffer():
 demo_ring_buffer()
 ```
 
-### 2.3 Jitter Buffers — Taming Network Chaos
+### 2.3 Jitter Buffers  Taming Network Chaos
 
 When audio streams over a network, packets do not arrive at perfectly regular intervals. **Network jitter** causes packets to arrive early, late, or out of order. A **jitter buffer** smooths out these irregularities by:
 
@@ -919,7 +919,7 @@ class JitterBuffer:
             # Add to heap (sorted by sequence number)
             heapq.heappush(self._heap, packet)
 
-            # Enforce maximum depth — drop oldest if over limit
+            # Enforce maximum depth  drop oldest if over limit
             while len(self._heap) > self.max_depth:
                 dropped = heapq.heappop(self._heap)
                 self._packets_lost += 1
@@ -946,14 +946,14 @@ class JitterBuffer:
 
             # Check if the next expected packet is available
             if self._heap[0].sequence_number == self._next_expected_seq:
-                # Perfect — next packet is ready
+                # Perfect  next packet is ready
                 packet = heapq.heappop(self._heap)
                 self._next_expected_seq += 1
                 self._packets_released += 1
                 return packet.data
 
             elif self._heap[0].sequence_number > self._next_expected_seq:
-                # Missing packet — need to conceal the gap
+                # Missing packet  need to conceal the gap
                 self._packets_lost += 1
                 self._interpolations += 1
                 self._next_expected_seq += 1
@@ -980,7 +980,7 @@ class JitterBuffer:
             fade = np.linspace(0.3, 1.0, self.chunk_samples, dtype=np.float32)
             return next_packet.data[:self.chunk_samples] * fade
         else:
-            # No data available — return silence
+            # No data available  return silence
             return np.zeros(self.chunk_samples, dtype=np.float32)
 
     def get_stats(self) -> dict:
@@ -1094,10 +1094,10 @@ graph LR
 
 The pipeline metaphor is powerful because it enables:
 
-- **Modularity** — Each stage has a single responsibility and can be tested independently.
-- **Composability** — Stages can be rearranged, added, or removed without rewriting the pipeline.
-- **Parallelism** — Independent stages can run concurrently.
-- **Monitoring** — Each stage can report its latency, throughput, and error rate.
+- **Modularity**  Each stage has a single responsibility and can be tested independently.
+- **Composability**  Stages can be rearranged, added, or removed without rewriting the pipeline.
+- **Parallelism**  Independent stages can run concurrently.
+- **Monitoring**  Each stage can report its latency, throughput, and error rate.
 
 ### 3.2 Pipeline Stage Interface
 
@@ -1442,7 +1442,7 @@ class GainNormalizationStage(PipelineStage):
     def process(self, chunk: AudioChunk) -> Optional[AudioChunk]:
         rms = chunk.rms_energy
         if rms < 1e-6:
-            return chunk  # Silence — don't amplify noise
+            return chunk  # Silence  don't amplify noise
 
         gain = self.target_rms / rms
         # Limit gain to prevent extreme amplification
@@ -1584,7 +1584,7 @@ demo_pipeline()
 
 ---
 
-## 4. Pipeline Patterns — Sequential, Parallel, and Conditional
+## 4. Pipeline Patterns  Sequential, Parallel, and Conditional
 
 ### 4.1 Sequential Pipelines
 
@@ -1874,7 +1874,7 @@ class ConditionalRouter(PipelineStage):
             except Exception as e:
                 logger.error(f"Router predicate '{name}' failed: {e}")
 
-        # No route matched — use default
+        # No route matched  use default
         if self.default_route is not None:
             self._route_counts["default"] = (
                 self._route_counts.get("default", 0) + 1
@@ -2024,10 +2024,10 @@ class FanIn:
 
 Python's `asyncio` is a natural fit for audio pipelines because:
 
-1. **I/O-bound operations dominate** — Waiting for audio from the microphone, network, or API responses is mostly waiting, not computing.
-2. **Concurrent connections** — A server handling multiple audio streams needs concurrency, not parallelism.
-3. **WebSocket integration** — The `websockets` library is built on asyncio.
-4. **Event-driven model** — Audio processing reacts to events (new chunk arrived, speech detected, response ready).
+1. **I/O-bound operations dominate**  Waiting for audio from the microphone, network, or API responses is mostly waiting, not computing.
+2. **Concurrent connections**  A server handling multiple audio streams needs concurrency, not parallelism.
+3. **WebSocket integration**  The `websockets` library is built on asyncio.
+4. **Event-driven model**  Audio processing reacts to events (new chunk arrived, speech detected, response ready).
 
 However, asyncio has a critical limitation for audio: **CPU-bound processing blocks the event loop**. Heavy computation (FFT, neural network inference) must be offloaded to a thread pool or process pool.
 
@@ -2351,7 +2351,7 @@ class AsyncAudioCapture:
 
     def _audio_callback(self, in_data, frame_count, time_info, status):
         """
-        PyAudio callback — runs in a separate audio thread.
+        PyAudio callback  runs in a separate audio thread.
 
         This is called by PyAudio whenever a new chunk of audio is
         available. We convert it to a float32 numpy array and push
@@ -2434,7 +2434,7 @@ class AsyncAudioCapture:
         await self.stop()
 ```
 
-> **Key Insight:** The bridge between PyAudio's callback thread and asyncio's event loop uses `loop.call_soon_threadsafe()`. This is the correct way to communicate between threads and asyncio — never call `queue.put()` directly from a non-asyncio thread.
+> **Key Insight:** The bridge between PyAudio's callback thread and asyncio's event loop uses `loop.call_soon_threadsafe()`. This is the correct way to communicate between threads and asyncio  never call `queue.put()` directly from a non-asyncio thread.
 
 ---
 
@@ -2442,7 +2442,7 @@ class AsyncAudioCapture:
 
 ### 6.1 Why WebSockets for Audio?
 
-WebSockets provide a **full-duplex, persistent connection** between client and server — exactly what real-time audio needs. Unlike HTTP, which requires a new request for every exchange, WebSockets keep the connection open so audio can flow continuously in both directions.
+WebSockets provide a **full-duplex, persistent connection** between client and server  exactly what real-time audio needs. Unlike HTTP, which requires a new request for every exchange, WebSockets keep the connection open so audio can flow continuously in both directions.
 
 Why WebSockets beat the alternatives for voice agents:
 
@@ -2461,8 +2461,8 @@ For most voice agent architectures, WebSockets hit the sweet spot: low latency, 
 
 Before writing code, let us design a simple protocol for exchanging audio over WebSockets. We need to handle two types of messages:
 
-1. **Binary frames** — Raw audio data.
-2. **Text frames** — JSON control messages (configuration, results, errors).
+1. **Binary frames**  Raw audio data.
+2. **Text frames**  JSON control messages (configuration, results, errors).
 
 ```mermaid
 sequenceDiagram
@@ -2656,7 +2656,7 @@ class AudioWebSocketServer:
             # Main message loop
             async for message in websocket:
                 if isinstance(message, bytes):
-                    # Binary frame — audio data
+                    # Binary frame  audio data
                     audio = self._decode_audio(
                         message, session.audio_format
                     )
@@ -2739,7 +2739,7 @@ class AudioWebSocketServer:
                         }))
 
                 elif isinstance(message, str):
-                    # Text frame — control message
+                    # Text frame  control message
                     msg = json.loads(message)
                     msg_type = msg.get('type')
 
@@ -3059,7 +3059,7 @@ async def run_client():
 # To run: asyncio.run(run_client())
 ```
 
-> **Key Insight:** The client runs two concurrent tasks — one for sending audio and one for receiving results. This is the heart of full-duplex communication: audio flows to the server continuously while results flow back independently.
+> **Key Insight:** The client runs two concurrent tasks  one for sending audio and one for receiving results. This is the heart of full-duplex communication: audio flows to the server continuously while results flow back independently.
 
 ---
 
@@ -3067,15 +3067,15 @@ async def run_client():
 
 ### 7.1 Why Codecs Matter
 
-Raw PCM audio at 16 kHz mono is 256 kbps (16000 samples/s * 16 bits/sample). Over a network, this adds up fast — especially when serving hundreds of concurrent connections. Audio codecs compress the data, reducing bandwidth at the cost of some CPU time and (potentially) audio quality.
+Raw PCM audio at 16 kHz mono is 256 kbps (16000 samples/s * 16 bits/sample). Over a network, this adds up fast  especially when serving hundreds of concurrent connections. Audio codecs compress the data, reducing bandwidth at the cost of some CPU time and (potentially) audio quality.
 
 For voice agents, the codec choice affects:
 
-- **Bandwidth** — Lower bitrate means less network load.
-- **Latency** — Some codecs add algorithmic delay for better compression.
-- **Quality** — Voice intelligibility must remain high.
-- **CPU cost** — Encoding/decoding must be fast enough for real-time.
-- **Compatibility** — Must work with your infrastructure (WebRTC, telephony, etc.).
+- **Bandwidth**  Lower bitrate means less network load.
+- **Latency**  Some codecs add algorithmic delay for better compression.
+- **Quality**  Voice intelligibility must remain high.
+- **CPU cost**  Encoding/decoding must be fast enough for real-time.
+- **Compatibility**  Must work with your infrastructure (WebRTC, telephony, etc.).
 
 ### 7.2 Codec Comparison
 
@@ -3090,11 +3090,11 @@ For voice agents, the codec choice affects:
 | **Speex** | 2–44 | 30–34 | Good | Legacy VoIP (superseded by Opus) | BSD |
 | **AAC-LD** | 32–128 | 20 | Very Good | Broadcasting, conferencing | Licensed |
 
-### 7.3 G.711 mu-law and A-law — Telephony Standards
+### 7.3 G.711 mu-law and A-law  Telephony Standards
 
 G.711 is the bread-and-butter of telephony. It compresses 16-bit linear PCM into 8-bit logarithmic encoding, achieving 2:1 compression with minimal computation.
 
-**mu-law** (used in North America and Japan) and **A-law** (used in Europe and most other regions) differ in their compression curves, but both aim to match human hearing sensitivity — giving more precision to quiet sounds and less to loud ones.
+**mu-law** (used in North America and Japan) and **A-law** (used in Europe and most other regions) differ in their compression curves, but both aim to match human hearing sensitivity  giving more precision to quiet sounds and less to loud ones.
 
 ```python
 import numpy as np
@@ -3235,15 +3235,15 @@ def demo_g711():
     print("=" * 50)
     print(f"Original:   {len(original) * 4:>8} bytes (float32)")
     print(f"mu-law:     {len(mu_encoded):>8} bytes (uint8) "
-          f"— SNR: {mu_snr:.1f} dB — Ratio: 4:1")
+          f" SNR: {mu_snr:.1f} dB  Ratio: 4:1")
     print(f"A-law:      {len(a_encoded):>8} bytes (uint8) "
-          f"— SNR: {a_snr:.1f} dB — Ratio: 4:1")
+          f" SNR: {a_snr:.1f} dB  Ratio: 4:1")
 
 
 demo_g711()
 ```
 
-### 7.4 Opus — The Modern Standard
+### 7.4 Opus  The Modern Standard
 
 Opus is the gold standard for real-time voice coding. It combines the best of SILK (voice optimized, developed by Skype) and CELT (low-latency, general audio) into a single codec that adapts dynamically based on the content.
 
@@ -3556,7 +3556,7 @@ The basic approach:
 1. The agent knows what it is playing through the speaker (the **reference signal**).
 2. An adaptive filter models how that signal transforms as it travels through the room to the microphone.
 3. The filter's output is subtracted from the microphone signal.
-4. The difference is the **cleaned signal** — just the user's voice.
+4. The difference is the **cleaned signal**  just the user's voice.
 
 ```python
 import numpy as np
@@ -3778,7 +3778,7 @@ demo_echo_cancellation()
 
 ### 9.1 Real-Time Noise Removal
 
-Background noise — keyboard typing, air conditioning, traffic, other people talking — degrades both the user experience and ASR accuracy. Real-time noise suppression removes or attenuates these unwanted sounds while preserving speech.
+Background noise  keyboard typing, air conditioning, traffic, other people talking  degrades both the user experience and ASR accuracy. Real-time noise suppression removes or attenuates these unwanted sounds while preserving speech.
 
 Modern noise suppression uses neural networks, but spectral subtraction remains a viable lightweight approach for resource-constrained environments.
 
@@ -4838,8 +4838,8 @@ async def test_server(
 | **mu-law** | Logarithmic audio compression standard used in North American and Japanese telephone networks. |
 | **A-law** | Logarithmic audio compression standard used in European and international telephone networks. |
 | **AEC (Acoustic Echo Cancellation)** | Technology that removes echo caused by audio played through a speaker being captured by a nearby microphone. |
-| **NLMS** | Normalized Least Mean Squares — an adaptive filter algorithm used in echo cancellation. |
-| **ERLE** | Echo Return Loss Enhancement — a metric (in dB) measuring how much echo an AEC system removes. |
+| **NLMS** | Normalized Least Mean Squares  an adaptive filter algorithm used in echo cancellation. |
+| **ERLE** | Echo Return Loss Enhancement  a metric (in dB) measuring how much echo an AEC system removes. |
 | **AGC (Automatic Gain Control)** | Circuit or algorithm that automatically adjusts audio amplitude to maintain a consistent output level. |
 | **Spectral Gating** | Noise suppression technique that attenuates frequency bins where the signal is near or below the estimated noise floor. |
 | **Overlap-Add** | A method for processing audio through short-time Fourier transforms by windowing overlapping frames and summing the results. |
@@ -4853,20 +4853,20 @@ async def test_server(
 
 ---
 
-## What's Next — Part 8: WebRTC and Telephony Integration
+## What's Next  Part 8: WebRTC and Telephony Integration
 
-In Part 8, we step beyond WebSockets into the world of **WebRTC** and **telephony** — the two dominant real-world channels for voice agents. We will cover:
+In Part 8, we step beyond WebSockets into the world of **WebRTC** and **telephony**  the two dominant real-world channels for voice agents. We will cover:
 
-- **WebRTC fundamentals** — ICE, STUN, TURN, SDP, and the signaling handshake that establishes peer-to-peer audio connections.
-- **Integrating WebRTC with Python** — Using `aiortc` to build WebRTC voice agents that work directly in web browsers.
-- **Telephony basics** — SIP, RTP, and how phone calls are routed in modern VoIP networks.
-- **Twilio and telephony APIs** — Connecting your voice agent to actual phone numbers so users can call in.
-- **Media gateways** — Bridging WebRTC, SIP, and WebSocket worlds.
-- **DTMF handling** — Processing touch-tone input for IVR-style interactions.
-- **Building a browser-based voice agent** — A complete project where users open a web page, click a button, and talk to your AI agent using WebRTC.
+- **WebRTC fundamentals**  ICE, STUN, TURN, SDP, and the signaling handshake that establishes peer-to-peer audio connections.
+- **Integrating WebRTC with Python**  Using `aiortc` to build WebRTC voice agents that work directly in web browsers.
+- **Telephony basics**  SIP, RTP, and how phone calls are routed in modern VoIP networks.
+- **Twilio and telephony APIs**  Connecting your voice agent to actual phone numbers so users can call in.
+- **Media gateways**  Bridging WebRTC, SIP, and WebSocket worlds.
+- **DTMF handling**  Processing touch-tone input for IVR-style interactions.
+- **Building a browser-based voice agent**  A complete project where users open a web page, click a button, and talk to your AI agent using WebRTC.
 
-If this part was about building the plumbing, Part 8 is about connecting that plumbing to the outside world — real browsers, real phones, and real users.
+If this part was about building the plumbing, Part 8 is about connecting that plumbing to the outside world  real browsers, real phones, and real users.
 
 ---
 
-*Next up: **Part 8 — WebRTC and Telephony Integration***
+*Next up: **Part 8  WebRTC and Telephony Integration***

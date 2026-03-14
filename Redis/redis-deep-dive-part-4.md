@@ -1,8 +1,8 @@
-# Redis Deep Dive Series — Part 4: Networking Model, Event Loop, and Performance Engineering
+# Redis Deep Dive Series  Part 4: Networking Model, Event Loop, and Performance Engineering
 
 ---
 
-**Series:** Redis Deep Dive — Engineering the World's Most Misunderstood Data Structure Server
+**Series:** Redis Deep Dive  Engineering the World's Most Misunderstood Data Structure Server
 **Part:** 4 of 10
 **Audience:** Senior backend engineers, distributed systems engineers, infrastructure architects
 **Reading time:** ~45 minutes
@@ -11,7 +11,7 @@
 
 ## Where We Are in the Series
 
-Parts 1-3 formed the "single-node internals" trilogy. Part 1 showed us the event loop and architecture. Part 2 dismantled every data structure to the byte level. Part 3 covered memory management — jemalloc, expiration, eviction — and how Redis persists data to disk without blocking the main thread.
+Parts 1-3 formed the "single-node internals" trilogy. Part 1 showed us the event loop and architecture. Part 2 dismantled every data structure to the byte level. Part 3 covered memory management  jemalloc, expiration, eviction  and how Redis persists data to disk without blocking the main thread.
 
 Those three parts explained *how Redis works internally*. This part shifts to *how to use Redis effectively*. We'll cover the client-facing layer: the wire protocol that carries your commands, pipelining that multiplies throughput, transactions and Lua scripting that provide atomicity guarantees, and the diagnostic tools that help you find and fix performance problems in production.
 
@@ -21,11 +21,11 @@ By the end, you'll be able to identify and fix the most common Redis performance
 
 ## 1. RESP: The Wire Protocol
 
-Part 0, Section 11 introduced RESP conceptually — how commands are encoded as arrays of bulk strings. Part 1, Section 3 showed how the parser handles partial reads across event loop iterations. Here we cover both RESP2 and RESP3 in full detail.
+Part 0, Section 11 introduced RESP conceptually  how commands are encoded as arrays of bulk strings. Part 1, Section 3 showed how the parser handles partial reads across event loop iterations. Here we cover both RESP2 and RESP3 in full detail.
 
 ### RESP2 (Default through Redis 5.x)
 
-RESP (REdis Serialization Protocol) is intentionally simple — designed for trivial parsing at the speed of `memcpy`. Every RESP message begins with a type byte:
+RESP (REdis Serialization Protocol) is intentionally simple  designed for trivial parsing at the speed of `memcpy`. Every RESP message begins with a type byte:
 
 | Type Byte | Meaning | Example |
 |---|---|---|
@@ -85,7 +85,7 @@ RESP3's **push type** (`>`) is particularly important: it enables server-initiat
 
 ### Protocol Performance Characteristics
 
-RESP parsing is dominated by `memcpy` and `atoi` — there are no escape sequences, no string delimiters to scan for, and no recursion. The length-prefixed format means the parser always knows exactly how many bytes to read next.
+RESP parsing is dominated by `memcpy` and `atoi`  there are no escape sequences, no string delimiters to scan for, and no recursion. The length-prefixed format means the parser always knows exactly how many bytes to read next.
 
 ```
 Parse cost comparison:
@@ -94,7 +94,7 @@ JSON:    ~500-5000 nanoseconds per command (recursive parse, string escaping)
 SQL:     ~10,000-100,000 nanoseconds per query (lexer + parser + optimizer)
 ```
 
-This parsing speed is why Redis can achieve >1M ops/sec — the protocol processing overhead per command is negligible compared to the actual data operation.
+This parsing speed is why Redis can achieve >1M ops/sec  the protocol processing overhead per command is negligible compared to the actual data operation.
 
 ---
 
@@ -154,7 +154,7 @@ Pipelining works because:
 4. Redis writes all responses to the client's output buffer
 5. The output buffer is flushed in one `write()` call
 
-**No special server support is needed.** Pipelining is entirely a client-side optimization — the client simply doesn't wait for responses between sends. Redis doesn't even know the difference between pipelined and non-pipelined commands; they're just bytes in the socket buffer.
+**No special server support is needed.** Pipelining is entirely a client-side optimization  the client simply doesn't wait for responses between sends. Redis doesn't even know the difference between pipelined and non-pipelined commands; they're just bytes in the socket buffer.
 
 ### Pipeline Implementation
 
@@ -177,7 +177,7 @@ results = pipe.execute()  # Send all at once, collect all responses
 ```
 
 ```javascript
-// Node.js (ioredis) — Automatic pipelining
+// Node.js (ioredis)  Automatic pipelining
 const Redis = require('ioredis');
 const redis = new Redis();
 
@@ -208,7 +208,7 @@ Pipelines should not be unbounded. Consider:
 
 1. **Client memory:** Each pipelined command's arguments are buffered in the client. 1 million SET commands with 1 KB values = 1 GB of client-side memory.
 
-2. **Redis output buffer:** All responses are buffered before sending. 1 million GET responses of 1 KB each = 1 GB in Redis's client output buffer — potentially triggering `client-output-buffer-limit`.
+2. **Redis output buffer:** All responses are buffered before sending. 1 million GET responses of 1 KB each = 1 GB in Redis's client output buffer  potentially triggering `client-output-buffer-limit`.
 
 3. **Atomic execution is NOT guaranteed.** Unlike `MULTI/EXEC`, pipelining does not wrap commands in a transaction. Other clients' commands can interleave between your pipelined commands. Use `MULTI/EXEC` within a pipeline if you need atomicity.
 
@@ -232,13 +232,13 @@ flowchart LR
     style P1000 fill:#4a9,color:#fff
 ```
 
-Pipelining is purely a performance optimization — it sends multiple independent commands in batch. But what if your commands *depend on each other* — if you need to read a value, modify it, and write it back *atomically*, without another client sneaking in between? That's the domain of transactions and Lua scripting.
+Pipelining is purely a performance optimization  it sends multiple independent commands in batch. But what if your commands *depend on each other*  if you need to read a value, modify it, and write it back *atomically*, without another client sneaking in between? That's the domain of transactions and Lua scripting.
 
 ---
 
 ## 3. Transactions: MULTI/EXEC
 
-Part 1 warned that Redis MULTI/EXEC is not like a database transaction. Let's see exactly what it provides — and what it doesn't.
+Part 1 warned that Redis MULTI/EXEC is not like a database transaction. Let's see exactly what it provides  and what it doesn't.
 
 ### What Transactions Are (and Aren't)
 
@@ -263,12 +263,12 @@ QUEUED
 127.0.0.1:6379(TX)> EXEC
 1) OK                    # SET key1 succeeded
 2) (error) ERR value is not an integer or out of range  # INCR failed
-3) OK                    # SET key2 succeeded — NO ROLLBACK
+3) OK                    # SET key2 succeeded  NO ROLLBACK
 ```
 
 ### WATCH: Optimistic Locking
 
-`WATCH` enables optimistic locking — check-and-set (CAS) semantics:
+`WATCH` enables optimistic locking  check-and-set (CAS) semantics:
 
 ```python
 def transfer_funds(r, from_account, to_account, amount):
@@ -278,7 +278,7 @@ def transfer_funds(r, from_account, to_account, amount):
             # Watch the source account for changes
             r.watch(from_account)
 
-            # Read current balance (outside transaction — actual read)
+            # Read current balance (outside transaction  actual read)
             balance = int(r.get(from_account) or 0)
             if balance < amount:
                 r.unwatch()
@@ -292,7 +292,7 @@ def transfer_funds(r, from_account, to_account, amount):
             return True
 
         except redis.WatchError:
-            # Another client modified from_account — retry
+            # Another client modified from_account  retry
             continue
 ```
 
@@ -313,7 +313,7 @@ sequenceDiagram
     C1->>R: INCRBY account:bob 500
     C1->>R: EXEC
 
-    R->>C1: (nil) — EXEC aborted!<br/>account:alice was modified<br/>since WATCH
+    R->>C1: (nil)  EXEC aborted!<br/>account:alice was modified<br/>since WATCH
 
     Note over C1: Client 1 must retry<br/>the entire operation
 ```
@@ -337,7 +337,7 @@ results = pipe.execute()
 # Sends: MULTI → SET → SET → INCR → EXEC (all pipelined, atomic)
 ```
 
-MULTI/EXEC provides isolation and atomicity, but with a significant constraint: commands are queued *before* execution, so you can't use one command's result as input to another. This makes conditional logic impossible within a transaction. Lua scripting removes this limitation entirely — and introduces its own tradeoffs.
+MULTI/EXEC provides isolation and atomicity, but with a significant constraint: commands are queued *before* execution, so you can't use one command's result as input to another. This makes conditional logic impossible within a transaction. Lua scripting removes this limitation entirely  and introduces its own tradeoffs.
 
 ---
 
@@ -366,7 +366,7 @@ return 1  -- Allowed
 
 ### Lua Execution Model
 
-Redis executes Lua scripts **atomically** — the entire script runs without any other client's commands interleaving. This is the same guarantee as `MULTI/EXEC` but with the ability to use intermediate results.
+Redis executes Lua scripts **atomically**  the entire script runs without any other client's commands interleaving. This is the same guarantee as `MULTI/EXEC` but with the ability to use intermediate results.
 
 ```mermaid
 flowchart TD
@@ -411,13 +411,13 @@ result = r.evalsha(sha, 1, "mykey", " appended")
 
 ### Lua Performance Considerations
 
-1. **Script execution blocks all clients.** A Lua script running for 100ms blocks every client for 100ms. Keep scripts fast — aim for <1ms execution.
+1. **Script execution blocks all clients.** A Lua script running for 100ms blocks every client for 100ms. Keep scripts fast  aim for <1ms execution.
 
 2. **`redis.call` vs `redis.pcall`:** `redis.call()` propagates errors (aborts the script). `redis.pcall()` returns errors as values (script continues). Use `pcall` when you want to handle errors gracefully within the script.
 
 3. **No external I/O.** Lua scripts cannot make network calls, read files, or access system resources. They can only call Redis commands and perform computation.
 
-4. **Determinism requirement.** Scripts must be deterministic for replication — the same inputs must produce the same outputs. Avoid `TIME`, `RANDOMKEY`, or other non-deterministic commands within scripts. (Redis 7.0+ relaxes this with "no-writes" script flags.)
+4. **Determinism requirement.** Scripts must be deterministic for replication  the same inputs must produce the same outputs. Avoid `TIME`, `RANDOMKEY`, or other non-deterministic commands within scripts. (Redis 7.0+ relaxes this with "no-writes" script flags.)
 
 5. **Script timeout.** By default, Redis kills scripts running longer than `lua-time-limit` (default 5000ms = 5 seconds). During this time, Redis responds to all commands with `BUSY` errors.
 
@@ -530,7 +530,7 @@ r = redis.Redis(connection_pool=pool)
 ```
 
 ```javascript
-// Node.js (ioredis) — Built-in connection pool
+// Node.js (ioredis)  Built-in connection pool
 const Redis = require('ioredis');
 
 // Single connection (for most use cases)
@@ -653,8 +653,8 @@ Latency by percentile distribution:
 Key metrics to watch:
 - **Throughput (ops/sec):** Baseline for your hardware
 - **p50 latency:** Typical response time
-- **p99 latency:** Tail latency — usually 2-3x p50
-- **p99.9 latency:** Extreme tail — indicates jitter sources (GC, CoW, slow commands)
+- **p99 latency:** Tail latency  usually 2-3x p50
+- **p99.9 latency:** Extreme tail  indicates jitter sources (GC, CoW, slow commands)
 
 ### Common Benchmarking Mistakes
 
@@ -848,7 +848,7 @@ redis-cli --latency-history -i 15
 redis-cli --latency-dist
 # Displays a spectrum of latency values using color coding
 
-# Intrinsic latency (baseline — what the hardware can do)
+# Intrinsic latency (baseline  what the hardware can do)
 redis-cli --intrinsic-latency 5
 # Max latency so far: 1 microseconds
 # (run for 5 seconds, measure the minimum achievable latency)
@@ -896,7 +896,7 @@ r = redis.Redis(client_name="payment-service-worker-3")
 r.client_setname("payment-service-worker-3")
 ```
 
-This makes `CLIENT LIST` output much more useful — instead of mystery IP addresses, you see service names.
+This makes `CLIENT LIST` output much more useful  instead of mystery IP addresses, you see service names.
 
 ---
 
@@ -926,14 +926,14 @@ flowchart LR
 
 3. **Memory pressure risk.** If a subscriber is slow (can't read messages fast enough), messages queue in its output buffer. The `client-output-buffer-limit pubsub` configuration controls when Redis disconnects slow subscribers.
 
-4. **Cluster behavior.** In Redis Cluster, pub/sub messages are broadcast to all nodes — every subscriber on every node receives every message. This can be a significant bandwidth overhead in large clusters. Redis 7.0+ introduced **sharded pub/sub** (`SSUBSCRIBE`) which routes messages only to the node owning the channel's hash slot.
+4. **Cluster behavior.** In Redis Cluster, pub/sub messages are broadcast to all nodes  every subscriber on every node receives every message. This can be a significant bandwidth overhead in large clusters. Redis 7.0+ introduced **sharded pub/sub** (`SSUBSCRIBE`) which routes messages only to the node owning the channel's hash slot.
 
 ### When to Use Pub/Sub vs Streams
 
 | Dimension | Pub/Sub | Streams |
 |---|---|---|
 | **Delivery** | Fire-and-forget | At-least-once (with consumer groups) |
-| **History** | None — missed messages are lost | Full history (until trimmed) |
+| **History** | None  missed messages are lost | Full history (until trimmed) |
 | **Consumer groups** | No | Yes |
 | **Backpressure** | Slow consumers get disconnected | Consumers read at their own pace |
 | **Use case** | Real-time notifications, cache invalidation | Event sourcing, job queues, activity feeds |
@@ -1140,10 +1140,10 @@ redis-cli INFO persistence | grep -E "rdb_|aof_"
 | `evicted_keys` (rate) | > 0 / sec sustained | > 100 / sec |
 | `connected_clients` | > 80% of maxclients | > 95% of maxclients |
 | `blocked_clients` | > 10 | > 50 |
-| `instantaneous_ops_per_sec` | — | Sudden drop > 50% |
+| `instantaneous_ops_per_sec` |  | Sudden drop > 50% |
 | Cache hit rate | < 90% | < 80% |
-| `rdb_last_bgsave_status` | — | `err` |
-| `aof_last_bgrewrite_status` | — | `err` |
+| `rdb_last_bgsave_status` |  | `err` |
+| `aof_last_bgrewrite_status` |  | `err` |
 | `rejected_connections` | > 0 | Sustained |
 
 ### Cache Hit Rate Calculation
@@ -1192,17 +1192,17 @@ def get_cache_hit_rate(r):
 
 ## Coming Up in Part 5: Replication, High Availability, and Sentinel Architecture
 
-Everything we've covered in Parts 1-4 assumes a single Redis instance. In production, a single instance is a single point of failure — if it crashes, your cache is cold and your application is blind. Part 5 is where Redis stops being a single-node story and enters the distributed world.
+Everything we've covered in Parts 1-4 assumes a single Redis instance. In production, a single instance is a single point of failure  if it crashes, your cache is cold and your application is blind. Part 5 is where Redis stops being a single-node story and enters the distributed world.
 
 We'll cover:
 
-- **Replication internals** — full sync vs partial sync (PSYNC2), the replication stream, and the replication backlog
-- **Consistency guarantees** — what "eventually consistent" actually means, and the data loss window between master writes and replica acknowledgment
-- **Sentinel architecture** — failure detection (SDOWN/ODOWN), leader election, and automatic failover
-- **Split-brain scenarios** — when Redis thinks it has two masters, and the `min-replicas-*` safety net
-- **Replica configurations** — read replicas, replica-of-replica chains, and diskless replication
-- **The WAIT command** — synchronous replication for when eventual consistency isn't enough
+- **Replication internals**  full sync vs partial sync (PSYNC2), the replication stream, and the replication backlog
+- **Consistency guarantees**  what "eventually consistent" actually means, and the data loss window between master writes and replica acknowledgment
+- **Sentinel architecture**  failure detection (SDOWN/ODOWN), leader election, and automatic failover
+- **Split-brain scenarios**  when Redis thinks it has two masters, and the `min-replicas-*` safety net
+- **Replica configurations**  read replicas, replica-of-replica chains, and diskless replication
+- **The WAIT command**  synchronous replication for when eventual consistency isn't enough
 
 ---
 
-*This is Part 4 of the Redis Deep Dive series. Parts 1-4 complete the single-instance story: architecture, data structures, memory/persistence, and performance engineering. Part 5 takes us into the distributed world — replication, Sentinel, and the complexity that comes with running Redis across multiple machines.*
+*This is Part 4 of the Redis Deep Dive series. Parts 1-4 complete the single-instance story: architecture, data structures, memory/persistence, and performance engineering. Part 5 takes us into the distributed world  replication, Sentinel, and the complexity that comes with running Redis across multiple machines.*

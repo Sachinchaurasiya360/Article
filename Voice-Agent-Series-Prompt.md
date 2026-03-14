@@ -12,20 +12,20 @@ Create a **20-part developer-focused blog series** on **"Building Voice Agents f
 
 ### 1. Developer-First Approach
 - Every concept must be explained through **working code implementation** (Python, PyTorch, FastAPI, WebSockets)
-- No hand-waving or "left as an exercise" — show the full code
+- No hand-waving or "left as an exercise"  show the full code
 - When signal processing math is needed, show it AND implement it in code side by side
 - Use real libraries developers actually use in production (OpenAI Whisper, Coqui TTS, Deepgram, ElevenLabs, LiveKit, Pipecat, Twilio, WebRTC, pyaudio, librosa, sounddevice, etc.)
 
 ### 2. Incremental Learning Path
 - Assume the reader **knows programming (Python)** but has **zero audio/speech/voice AI knowledge**
-- Each part builds on the previous — concepts introduced early are used later
+- Each part builds on the previous  concepts introduced early are used later
 - By Part 19, the reader should be able to architect and deploy production voice agent systems
 - Difficulty curve: beginner (Parts 0-4) → intermediate (Parts 5-10) → advanced (Parts 11-15) → production/expert (Parts 16-19)
 
 ### 3. Smooth Narrative Flow
 - Each part starts with a **brief recap** of the previous part (2-3 sentences)
 - Each part ends with a **"What's Next" preview** of the next part
-- No abrupt introductions of terms — every new concept is motivated by a problem first
+- No abrupt introductions of terms  every new concept is motivated by a problem first
 - Use transitions like "Remember when we built X in Part N? Now we're going to..."
 
 ### 4. Heavy Code Examples
@@ -134,33 +134,33 @@ The 20 parts must cover this full syllabus:
 ### 8. Research References (Developer-Friendly)
 - When introducing architectures, briefly mention the original paper/author
 - Explain WHY the research matters, not just what it says
-- Example: "Whisper (Radford et al., 2022) — OpenAI trained a single model on 680K hours of multilingual audio, proving that massive weak supervision can match specialized ASR systems. For developers, this means one model handles 99 languages without any fine-tuning."
+- Example: "Whisper (Radford et al., 2022)  OpenAI trained a single model on 680K hours of multilingual audio, proving that massive weak supervision can match specialized ASR systems. For developers, this means one model handles 99 languages without any fine-tuning."
 
 ---
 
 ## Suggested 20-Part Structure
 
 ```
-Part 0:  The Voice AI Landscape — How Machines Hear, Understand, and Speak
-Part 1:  Audio Fundamentals — Sound, Signals, and Digital Audio for Developers
-Part 2:  Audio Signal Processing — Spectrograms, MFCCs, and Feature Extraction
-Part 3:  Speech Recognition — From Sound Waves to Text
-Part 4:  Real-Time ASR — Streaming Transcription and Wake Word Detection
-Part 5:  Speech Synthesis — Teaching Machines to Talk
-Part 6:  Voice Cloning and Custom Voices — Making AI Sound Like Anyone
-Part 7:  Real-Time Audio Pipelines — Streaming, Buffers, and WebSockets
-Part 8:  WebRTC and Telephony — Browser and Phone Call Audio
-Part 9:  Your First Voice Agent — ASR + LLM + TTS in a Loop
-Part 10: Dialog Management — Turn-Taking, Interruptions, and Conversation Flow
-Part 11: Voice Agent Memory — Context, Personalization, and Learning
-Part 12: Voice Agent Frameworks — LiveKit, Pipecat, and Vocode
-Part 13: Phone Call Agents — Twilio, SIP, and Telephony Integration
-Part 14: Multi-Language and Emotion — Building Human-Like Voice Agents
-Part 15: Advanced Voice Features — Authentication, Multi-Modal, and Proactive Agents
-Part 16: Latency Optimization — Making Voice Agents Feel Instant
-Part 17: Production Infrastructure — Scaling, Monitoring, and Reliability
-Part 18: Security, Testing, and Compliance — Enterprise-Grade Voice Systems
-Part 19: The Capstone — Building a Production Voice Agent Platform
+Part 0:  The Voice AI Landscape  How Machines Hear, Understand, and Speak
+Part 1:  Audio Fundamentals  Sound, Signals, and Digital Audio for Developers
+Part 2:  Audio Signal Processing  Spectrograms, MFCCs, and Feature Extraction
+Part 3:  Speech Recognition  From Sound Waves to Text
+Part 4:  Real-Time ASR  Streaming Transcription and Wake Word Detection
+Part 5:  Speech Synthesis  Teaching Machines to Talk
+Part 6:  Voice Cloning and Custom Voices  Making AI Sound Like Anyone
+Part 7:  Real-Time Audio Pipelines  Streaming, Buffers, and WebSockets
+Part 8:  WebRTC and Telephony  Browser and Phone Call Audio
+Part 9:  Your First Voice Agent  ASR + LLM + TTS in a Loop
+Part 10: Dialog Management  Turn-Taking, Interruptions, and Conversation Flow
+Part 11: Voice Agent Memory  Context, Personalization, and Learning
+Part 12: Voice Agent Frameworks  LiveKit, Pipecat, and Vocode
+Part 13: Phone Call Agents  Twilio, SIP, and Telephony Integration
+Part 14: Multi-Language and Emotion  Building Human-Like Voice Agents
+Part 15: Advanced Voice Features  Authentication, Multi-Modal, and Proactive Agents
+Part 16: Latency Optimization  Making Voice Agents Feel Instant
+Part 17: Production Infrastructure  Scaling, Monitoring, and Reliability
+Part 18: Security, Testing, and Compliance  Enterprise-Grade Voice Systems
+Part 19: The Capstone  Building a Production Voice Agent Platform
 ```
 
 ---
@@ -170,11 +170,11 @@ Part 19: The Capstone — Building a Production Voice Agent Platform
 Each article MUST follow this exact format:
 
 ```markdown
-# Voice Agents Deep Dive — Part N: Title Here
+# Voice Agents Deep Dive  Part N: Title Here
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** N of 19 (Category Label)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~XX minutes
@@ -206,7 +206,7 @@ Details...
 ### Code Block Format:
 ```python
 """
-descriptive_filename.py — What this code does in one line.
+descriptive_filename.py  What this code does in one line.
 """
 import numpy as np
 import sounddevice as sd
@@ -219,7 +219,7 @@ class VoiceComponent:
         ...
 
     def process(self, audio_chunk: np.ndarray) -> ...:
-        """Process an audio chunk — explain the signal processing."""
+        """Process an audio chunk  explain the signal processing."""
         ...
 
 # Demo with real audio and printed output
@@ -245,14 +245,14 @@ print(f"Detected speech: {result.is_speech}, confidence: {result.confidence:.3f}
 ## What Each Part Should Include
 
 ### Part 0: The Voice AI Landscape
-- What voice AI is — the full picture (not just chatbots)
+- What voice AI is  the full picture (not just chatbots)
 - The voice agent pipeline: Microphone → VAD → ASR → NLU → Dialog → LLM → TTS → Speaker
-- Human speech production and perception (vocal cords, ear, brain — developer-level)
+- Human speech production and perception (vocal cords, ear, brain  developer-level)
 - History of voice AI (IVR → Siri → Alexa → GPT-4o voice → real-time agents)
 - Types of voice applications (assistants, call centers, accessibility, gaming, IoT, healthcare)
 - The latency challenge: why voice is harder than chat (humans notice 300ms+ delays)
 - Current ecosystem overview (cloud APIs, open-source models, frameworks, telephony)
-- Demo: Record your voice, play it back, visualize the waveform — all in Python
+- Demo: Record your voice, play it back, visualize the waveform  all in Python
 - Setup instructions (virtual env, pip installs, microphone configuration)
 - A "hello world" voice agent (record → transcribe with Whisper → respond with TTS)
 
@@ -262,7 +262,7 @@ print(f"Detected speech: {result.is_speech}, confidence: {result.confidence:.3f}
 - Sample rates (8kHz telephony, 16kHz speech, 44.1kHz music, 48kHz video)
 - Bit depth (8-bit, 16-bit, 24-bit, 32-bit float) and dynamic range
 - Audio formats deep dive (WAV/PCM, MP3, OGG, FLAC, Opus, mu-law, a-law)
-- Recording audio in Python (pyaudio, sounddevice — real-time capture)
+- Recording audio in Python (pyaudio, sounddevice  real-time capture)
 - Playing audio (sounddevice, playsound, pygame.mixer)
 - Reading/writing audio files (soundfile, librosa, pydub, wave module)
 - Audio manipulation from scratch (gain, fade, mix, concatenate, reverse, speed change)
@@ -271,16 +271,16 @@ print(f"Detected speech: {result.is_speech}, confidence: {result.confidence:.3f}
 - Project: Build an audio recorder/player with waveform visualization
 
 ### Part 2: Audio Signal Processing
-- Time domain vs frequency domain (waveform vs spectrum — the core insight)
+- Time domain vs frequency domain (waveform vs spectrum  the core insight)
 - Fourier Transform intuition (decomposing a chord into individual notes)
 - FFT implementation and usage (np.fft, scipy.fft)
-- Short-Time Fourier Transform (STFT) — windowing, hop length, overlap
-- Spectrograms (linear, log-frequency, mel-scale) — implement and visualize
-- Mel scale (why it matters for speech — human hearing is logarithmic)
-- MFCCs (Mel-Frequency Cepstral Coefficients) — the classic speech feature
+- Short-Time Fourier Transform (STFT)  windowing, hop length, overlap
+- Spectrograms (linear, log-frequency, mel-scale)  implement and visualize
+- Mel scale (why it matters for speech  human hearing is logarithmic)
+- MFCCs (Mel-Frequency Cepstral Coefficients)  the classic speech feature
 - Implement MFCC extraction from scratch, then with librosa
 - Filter banks and triangular filters
-- Audio filtering (low-pass, high-pass, band-pass — implement with scipy)
+- Audio filtering (low-pass, high-pass, band-pass  implement with scipy)
 - Noise reduction techniques (spectral subtraction, Wiener filter, noisereduce library)
 - Voice Activity Detection from scratch:
   - Energy-based VAD
@@ -294,7 +294,7 @@ print(f"Detected speech: {result.is_speech}, confidence: {result.confidence:.3f}
 - How humans recognize speech (and why it's hard for machines)
 - The ASR pipeline: Audio → Features → Acoustic Model → Language Model → Text
 - Traditional ASR overview (GMM-HMM → DNN-HMM → End-to-End)
-- CTC (Connectionist Temporal Classification) — the key decoding innovation
+- CTC (Connectionist Temporal Classification)  the key decoding innovation
 - Attention-based encoder-decoder for ASR
 - OpenAI Whisper deep dive:
   - Architecture (encoder-decoder transformer, multitask training)
@@ -310,7 +310,7 @@ print(f"Detected speech: {result.is_speech}, confidence: {result.confidence:.3f}
   - Azure Speech Services (custom speech models, pronunciation assessment)
   - AWS Transcribe (real-time, medical, call analytics)
 - Comparison table: accuracy, latency, cost, streaming support, languages
-- Word Error Rate (WER) — the standard metric, implement calculation
+- Word Error Rate (WER)  the standard metric, implement calculation
 - Project: Build a multi-engine transcription service with fallback
 
 ### Part 4: Real-Time ASR and Wake Words
@@ -326,8 +326,8 @@ print(f"Detected speech: {result.is_speech}, confidence: {result.confidence:.3f}
 - Streaming with faster-whisper (local, chunked)
 - Wake word / keyword spotting:
   - What it is and why it matters (always-on listening efficiency)
-  - Porcupine (Picovoice) — production wake word engine
-  - OpenWakeWord — open-source alternative
+  - Porcupine (Picovoice)  production wake word engine
+  - OpenWakeWord  open-source alternative
   - Building a custom wake word detector with a small neural network
   - False positive/negative tradeoffs
 - Speaker diarization (who spoke when):
@@ -346,7 +346,7 @@ print(f"Detected speech: {result.is_speech}, confidence: {result.confidence:.3f}
   - End-to-end models (text → audio directly)
 - Vocoders (WaveNet, WaveRNN, HiFi-GAN, neural vocoders explained)
 - Production TTS APIs:
-  - OpenAI TTS (tts-1, tts-1-hd — voices, speed control)
+  - OpenAI TTS (tts-1, tts-1-hd  voices, speed control)
   - ElevenLabs (voice design, voice cloning, streaming, WebSocket)
   - Azure Neural TTS (SSML control, custom neural voice)
   - Google Cloud TTS (WaveNet, Neural2, Studio voices)
@@ -355,7 +355,7 @@ print(f"Detected speech: {result.is_speech}, confidence: {result.confidence:.3f}
 - Open-source TTS:
   - Coqui TTS / XTTS (multi-language, voice cloning)
   - Piper TTS (fast, lightweight, local)
-  - Bark (Suno — expressive, music, effects)
+  - Bark (Suno  expressive, music, effects)
   - StyleTTS 2 (human-level quality)
 - SSML deep dive (pauses, emphasis, pronunciation, speed, pitch):
   ```xml
@@ -428,7 +428,7 @@ print(f"Detected speech: {result.is_speech}, confidence: {result.confidence:.3f}
   - G.711 (mu-law/a-law, telephony standard)
   - G.722 (wideband telephony)
   - Comparison table: quality, latency, bandwidth, compatibility
-- Echo cancellation (AEC) — why it matters and how it works
+- Echo cancellation (AEC)  why it matters and how it works
 - Noise suppression in pipelines (RNNoise, NSNet2)
 - Automatic Gain Control (AGC)
 - Project: Build a real-time audio streaming server with WebSocket
@@ -453,7 +453,7 @@ print(f"Detected speech: {result.is_speech}, confidence: {result.confidence:.3f}
   // Audio processing with Web Audio API
   ```
 - Telephony basics for developers:
-  - PSTN, SIP, RTP — what they are and how they relate
+  - PSTN, SIP, RTP  what they are and how they relate
   - SIP trunking (connecting software to phone networks)
   - Phone number provisioning
   - Call flow (INVITE → 180 Ringing → 200 OK → ACK → BYE)
@@ -540,7 +540,7 @@ print(f"Detected speech: {result.is_speech}, confidence: {result.confidence:.3f}
   - Confirmation and correction loops
   - "Did you say...?" patterns
 - Error recovery strategies:
-  - "I didn't catch that" — reprompting
+  - "I didn't catch that"  reprompting
   - Confidence thresholds for ASR
   - Disambiguation ("Did you mean A or B?")
   - Graceful fallback to human agent
@@ -882,7 +882,7 @@ print(f"Detected speech: {result.is_speech}, confidence: {result.confidence:.3f}
   - Continuous improvement loops
 - Project: Build a comprehensive test suite for a voice agent
 
-### Part 19: The Capstone — Production Voice Agent Platform
+### Part 19: The Capstone  Production Voice Agent Platform
 - Build a complete, production-ready voice agent platform integrating everything from Parts 0-18:
 - System Architecture:
   ```

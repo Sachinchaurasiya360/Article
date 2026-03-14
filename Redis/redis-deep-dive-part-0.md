@@ -1,8 +1,8 @@
-# Redis Deep Dive Series — Part 0: The Foundation You Need Before Going Deep
+# Redis Deep Dive Series  Part 0: The Foundation You Need Before Going Deep
 
 ---
 
-**Series:** Redis Deep Dive — Engineering the World's Most Misunderstood Data Structure Server
+**Series:** Redis Deep Dive  Engineering the World's Most Misunderstood Data Structure Server
 **Part:** 0 of 10 (Foundation)
 **Audience:** Engineers with 1-3 years of experience preparing for the deep dive, or senior engineers who want to refresh systems fundamentals
 **Reading time:** ~40 minutes
@@ -11,7 +11,7 @@
 
 ## Why This Part Exists
 
-Part 1 of this series dives straight into Redis's event loop, I/O multiplexing, C struct internals, and CPU cache behavior. If you read sentences like "Redis uses `epoll` in level-triggered mode with O(1) event notification" or "the `EMBSTR` encoding fits in a single 64-byte cache line" and feel lost — this part is for you.
+Part 1 of this series dives straight into Redis's event loop, I/O multiplexing, C struct internals, and CPU cache behavior. If you read sentences like "Redis uses `epoll` in level-triggered mode with O(1) event notification" or "the `EMBSTR` encoding fits in a single 64-byte cache line" and feel lost  this part is for you.
 
 This is not a Redis tutorial. You won't learn `SET` and `GET` here. Instead, this article builds the **systems foundation** that makes the rest of the series make sense. We'll cover:
 
@@ -42,7 +42,7 @@ Imagine you're building a social media application. A user opens their feed, and
 - Like counts for each post
 - Whether this user has already liked each post
 
-That's potentially 50-100 database queries per page load. Your PostgreSQL database stores all this data on disk. Even with good indexes, each query takes 1-5 milliseconds. Multiply by 50 queries, and your page load takes 50-250ms — just for database work.
+That's potentially 50-100 database queries per page load. Your PostgreSQL database stores all this data on disk. Even with good indexes, each query takes 1-5 milliseconds. Multiply by 50 queries, and your page load takes 50-250ms  just for database work.
 
 Now imagine 10,000 users loading their feed simultaneously. That's 500,000-1,000,000 database queries per second. Your PostgreSQL server collapses.
 
@@ -64,7 +64,7 @@ flowchart LR
 
 With Redis in front of your database:
 - First request: goes to PostgreSQL (5ms), stores the result in Redis
-- All subsequent requests: served from Redis (0.1ms) — **50x faster**
+- All subsequent requests: served from Redis (0.1ms)  **50x faster**
 - Your database sees far fewer queries and doesn't collapse under load
 
 ### But Redis Is More Than a Cache
@@ -85,19 +85,19 @@ This makes Redis useful for more than just caching: rate limiting, session stora
 ### The Catch
 
 All Redis data lives in RAM. RAM is fast, but:
-- **It's expensive** — 64 GB of RAM costs 10-20x more than 64 GB of SSD
-- **It's limited** — your server might have 64 GB of RAM but 2 TB of disk
-- **It's volatile** — if the power goes out, RAM is wiped clean (Redis has persistence options to mitigate this, covered later)
+- **It's expensive**  64 GB of RAM costs 10-20x more than 64 GB of SSD
+- **It's limited**  your server might have 64 GB of RAM but 2 TB of disk
+- **It's volatile**  if the power goes out, RAM is wiped clean (Redis has persistence options to mitigate this, covered later)
 
-Redis is not a replacement for your database. It's a **complement** — a fast layer that sits between your application and your slower, durable data store.
+Redis is not a replacement for your database. It's a **complement**  a fast layer that sits between your application and your slower, durable data store.
 
-Understanding what Redis is tells you *why* it exists. But to understand *why it's fast*, we need to look at how computers store and access data — which brings us to the memory hierarchy.
+Understanding what Redis is tells you *why* it exists. But to understand *why it's fast*, we need to look at how computers store and access data  which brings us to the memory hierarchy.
 
 ---
 
 ## 2. The Memory Hierarchy: Why "In-Memory" Means "Fast"
 
-When someone says "Redis is fast because it's in-memory," that's true but incomplete. To understand *how much faster* in-memory really is — and why Redis's internal data structure choices matter so much (a topic we'll explore in depth in Part 2) — you need to understand the memory hierarchy.
+When someone says "Redis is fast because it's in-memory," that's true but incomplete. To understand *how much faster* in-memory really is  and why Redis's internal data structure choices matter so much (a topic we'll explore in depth in Part 2)  you need to understand the memory hierarchy.
 
 ### The Hierarchy
 
@@ -133,30 +133,30 @@ Let's make these numbers concrete with an analogy. If an L1 cache access (1 nano
 | SSD (NVMe) | 20,000 ns | 5.5 hours |
 | HDD (random) | 5,000,000 ns | 58 days |
 
-Read that again. If reading from L1 cache takes 1 second, reading the same data from a hard disk takes **58 days**. Reading from RAM takes 1.5 minutes — still much slower than cache, but nothing compared to disk.
+Read that again. If reading from L1 cache takes 1 second, reading the same data from a hard disk takes **58 days**. Reading from RAM takes 1.5 minutes  still much slower than cache, but nothing compared to disk.
 
 ### Why This Matters for Redis
 
-**Traditional databases (PostgreSQL, MySQL)** store data on disk (SSD or HDD). Even with careful use of OS caching and buffer pools, many operations require disk access — especially under memory pressure or for data accessed infrequently.
+**Traditional databases (PostgreSQL, MySQL)** store data on disk (SSD or HDD). Even with careful use of OS caching and buffer pools, many operations require disk access  especially under memory pressure or for data accessed infrequently.
 
-**Redis** stores all data in RAM. Every operation — every `GET`, every `SET`, every hash lookup — accesses RAM, not disk. That's the 100-nanosecond tier, not the 10,000+ nanosecond tier.
+**Redis** stores all data in RAM. Every operation  every `GET`, every `SET`, every hash lookup  accesses RAM, not disk. That's the 100-nanosecond tier, not the 10,000+ nanosecond tier.
 
-This single fact — data in RAM vs. data on disk — accounts for the majority of Redis's speed advantage over traditional databases.
+This single fact  data in RAM vs. data on disk  accounts for the majority of Redis's speed advantage over traditional databases.
 
 ### Cache Lines: How the CPU Actually Reads Memory
 
 The CPU doesn't read individual bytes from RAM. It reads in chunks called **cache lines**, typically 64 bytes. When you access a single byte at memory address 1000, the CPU fetches bytes 960-1023 (the aligned 64-byte block containing that address) into L1 cache.
 
-Why does this matter? Because if you store related data close together in memory, the CPU fetches it all in one operation. This is called **spatial locality** — and it's one of the reasons Redis's internal data structure choices matter so much. A compact, contiguous data structure (like Redis's listpack) that fits in a few cache lines is dramatically faster to scan than a pointer-heavy structure (like a linked list) where each node could be anywhere in memory.
+Why does this matter? Because if you store related data close together in memory, the CPU fetches it all in one operation. This is called **spatial locality**  and it's one of the reasons Redis's internal data structure choices matter so much. A compact, contiguous data structure (like Redis's listpack) that fits in a few cache lines is dramatically faster to scan than a pointer-heavy structure (like a linked list) where each node could be anywhere in memory.
 
 Part 1 mentions that Redis's `EMBSTR` encoding "fits in a single 64-byte cache line." Now you know why that's significant: the entire string, including its metadata, is fetched in one trip to RAM.
 
 ### Page Cache: How the OS Caches Disk Data
 
-The operating system maintains a **page cache** — a region of RAM used to cache recently read or written disk data. When a program reads a file, the OS copies the file's contents into the page cache. If the same file is read again, the OS serves it from RAM instead of going to disk.
+The operating system maintains a **page cache**  a region of RAM used to cache recently read or written disk data. When a program reads a file, the OS copies the file's contents into the page cache. If the same file is read again, the OS serves it from RAM instead of going to disk.
 
 This is relevant because:
-1. Redis's persistence mechanism (RDB files, AOF files) writes to disk through the page cache — we'll explore this in detail in Part 3
+1. Redis's persistence mechanism (RDB files, AOF files) writes to disk through the page cache  we'll explore this in detail in Part 3
 2. When Part 1 discusses `BGSAVE` and fork behavior, the page cache is involved
 3. Many other systems (including Kafka) deliberately exploit the page cache for performance
 
@@ -166,7 +166,7 @@ Now we know *where* Redis stores data (RAM) and *why* that makes it fast (100-10
 
 ## 3. How Programs Talk Over a Network: Sockets, TCP, and Client-Server
 
-Redis doesn't magically appear inside your application. It's a **server process** — a separate program listening for connections on a network port (6379 by default). Your application connects to it as a **client**, sends commands, and receives responses. Understanding this communication model is essential because it directly shapes how Redis's event loop works, which we'll dissect in Part 1.
+Redis doesn't magically appear inside your application. It's a **server process**  a separate program listening for connections on a network port (6379 by default). Your application connects to it as a **client**, sends commands, and receives responses. Understanding this communication model is essential because it directly shapes how Redis's event loop works, which we'll dissect in Part 1.
 
 ### Client-Server Model
 
@@ -209,7 +209,7 @@ Server side:                        Client side:
 
 ### What Is a File Descriptor?
 
-In Linux (and most Unix systems), **everything is a file** — including network connections. When a program opens a file, creates a socket, or accepts a connection, the operating system gives it a **file descriptor (fd)** — a small integer that acts as a handle to that resource.
+In Linux (and most Unix systems), **everything is a file**  including network connections. When a program opens a file, creates a socket, or accepts a connection, the operating system gives it a **file descriptor (fd)**  a small integer that acts as a handle to that resource.
 
 ```
 fd 0 → standard input (keyboard)
@@ -227,9 +227,9 @@ When Part 1 says "Redis registers a read file event for the new fd," it means: R
 ### TCP Basics: Reliable, Ordered Delivery
 
 TCP (Transmission Control Protocol) provides:
-- **Reliability** — lost packets are retransmitted automatically
-- **Ordering** — data arrives in the same order it was sent
-- **Flow control** — the sender slows down if the receiver can't keep up
+- **Reliability**  lost packets are retransmitted automatically
+- **Ordering**  data arrives in the same order it was sent
+- **Flow control**  the sender slows down if the receiver can't keep up
 
 When your application sends a Redis command like `SET user:1 "Alice"`, TCP guarantees that the bytes arrive at the Redis server in order and without corruption. You don't need to worry about lost or reordered packets.
 
@@ -243,10 +243,10 @@ That's why Part 1 mentions Redis disables Nagle's algorithm using `TCP_NODELAY`.
 
 ### Blocking vs. Non-Blocking I/O
 
-By default, when a program calls `read()` on a socket, the call **blocks** — the program pauses and waits until data arrives. This is called **blocking I/O**.
+By default, when a program calls `read()` on a socket, the call **blocks**  the program pauses and waits until data arrives. This is called **blocking I/O**.
 
 ```
-# Blocking I/O — program is stuck until data arrives
+# Blocking I/O  program is stuck until data arrives
 data = read(client_socket)    # ← program stops here, waiting...
                                #    could be microseconds or minutes
 process(data)                  # ← only runs after data arrives
@@ -254,26 +254,26 @@ process(data)                  # ← only runs after data arrives
 
 This is fine for a program handling one client. But Redis handles thousands of clients simultaneously. If it blocked waiting for data from Client A, it couldn't serve Client B, C, D, or any other client during that time.
 
-The solution is **non-blocking I/O**: you tell the OS "if there's no data ready, don't wait — return immediately and tell me there's nothing yet."
+The solution is **non-blocking I/O**: you tell the OS "if there's no data ready, don't wait  return immediately and tell me there's nothing yet."
 
 ```
-# Non-blocking I/O — never waits
+# Non-blocking I/O  never waits
 data = read(client_socket)    # ← returns immediately
 if data:
     process(data)             # ← only if there was data
 else:
-    # no data yet — go do something else
+    # no data yet  go do something else
 ```
 
 But this creates a new problem: how do you know *when* data is ready, without checking every socket constantly (busy-waiting)?
 
-This is exactly the question that leads us to Redis's core architectural decision — and arguably the most important concept in this entire series.
+This is exactly the question that leads us to Redis's core architectural decision  and arguably the most important concept in this entire series.
 
 ---
 
 ## 4. Handling Many Clients: I/O Multiplexing and the Event Loop
 
-In Part 1, we'll spend significant time inside Redis's event loop — the `ae` library that processes every client command. This section builds the conceptual foundation for understanding *why* Redis chose an event-driven model over threads, and *how* that model works at the operating system level.
+In Part 1, we'll spend significant time inside Redis's event loop  the `ae` library that processes every client command. This section builds the conceptual foundation for understanding *why* Redis chose an event-driven model over threads, and *how* that model works at the operating system level.
 
 ### The Problem: 10,000 Clients, One Thread
 
@@ -301,7 +301,7 @@ Problems:
 - **Context switching:** the OS constantly switches between threads, each switch costing 1-10 microseconds
 - **Synchronization:** if multiple threads access shared data, you need locks, which add complexity and overhead
 
-This model works for databases like PostgreSQL (which uses processes, not threads, but the concept is similar) because each query takes milliseconds of CPU work — the overhead of thread management is small relative to query execution. But for Redis, where each operation takes *nanoseconds*, the thread management overhead would dwarf the actual work.
+This model works for databases like PostgreSQL (which uses processes, not threads, but the concept is similar) because each query takes milliseconds of CPU work  the overhead of thread management is small relative to query execution. But for Redis, where each operation takes *nanoseconds*, the thread management overhead would dwarf the actual work.
 
 ### Approach 2: I/O Multiplexing (What Redis Does)
 
@@ -311,9 +311,9 @@ The OS provides system calls for this:
 
 | Mechanism | How It Works | Scalability |
 |---|---|---|
-| `select()` | Pass a list of file descriptors, OS returns which are ready | O(n) per call — scans all fds every time. Limit: ~1024 fds |
-| `poll()` | Similar to `select`, fewer limitations | O(n) per call — scans all fds every time |
-| **`epoll()`** | Register fds once, OS notifies only when something changes | **O(1)** for notifications — only returns *ready* fds |
+| `select()` | Pass a list of file descriptors, OS returns which are ready | O(n) per call  scans all fds every time. Limit: ~1024 fds |
+| `poll()` | Similar to `select`, fewer limitations | O(n) per call  scans all fds every time |
+| **`epoll()`** | Register fds once, OS notifies only when something changes | **O(1)** for notifications  only returns *ready* fds |
 | `kqueue()` | BSD/macOS equivalent of epoll | O(1) |
 
 Redis uses `epoll` on Linux (the most common production environment). Here's the conceptual flow:
@@ -332,7 +332,7 @@ flowchart TD
     style START fill:#36a,color:#fff
 ```
 
-This is the **event loop** — an infinite loop of:
+This is the **event loop**  an infinite loop of:
 1. Wait for events (data ready to read, socket ready to write)
 2. Process each event
 3. Go back to waiting
@@ -340,15 +340,15 @@ This is the **event loop** — an infinite loop of:
 With `epoll`, Redis can handle 10,000 connected clients on a single thread, because:
 - It only does work for clients that actually have data to send (not all 10,000)
 - There's no thread overhead (no stacks, no context switching, no locks)
-- The `epoll_wait()` call is the only time the thread is idle — otherwise, it's executing commands at full CPU speed
+- The `epoll_wait()` call is the only time the thread is idle  otherwise, it's executing commands at full CPU speed
 
 ### Why "Event-Driven" Instead of "Multi-Threaded"?
 
 The event-driven model works when each individual operation is fast. Redis operations typically take nanoseconds to microseconds. Processing one client's command is so quick that by the time you've handled it, the next client's data is ready.
 
-The model breaks down when a single operation takes a long time — that one slow operation blocks all other clients. Part 1 explains this in detail with the `KEYS *` example, and Part 4 covers systematic latency diagnosis techniques for identifying these bottlenecks.
+The model breaks down when a single operation takes a long time  that one slow operation blocks all other clients. Part 1 explains this in detail with the `KEYS *` example, and Part 4 covers systematic latency diagnosis techniques for identifying these bottlenecks.
 
-We've been using words like "thread" and "process" throughout this section. These terms have precise meanings in systems programming, and understanding them is critical for reasoning about Redis's single-threaded execution model and its persistence strategy (which uses *forking* — a concept most application developers rarely encounter directly).
+We've been using words like "thread" and "process" throughout this section. These terms have precise meanings in systems programming, and understanding them is critical for reasoning about Redis's single-threaded execution model and its persistence strategy (which uses *forking*  a concept most application developers rarely encounter directly).
 
 ---
 
@@ -359,10 +359,10 @@ The previous section explained *why* Redis uses a single-threaded event loop ins
 ### What Is a Process?
 
 A **process** is a running program. When you start the Redis server, the OS creates a process for it. Each process has:
-- Its own **memory space** (the code, variables, data structures — all private)
+- Its own **memory space** (the code, variables, data structures  all private)
 - Its own set of **file descriptors** (open files, network sockets)
 - One or more **threads** of execution
-- A **process ID (PID)** — a unique number identifying it
+- A **process ID (PID)**  a unique number identifying it
 
 Two processes cannot directly access each other's memory. This isolation is a safety feature.
 
@@ -389,18 +389,18 @@ flowchart TD
     style T1 fill:#c44,color:#fff
 ```
 
-**Key insight:** because threads share memory, they can all read and write the same data. This is powerful (no need to copy data between threads) but dangerous — two threads writing to the same data simultaneously can cause corruption. This is a **race condition**.
+**Key insight:** because threads share memory, they can all read and write the same data. This is powerful (no need to copy data between threads) but dangerous  two threads writing to the same data simultaneously can cause corruption. This is a **race condition**.
 
 ### Locks, Mutexes, and Why Redis Avoids Them
 
 To prevent race conditions, programmers use **locks** (also called mutexes). A lock works like a bathroom door lock:
 
-1. Thread A acquires the lock ("locked — occupied")
+1. Thread A acquires the lock ("locked  occupied")
 2. Thread A reads/writes the shared data safely
-3. Thread A releases the lock ("unlocked — available")
+3. Thread A releases the lock ("unlocked  available")
 4. If Thread B tries to acquire the lock while Thread A holds it, Thread B must **wait**
 
-This waiting is the problem. For Redis, where operations take ~100 nanoseconds, a lock acquisition/release cycle (25-50 nanoseconds even without contention) adds 25-50% overhead to every operation. Under contention (multiple threads fighting for the same lock), it gets much worse — threads can wait microseconds or more.
+This waiting is the problem. For Redis, where operations take ~100 nanoseconds, a lock acquisition/release cycle (25-50 nanoseconds even without contention) adds 25-50% overhead to every operation. Under contention (multiple threads fighting for the same lock), it gets much worse  threads can wait microseconds or more.
 
 Redis's solution: **don't share data between threads**. One thread handles all command execution. No sharing means no locks needed. This is why Part 1 emphasizes that Redis is "single-threaded for command execution."
 
@@ -410,7 +410,7 @@ Redis's solution: **don't share data between threads**. One thread handles all c
 1. Creates a new child process
 2. The child is an exact copy of the parent: same memory, same state, same everything
 3. Both processes continue executing from the point of the fork
-4. The parent and child have separate memory spaces — changes in one don't affect the other
+4. The parent and child have separate memory spaces  changes in one don't affect the other
 
 ```mermaid
 flowchart TD
@@ -452,7 +452,7 @@ When the OS switches from running one thread (or process) to another, it must:
 3. Switch the memory mappings (for processes, not threads)
 4. Resume the next thread
 
-This operation takes roughly **1-10 microseconds** — which seems tiny until you realize Redis operations take 100-200 *nanoseconds*. A single context switch costs the equivalent of 10-100 Redis operations.
+This operation takes roughly **1-10 microseconds**  which seems tiny until you realize Redis operations take 100-200 *nanoseconds*. A single context switch costs the equivalent of 10-100 Redis operations.
 
 ### Why Redis Cares
 
@@ -464,18 +464,18 @@ In a multi-threaded server with 100 threads:
 
 Redis's single-threaded model avoids almost all of this:
 - One main thread, no switching needed
-- CPU caches stay "warm" — the same data structures stay in fast cache
+- CPU caches stay "warm"  the same data structures stay in fast cache
 - Predictable, consistent latency
 
-This is what Part 1 means by "CPU cache locality" — the data Redis is working with stays in the fastest tier of the memory hierarchy (from Section 2) because no other threads are evicting it.
+This is what Part 1 means by "CPU cache locality"  the data Redis is working with stays in the fastest tier of the memory hierarchy (from Section 2) because no other threads are evicting it.
 
-We've now established the mechanical reasons Redis is fast: in-memory data access, event-driven I/O, and single-threaded execution with excellent cache behavior. But when engineers discuss Redis performance, they use specific vocabulary — "p99 latency," "ops/sec," "throughput" — that you'll encounter throughout this series. Let's define these terms precisely, because misunderstanding them leads to bad architectural decisions.
+We've now established the mechanical reasons Redis is fast: in-memory data access, event-driven I/O, and single-threaded execution with excellent cache behavior. But when engineers discuss Redis performance, they use specific vocabulary  "p99 latency," "ops/sec," "throughput"  that you'll encounter throughout this series. Let's define these terms precisely, because misunderstanding them leads to bad architectural decisions.
 
 ---
 
 ## 7. Understanding Latency and Throughput
 
-Throughout this series — especially in Part 1 (performance analysis), Part 4 (benchmarking and latency diagnosis), and Part 8 (production monitoring) — we use these metrics to reason about Redis behavior. Getting the vocabulary right now will pay dividends later.
+Throughout this series  especially in Part 1 (performance analysis), Part 4 (benchmarking and latency diagnosis), and Part 8 (production monitoring)  we use these metrics to reason about Redis behavior. Getting the vocabulary right now will pay dividends later.
 
 ### Latency: How Long One Operation Takes
 
@@ -500,7 +500,7 @@ A common confusion: low latency does not automatically mean high throughput, and
 
 ### Percentile Latencies: p50, p99, p999
 
-When you measure latency across many requests, you get a distribution — not a single number. Percentile metrics describe this distribution:
+When you measure latency across many requests, you get a distribution  not a single number. Percentile metrics describe this distribution:
 
 | Metric | Meaning | Why It Matters |
 |---|---|---|
@@ -515,7 +515,7 @@ For Redis, you might see:
 
 The p99 and p999 are often the most important. If your service makes 100 Redis calls per page load, and Redis p99 is 5ms, then on roughly every page load, at least one Redis call takes >5ms. Tail latencies compound in distributed systems.
 
-When Part 1 says "p99 and p999 latencies closely track the median," it means Redis's latency distribution is very tight — there are very few slow outliers. This is a direct benefit of the single-threaded, event-driven architecture.
+When Part 1 says "p99 and p999 latencies closely track the median," it means Redis's latency distribution is very tight  there are very few slow outliers. This is a direct benefit of the single-threaded, event-driven architecture.
 
 ### Units of Time: Keeping Your ns, µs, and ms Straight
 
@@ -531,15 +531,15 @@ Key relationships:
 - 1 microsecond = 1,000 nanoseconds
 - 1 millisecond = 1,000,000 nanoseconds
 
-When Part 1 says an operation takes "100 nanoseconds," that is 0.1 microseconds or 0.0001 milliseconds — imperceptibly fast for a human, but meaningful when you're doing millions of them per second.
+When Part 1 says an operation takes "100 nanoseconds," that is 0.1 microseconds or 0.0001 milliseconds  imperceptibly fast for a human, but meaningful when you're doing millions of them per second.
 
-Now that we can *measure* Redis's speed, let's talk about how to *predict* it. When Part 1 says a command is "O(1)" or warns that another is "O(n)," it's making a claim about how performance scales with data size. If those terms feel abstract, the next section will ground them with Redis-specific examples — and explain why a single O(n) command can take down your entire server.
+Now that we can *measure* Redis's speed, let's talk about how to *predict* it. When Part 1 says a command is "O(1)" or warns that another is "O(n)," it's making a claim about how performance scales with data size. If those terms feel abstract, the next section will ground them with Redis-specific examples  and explain why a single O(n) command can take down your entire server.
 
 ---
 
 ## 8. Big-O Notation: What It Means in Practice
 
-We've talked about latency in absolute terms — nanoseconds, microseconds, milliseconds. But absolute numbers depend on hardware: what's fast on your laptop might be slow on a Raspberry Pi. Big-O notation captures something hardware-independent: how an operation's cost *grows* as data grows. This distinction matters enormously in Redis, where a command that's harmless on 100 keys can be catastrophic on 10 million.
+We've talked about latency in absolute terms  nanoseconds, microseconds, milliseconds. But absolute numbers depend on hardware: what's fast on your laptop might be slow on a Raspberry Pi. Big-O notation captures something hardware-independent: how an operation's cost *grows* as data grows. This distinction matters enormously in Redis, where a command that's harmless on 100 keys can be catastrophic on 10 million.
 
 ### What Big-O Actually Tells You
 
@@ -547,19 +547,19 @@ Big-O notation describes how an operation's cost **scales** with the size of the
 
 | Notation | Meaning | Example in Redis | Practical Feel |
 |---|---|---|---|
-| **O(1)** | Constant — doesn't matter how big the data is | `GET key`, `SET key value`, `HGET hash field` | Always fast |
+| **O(1)** | Constant  doesn't matter how big the data is | `GET key`, `SET key value`, `HGET hash field` | Always fast |
 | **O(log n)** | Grows slowly as data grows | `ZADD` (sorted set insert), `ZRANGEBYSCORE` | Fast even with millions of items |
-| **O(n)** | Grows linearly — double the data, double the time | `KEYS *`, `SMEMBERS`, `HGETALL` | Dangerous on large data |
+| **O(n)** | Grows linearly  double the data, double the time | `KEYS *`, `SMEMBERS`, `HGETALL` | Dangerous on large data |
 | **O(n log n)** | Slightly worse than linear | `SORT` on a large collection | Avoid on large data |
 
 ### Why O(n) Is Dangerous in Redis
 
-In a single-threaded system, an O(n) command doesn't just take time for the client that issued it — it **blocks every other client** for that duration.
+In a single-threaded system, an O(n) command doesn't just take time for the client that issued it  it **blocks every other client** for that duration.
 
 Concrete example:
 - You have a Redis set with 1 million members
-- `SCARD mySet` is O(1) — instant, returns the count
-- `SMEMBERS mySet` is O(n) — must read and serialize all 1 million members
+- `SCARD mySet` is O(1)  instant, returns the count
+- `SMEMBERS mySet` is O(n)  must read and serialize all 1 million members
 
 If serializing 1 million members takes 50ms, that's 50ms where Redis cannot serve any other client. At 200,000 ops/sec, that's 10,000 operations that had to wait.
 
@@ -569,11 +569,11 @@ This is why Part 1 says `KEYS *` is dangerous and recommends `SCAN` instead: `SC
 
 Part 1 mentions "amortized O(1)" for hash table operations. This means: most operations are O(1), but occasionally one operation is more expensive (the rehash), and when you average the cost over many operations, it works out to O(1) per operation.
 
-Think of it like a jar of coins. You put one coin in the jar each day (O(1)). Every 100 days, you take all the coins to the bank and deposit them (O(n)). Averaged over 100 days, each day's cost is O(1) — one coin plus 1/100th of a bank trip.
+Think of it like a jar of coins. You put one coin in the jar each day (O(1)). Every 100 days, you take all the coins to the bank and deposit them (O(n)). Averaged over 100 days, each day's cost is O(1)  one coin plus 1/100th of a bank trip.
 
-Redis's hash table rehashing works this way: rather than doing one massive O(n) rehash (which would block all clients), it spreads the rehash work across many operations — a few bucket migrations per lookup/insert. Each individual operation is slightly more expensive during rehashing, but no single operation causes a visible latency spike.
+Redis's hash table rehashing works this way: rather than doing one massive O(n) rehash (which would block all clients), it spreads the rehash work across many operations  a few bucket migrations per lookup/insert. Each individual operation is slightly more expensive during rehashing, but no single operation causes a visible latency spike.
 
-You now know *how* to reason about operation costs. But the cost of an operation depends heavily on the *data structure* it operates on. A lookup in a hash table is O(1); the same lookup in a linked list is O(n). Redis's choice of data structures — and the way it dynamically switches between them — is one of its most important design decisions. Let's meet the structures you'll encounter throughout this series.
+You now know *how* to reason about operation costs. But the cost of an operation depends heavily on the *data structure* it operates on. A lookup in a hash table is O(1); the same lookup in a linked list is O(n). Redis's choice of data structures  and the way it dynamically switches between them  is one of its most important design decisions. Let's meet the structures you'll encounter throughout this series.
 
 ---
 
@@ -595,9 +595,9 @@ Index: 7,382,491 % 16 = 11    (16 buckets)
 → Store in bucket 11
 ```
 
-Redis uses a hash table as its primary key-value store. When you do `GET user:42`, Redis hashes the key, jumps to the right bucket, and returns the value — O(1).
+Redis uses a hash table as its primary key-value store. When you do `GET user:42`, Redis hashes the key, jumps to the right bucket, and returns the value  O(1).
 
-**Hash collisions** happen when two different keys map to the same bucket. Redis handles this with chaining (each bucket is a linked list of entries). Good hash functions make collisions rare, but they do happen — and when too many collisions occur, performance degrades. This is why Redis rehashes (resizes) its table when it gets too full.
+**Hash collisions** happen when two different keys map to the same bucket. Redis handles this with chaining (each bucket is a linked list of entries). Good hash functions make collisions rare, but they do happen  and when too many collisions occur, performance degrades. This is why Redis rehashes (resizes) its table when it gets too full.
 
 ### Linked List
 
@@ -607,9 +607,9 @@ Redis used linked lists for lists internally in older versions. The downside: ea
 
 ### Skip List
 
-A **skip list** is a probabilistic data structure that supports O(log n) search, insert, and delete — similar to a balanced binary tree, but simpler to implement and with better cache behavior.
+A **skip list** is a probabilistic data structure that supports O(log n) search, insert, and delete  similar to a balanced binary tree, but simpler to implement and with better cache behavior.
 
-Imagine a sorted linked list. To find an element, you must scan from the beginning — O(n). A skip list adds "express lanes": some nodes have pointers that skip ahead by many positions, allowing you to traverse the list much faster.
+Imagine a sorted linked list. To find an element, you must scan from the beginning  O(n). A skip list adds "express lanes": some nodes have pointers that skip ahead by many positions, allowing you to traverse the list much faster.
 
 ```
 Level 3:  HEAD ─────────────────────────────────────→ 50 ──────────→ NIL
@@ -619,7 +619,7 @@ Level 1:  HEAD ──→ 10 ──→ 20 ──→ 30 ──→ 40 ──→ 50 
 
 To find 40: start at Level 3 → jump to 50 (too far) → drop to Level 2 → jump to 20 → 50 (too far) → drop to Level 1 → 30 → 40. Found! Only 5 comparisons instead of 7.
 
-Redis uses skip lists for **sorted sets** — the data type that lets you store members with scores and retrieve them in sorted order. Part 1 mentions that Redis chose skip lists over balanced trees (like red-black trees) because skip lists have better cache behavior and are simpler to implement.
+Redis uses skip lists for **sorted sets**  the data type that lets you store members with scores and retrieve them in sorted order. Part 1 mentions that Redis chose skip lists over balanced trees (like red-black trees) because skip lists have better cache behavior and are simpler to implement.
 
 ### Array (and Listpack / Ziplist)
 
@@ -641,7 +641,7 @@ For small collections (≤128 entries by default), the listpack is 2-3x more mem
 
 This is the "encoding duality" that Part 1 describes in Section 5.
 
-We've now covered how Redis stores and accesses data in memory — the hash tables, skip lists, and compact encodings that make operations fast. But there's an elephant in the room: RAM is volatile. If the power goes out, everything vanishes. How does Redis — a system that keeps all data in RAM — protect against data loss? The answer involves persistence mechanisms that build directly on the forking and copy-on-write concepts from Section 5, and that Part 3 will explore in exhaustive detail.
+We've now covered how Redis stores and accesses data in memory  the hash tables, skip lists, and compact encodings that make operations fast. But there's an elephant in the room: RAM is volatile. If the power goes out, everything vanishes. How does Redis  a system that keeps all data in RAM  protect against data loss? The answer involves persistence mechanisms that build directly on the forking and copy-on-write concepts from Section 5, and that Part 3 will explore in exhaustive detail.
 
 ---
 
@@ -667,12 +667,12 @@ Normal operation:        After crash (no persistence):
 An **RDB snapshot** saves the entire contents of Redis to a binary file at a point in time. Think of it like taking a photograph of all your data.
 
 ```
-Time: 12:00:00 — RDB snapshot taken
+Time: 12:00:00  RDB snapshot taken
    (All data saved to dump.rdb)
 
-Time: 12:00:01-12:05:00 — 10,000 new writes happen
+Time: 12:00:01-12:05:00  10,000 new writes happen
 
-Time: 12:05:01 — Redis crashes!
+Time: 12:05:01  Redis crashes!
    On restart, Redis loads dump.rdb (from 12:00:00)
    → The 10,000 writes between 12:00:00 and 12:05:01 are LOST
 ```
@@ -705,14 +705,14 @@ On restart, Redis replays every command in the AOF to reconstruct the dataset.
 
 ### What Is fsync?
 
-When a program writes to a file, the data doesn't immediately go to disk — it first goes to the OS page cache (a RAM buffer). The OS will flush it to disk eventually, but if the system crashes before the flush, the data is lost.
+When a program writes to a file, the data doesn't immediately go to disk  it first goes to the OS page cache (a RAM buffer). The OS will flush it to disk eventually, but if the system crashes before the flush, the data is lost.
 
-**`fsync()`** is a system call that forces the OS to flush a file's buffered data to physical disk. It guarantees the data is durable — but it's slow (a disk write).
+**`fsync()`** is a system call that forces the OS to flush a file's buffered data to physical disk. It guarantees the data is durable  but it's slow (a disk write).
 
 Redis's AOF `fsync` policy controls the durability-performance tradeoff:
-- `appendfsync always`: `fsync` after every command — safest, slowest
-- `appendfsync everysec`: `fsync` once per second — good balance
-- `appendfsync no`: let the OS decide when to flush — fastest, least durable
+- `appendfsync always`: `fsync` after every command  safest, slowest
+- `appendfsync everysec`: `fsync` once per second  good balance
+- `appendfsync no`: let the OS decide when to flush  fastest, least durable
 
 Part 1 mentions that AOF `fsync` runs on a background thread (`bio`), so the main thread isn't blocked by disk writes. Now you understand why that matters: blocking on `fsync` would stall the entire event loop.
 
@@ -722,7 +722,7 @@ We've now covered what happens *inside* Redis (data structures, memory) and what
 
 ## 11. The Wire Protocol: How Clients and Redis Communicate
 
-Section 3 explained that your application talks to Redis over TCP sockets. But TCP just delivers raw bytes — it doesn't know anything about Redis commands. There needs to be a shared language, a way to structure those bytes so that both sides agree on where one command ends and the next begins. That shared language is RESP.
+Section 3 explained that your application talks to Redis over TCP sockets. But TCP just delivers raw bytes  it doesn't know anything about Redis commands. There needs to be a shared language, a way to structure those bytes so that both sides agree on where one command ends and the next begins. That shared language is RESP.
 
 ### What Is a Protocol?
 
@@ -735,12 +735,12 @@ When your application sends `SET user:1 "Alice"` to Redis, it doesn't send that 
 ```
 
 Breaking this down:
-- `*3\r\n` — "this is an array of 3 elements"
-- `$3\r\nSET\r\n` — "a string of 3 bytes: SET"
-- `$7\r\nuser:1\r\n` — "a string of 7 bytes: user:1"
-- `$5\r\nAlice\r\n` — "a string of 5 bytes: Alice"
+- `*3\r\n`  "this is an array of 3 elements"
+- `$3\r\nSET\r\n`  "a string of 3 bytes: SET"
+- `$7\r\nuser:1\r\n`  "a string of 7 bytes: user:1"
+- `$5\r\nAlice\r\n`  "a string of 5 bytes: Alice"
 
-(`\r\n` is a line break — carriage return + newline)
+(`\r\n` is a line break  carriage return + newline)
 
 Redis responds with:
 ```
@@ -755,7 +755,7 @@ Part 1 dives into how Redis **parses** RESP messages. Key points that now make s
 
 1. **The parser is incremental:** a large command might arrive in multiple TCP packets. Redis reads whatever is available, parses what it can, and waits for more data on the next event loop iteration. It doesn't block waiting for a complete message.
 
-2. **RESP is trivially parseable:** the format is prefix-coded (you know the length of every element before reading it). This makes parsing extremely fast — nanoseconds, not microseconds. Compare this to parsing SQL, which requires lexing, tokenization, and grammar analysis.
+2. **RESP is trivially parseable:** the format is prefix-coded (you know the length of every element before reading it). This makes parsing extremely fast  nanoseconds, not microseconds. Compare this to parsing SQL, which requires lexing, tokenization, and grammar analysis.
 
 3. **Pipelining works because of the protocol:** a client can send multiple RESP commands back-to-back without waiting for responses. Redis reads them all from the socket buffer, processes them sequentially, and sends all responses back in one batch. This dramatically improves throughput by amortizing network round-trip costs.
 
@@ -830,16 +830,16 @@ Here's a quick-reference for terms you'll encounter throughout the series:
 | **Latency** | Time for one operation (request → response) |
 | **Throughput** | Number of operations per second (ops/sec) |
 | **p99 Latency** | The latency at the 99th percentile; 1 in 100 requests is slower |
-| **O(1)** | Constant time — doesn't grow with data size |
-| **O(n)** | Linear time — doubles when data doubles |
-| **O(log n)** | Logarithmic — grows very slowly with data size |
-| **RESP** | Redis Serialization Protocol — wire format between client and server |
+| **O(1)** | Constant time  doesn't grow with data size |
+| **O(n)** | Linear time  doubles when data doubles |
+| **O(log n)** | Logarithmic  grows very slowly with data size |
+| **RESP** | Redis Serialization Protocol  wire format between client and server |
 | **Pipelining** | Sending multiple commands without waiting for each response |
 | **RDB** | Point-in-time snapshot persistence |
-| **AOF** | Append-Only File — log of all write commands |
+| **AOF** | Append-Only File  log of all write commands |
 | **fsync** | System call forcing data from page cache to disk |
 | **Keyspace** | The collection of all keys stored in a Redis database |
-| **TTL** | Time-to-Live — how long until a key automatically expires |
+| **TTL** | Time-to-Live  how long until a key automatically expires |
 | **Eviction** | Redis removing keys to stay under memory limits |
 
 ---
@@ -852,7 +852,7 @@ Here's a quick-reference for terms you'll encounter throughout the series:
 
 3. **Redis uses a single-threaded event loop** to handle thousands of clients. Instead of one thread per client (expensive), it uses I/O multiplexing (`epoll`) to serve all clients from one thread.
 
-4. **This single-threaded design means no locks needed** — which eliminates a huge source of overhead and complexity. But it also means one slow operation blocks everyone.
+4. **This single-threaded design means no locks needed**  which eliminates a huge source of overhead and complexity. But it also means one slow operation blocks everyone.
 
 5. **Forking enables persistence without blocking.** Redis can snapshot data to disk by forking a child process, while the parent continues serving clients. Copy-on-write minimizes memory overhead.
 
@@ -868,16 +868,16 @@ You now have the systems foundation that the rest of this series builds on. Here
 
 | Foundation (This Part) | Where It Goes Deep |
 |---|---|
-| Memory hierarchy, cache lines | **Part 1** — how Redis's EMBSTR encoding exploits cache lines; **Part 2** — encoding choices that maximize spatial locality |
-| Sockets, TCP, non-blocking I/O | **Part 1** — the `ae` event loop internals; **Part 4** — threaded I/O, pipelining performance, and connection pooling |
-| I/O multiplexing, event loop | **Part 1** — `aeMain()`, `aeProcessEvents()`, the entire client request lifecycle |
-| Processes, threads, forking, CoW | **Part 3** — BGSAVE internals, CoW amplification measurement, jemalloc's role in fork efficiency |
-| Context switches, cache locality | **Part 1** — why single-threaded beats multi-threaded for Redis's workload; **Part 4** — threaded I/O tradeoffs |
-| Latency, throughput, percentiles | **Part 4** — `redis-benchmark`, `LATENCY` framework, `SLOWLOG`; **Part 8** — production monitoring dashboards |
-| Big-O notation, amortized cost | **Part 1** — incremental rehashing; **Part 2** — every data type's operation complexity |
-| Data structures | **Part 2** — the full encoding duality system, from listpack to skip list |
-| Persistence (RDB, AOF, fsync) | **Part 3** — multi-part AOF, RDB format internals, fsync thread mechanics |
-| RESP wire protocol | **Part 4** — RESP3, inline commands, protocol-level pipelining |
+| Memory hierarchy, cache lines | **Part 1**  how Redis's EMBSTR encoding exploits cache lines; **Part 2**  encoding choices that maximize spatial locality |
+| Sockets, TCP, non-blocking I/O | **Part 1**  the `ae` event loop internals; **Part 4**  threaded I/O, pipelining performance, and connection pooling |
+| I/O multiplexing, event loop | **Part 1**  `aeMain()`, `aeProcessEvents()`, the entire client request lifecycle |
+| Processes, threads, forking, CoW | **Part 3**  BGSAVE internals, CoW amplification measurement, jemalloc's role in fork efficiency |
+| Context switches, cache locality | **Part 1**  why single-threaded beats multi-threaded for Redis's workload; **Part 4**  threaded I/O tradeoffs |
+| Latency, throughput, percentiles | **Part 4**  `redis-benchmark`, `LATENCY` framework, `SLOWLOG`; **Part 8**  production monitoring dashboards |
+| Big-O notation, amortized cost | **Part 1**  incremental rehashing; **Part 2**  every data type's operation complexity |
+| Data structures | **Part 2**  the full encoding duality system, from listpack to skip list |
+| Persistence (RDB, AOF, fsync) | **Part 3**  multi-part AOF, RDB format internals, fsync thread mechanics |
+| RESP wire protocol | **Part 4**  RESP3, inline commands, protocol-level pipelining |
 
 Part 1 picks up exactly where we left off: it opens Redis's event loop and walks through the code that makes all of these concepts real. Everything abstract in this article becomes concrete in the next.
 
@@ -885,4 +885,4 @@ Go read [Part 1: Architecture & Event Loop Internals](redis-deep-dive-part-1.md)
 
 ---
 
-*This is Part 0 (Foundation) of the Redis Deep Dive series. It builds the systems vocabulary and mental models that Parts 1-8 assume you have. If you already know everything here, skip straight to Part 1 — but consider keeping the vocabulary cheat sheet in Section 13 handy as a reference.*
+*This is Part 0 (Foundation) of the Redis Deep Dive series. It builds the systems vocabulary and mental models that Parts 1-8 assume you have. If you already know everything here, skip straight to Part 1  but consider keeping the vocabulary cheat sheet in Section 13 handy as a reference.*

@@ -1,8 +1,8 @@
-# Memory in AI Systems Deep Dive — Part 8: Building and Understanding Vector Databases
+# Memory in AI Systems Deep Dive  Part 8: Building and Understanding Vector Databases
 
 ---
 
-**Series:** Memory in AI Systems — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Memory in AI Systems  A Developer's Deep Dive from Fundamentals to Production
 **Part:** 8 of 19 (Vector Databases)
 **Audience:** Developers with programming experience who want to understand AI memory systems from the ground up
 **Reading time:** ~55 minutes
@@ -11,11 +11,11 @@
 
 ## Recap of Part 7
 
-In Part 7, we explored embedding models in depth — how raw data (text, images, code) gets transformed into dense vector representations that capture semantic meaning. We saw how these embeddings live in high-dimensional vector spaces where similar concepts cluster together, and dissimilar ones drift apart. We built intuition for what each dimension represents, how cosine similarity measures semantic relatedness, and why embedding quality is the foundation of every memory system.
+In Part 7, we explored embedding models in depth  how raw data (text, images, code) gets transformed into dense vector representations that capture semantic meaning. We saw how these embeddings live in high-dimensional vector spaces where similar concepts cluster together, and dissimilar ones drift apart. We built intuition for what each dimension represents, how cosine similarity measures semantic relatedness, and why embedding quality is the foundation of every memory system.
 
 But we left a critical question unanswered: **once you have millions of embedding vectors, how do you search through them efficiently?**
 
-Computing cosine similarity between a query vector and every stored vector is simple in theory — but at scale, it's devastatingly slow. If you have 10 million documents embedded as 1536-dimensional vectors, a single brute-force search requires **15.36 billion floating-point operations**. At 100 queries per second, you'd need dedicated GPU clusters just for search.
+Computing cosine similarity between a query vector and every stored vector is simple in theory  but at scale, it's devastatingly slow. If you have 10 million documents embedded as 1536-dimensional vectors, a single brute-force search requires **15.36 billion floating-point operations**. At 100 queries per second, you'd need dedicated GPU clusters just for search.
 
 This is where vector databases enter the picture. They are purpose-built storage engines that make searching through millions (or billions) of vectors fast, accurate, and production-ready. In this part, we'll build the core algorithms from scratch, understand exactly how they work, and then use real production vector databases hands-on.
 
@@ -46,7 +46,7 @@ Database size    Dimensions    Operations per query    At 1GHz (theoretical)
 1,000,000,000    1536          1,536,000,000,000       ~25 min
 ```
 
-At 1 million vectors — a modest dataset — a single query takes nearly a second. At 100 million vectors (a realistic production scale for a large application), it takes over two minutes. This is unacceptable for any interactive system.
+At 1 million vectors  a modest dataset  a single query takes nearly a second. At 100 million vectors (a realistic production scale for a large application), it takes over two minutes. This is unacceptable for any interactive system.
 
 ### Measuring the Pain: Brute-Force Benchmarks
 
@@ -61,13 +61,13 @@ def brute_force_search(query: np.ndarray, database: np.ndarray, k: int = 10) -> 
     Find k nearest neighbors by exhaustive search.
 
     Args:
-        query: shape (d,) — the query vector
-        database: shape (n, d) — all stored vectors
+        query: shape (d,)  the query vector
+        database: shape (n, d)  all stored vectors
         k: number of nearest neighbors to return
 
     Returns:
-        indices: shape (k,) — indices of nearest neighbors
-        distances: shape (k,) — distances to nearest neighbors
+        indices: shape (k,)  indices of nearest neighbors
+        distances: shape (k,)  distances to nearest neighbors
     """
     # Compute L2 distance from query to every vector
     # ||a - b||^2 = ||a||^2 + ||b||^2 - 2*a.b
@@ -108,9 +108,9 @@ def benchmark_brute_force():
         database = database / np.linalg.norm(database, axis=1, keepdims=True)
         query = query / np.linalg.norm(query)
 
-        # Time the build (just storing — no index to build)
+        # Time the build (just storing  no index to build)
         build_start = time.perf_counter()
-        # Nothing to build for brute force — that's the "advantage"
+        # Nothing to build for brute force  that's the "advantage"
         build_time = time.perf_counter() - build_start
 
         # Time the query (average of multiple runs for stability)
@@ -148,7 +148,7 @@ Database Size      Build Time     Query Time     QPS
 Note: QPS = Queries Per Second
 ```
 
-At 1 million vectors, we get fewer than 9 queries per second. For a production system handling hundreds of concurrent users, this is completely inadequate. And 1 million vectors is small — many applications need to search through tens or hundreds of millions of vectors.
+At 1 million vectors, we get fewer than 9 queries per second. For a production system handling hundreds of concurrent users, this is completely inadequate. And 1 million vectors is small  many applications need to search through tens or hundreds of millions of vectors.
 
 > **The core insight:** We need algorithms that can find *approximately* the right answers *much* faster. Trading a tiny bit of accuracy for orders-of-magnitude speed improvement is the fundamental bargain of vector search.
 
@@ -162,7 +162,7 @@ import numpy as np
 def demonstrate_curse_of_dimensionality():
     """
     Show that in high dimensions, distances between random points
-    converge — making nearest neighbor less meaningful.
+    converge  making nearest neighbor less meaningful.
     """
     np.random.seed(42)
     n_points = 1000
@@ -202,7 +202,7 @@ def demonstrate_curse_of_dimensionality():
 
     print("-" * 70)
     print("As dimensions increase, max/min ratio approaches 1.0")
-    print("This means ALL points are roughly equidistant — nearest neighbor")
+    print("This means ALL points are roughly equidistant  nearest neighbor")
     print("becomes less meaningful without structure in the data.")
 
 demonstrate_curse_of_dimensionality()
@@ -234,7 +234,7 @@ As dimensions increase, max/min ratio approaches 1.0
 
 ### The Key Trade-off: Speed vs. Accuracy
 
-**Approximate Nearest Neighbor (ANN)** algorithms find vectors that are *probably* among the true nearest neighbors, but not guaranteed to be the exact answer. The trade-off is measured by **recall@k** — what fraction of the true k nearest neighbors does the algorithm actually return?
+**Approximate Nearest Neighbor (ANN)** algorithms find vectors that are *probably* among the true nearest neighbors, but not guaranteed to be the exact answer. The trade-off is measured by **recall@k**  what fraction of the true k nearest neighbors does the algorithm actually return?
 
 ```
 Recall@10 = (# of true top-10 results found by ANN) / 10
@@ -694,7 +694,7 @@ class KDTree:
         """
         query = query.astype(np.float32)
 
-        # Max-heap of (-distance, index) — we use negative distance
+        # Max-heap of (-distance, index)  we use negative distance
         # because Python's heapq is a min-heap
         # Initialize with infinite distances
         heap = [(-np.inf, -1)] * k
@@ -833,7 +833,7 @@ class RandomProjectionTree:
     A single random projection tree (Annoy-style).
 
     Instead of splitting along coordinate axes (like KD-tree),
-    splits along random directions — much better for high dimensions.
+    splits along random directions  much better for high dimensions.
     """
 
     def __init__(self, leaf_size: int = 50, seed: int = None):
@@ -1049,7 +1049,7 @@ demo_annoy_style()
 
 ### Why HNSW Matters
 
-**HNSW** (Hierarchical Navigable Small World) is the most important ANN algorithm in production today. It's the default index type in nearly every major vector database — Qdrant, Weaviate, pgvector, ChromaDB (via hnswlib), and Milvus all use HNSW as their primary index.
+**HNSW** (Hierarchical Navigable Small World) is the most important ANN algorithm in production today. It's the default index type in nearly every major vector database  Qdrant, Weaviate, pgvector, ChromaDB (via hnswlib), and Milvus all use HNSW as their primary index.
 
 HNSW consistently achieves the best recall-speed trade-off across benchmarks. It typically delivers **recall > 0.95 at 100-1000x speedup** over brute force.
 
@@ -1076,7 +1076,7 @@ The "hierarchical" part is what makes HNSW work in practice. It builds **multipl
 
 ```mermaid
 graph TB
-    subgraph "Layer 3 (Top — few nodes, long-range connections)"
+    subgraph "Layer 3 (Top  few nodes, long-range connections)"
         L3A((A)) ---|"long jump"| L3D((D))
     end
 
@@ -1257,10 +1257,10 @@ class HNSWIndex:
         # Distance to entry point
         dist = self._distance(query, self.vectors[entry_point])
 
-        # Candidates: min-heap of (distance, node_id) — nodes to explore
+        # Candidates: min-heap of (distance, node_id)  nodes to explore
         candidates = [(dist, entry_point)]
 
-        # Results: max-heap of (-distance, node_id) — best results found
+        # Results: max-heap of (-distance, node_id)  best results found
         # We use negative distances because Python has min-heap only
         results = [(-dist, entry_point)]
 
@@ -1272,7 +1272,7 @@ class HNSWIndex:
             cand_dist, cand_id = heapq.heappop(candidates)
 
             # If the closest candidate is farther than our worst result,
-            # we can stop — no remaining candidate can improve results
+            # we can stop  no remaining candidate can improve results
             worst_result_dist = -results[0][0]
             if cand_dist > worst_result_dist:
                 break
@@ -1347,7 +1347,7 @@ class HNSWIndex:
                 )
                 if dist_to_selected < dist:
                     # This candidate is closer to an already-selected neighbor
-                    # than to the query — skip it for diversity
+                    # than to the query  skip it for diversity
                     good = False
                     break
 
@@ -1379,7 +1379,7 @@ class HNSWIndex:
         node_level = self._get_random_level()
         self.node_layers[node_id] = node_level
 
-        # First node — make it the entry point
+        # First node  make it the entry point
         if self.entry_point == -1:
             self.entry_point = node_id
             self.max_layer = node_level
@@ -1417,7 +1417,7 @@ class HNSWIndex:
                 neighbor_connections = self.graph[layer][neighbor_id]
 
                 if len(neighbor_connections) < M_layer:
-                    # Room for more connections — just add
+                    # Room for more connections  just add
                     neighbor_connections.append(node_id)
                 else:
                     # Need to prune: add new node and re-select best M
@@ -1649,9 +1649,9 @@ Index Statistics:
 
 > **Key takeaways from HNSW benchmarks:**
 > 1. **M controls the accuracy-speed-memory trade-off** at build time. M=16 is a good default.
-> 2. **ef_search controls the accuracy-speed trade-off** at query time — you can tune this per query.
+> 2. **ef_search controls the accuracy-speed trade-off** at query time  you can tune this per query.
 > 3. **The hierarchical structure is clear:** Layer 0 has all 50K nodes, Layer 1 has ~3K, Layer 2 has ~200, Layer 3 has ~12. Each layer is approximately M times smaller than the one below.
-> 4. **At ef=100, recall is 0.988** — only missing 0.12 out of 10 true neighbors on average. For most applications, this is perfect.
+> 4. **At ef=100, recall is 0.988**  only missing 0.12 out of 10 true neighbors on average. For most applications, this is perfect.
 
 ---
 
@@ -1670,7 +1670,7 @@ Large app           100,000,000    1536          572 GB       ~900 GB
 Web-scale           1,000,000,000  768           2.86 TB      ~4.5 TB
 ```
 
-**Product Quantization (PQ)** solves this by compressing vectors from 32 bits per dimension down to ~1-2 bits per dimension — a **16-32x compression ratio** with moderate accuracy loss.
+**Product Quantization (PQ)** solves this by compressing vectors from 32 bits per dimension down to ~1-2 bits per dimension  a **16-32x compression ratio** with moderate accuracy loss.
 
 ### How PQ Works
 
@@ -1801,11 +1801,11 @@ class ProductQuantizer:
         Simple k-means clustering.
 
         Args:
-            data: shape (n, sub_dim) — the subvectors to cluster
+            data: shape (n, sub_dim)  the subvectors to cluster
             k: number of centroids
 
         Returns:
-            centroids: shape (k, sub_dim) — the learned centroids
+            centroids: shape (k, sub_dim)  the learned centroids
         """
         n = len(data)
 
@@ -1910,7 +1910,7 @@ class ProductQuantizer:
             codes: shape (n, m) with dtype uint8
 
         Returns:
-            vectors: shape (n, dim) — reconstructed (approximate) vectors
+            vectors: shape (n, dim)  reconstructed (approximate) vectors
         """
         n = len(codes)
         vectors = np.zeros((n, self.dim), dtype=np.float32)
@@ -1939,8 +1939,8 @@ class ProductQuantizer:
         2. For each database code, look up and sum precomputed distances
 
         The precomputation makes this very fast:
-        - Precompute: O(m * k * sub_dim) — done once per query
-        - Per-vector distance: O(m) — just m lookups and additions!
+        - Precompute: O(m * k * sub_dim)  done once per query
+        - Per-vector distance: O(m)  just m lookups and additions!
         """
         assert self.codes is not None, "Must add vectors before searching"
 
@@ -2047,6 +2047,6 @@ def demo_product_quantization():
 demo_product_quantization()
 ```
 
-> **PQ insight:** With just 16 bytes per vector (vs 3072 bytes raw), PQ achieves reasonable recall while using **192x less memory**. The trade-off is clear: more subquantizers = better accuracy but more memory. In production, PQ is often combined with IVF (Inverted File Index) for even better performance — this is exactly what FAISS's `IndexIVFPQ` implements.
+> **PQ insight:** With just 16 bytes per vector (vs 3072 bytes raw), PQ achieves reasonable recall while using **192x less memory**. The trade-off is clear: more subquantizers = better accuracy but more memory. In production, PQ is often combined with IVF (Inverted File Index) for even better performance  this is exactly what FAISS's `IndexIVFPQ` implements.
 
 ---

@@ -1,17 +1,17 @@
-# Memory in AI Systems Deep Dive — Part 2: Neural Networks as Memory Systems (With Code)
+# Memory in AI Systems Deep Dive  Part 2: Neural Networks as Memory Systems (With Code)
 
 ---
 
-**Series:** Memory in AI Systems — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Memory in AI Systems  A Developer's Deep Dive from Fundamentals to Production
 **Part:** 2 of 19
 **Audience:** Developers with programming experience who want to understand AI memory systems from the ground up
 **Reading time:** ~55 minutes
 
 ---
 
-In Part 1, we laid the foundation. We learned how AI systems represent information: raw text becomes tokens, tokens become vectors, vectors get embedded into rich semantic spaces. We saw that embeddings are the currency of AI — dense numerical representations that capture meaning through geometry. A word's embedding tells you its relationships with every other word, not through explicit rules, but through learned proximity in high-dimensional space.
+In Part 1, we laid the foundation. We learned how AI systems represent information: raw text becomes tokens, tokens become vectors, vectors get embedded into rich semantic spaces. We saw that embeddings are the currency of AI  dense numerical representations that capture meaning through geometry. A word's embedding tells you its relationships with every other word, not through explicit rules, but through learned proximity in high-dimensional space.
 
-But where do those embeddings come from? Who decides that "king" should be close to "queen" and far from "refrigerator"? The answer is: neural networks learn them. And understanding *how* neural networks learn anything requires understanding what a neural network actually is — a memory machine.
+But where do those embeddings come from? Who decides that "king" should be close to "queen" and far from "refrigerator"? The answer is: neural networks learn them. And understanding *how* neural networks learn anything requires understanding what a neural network actually is  a memory machine.
 
 This part is about the architecture of memory in AI. We'll build neural networks from scratch, watch them form memories during training, and trace the evolution from simple neurons to recurrent networks that carry context through time. By the end, you'll understand the machinery that gives AI its ability to learn, remember, and generate.
 
@@ -61,7 +61,7 @@ This is fundamentally different from how traditional software stores information
 | **One fact, how many parameters?** | Usually one field/record | Distributed across many parameters |
 | **One parameter, how many facts?** | Usually one fact | Contributes to many facts (superposition) |
 
-The last two rows are the crucial insight. In a database, one row stores one record. In a neural network, one fact is spread across thousands of weights, and each weight participates in representing thousands of facts. This is called **distributed representation** — and it's the reason neural networks can generalize.
+The last two rows are the crucial insight. In a database, one row stores one record. In a neural network, one fact is spread across thousands of weights, and each weight participates in representing thousands of facts. This is called **distributed representation**  and it's the reason neural networks can generalize.
 
 ### The Library Analogy
 
@@ -128,7 +128,7 @@ graph TB
     N1["Every arrow (w, v) is a<br/>learned weight = a piece<br/>of the network's memory"]:::note
 ```
 
-Every arrow in that diagram is a number — a weight. The collection of all those weights IS the network's memory. When we "train" a network, we're adjusting those weights so the right inputs produce the right outputs. When we "run" a network (inference), we're retrieving stored knowledge by pushing data through those learned weights.
+Every arrow in that diagram is a number  a weight. The collection of all those weights IS the network's memory. When we "train" a network, we're adjusting those weights so the right inputs produce the right outputs. When we "run" a network (inference), we're retrieving stored knowledge by pushing data through those learned weights.
 
 Let's build this from the ground up.
 
@@ -169,7 +169,7 @@ The weights and bias are the neuron's memory. They encode what the neuron has le
 import numpy as np
 
 class Neuron:
-    """A single artificial neuron — the simplest memory unit."""
+    """A single artificial neuron  the simplest memory unit."""
 
     def __init__(self, n_inputs, activation='sigmoid'):
         # Initialize weights randomly (small values)
@@ -208,7 +208,7 @@ class Neuron:
     def forward(self, x):
         """
         Forward pass: compute output.
-        This is "memory recall" — using stored weights to process new input.
+        This is "memory recall"  using stored weights to process new input.
         """
         self._last_input = x
         # Weighted sum + bias
@@ -245,11 +245,11 @@ Output: 0.5810
 Interpretation: 58.1% confidence
 ```
 
-The neuron starts with random weights — it has no knowledge. Let's teach it something.
+The neuron starts with random weights  it has no knowledge. Let's teach it something.
 
 ### Training a Neuron: Learning Logic Gates
 
-Let's teach a single neuron to compute the AND and OR logic gates. This is where "learning" becomes concrete — you can watch the weights change:
+Let's teach a single neuron to compute the AND and OR logic gates. This is where "learning" becomes concrete  you can watch the weights change:
 
 ```python
 def train_neuron(neuron, X, y, learning_rate=0.5, epochs=1000, verbose=True):
@@ -267,14 +267,14 @@ def train_neuron(neuron, X, y, learning_rate=0.5, epochs=1000, verbose=True):
         total_loss = 0
 
         for xi, yi in zip(X, y):
-            # Forward pass — recall from current memory
+            # Forward pass  recall from current memory
             prediction = neuron.forward(xi)
 
             # Calculate error
             error = prediction - yi
             total_loss += error ** 2
 
-            # Backward pass — update memory
+            # Backward pass  update memory
             # Gradient of loss w.r.t. pre-activation
             d_z = error * neuron._activate_derivative(neuron._last_z)
 
@@ -394,8 +394,8 @@ Verification:
 
 Look at the AND neuron's final weights: `[5.101, 5.101]` with bias `-7.800`. Here's how to read this:
 
-- Both weights are roughly equal (~5.1) — both inputs matter equally
-- The bias is very negative (-7.8) — the neuron is "reluctant" to fire
+- Both weights are roughly equal (~5.1)  both inputs matter equally
+- The bias is very negative (-7.8)  the neuron is "reluctant" to fire
 - For output to be ~1, we need: `sigmoid(5.1 * x1 + 5.1 * x2 - 7.8)` to be large
 - Only when BOTH x1=1 AND x2=1: `sigmoid(5.1 + 5.1 - 7.8) = sigmoid(2.4) = 0.91`
 - When only one is 1: `sigmoid(5.1 + 0 - 7.8) = sigmoid(-2.7) = 0.06`
@@ -404,10 +404,10 @@ The weights have encoded the AND relationship. They are the neuron's memory of t
 
 Now look at the OR neuron: `[7.240, 7.240]` with bias `-3.427`:
 
-- Weights are roughly equal (~7.2) — both inputs matter equally
-- The bias is only moderately negative (-3.4) — the neuron is "willing" to fire
+- Weights are roughly equal (~7.2)  both inputs matter equally
+- The bias is only moderately negative (-3.4)  the neuron is "willing" to fire
 - When either input is 1: `sigmoid(7.2 + 0 - 3.4) = sigmoid(3.8) = 0.98`
-- The neuron fires when ANY input is on — that's OR
+- The neuron fires when ANY input is on  that's OR
 
 **Key insight**: The weights and bias together form a decision boundary. Different weight configurations encode different logical relationships. Training is the process of finding the right weight configuration for the task.
 
@@ -454,7 +454,7 @@ Verification:
   Input: [1 1] | Expected: 0 | Got: 0.5000 | WRONG
 ```
 
-Total failure. The neuron gives up and outputs 0.5 for everything. This isn't a bug — it's a fundamental limitation. A single neuron can only learn **linearly separable** functions (functions where you can draw a straight line to separate the classes). XOR isn't linearly separable.
+Total failure. The neuron gives up and outputs 0.5 for everything. This isn't a bug  it's a fundamental limitation. A single neuron can only learn **linearly separable** functions (functions where you can draw a straight line to separate the classes). XOR isn't linearly separable.
 
 This is exactly why we need layers.
 
@@ -473,7 +473,7 @@ Think of it like this:
 - **Layer 2**: Combines those lines into shapes (regions)
 - **Layer 3**: Combines those shapes into complex patterns
 
-This is **hierarchical feature learning** — one of the most powerful ideas in deep learning. Each layer builds on the representations learned by the previous layer.
+This is **hierarchical feature learning**  one of the most powerful ideas in deep learning. Each layer builds on the representations learned by the previous layer.
 
 ```mermaid
 graph TB
@@ -511,7 +511,7 @@ graph TB
 
 ### Implementing Layers from Scratch
 
-Let's build a complete neural network with multiple layers. This is a full implementation — no shortcuts:
+Let's build a complete neural network with multiple layers. This is a full implementation  no shortcuts:
 
 ```python
 import numpy as np
@@ -520,12 +520,12 @@ class DenseLayer:
     """
     A fully connected layer of neurons.
 
-    This is a "memory bank" — a matrix of weights where each row
+    This is a "memory bank"  a matrix of weights where each row
     represents one neuron's learned knowledge.
     """
 
     def __init__(self, n_inputs, n_neurons, activation='relu'):
-        # Xavier initialization — keeps signal magnitude stable across layers
+        # Xavier initialization  keeps signal magnitude stable across layers
         scale = np.sqrt(2.0 / n_inputs)
         self.weights = np.random.randn(n_inputs, n_neurons) * scale
         self.biases = np.zeros((1, n_neurons))
@@ -594,7 +594,7 @@ class DenseLayer:
         return d_input
 
     def update(self, learning_rate):
-        """Update weights — this is where learning happens."""
+        """Update weights  this is where learning happens."""
         self.weights -= learning_rate * self.d_weights
         self.biases -= learning_rate * self.d_biases
 
@@ -645,7 +645,7 @@ class NeuralNetwork:
         return sum(layer.param_count for layer in self.layers)
 
     def summary(self):
-        print(f"Neural Network — {len(self.layers)} layers, "
+        print(f"Neural Network  {len(self.layers)} layers, "
               f"{self.total_params} total parameters")
         print("-" * 55)
         for i, layer in enumerate(self.layers):
@@ -662,7 +662,7 @@ net.summary()
 ```
 
 ```
-Neural Network — 2 layers, 17 total parameters
+Neural Network  2 layers, 17 total parameters
 -------------------------------------------------------
   Layer 0: DenseLayer(2 -> 4, act=relu, params=12)
   Layer 1: DenseLayer(4 -> 1, act=sigmoid, params=5)
@@ -795,7 +795,7 @@ import numpy as np
 
 def mse_loss(predictions, targets):
     """
-    Mean Squared Error — the default for regression.
+    Mean Squared Error  the default for regression.
     Penalizes large errors quadratically.
     """
     return np.mean((predictions - targets) ** 2)
@@ -806,7 +806,7 @@ def mse_gradient(predictions, targets):
 
 def binary_cross_entropy(predictions, targets, epsilon=1e-15):
     """
-    Binary Cross-Entropy — the default for classification.
+    Binary Cross-Entropy  the default for classification.
     Heavily penalizes confident wrong predictions.
     """
     # Clip to avoid log(0)
@@ -916,7 +916,7 @@ Final weight: 2.9762 (optimal: 3.0000)
 Final loss: 1.000567 (optimal: 1.0000)
 ```
 
-The weight converges toward the optimal value. Each step is proportional to the gradient — large gradients mean large steps (when we're far from optimal), small gradients mean small steps (when we're close).
+The weight converges toward the optimal value. Each step is proportional to the gradient  large gradients mean large steps (when we're far from optimal), small gradients mean small steps (when we're close).
 
 ### Backpropagation: The Chain Rule at Scale
 
@@ -1112,7 +1112,7 @@ Final predictions:
 
 ### Watching Weights Change During Training
 
-Here's the most illuminating view of training — watching how weights evolve over time:
+Here's the most illuminating view of training  watching how weights evolve over time:
 
 ```python
 def track_weight_evolution():
@@ -1165,7 +1165,7 @@ def track_weight_evolution():
         b2 -= 1.0 * dL_db2
 
     # Display weight evolution
-    print("Weight Evolution — Layer 1 (2x4 matrix)")
+    print("Weight Evolution  Layer 1 (2x4 matrix)")
     print("=" * 70)
     for snap in snapshots:
         e = snap['epoch']
@@ -1173,7 +1173,7 @@ def track_weight_evolution():
         print(f"\nEpoch {e:4d}:")
         print(f"  W1 = {w.round(3).tolist()}")
 
-    print("\n\nWeight Evolution — Layer 2 (4x1 matrix)")
+    print("\n\nWeight Evolution  Layer 2 (4x1 matrix)")
     print("=" * 70)
     for snap in snapshots:
         e = snap['epoch']
@@ -1196,7 +1196,7 @@ track_weight_evolution()
 ```
 
 ```
-Weight Evolution — Layer 1 (2x4 matrix)
+Weight Evolution  Layer 1 (2x4 matrix)
 ======================================================================
 
 Epoch    0:
@@ -1218,7 +1218,7 @@ Epoch 1999:
   W1 = [[2.513, 0.257, 2.944, 1.251], [2.207, 0.222, 2.791, 0.937]]
 
 
-Weight Evolution — Layer 2 (4x1 matrix)
+Weight Evolution  Layer 2 (4x1 matrix)
 ======================================================================
 
 Epoch    0:
@@ -1250,7 +1250,7 @@ Total Weight Change (L2 norm)
   Epoch 1999: Layer1 moved 5.2031, Layer2 moved 3.8456
 ```
 
-Observe the pattern: weights change rapidly at first (when the loss is high and gradients are large) and slow down as the network converges. This is the formation of memory — chaotic at first, then gradually crystallizing into a stable configuration that encodes the learned function.
+Observe the pattern: weights change rapidly at first (when the loss is high and gradients are large) and slow down as the network converges. This is the formation of memory  chaotic at first, then gradually crystallizing into a stable configuration that encodes the learned function.
 
 ---
 
@@ -1258,7 +1258,7 @@ Observe the pattern: weights change rapidly at first (when the loss is high and 
 
 ### Overfitting: When Memory Becomes Too Specific
 
-Here's a problem: neural networks can memorize **too well**. If a network has enough parameters, it can memorize every single training example exactly — including the noise. This is called **overfitting**, and it's the central challenge of machine learning.
+Here's a problem: neural networks can memorize **too well**. If a network has enough parameters, it can memorize every single training example exactly  including the noise. This is called **overfitting**, and it's the central challenge of machine learning.
 
 Think of it as the difference between a student who:
 - **Memorizes the textbook** (overfitting): Can recite answers to specific questions, but fails on rephrased questions
@@ -1297,13 +1297,13 @@ def demonstrate_overfitting():
         train_losses, test_losses = [], []
 
         for epoch in range(epochs):
-            # Forward — train
+            # Forward  train
             z1 = X_train @ W1 + b1
             h1 = np.maximum(0, z1)
             pred_train = h1 @ W2 + b2
             train_loss = np.mean((pred_train - y_train) ** 2)
 
-            # Forward — test
+            # Forward  test
             z1_test = X_test @ W1 + b1
             h1_test = np.maximum(0, z1_test)
             pred_test = h1_test @ W2 + b2
@@ -1329,7 +1329,7 @@ def demonstrate_overfitting():
 
         return train_losses, test_losses
 
-    # Small network — will underfit
+    # Small network  will underfit
     print("=" * 65)
     print("Small Network (3 hidden neurons, 7 parameters)")
     print("=" * 65)
@@ -1339,7 +1339,7 @@ def demonstrate_overfitting():
     print(f"  Gap (test - train): {test_small[-1] - train_small[-1]:.4f}")
     print(f"  Status: {'Underfitting' if train_small[-1] > 0.1 else 'OK'}")
 
-    # Medium network — will generalize well
+    # Medium network  will generalize well
     print(f"\n{'=' * 65}")
     print("Medium Network (10 hidden neurons, 21 parameters)")
     print("=" * 65)
@@ -1349,7 +1349,7 @@ def demonstrate_overfitting():
     print(f"  Gap (test - train): {test_med[-1] - train_med[-1]:.4f}")
     print(f"  Status: {'Good generalization' if abs(test_med[-1] - train_med[-1]) < 0.1 else 'Check'}")
 
-    # Large network — will overfit
+    # Large network  will overfit
     print(f"\n{'=' * 65}")
     print("Large Network (200 hidden neurons, 401 parameters)")
     print("=" * 65)
@@ -1409,15 +1409,15 @@ Large              401      0.0021      0.4132   0.4111
 The pattern is clear:
 - **Small network**: Can't even fit the training data well (underfitting). Not enough memory capacity.
 - **Medium network**: Fits training data and generalizes to test data. Right amount of memory.
-- **Large network**: Memorizes training data perfectly (loss near zero) but fails on test data. Too much memory — memorized noise instead of patterns.
+- **Large network**: Memorizes training data perfectly (loss near zero) but fails on test data. Too much memory  memorized noise instead of patterns.
 
 ### Regularization: Controlled Forgetting
 
-Regularization techniques prevent overfitting by adding constraints that force the network to learn general patterns instead of specific examples. Think of it as **controlled forgetting** — deliberately preventing the network from memorizing too much detail.
+Regularization techniques prevent overfitting by adding constraints that force the network to learn general patterns instead of specific examples. Think of it as **controlled forgetting**  deliberately preventing the network from memorizing too much detail.
 
 #### Dropout: Random Amnesia
 
-Dropout is the most intuitive regularization technique. During training, you randomly "turn off" neurons (set their output to zero) with some probability. This forces the network to be redundant — no single neuron can become the sole keeper of any piece of knowledge.
+Dropout is the most intuitive regularization technique. During training, you randomly "turn off" neurons (set their output to zero) with some probability. This forces the network to be redundant  no single neuron can become the sole keeper of any piece of knowledge.
 
 ```python
 class DropoutLayer:
@@ -1441,7 +1441,7 @@ class DropoutLayer:
             # Create random mask: 1 = keep, 0 = drop
             self._mask = (np.random.rand(*X.shape) > self.rate).astype(float)
             # Scale by 1/(1-rate) so expected value is unchanged
-            # This is "inverted dropout" — no scaling needed at test time
+            # This is "inverted dropout"  no scaling needed at test time
             return X * self._mask / (1 - self.rate)
         else:
             # At test time: use all neurons, no scaling needed
@@ -1463,7 +1463,7 @@ hidden = np.array([[1.5, 2.0, 0.5, 3.0, 1.0, 2.5, 0.8, 1.2]])
 print("Original hidden output:")
 print(f"  {hidden}")
 
-print("\nWith dropout (training mode) — 5 random samples:")
+print("\nWith dropout (training mode)  5 random samples:")
 for i in range(5):
     dropped = dropout.forward(hidden)
     n_active = np.count_nonzero(dropped)
@@ -1474,14 +1474,14 @@ print("\nWithout dropout (inference mode):")
 dropout.training = False
 output = dropout.forward(hidden)
 print(f"  {output}")
-print("  All neurons active — full knowledge available for inference")
+print("  All neurons active  full knowledge available for inference")
 ```
 
 ```
 Original hidden output:
   [[1.5 2.0 0.5 3.0 1.0 2.5 0.8 1.2]]
 
-With dropout (training mode) — 5 random samples:
+With dropout (training mode)  5 random samples:
   Trial 1: [[2.143 2.857 0.714 4.286 1.429 3.571 0.    1.714]] (7/8 neurons active)
   Trial 2: [[2.143 0.    0.714 4.286 1.429 3.571 1.143 0.   ]] (6/8 neurons active)
   Trial 3: [[2.143 2.857 0.    0.    1.429 3.571 1.143 1.714]] (6/8 neurons active)
@@ -1490,7 +1490,7 @@ With dropout (training mode) — 5 random samples:
 
 Without dropout (inference mode):
   [[1.5 2.0 0.5 3.0 1.0 2.5 0.8 1.2]]
-  All neurons active — full knowledge available for inference
+  All neurons active  full knowledge available for inference
 ```
 
 #### Other Regularization Techniques
@@ -1512,7 +1512,7 @@ The fundamental tension in neural networks is **memorization vs. generalization*
 
 ### From NumPy to PyTorch
 
-Everything we've built from scratch in NumPy is what PyTorch does for you — but with GPU acceleration, automatic differentiation, and a rich ecosystem. Let's rebuild our network in PyTorch to see the difference:
+Everything we've built from scratch in NumPy is what PyTorch does for you  but with GPU acceleration, automatic differentiation, and a rich ecosystem. Let's rebuild our network in PyTorch to see the difference:
 
 ```python
 import torch
@@ -1560,7 +1560,7 @@ model = SimpleMemoryNet(input_size=2, hidden_size=4, output_size=1)
 
 print(f"Model architecture:\n{model}\n")
 print(f"Total parameters: {model.count_parameters()}")
-print(f"\nInitial weights (random — no knowledge yet):")
+print(f"\nInitial weights (random  no knowledge yet):")
 model.show_weights()
 ```
 
@@ -1587,7 +1587,7 @@ Total parameters: 17
 
 ```python
 def train_pytorch_xor():
-    """Complete training loop in PyTorch — solving XOR."""
+    """Complete training loop in PyTorch  solving XOR."""
     torch.manual_seed(42)
 
     # Data
@@ -1606,11 +1606,11 @@ def train_pytorch_xor():
     model.train()  # Set to training mode
 
     for epoch in range(1000):
-        # Forward pass — PyTorch tracks all operations for autograd
+        # Forward pass  PyTorch tracks all operations for autograd
         predictions = model(X)
         loss = criterion(predictions, y)
 
-        # Backward pass — PyTorch computes ALL gradients automatically!
+        # Backward pass  PyTorch computes ALL gradients automatically!
         optimizer.zero_grad()   # Clear previous gradients
         loss.backward()         # Compute gradients (backpropagation)
         optimizer.step()        # Update weights
@@ -1671,7 +1671,7 @@ Final weights (the learned memory):
 | **Gradient correctness** | Hope you got the math right | Guaranteed by autograd |
 | **Advanced optimizers** | Implement yourself | `optim.Adam`, `optim.SGD`, etc. |
 
-**Key insight**: PyTorch doesn't change what's happening — the weights are still the memory, training still forms that memory through gradient descent, and inference still reads from it. PyTorch just makes it dramatically easier to implement and much faster to execute.
+**Key insight**: PyTorch doesn't change what's happening  the weights are still the memory, training still forms that memory through gradient descent, and inference still reads from it. PyTorch just makes it dramatically easier to implement and much faster to execute.
 
 ---
 
@@ -1727,7 +1727,7 @@ class EmbeddingLayer:
 
     def __init__(self, vocab_size, embedding_dim):
         # The embedding table: each row is one item's learned vector
-        # This IS the layer's memory — learned representations
+        # This IS the layer's memory  learned representations
         self.weights = np.random.randn(vocab_size, embedding_dim) * 0.1
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
@@ -1744,7 +1744,7 @@ class EmbeddingLayer:
         returns: array of embeddings, shape (..., embedding_dim)
         """
         self._last_indices = indices
-        return self.weights[indices]  # Simple indexing — that's it!
+        return self.weights[indices]  # Simple indexing  that's it!
 
     def backward(self, d_output):
         """
@@ -1776,7 +1776,7 @@ emb = EmbeddingLayer(vocab_size, embed_dim)
 word_to_idx = {'the': 0, 'cat': 1, 'dog': 2, 'sat': 3, 'ran': 4, 'mat': 5}
 idx_to_word = {v: k for k, v in word_to_idx.items()}
 
-print("Initial embeddings (random — no knowledge):")
+print("Initial embeddings (random  no knowledge):")
 for word, idx in word_to_idx.items():
     print(f"  '{word}' (idx {idx}): {emb.weights[idx].round(4)}")
 
@@ -1795,7 +1795,7 @@ print(f"  sat-ran:  {emb.similarity(3, 4):.4f}")
 ```
 
 ```
-Initial embeddings (random — no knowledge):
+Initial embeddings (random  no knowledge):
   'the' (idx 0): [ 0.0496 -0.0138  0.0648  0.0153]
   'cat' (idx 1): [-0.0234  0.0227 -0.0673 -0.0044]
   'dog' (idx 2): [-0.0095  0.0415  0.0165 -0.0399]
@@ -1941,7 +1941,7 @@ Learned embeddings:
   '  mat': [+0.345, +0.178, -0.089, +0.412]
 ```
 
-Look at the result: `cat` and `dog` ended up with high similarity (0.87) because they appear in identical contexts ("the ___ sat/ran on the mat"). `sat` and `ran` are also similar (0.79) — both are verbs in the same position. The embeddings learned semantic relationships purely from co-occurrence patterns.
+Look at the result: `cat` and `dog` ended up with high similarity (0.87) because they appear in identical contexts ("the ___ sat/ran on the mat"). `sat` and `ran` are also similar (0.79)  both are verbs in the same position. The embeddings learned semantic relationships purely from co-occurrence patterns.
 
 ### PyTorch Embeddings
 
@@ -1997,7 +1997,7 @@ Embedding lookup matches one-hot @ W: True
 But embedding lookup is O(1) per word, one-hot @ W is O(vocab_size)!
 ```
 
-**Key insight**: An embedding layer is mathematically equivalent to one-hot encoding followed by a matrix multiplication, but it's implemented as a simple array lookup — much faster. The embedding weights are just another set of learnable parameters (memory), trained by backpropagation like any other weight matrix.
+**Key insight**: An embedding layer is mathematically equivalent to one-hot encoding followed by a matrix multiplication, but it's implemented as a simple array lookup  much faster. The embedding weights are just another set of learnable parameters (memory), trained by backpropagation like any other weight matrix.
 
 ---
 
@@ -2005,9 +2005,9 @@ But embedding lookup is O(1) per word, one-hot @ W is O(vocab_size)!
 
 ### The Problem: Sequences Have Order
 
-Everything we've built so far processes inputs as independent, isolated data points. Feed in `[0, 1]` and get a prediction. Feed in `[1, 0]` and get another. The network has no concept of sequence — no idea that one input came before or after another.
+Everything we've built so far processes inputs as independent, isolated data points. Feed in `[0, 1]` and get a prediction. Feed in `[1, 0]` and get another. The network has no concept of sequence  no idea that one input came before or after another.
 
-But language, music, stock prices, sensor readings — they're all **sequences**. The meaning of a word depends on the words that came before it. "Bank" means something different after "river" vs. after "savings". To handle sequences, we need a network that carries information forward through time.
+But language, music, stock prices, sensor readings  they're all **sequences**. The meaning of a word depends on the words that came before it. "Bank" means something different after "river" vs. after "savings". To handle sequences, we need a network that carries information forward through time.
 
 This is the idea behind **Recurrent Neural Networks (RNNs)**: the network maintains a **hidden state** that acts as working memory, carrying information from previous steps to the current step.
 
@@ -2039,7 +2039,7 @@ graph LR
     style OUT fill:#ff6b6b,stroke:#333,color:#fff
 ```
 
-The key insight: **the same RNN cell is reused at every time step**, but the hidden state changes. The hidden state is the network's working memory — it's updated at each step and carries a compressed summary of everything seen so far.
+The key insight: **the same RNN cell is reused at every time step**, but the hidden state changes. The hidden state is the network's working memory  it's updated at each step and carries a compressed summary of everything seen so far.
 
 ### Implementing an RNN Cell from Scratch
 
@@ -2048,7 +2048,7 @@ import numpy as np
 
 class RNNCell:
     """
-    A single RNN cell — processes one time step.
+    A single RNN cell  processes one time step.
 
     The math:
         h_t = tanh(W_xh @ x_t + W_hh @ h_{t-1} + b_h)
@@ -2214,7 +2214,7 @@ After just 50 time steps, the gradient is effectively zero (10^-22) for typical 
 
 ### LSTM: Long Short-Term Memory
 
-The LSTM (Hochreiter & Schmidhuber, 1997) solves the vanishing gradient problem with a clever architecture: it adds a **cell state** — a separate memory channel with a direct, unobstructed path for gradient flow. Think of it as a conveyor belt that carries information through time without degradation.
+The LSTM (Hochreiter & Schmidhuber, 1997) solves the vanishing gradient problem with a clever architecture: it adds a **cell state**  a separate memory channel with a direct, unobstructed path for gradient flow. Think of it as a conveyor belt that carries information through time without degradation.
 
 The LSTM has four **gates** that control information flow:
 
@@ -2258,7 +2258,7 @@ The **conveyor belt analogy** makes this intuitive:
 | **Candidate** | The actual item to add | "Here's the new information to store" |
 | **Output gate** | What to read from the belt now | "For the current task, I need this piece" |
 
-The cell state flows through time with only element-wise operations (multiply and add) — no matrix multiplications that would cause vanishing gradients. This is why LSTMs can learn dependencies across hundreds of time steps.
+The cell state flows through time with only element-wise operations (multiply and add)  no matrix multiplications that would cause vanishing gradients. This is why LSTMs can learn dependencies across hundreds of time steps.
 
 ### Implementing an LSTM Cell from Scratch
 
@@ -2486,7 +2486,7 @@ def compare_processing_time():
     print("-" * 70)
 
     for L in seq_lengths:
-        rnn_time = L          # O(L) — must process sequentially
+        rnn_time = L          # O(L)  must process sequentially
         # Transformer: O(1) parallel steps, but O(L^2) work per step
         # With enough GPU cores, wall-clock time is ~constant
         transformer_time = 1  # Simplified: one parallel step
@@ -2564,7 +2564,7 @@ Hidden state size: 256 dimensions (fixed)
 
 Even LSTMs tend to remember recent information better than distant information. The forget gate can keep information alive, but in practice, old information gets gradually overwritten by new information.
 
-These three limitations — sequential processing, fixed-size bottleneck, and recency bias — are what led to the development of the **attention mechanism**, which we'll build from scratch in Part 3. Attention solves all three problems by letting the model look back at ALL previous positions directly, rather than relying on a compressed summary.
+These three limitations  sequential processing, fixed-size bottleneck, and recency bias  are what led to the development of the **attention mechanism**, which we'll build from scratch in Part 3. Attention solves all three problems by letting the model look back at ALL previous positions directly, rather than relying on a compressed summary.
 
 ---
 
@@ -2674,7 +2674,7 @@ def train_text_generator():
     """
     Full training pipeline for character-level text generation.
     """
-    # Training text — using a small, memorable corpus
+    # Training text  using a small, memorable corpus
     text = """To be or not to be that is the question
 Whether tis nobler in the mind to suffer
 The slings and arrows of outrageous fortune
@@ -2759,7 +2759,7 @@ When he himself might his quietus make"""
         # Backward pass
         optimizer.zero_grad()
         loss.backward()
-        # Gradient clipping — prevents exploding gradients in RNNs
+        # Gradient clipping  prevents exploding gradients in RNNs
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
         optimizer.step()
 
@@ -2859,9 +2859,9 @@ Look at the training progression:
 - **Epoch 199**: Nearly perfect reproduction of training patterns.
 
 And the temperature comparison shows how the LSTM's memory interacts with randomness:
-- **Low temperature (0.3)**: Follows the most probable paths through memory — safe but repetitive.
-- **Medium temperature (0.7)**: Balanced exploration of memory — coherent and varied.
-- **High temperature (1.5)**: Random sampling overwhelms memory — gibberish.
+- **Low temperature (0.3)**: Follows the most probable paths through memory  safe but repetitive.
+- **Medium temperature (0.7)**: Balanced exploration of memory  coherent and varied.
+- **High temperature (1.5)**: Random sampling overwhelms memory  gibberish.
 
 ---
 
@@ -2911,15 +2911,15 @@ graph TB
 
 When you interact with an LLM like Claude or GPT-4, all four memory types are active:
 
-1. **Parametric memory** (weights): Everything the model learned during training — language structure, facts, reasoning patterns. This is why it "knows" things without being told. Trillions of parameters encoding billions of facts.
+1. **Parametric memory** (weights): Everything the model learned during training  language structure, facts, reasoning patterns. This is why it "knows" things without being told. Trillions of parameters encoding billions of facts.
 
 2. **Working memory** (context window): Your current conversation. Everything you've said and it has replied. This is why it can reference your earlier messages. Limited to a fixed window (e.g., 128K tokens for some models).
 
-3. **Embedding representations**: How the model represents each token internally. The reason it understands that "happy" and "glad" are related — their embeddings are similar.
+3. **Embedding representations**: How the model represents each token internally. The reason it understands that "happy" and "glad" are related  their embeddings are similar.
 
 4. **KV cache** (attention states): Cached intermediate computations that speed up generation. We'll explore this in Part 3 (attention) and Part 4 (transformers).
 
-**The critical insight**: Neural networks have NO external memory by default. Everything they "know" must be baked into their weights during training or provided in the context window during inference. This is why **Retrieval-Augmented Generation (RAG)** exists — to extend neural network memory with external databases. We'll build RAG systems in Parts 12-14 of this series.
+**The critical insight**: Neural networks have NO external memory by default. Everything they "know" must be baked into their weights during training or provided in the context window during inference. This is why **Retrieval-Augmented Generation (RAG)** exists  to extend neural network memory with external databases. We'll build RAG systems in Parts 12-14 of this series.
 
 ---
 
@@ -2942,12 +2942,12 @@ When you interact with an LLM like Claude or GPT-4, all four memory types are ac
 
 If you're new to reading ML papers, here's a practical approach:
 
-1. **Read the abstract** — what problem are they solving?
-2. **Look at the figures** — most papers have one key diagram that explains everything
-3. **Read the introduction** — why does this matter?
-4. **Skip to the experiments** — does it actually work?
-5. **Only then read the method section** — how does it work in detail?
-6. **Ignore the related work section** — until you need to understand the broader landscape
+1. **Read the abstract**  what problem are they solving?
+2. **Look at the figures**  most papers have one key diagram that explains everything
+3. **Read the introduction**  why does this matter?
+4. **Skip to the experiments**  does it actually work?
+5. **Only then read the method section**  how does it work in detail?
+6. **Ignore the related work section**  until you need to understand the broader landscape
 
 ---
 
@@ -2995,19 +2995,19 @@ If you're new to reading ML papers, here's a practical approach:
 
 ### What We Built in This Part
 
-1. **A single neuron** that learns logic gates (AND, OR) and fails on XOR — showing that weights encode decisions and individual neurons are limited to linear boundaries
+1. **A single neuron** that learns logic gates (AND, OR) and fails on XOR  showing that weights encode decisions and individual neurons are limited to linear boundaries
 
-2. **A multi-layer network** that solves XOR — demonstrating that stacking layers creates hierarchical feature learning, where each layer builds richer representations
+2. **A multi-layer network** that solves XOR  demonstrating that stacking layers creates hierarchical feature learning, where each layer builds richer representations
 
-3. **A complete training pipeline** with backpropagation — making gradient descent concrete: loss measures error, gradients show direction, weight updates form memory
+3. **A complete training pipeline** with backpropagation  making gradient descent concrete: loss measures error, gradients show direction, weight updates form memory
 
-4. **Overfitting and regularization** — revealing the fundamental tension between memorization and generalization, with dropout as controlled forgetting
+4. **Overfitting and regularization**  revealing the fundamental tension between memorization and generalization, with dropout as controlled forgetting
 
-5. **Embedding layers** — connecting Part 1's concept of learned representations to the actual mechanism: a trainable lookup table where similar items get similar vectors
+5. **Embedding layers**  connecting Part 1's concept of learned representations to the actual mechanism: a trainable lookup table where similar items get similar vectors
 
-6. **RNN and LSTM cells** — introducing temporal memory: hidden states carry context through time, and LSTM gates control what to remember, forget, and output
+6. **RNN and LSTM cells**  introducing temporal memory: hidden states carry context through time, and LSTM gates control what to remember, forget, and output
 
-7. **A working text generator** — putting it all together with a character-level LSTM that learns patterns and generates text
+7. **A working text generator**  putting it all together with a character-level LSTM that learns patterns and generates text
 
 ### The Core Insight
 
@@ -3016,21 +3016,21 @@ If you're new to reading ML papers, here's a practical approach:
 ### The Limitations We Hit
 
 - **Fixed-size bottleneck**: RNNs compress entire sequences into a single vector
-- **Sequential processing**: Each step depends on the previous one — no parallelism
+- **Sequential processing**: Each step depends on the previous one  no parallelism
 - **Recency bias**: Even LSTMs struggle with very long-range dependencies
 - **No direct access to past**: The model can only "see" its compressed hidden state, not the raw previous inputs
 
-### What's Next: Part 3 — The Attention Mechanism
+### What's Next: Part 3  The Attention Mechanism
 
-In Part 3, we solve all of these limitations. The **attention mechanism** lets a model look back at ALL previous positions when processing each token — no bottleneck, no compression, no information loss from distance.
+In Part 3, we solve all of these limitations. The **attention mechanism** lets a model look back at ALL previous positions when processing each token  no bottleneck, no compression, no information loss from distance.
 
 We'll build:
-- **Bahdanau attention** (additive, 2014) — the original
-- **Luong attention** (multiplicative, 2015) — the simplification
-- **Scaled dot-product attention** — the version used in every modern LLM
-- **Multi-head attention** — parallel attention streams
-- **Self-attention** — the mechanism that makes transformers possible
-- **KV cache** — the optimization that makes inference fast
+- **Bahdanau attention** (additive, 2014)  the original
+- **Luong attention** (multiplicative, 2015)  the simplification
+- **Scaled dot-product attention**  the version used in every modern LLM
+- **Multi-head attention**  parallel attention streams
+- **Self-attention**  the mechanism that makes transformers possible
+- **KV cache**  the optimization that makes inference fast
 
 Attention is the single most important mechanism in modern AI. It transformed the field, enabled transformers, and made today's large language models possible. Understanding it deeply is non-negotiable.
 
@@ -3040,5 +3040,5 @@ See you in Part 3.
 
 *This is Part 2 of a 19-part series on Memory in AI Systems. Each part builds on the previous ones, with complete working code throughout.*
 
-**Previous**: Part 1 — Representations, Tokens, Vectors, and Embeddings
-**Next**: Part 3 — The Attention Mechanism: Teaching AI to Focus
+**Previous**: Part 1  Representations, Tokens, Vectors, and Embeddings
+**Next**: Part 3  The Attention Mechanism: Teaching AI to Focus

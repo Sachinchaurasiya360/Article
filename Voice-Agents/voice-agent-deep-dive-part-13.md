@@ -1,8 +1,8 @@
-# Voice Agents Deep Dive — Part 13: Phone Call Agents — Twilio, SIP, and Telephony Integration
+# Voice Agents Deep Dive  Part 13: Phone Call Agents  Twilio, SIP, and Telephony Integration
 
 ---
 
-**Series:** Building Voice Agents — A Developer's Deep Dive from Audio Fundamentals to Production
+**Series:** Building Voice Agents  A Developer's Deep Dive from Audio Fundamentals to Production
 **Part:** 13 of 19 (Voice Agent Frameworks)
 **Audience:** Developers with Python experience who want to build voice-powered AI agents from the ground up
 **Reading time:** ~45 minutes
@@ -11,7 +11,7 @@
 
 ## Introduction and Recap
 
-In **Part 12**, we surveyed the major voice agent frameworks — **LiveKit**, **Pipecat**, **Vocode**, and the growing ecosystem of managed platforms. We saw how each framework makes different trade-offs between developer control and operational convenience, and we built agents on top of each one to understand how the abstractions feel in practice.
+In **Part 12**, we surveyed the major voice agent frameworks  **LiveKit**, **Pipecat**, **Vocode**, and the growing ecosystem of managed platforms. We saw how each framework makes different trade-offs between developer control and operational convenience, and we built agents on top of each one to understand how the abstractions feel in practice.
 
 Those frameworks all assumed one thing: **a WebRTC or WebSocket connection** from a browser or app client. The audio arrived as clean PCM streams, latency was typically under 200 ms, and the user was sitting in front of a screen.
 
@@ -19,7 +19,7 @@ Now we enter a different world entirely.
 
 **Phone calls.**
 
-When a voice agent answers a phone, everything changes. The audio arrives as compressed mu-law (G.711) at 8 kHz. Latency budgets tighten to under 500 ms end-to-end or callers hang up. There is no visual feedback. Callers may be on poor cellular connections, driving, or elderly users unfamiliar with AI. And the legal stakes rise sharply — recording a call without disclosure can expose a company to multi-million-dollar class action lawsuits.
+When a voice agent answers a phone, everything changes. The audio arrives as compressed mu-law (G.711) at 8 kHz. Latency budgets tighten to under 500 ms end-to-end or callers hang up. There is no visual feedback. Callers may be on poor cellular connections, driving, or elderly users unfamiliar with AI. And the legal stakes rise sharply  recording a call without disclosure can expose a company to multi-million-dollar class action lawsuits.
 
 This part is the complete guide to phone call agents. We will cover **Twilio Voice** in depth, build inbound and outbound agents, handle DTMF menus, implement call transfer patterns, design AI-powered IVR, manage recordings, and address compliance from the first line of code. By the end, you will have a production-ready phone agent scaffold that handles real phone calls.
 
@@ -31,29 +31,29 @@ Before diving in, let us define the telephony terms that appear throughout this 
 
 | Term | Definition |
 |---|---|
-| **PSTN** | Public Switched Telephone Network — the global circuit-switched telephone infrastructure |
-| **SIP** | Session Initiation Protocol — the signaling protocol used to set up VoIP calls |
-| **TwiML** | Twilio Markup Language — XML instructions that tell Twilio how to handle a call |
-| **AMD** | Answering Machine Detection — algorithm to detect if a human or voicemail answered |
-| **DTMF** | Dual-Tone Multi-Frequency — the tones generated when pressing phone keypad digits |
-| **Mu-law / G.711** | The audio codec used over telephone networks — 8 kHz, 8-bit, ~64 kbps |
-| **IVR** | Interactive Voice Response — automated phone menu system |
+| **PSTN** | Public Switched Telephone Network  the global circuit-switched telephone infrastructure |
+| **SIP** | Session Initiation Protocol  the signaling protocol used to set up VoIP calls |
+| **TwiML** | Twilio Markup Language  XML instructions that tell Twilio how to handle a call |
+| **AMD** | Answering Machine Detection  algorithm to detect if a human or voicemail answered |
+| **DTMF** | Dual-Tone Multi-Frequency  the tones generated when pressing phone keypad digits |
+| **Mu-law / G.711** | The audio codec used over telephone networks  8 kHz, 8-bit, ~64 kbps |
+| **IVR** | Interactive Voice Response  automated phone menu system |
 | **Warm Transfer** | Transferring a call after briefing the receiving agent about the caller |
-| **Cold Transfer** | Blind transfer — caller is sent to another number without briefing |
-| **TCPA** | Telephone Consumer Protection Act — US federal law governing auto-dialed calls |
-| **PBX** | Private Branch Exchange — internal telephone switching system for a business |
-| **WebRTC** | Web Real-Time Communication — browser-based peer-to-peer audio/video |
+| **Cold Transfer** | Blind transfer  caller is sent to another number without briefing |
+| **TCPA** | Telephone Consumer Protection Act  US federal law governing auto-dialed calls |
+| **PBX** | Private Branch Exchange  internal telephone switching system for a business |
+| **WebRTC** | Web Real-Time Communication  browser-based peer-to-peer audio/video |
 | **Codec** | Encoder/decoder for audio compression (G.711, G.729, Opus, etc.) |
-| **TTS** | Text-to-Speech — converting text to spoken audio |
-| **ASR** | Automatic Speech Recognition — converting spoken audio to text |
+| **TTS** | Text-to-Speech  converting text to spoken audio |
+| **ASR** | Automatic Speech Recognition  converting spoken audio to text |
 | **Media Stream** | Twilio's WebSocket service for real-time raw audio access |
 | **Conference Bridge** | A shared audio channel where multiple parties can join the same call |
-| **NLU** | Natural Language Understanding — extracting intent and entities from text |
+| **NLU** | Natural Language Understanding  extracting intent and entities from text |
 | **Escalation** | Routing a call from AI to a human agent |
 
 ---
 
-## 1. Phone Call Agents vs Chat Agents — What Is Fundamentally Different
+## 1. Phone Call Agents vs Chat Agents  What Is Fundamentally Different
 
 Before writing a single line of code, we need to understand *why* phone calls demand a different engineering approach. The differences are not cosmetic. They touch every layer of the stack.
 
@@ -64,7 +64,7 @@ Before writing a single line of code, we need to understand *why* phone calls de
 phone_vs_chat_constraints.py
 
 Demonstrates the fundamental differences between phone call agents
-and web/app chat agents. This is a reference module — not intended
+and web/app chat agents. This is a reference module  not intended
 to run standalone, but to document the engineering constraints.
 """
 
@@ -118,7 +118,7 @@ class ChannelConstraints:
 CHANNEL_CONSTRAINTS = {
     ChannelType.PHONE_PSTN: ChannelConstraints(
         channel=ChannelType.PHONE_PSTN,
-        sample_rate_hz=8000,          # 8 kHz — telephone quality
+        sample_rate_hz=8000,          # 8 kHz  telephone quality
         bit_depth=8,                  # 8-bit mu-law encoding
         codec="G.711 mu-law",
         audio_bandwidth_kbps=64.0,
@@ -138,7 +138,7 @@ CHANNEL_CONSTRAINTS = {
     ),
     ChannelType.WEBRTC: ChannelConstraints(
         channel=ChannelType.WEBRTC,
-        sample_rate_hz=48000,         # 48 kHz — high quality
+        sample_rate_hz=48000,         # 48 kHz  high quality
         bit_depth=16,
         codec="Opus",
         audio_bandwidth_kbps=32.0,    # Opus is very efficient
@@ -203,7 +203,7 @@ if __name__ == "__main__":
 
 ### 1.2 The Latency Budget Problem
 
-The latency budget for phone calls is brutally tight. A caller who hears more than 500 ms of silence after finishing a sentence assumes the call dropped and hangs up. This means every component in the pipeline — ASR, LLM inference, TTS synthesis, and audio encoding — must complete within that window.
+The latency budget for phone calls is brutally tight. A caller who hears more than 500 ms of silence after finishing a sentence assumes the call dropped and hangs up. This means every component in the pipeline  ASR, LLM inference, TTS synthesis, and audio encoding  must complete within that window.
 
 ```
 Caller speaks → [Audio transmission] → ASR → LLM → TTS → [Audio transmission] → Caller hears
@@ -584,7 +584,7 @@ if __name__ == "__main__":
         list_phone_numbers()
 ```
 
-### 2.3 TwiML Reference — The Call Flow Language
+### 2.3 TwiML Reference  The Call Flow Language
 
 TwiML (Twilio Markup Language) is the XML dialect that tells Twilio what to do with a call. Every webhook response must return valid TwiML.
 
@@ -918,7 +918,7 @@ def incoming_call():
         track="both_tracks",  # Receive both caller and agent audio
     )
 
-    # Keep the call alive — agent will speak via the stream
+    # Keep the call alive  agent will speak via the stream
     # This pause needs to be long enough to cover the entire conversation
     twiml.pause(length=300)  # 5 minutes max; hangup ends it earlier
 
@@ -963,7 +963,7 @@ def handle_speech():
     logger.info(f"Speech from {call_sid}: '{speech}' (confidence: {confidence})")
 
     if not speech:
-        # No speech detected — re-prompt
+        # No speech detected  re-prompt
         twiml = (
             TwiMLBuilder()
             .say("I'm sorry, I didn't hear anything.")
@@ -995,7 +995,7 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
 ```
 
-### 2.5 Twilio Media Streams — Real-Time Audio over WebSocket
+### 2.5 Twilio Media Streams  Real-Time Audio over WebSocket
 
 The Media Streams feature is what makes real AI voice agents possible on Twilio. Instead of relying on Twilio's built-in TTS/ASR, you receive raw audio over a WebSocket and send back synthesized speech.
 
@@ -1091,7 +1091,7 @@ class CallSession:
         self.conversation_history = []
         self.system_prompt = (
             "You are a helpful customer service AI for Acme Corp. "
-            "Keep responses brief — under 30 words — since this is a phone call. "
+            "Keep responses brief  under 30 words  since this is a phone call. "
             "Be warm, professional, and efficient. "
             "If you cannot help with something, offer to transfer to a human agent."
         )
@@ -1455,7 +1455,7 @@ class AgentConfig:
     # System prompt
     system_prompt: str = (
         "You are a helpful customer service AI. "
-        "Keep responses under 25 words — this is a phone call. "
+        "Keep responses under 25 words  this is a phone call. "
         "Be warm and professional. If the user needs human assistance, "
         "say 'I'll transfer you to a human agent.'"
     )
@@ -1544,7 +1544,7 @@ class TwilioVoiceAgent:
         logger.info(f"TwilioVoiceAgent initialized for call {call_sid}")
 
     async def start(self) -> None:
-        """Start the agent — called when Media Stream begins."""
+        """Start the agent  called when Media Stream begins."""
         self.state = AgentState.IDLE
         self.call_start_time = time.time()
 
@@ -1555,7 +1555,7 @@ class TwilioVoiceAgent:
         self._no_input_task = asyncio.create_task(self._no_input_watchdog())
 
     async def stop(self) -> None:
-        """Stop the agent — called when call ends or stream stops."""
+        """Stop the agent  called when call ends or stream stops."""
         self.state = AgentState.ENDED
 
         if self._no_input_task:
@@ -1612,7 +1612,7 @@ class TwilioVoiceAgent:
                         # Process asynchronously
                         asyncio.create_task(self._handle_utterance(audio_data))
                     else:
-                        # Too short — noise or false trigger
+                        # Too short  noise or false trigger
                         self.audio_buffer = []
                         self.silence_frame_count = 0
                         self.speech_frame_count = 0
@@ -1707,7 +1707,7 @@ class TwilioVoiceAgent:
             raise ValueError(f"Unknown ASR provider: {self.config.asr_provider}")
 
     async def _transcribe_deepgram(self, mulaw_audio: bytes) -> str:
-        """Transcribe with Deepgram (recommended for telephony — supports mu-law)."""
+        """Transcribe with Deepgram (recommended for telephony  supports mu-law)."""
         import aiohttp
 
         api_key = os.environ["DEEPGRAM_API_KEY"]
@@ -1970,7 +1970,7 @@ class TwilioVoiceAgent:
 
 ## 4. Outbound Calling Agent
 
-An outbound calling agent dials customers proactively — for appointment reminders, surveys, or follow-ups. Outbound calling has additional requirements: answering machine detection (AMD), do-not-call compliance, and handling call rejection gracefully.
+An outbound calling agent dials customers proactively  for appointment reminders, surveys, or follow-ups. Outbound calling has additional requirements: answering machine detection (AMD), do-not-call compliance, and handling call rejection gracefully.
 
 ### 4.1 Outbound Call Flow
 
@@ -2074,7 +2074,7 @@ class DialerConfig:
     max_concurrent_calls: int = 5
     calls_per_minute: int = 10
 
-    # Calling hours (local time of contact — simplified to UTC here)
+    # Calling hours (local time of contact  simplified to UTC here)
     calling_hours_start: int = 9   # 9 AM
     calling_hours_end: int = 20    # 8 PM
 
@@ -2193,13 +2193,13 @@ class OutboundDialer:
         """Call a single contact, with retries."""
         # Check DNC
         if self.dnc.is_blocked(contact.phone_number):
-            logger.info(f"Skipping {contact.phone_number} — on DNC list")
+            logger.info(f"Skipping {contact.phone_number}  on DNC list")
             contact.outcome = CallOutcome.DNC_SKIP
             return
 
         # Check calling hours
         if not self._is_calling_hours():
-            logger.info(f"Outside calling hours — skipping {contact.phone_number}")
+            logger.info(f"Outside calling hours  skipping {contact.phone_number}")
             contact.outcome = CallOutcome.NO_ANSWER
             return
 
@@ -2477,7 +2477,7 @@ class DTMFMenu:
                 if option["label"].lower() in speech_lower:
                     return option
 
-            # No keyword match — pass to speech handler
+            # No keyword match  pass to speech handler
             return {"handler": self._speech_handler, "label": "speech_fallback"}
 
         return None
@@ -2573,8 +2573,8 @@ Call transfers are a critical feature of any production phone agent. There are t
 
 | Pattern | Description | Caller Experience | Use Case |
 |---|---|---|---|
-| **Cold Transfer** | Blind transfer — caller is sent directly to new number | Caller may need to re-explain | Low-priority transfers, simple routing |
-| **Warm Transfer** | AI briefs human agent before connecting | Seamless — agent knows context | High-value customers, complex issues |
+| **Cold Transfer** | Blind transfer  caller is sent directly to new number | Caller may need to re-explain | Low-priority transfers, simple routing |
+| **Warm Transfer** | AI briefs human agent before connecting | Seamless  agent knows context | High-value customers, complex issues |
 | **Conference Bridge** | Three-way call: AI + human + caller | AI can stay and assist human | Training, compliance monitoring |
 | **SIP REFER** | Native SIP transfer (no media relay) | Technically seamless | VoIP-to-VoIP environments |
 | **Queue Transfer** | Put in ACD queue with position updates | Caller knows wait time | Call center integration |
@@ -2783,7 +2783,7 @@ def connect_agent():
 
 ---
 
-## 7. AI-Powered IVR — AIInteractiveVoiceResponse
+## 7. AI-Powered IVR  AIInteractiveVoiceResponse
 
 Traditional IVR systems force callers through rigid menus. AI IVR understands natural language and routes calls intelligently.
 
@@ -2819,7 +2819,7 @@ stateDiagram-v2
 """
 ai_ivr.py
 
-AIInteractiveVoiceResponse — NLU-powered IVR system.
+AIInteractiveVoiceResponse  NLU-powered IVR system.
 Routes calls based on natural language understanding rather than
 rigid menu trees.
 
@@ -2954,7 +2954,7 @@ Respond with JSON only:
         except ValueError:
             intent = IVRIntent.UNKNOWN
 
-        logger.info(f"NLU: '{speech_text}' -> {intent.value} ({confidence:.2f}) — {summary}")
+        logger.info(f"NLU: '{speech_text}' -> {intent.value} ({confidence:.2f})  {summary}")
         return intent, confidence, summary
 
 
@@ -3098,11 +3098,11 @@ def ivr_classify():
     loop.close()
 
     if confidence < ivr.CONFIDENCE_THRESHOLD and not clarifying:
-        # Not confident enough — ask for clarification
+        # Not confident enough  ask for clarification
         return Response(ivr.build_clarify_twiml(first_attempt=True), content_type="application/xml")
 
     if confidence < ivr.CONFIDENCE_THRESHOLD or intent == IVRIntent.UNKNOWN:
-        # Still unclear — transfer to human
+        # Still unclear  transfer to human
         route = IVR_ROUTES[IVRIntent.SPEAK_HUMAN]
     else:
         route = IVR_ROUTES.get(intent, IVR_ROUTES[IVRIntent.SPEAK_HUMAN])
@@ -3489,11 +3489,11 @@ def recording_complete():
 
 ---
 
-## 9. Compliance — TCPA, AI Disclosure, and Consent
+## 9. Compliance  TCPA, AI Disclosure, and Consent
 
 Compliance is not optional. Phone call agents operate in one of the most heavily regulated communication channels in the United States and globally. A single compliance failure can result in multi-million-dollar class action lawsuits.
 
-> **Key Insight:** The Telephone Consumer Protection Act (TCPA) allows plaintiffs to recover $500-$1,500 per *individual* violation. A single illegal outbound calling campaign to 10,000 people without consent can expose a company to up to $15 million in statutory damages — and class actions multiply this further.
+> **Key Insight:** The Telephone Consumer Protection Act (TCPA) allows plaintiffs to recover $500-$1,500 per *individual* violation. A single illegal outbound calling campaign to 10,000 people without consent can expose a company to up to $15 million in statutory damages  and class actions multiply this further.
 
 ### 9.1 Compliance by Jurisdiction
 
@@ -3802,9 +3802,9 @@ A typical 5-minute customer service call with an AI agent costs roughly:
 |---|---|---|
 | Inbound call (5 min) | 5 x $0.0085 | $0.043 |
 | Media Streams (5 min) | 5 x $0.004 | $0.020 |
-| ASR — Deepgram (5 min) | 5 x $0.0043 | $0.022 |
-| LLM — GPT-4o-mini (10 turns x 150 tokens) | 1,500 tokens at blended rate | $0.001 |
-| TTS — OpenAI (10 responses x 50 chars) | 500 chars at $15/1M | $0.008 |
+| ASR  Deepgram (5 min) | 5 x $0.0043 | $0.022 |
+| LLM  GPT-4o-mini (10 turns x 150 tokens) | 1,500 tokens at blended rate | $0.001 |
+| TTS  OpenAI (10 responses x 50 chars) | 500 chars at $15/1M | $0.008 |
 | Recording storage (1 month) | 5 min x $0.0025 | $0.013 |
 | **Total per call** | | **~$0.107** |
 
@@ -3984,7 +3984,7 @@ class CostTracker:
 
 ---
 
-## 11. Complete Project — Production Phone Agent
+## 11. Complete Project  Production Phone Agent
 
 Now we assemble everything into a complete, production-ready phone agent application. This integrates Flask for webhooks, FastAPI and WebSockets for media streams, and the `TwilioVoiceAgent` class.
 
@@ -4110,7 +4110,7 @@ def twiml_response(xml: str) -> Response:
 
 @flask_app.route("/incoming-call", methods=["POST"])
 def incoming_call():
-    """Handle inbound calls — start Media Stream to our agent."""
+    """Handle inbound calls  start Media Stream to our agent."""
     call_sid = request.form.get("CallSid", "unknown")
     caller = request.form.get("From", "Unknown")
     caller_state = request.form.get("FromState", "")
@@ -4126,7 +4126,7 @@ def incoming_call():
     )
     response.append(start)
 
-    # Keep call alive — agent speaks via stream
+    # Keep call alive  agent speaks via stream
     response.pause(length=300)
 
     return twiml_response(str(response))
@@ -4337,7 +4337,7 @@ class AgentSession:
                 "role": "system",
                 "content": (
                     f"You are a helpful AI assistant for {COMPANY_NAME}. "
-                    "Keep responses under 25 words — this is a phone call. "
+                    "Keep responses under 25 words  this is a phone call. "
                     "If the caller needs human help, say 'I'll transfer you to a human agent.'"
                 ),
             }
@@ -4459,7 +4459,7 @@ if __name__ == "__main__":
 ### 11.2 Environment Configuration
 
 ```bash
-# .env.example — Environment variables for phone agent
+# .env.example  Environment variables for phone agent
 # Copy to .env and fill in your values.
 # Never commit .env to version control.
 
@@ -4612,7 +4612,7 @@ Production configuration and scaling guidance for phone agents.
 Documents gunicorn and uvicorn deployment configuration.
 """
 
-# gunicorn.conf.py — for Flask webhook server
+# gunicorn.conf.py  for Flask webhook server
 # Place in project root as gunicorn.conf.py
 
 GUNICORN_CONFIG = """
@@ -4900,12 +4900,12 @@ While Twilio handles most use cases, some organizations need direct SIP integrat
 
 | Scenario | Recommendation |
 |---|---|
-| Starting out, small volume | Twilio — pay as you go, no infrastructure |
-| > 1M minutes/month | SIP Trunking — significantly lower per-minute rates |
+| Starting out, small volume | Twilio  pay as you go, no infrastructure |
+| > 1M minutes/month | SIP Trunking  significantly lower per-minute rates |
 | Existing PBX/call center | SIP trunk to your existing infrastructure |
-| Ultra-low latency needed | SIP directly to carrier — fewer hops |
-| Global phone number inventory | Twilio — 150+ countries managed for you |
-| Custom codec requirements | SIP — full codec negotiation control |
+| Ultra-low latency needed | SIP directly to carrier  fewer hops |
+| Global phone number inventory | Twilio  150+ countries managed for you |
+| Custom codec requirements | SIP  full codec negotiation control |
 | HIPAA compliance | Twilio has BAA; SIP gives full data control |
 
 ```python
@@ -4915,7 +4915,7 @@ sip_config.py
 SIP trunk configuration helpers for organizations integrating
 with existing telephony infrastructure or self-hosted carriers.
 
-This is a configuration reference — actual SIP implementation
+This is a configuration reference  actual SIP implementation
 requires Asterisk, FreeSWITCH, or equivalent PBX.
 """
 
@@ -5049,11 +5049,11 @@ The most common cause is sequential rather than parallel processing. Start TTS s
 
 **2. Audio Choppy or Glitchy**
 
-Chunk size mismatch is usually the culprit. Twilio expects 20ms audio frames (160 bytes of mu-law at 8kHz). Send audio in exactly 160-byte chunks with 20ms pacing between chunks. Do not send large audio blobs at once — Twilio's jitter buffer cannot absorb them gracefully.
+Chunk size mismatch is usually the culprit. Twilio expects 20ms audio frames (160 bytes of mu-law at 8kHz). Send audio in exactly 160-byte chunks with 20ms pacing between chunks. Do not send large audio blobs at once  Twilio's jitter buffer cannot absorb them gracefully.
 
 **3. Caller Audio Not Being Received**
 
-Check that you are subscribing to `"inbound_track"` or `"both_tracks"` in your `<Stream>` TwiML. Confirm you are filtering for `track == "inbound"` in your WebSocket handler. Outbound track is the audio your agent sends back to the caller — inbound is the caller's audio coming to you.
+Check that you are subscribing to `"inbound_track"` or `"both_tracks"` in your `<Stream>` TwiML. Confirm you are filtering for `track == "inbound"` in your WebSocket handler. Outbound track is the audio your agent sends back to the caller  inbound is the caller's audio coming to you.
 
 **4. Recording Webhook Never Fires**
 
@@ -5075,7 +5075,7 @@ When using `<Gather input="speech dtmf">`, DTMF tones generated during speech pr
 
 ## Key Insights Summary
 
-> **The most important optimization you can make to a phone agent is latency reduction, not quality improvement. A 95%-accurate response in 400ms beats a 99%-accurate response in 900ms — the caller has already started re-speaking.**
+> **The most important optimization you can make to a phone agent is latency reduction, not quality improvement. A 95%-accurate response in 400ms beats a 99%-accurate response in 900ms  the caller has already started re-speaking.**
 
 > **Always disclose AI proactively. Users who discover mid-conversation that they are talking to an AI feel deceived. Users who are told upfront generally accept it and adapt quickly. The disclosure overhead (3-5 seconds) is worth the trust it builds.**
 
@@ -5087,15 +5087,15 @@ When using `<Gather input="speech dtmf">`, DTMF tones generated during speech pr
 
 ---
 
-## What's Next — Part 14: Multi-Language and Emotion Detection
+## What's Next  Part 14: Multi-Language and Emotion Detection
 
 In **Part 14**, we leave the telephony layer and go deep into two capabilities that dramatically increase the reach and quality of voice agents: **multi-language support** and **emotion detection**.
 
 The challenges we will tackle include:
 
 **Multi-language voice agents** are not simply "use a different ASR model." Language affects everything:
-- Turn-taking norms differ significantly — Japanese and English have very different pause expectations, and an agent calibrated for English will constantly interrupt Japanese speakers
-- Politeness registers matter — Korean and Japanese require matching the caller's formality level
+- Turn-taking norms differ significantly  Japanese and English have very different pause expectations, and an agent calibrated for English will constantly interrupt Japanese speakers
+- Politeness registers matter  Korean and Japanese require matching the caller's formality level
 - Number and date formats vary enough to cause serious misunderstandings in transactional calls
 - Mixed-language speech (Spanglish, Hinglish, Taglish) requires per-utterance language identification, not session-level selection
 
@@ -5104,7 +5104,7 @@ The challenges we will tackle include:
 - Spectral features: MFCCs, chroma, spectral centroid
 - Acoustic models trained on emotional speech datasets (RAVDESS, CREMA-D, MSP-Podcast)
 - Real-time frustration detection that triggers human escalation before the caller hangs up
-- Empathy injection — dynamically adapting agent tone and response style to match caller emotional state
+- Empathy injection  dynamically adapting agent tone and response style to match caller emotional state
 
 We will build in Part 14:
 - A multilingual `LanguageRouter` that detects language per utterance and routes to the appropriate ASR and TTS pipeline
@@ -5112,11 +5112,11 @@ We will build in Part 14:
 - An `EmpathyAdapter` that modulates LLM system prompts based on detected emotion state
 - Full integration with the `TwilioVoiceAgent` built in this part
 
-Part 14 will also cover the EU AI Act's emerging requirements around emotion recognition in AI systems — a compliance consideration already relevant for enterprise voice agent deployments in Europe.
+Part 14 will also cover the EU AI Act's emerging requirements around emotion recognition in AI systems  a compliance consideration already relevant for enterprise voice agent deployments in Europe.
 
 ---
 
-## Vocabulary Cheat Sheet — Extended Reference
+## Vocabulary Cheat Sheet  Extended Reference
 
 A complete reference of all telephony and telephony-adjacent terms used throughout this part.
 
@@ -5130,11 +5130,11 @@ A complete reference of all telephony and telephony-adjacent terms used througho
 | **IVR** | Interactive Voice Response | Automated telephony system that interacts via voice and DTMF |
 | **PBX** | Private Branch Exchange | Telephone switch within an enterprise |
 | **CPaaS** | Communications Platform as a Service | Cloud-based communications APIs (Twilio, Vonage, etc.) |
-| **G.711** | — | ITU-T codec for PSTN audio: 8kHz, 8-bit, 64kbps |
-| **Mu-law** | — | G.711 variant used in North America and Japan |
-| **A-law** | — | G.711 variant used in Europe and rest of world |
-| **G.729** | — | Low-bandwidth speech codec: 8kHz, 8kbps |
-| **Opus** | — | Modern WebRTC codec: 8-48kHz, 6-510kbps |
+| **G.711** |  | ITU-T codec for PSTN audio: 8kHz, 8-bit, 64kbps |
+| **Mu-law** |  | G.711 variant used in North America and Japan |
+| **A-law** |  | G.711 variant used in Europe and rest of world |
+| **G.729** |  | Low-bandwidth speech codec: 8kHz, 8kbps |
+| **Opus** |  | Modern WebRTC codec: 8-48kHz, 6-510kbps |
 | **WebRTC** | Web Real-Time Communication | Browser API for peer-to-peer audio/video |
 | **RTP** | Real-time Transport Protocol | Network protocol for delivering audio/video over IP |
 | **SRTP** | Secure Real-time Transport Protocol | Encrypted RTP |
@@ -5152,18 +5152,18 @@ A complete reference of all telephony and telephony-adjacent terms used througho
 | **DNC** | Do Not Call | Registry of numbers that cannot receive unsolicited calls |
 | **CASL** | Canada's Anti-Spam Legislation | Canadian law governing commercial communications |
 | **PECR** | Privacy and Electronic Communications Regulations | UK law governing electronic marketing |
-| **Warm Transfer** | — | Transferring a call after briefing the receiving party |
-| **Cold Transfer** | — | Blind transfer with no briefing of receiving party |
-| **Conference Bridge** | — | Audio conference where multiple parties join the same call |
-| **SIP REFER** | — | SIP method for transferring a call without media relaying |
+| **Warm Transfer** |  | Transferring a call after briefing the receiving party |
+| **Cold Transfer** |  | Blind transfer with no briefing of receiving party |
+| **Conference Bridge** |  | Audio conference where multiple parties join the same call |
+| **SIP REFER** |  | SIP method for transferring a call without media relaying |
 | **QA Score** | Quality Assurance Score | Numerical rating of agent performance on a call |
 | **CSAT** | Customer Satisfaction | Post-call measure of customer satisfaction |
 | **AHT** | Average Handle Time | Average duration of a call including hold and wrap-up |
 | **FCR** | First Call Resolution | Percentage of calls resolved without follow-up |
-| **Jitter** | — | Variation in packet arrival delay — high jitter causes choppy audio |
+| **Jitter** |  | Variation in packet arrival delay  high jitter causes choppy audio |
 | **MOS** | Mean Opinion Score | ITU-T 1-5 scale for audio quality assessment |
-| **Media Stream** | — | Twilio's WebSocket service for real-time raw audio access |
-| **E.164** | — | International telephone numbering standard (e.g., +14155551234) |
+| **Media Stream** |  | Twilio's WebSocket service for real-time raw audio access |
+| **E.164** |  | International telephone numbering standard (e.g., +14155551234) |
 | **CNAM** | Caller Name | Database lookup providing caller's name alongside their number |
 | **LNP** | Local Number Portability | Ability to keep number when changing carriers |
 | **DID** | Direct Inward Dialing | Individual phone number that routes to a specific extension |
@@ -5186,7 +5186,7 @@ A complete reference of all telephony and telephony-adjacent terms used througho
 | Part 10 | Dialog Management | Complete |
 | Part 11 | Memory and Context Management | Complete |
 | Part 12 | Voice Agent Frameworks | Complete |
-| **Part 13** | **Phone Call Agents — Twilio, SIP, Telephony** | **You are here** |
+| **Part 13** | **Phone Call Agents  Twilio, SIP, Telephony** | **You are here** |
 | Part 14 | Multi-Language and Emotion Detection | Coming Next |
 | Part 15 | Multimodal Voice Agents | Upcoming |
 | Part 16 | Voice Agent Security | Upcoming |
@@ -5196,6 +5196,6 @@ A complete reference of all telephony and telephony-adjacent terms used througho
 
 ---
 
-*Part 13 of 19 — Building Voice Agents: A Developer's Deep Dive from Audio Fundamentals to Production*
+*Part 13 of 19  Building Voice Agents: A Developer's Deep Dive from Audio Fundamentals to Production*
 
 *Published: March 2026*

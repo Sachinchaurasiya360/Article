@@ -1,8 +1,8 @@
-# Memory in AI Systems Deep Dive — Part 13: Updating and Editing Memory — When Knowledge Changes
+# Memory in AI Systems Deep Dive  Part 13: Updating and Editing Memory  When Knowledge Changes
 
 ---
 
-**Series:** Memory in AI Systems — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Memory in AI Systems  A Developer's Deep Dive from Fundamentals to Production
 **Part:** 13 of 19 (Memory Updates)
 **Audience:** Developers with programming experience who want to understand AI memory systems from the ground up
 **Reading time:** ~45 minutes
@@ -27,9 +27,9 @@
 
 In Parts 1 through 12, we built sophisticated memory systems that can store, retrieve, index, and organize knowledge. But we glossed over one of the hardest problems in production memory systems: **what happens when the world changes?**
 
-Think about it. Your memory system carefully stores that "Alice works at Acme Corp" in March 2024. In September 2024, Alice changes jobs. Now your system confidently tells every query that Alice is at Acme Corp — and it is **dead wrong**. This is not a retrieval failure. This is not an indexing bug. The memory itself has become a lie.
+Think about it. Your memory system carefully stores that "Alice works at Acme Corp" in March 2024. In September 2024, Alice changes jobs. Now your system confidently tells every query that Alice is at Acme Corp  and it is **dead wrong**. This is not a retrieval failure. This is not an indexing bug. The memory itself has become a lie.
 
-> **The uncomfortable truth:** A memory system that never forgets is not smart — it is dangerously naive. Real intelligence requires knowing when to update, overwrite, and even delete what you once knew.
+> **The uncomfortable truth:** A memory system that never forgets is not smart  it is dangerously naive. Real intelligence requires knowing when to update, overwrite, and even delete what you once knew.
 
 This part tackles the full lifecycle of memory maintenance: detecting contradictions, tracking staleness, versioning changes, resolving conflicts, and garbage-collecting memories that have outlived their usefulness. By the end, you will have a self-maintaining memory system that keeps itself honest.
 
@@ -39,7 +39,7 @@ This part tackles the full lifecycle of memory maintenance: detecting contradict
 
 ### 1.1 Why Memories Go Stale
 
-Memory staleness is not a bug — it is an inevitability. The world changes, and any system that stores facts about the world will eventually hold facts that are no longer true. Let us categorize the ways this happens.
+Memory staleness is not a bug  it is an inevitability. The world changes, and any system that stores facts about the world will eventually hold facts that are no longer true. Let us categorize the ways this happens.
 
 **Category 1: Entity attribute changes**
 
@@ -59,7 +59,7 @@ Interest rates change. Laws change. API versions deprecate. Best practices evolv
 
 ### 1.2 The Cost of Stale Memory
 
-Stale memory is not just "slightly wrong" — it actively causes harm:
+Stale memory is not just "slightly wrong"  it actively causes harm:
 
 | Impact | Example | Severity |
 |--------|---------|----------|
@@ -99,7 +99,7 @@ class MemoryEntry:
 class NaiveMemoryStore:
     """
     A memory store that never questions its contents.
-    This is what most tutorials build — and it is dangerously incomplete.
+    This is what most tutorials build  and it is dangerously incomplete.
     """
 
     def __init__(self):
@@ -157,8 +157,8 @@ flowchart TD
     B -->|No conflict| C[Store as new memory]
     B -->|Potential conflict| D[Contradiction Detection]
     D --> E{Is it a true<br/>contradiction?}
-    E -->|No — compatible| F[Store alongside existing]
-    E -->|Yes — contradicts| G[Conflict Resolution]
+    E -->|No  compatible| F[Store alongside existing]
+    E -->|Yes  contradicts| G[Conflict Resolution]
     G --> H{Which version<br/>is correct?}
     H -->|New info wins| I[Update memory,<br/>version old one]
     H -->|Old info wins| J[Discard new info,<br/>log attempt]
@@ -176,11 +176,11 @@ flowchart TD
 
 This lifecycle involves several subsystems working together:
 
-1. **Contradiction Detection** — Knows when new info conflicts with old info
-2. **Staleness Detection** — Knows when old info might be outdated even without new info
-3. **Memory Versioning** — Tracks the history of changes
-4. **Conflict Resolution** — Decides which version to keep
-5. **Garbage Collection** — Cleans up memories that are no longer needed
+1. **Contradiction Detection**  Knows when new info conflicts with old info
+2. **Staleness Detection**  Knows when old info might be outdated even without new info
+3. **Memory Versioning**  Tracks the history of changes
+4. **Conflict Resolution**  Decides which version to keep
+5. **Garbage Collection**  Cleans up memories that are no longer needed
 
 Let us build each one.
 
@@ -201,11 +201,11 @@ A contradiction occurs when two pieces of information cannot both be true at the
 - "The service uses PostgreSQL" vs. "The service is fully serverless with no relational database"
 
 **Temporal contradictions (not real contradictions):**
-- "Alice worked at Acme Corp in 2023" and "Alice works at TechStart Inc in 2024" — both can be true
-- "The price was $10 last month" and "The price is $15 this month" — both can be true
+- "Alice worked at Acme Corp in 2023" and "Alice works at TechStart Inc in 2024"  both can be true
+- "The price was $10 last month" and "The price is $15 this month"  both can be true
 
 **Scope contradictions (not real contradictions):**
-- "Python is great for data science" and "Python is slow for real-time systems" — both can be true
+- "Python is great for data science" and "Python is slow for real-time systems"  both can be true
 
 ### 2.2 Building a Contradiction Detector
 
@@ -378,7 +378,7 @@ class ContradictionDetector:
         for neg, pos in negation_pairs:
             # Check if one statement negates the other
             if neg in new_lower and pos in existing_lower:
-                # Extract the subject — the text before the verb
+                # Extract the subject  the text before the verb
                 new_subject = new_lower.split(neg)[0].strip()
                 existing_subject = existing_lower.split(pos)[0].strip()
 
@@ -525,7 +525,7 @@ class ContradictionDetector:
                 ),
                 existing_fact=existing_fact,
                 new_fact=new_fact,
-                resolution_hint="Semantically similar but different — verify manually",
+                resolution_hint="Semantically similar but different  verify manually",
             )
 
         # Low similarity = unrelated, return None to signal "skip"
@@ -538,7 +538,7 @@ class ContradictionDetector:
             is_contradiction=False,
             contradiction_type=None,
             confidence=0.3,
-            explanation="Medium similarity — needs LLM verification",
+            explanation="Medium similarity  needs LLM verification",
             existing_fact=existing_fact,
             new_fact=new_fact,
         )
@@ -592,7 +592,7 @@ Rules:
                 )
 
         except (json.JSONDecodeError, KeyError, Exception):
-            # LLM check failed — do not block on this
+            # LLM check failed  do not block on this
             pass
 
         return None
@@ -738,7 +738,7 @@ flowchart LR
     Layer1 -->|Caught| Result1[High Confidence<br/>Contradiction]
     Layer1 -->|Not caught| Layer2
     Layer2 -->|High similarity| Result2[Medium Confidence<br/>Contradiction]
-    Layer2 -->|Low similarity| Skip[Skip — Unrelated]
+    Layer2 -->|Low similarity| Skip[Skip  Unrelated]
     Layer2 -->|Medium similarity| Layer3
     Layer3 --> Result3[LLM-Verified<br/>Contradiction]
 
@@ -765,7 +765,7 @@ The tiered approach means most checks are fast and cheap. Only the genuinely amb
 
 ## 3. Memory Staleness Detection
 
-### 3.1 Beyond Contradiction — Proactive Staleness
+### 3.1 Beyond Contradiction  Proactive Staleness
 
 Contradiction detection is reactive: it triggers when new information arrives. But what about facts that go stale silently, with no contradicting update? We need a system that proactively identifies memories that might be outdated.
 
@@ -853,12 +853,12 @@ class StalenessDetector:
     Proactive memory staleness detection.
 
     Uses multiple signals to assess how likely a memory is to be outdated:
-    1. Time-based decay — older memories are more likely stale
-    2. Access frequency — rarely accessed memories are lower priority
-    3. Category-specific TTLs — pricing data expires faster than names
-    4. Confidence degradation — confidence decays over time
-    5. Event-triggered invalidation — external events can invalidate memories
-    6. Dependency chains — if a dependency is stale, dependents may be too
+    1. Time-based decay  older memories are more likely stale
+    2. Access frequency  rarely accessed memories are lower priority
+    3. Category-specific TTLs  pricing data expires faster than names
+    4. Confidence degradation  confidence decays over time
+    5. Event-triggered invalidation  external events can invalidate memories
+    6. Dependency chains  if a dependency is stale, dependents may be too
     """
 
     # Default TTLs by category (in days)
@@ -1028,7 +1028,7 @@ class StalenessDetector:
         if access_rate < 0.01:  # Less than once per 100 days
             score = 0.6
             reasons.append(
-                f"Very low access rate ({access_rate:.4f}/day) — "
+                f"Very low access rate ({access_rate:.4f}/day)  "
                 f"staleness may go unnoticed"
             )
         elif access_rate < 0.1:  # Less than once per 10 days
@@ -1177,16 +1177,16 @@ class StalenessDetector:
             StalenessLevel.FRESH: "No action needed",
             StalenessLevel.LIKELY_FRESH: "No action needed",
             StalenessLevel.UNCERTAIN: (
-                "Schedule verification — confirm this fact is still accurate"
+                "Schedule verification  confirm this fact is still accurate"
             ),
             StalenessLevel.LIKELY_STALE: (
-                "Flag for review — this memory is likely outdated"
+                "Flag for review  this memory is likely outdated"
             ),
             StalenessLevel.STALE: (
-                "Mark as unverified — do not use without confirmation"
+                "Mark as unverified  do not use without confirmation"
             ),
             StalenessLevel.EXPIRED: (
-                "Remove or archive — this memory has exceeded its useful life"
+                "Remove or archive  this memory has exceeded its useful life"
             ),
         }
         return actions.get(level, "Unknown action")
@@ -1284,7 +1284,7 @@ Memory: 'Alice works at Acme Corp'
   Age: 200 days
   Staleness Level: likely_stale
   Decay Score: 0.548
-  Action: Flag for review — this memory is likely outdated
+  Action: Flag for review  this memory is likely outdated
   Reason: Memory is 200 days old (category 'job_role' has decay rate 0.02)
   Reason: Confidence degraded from 1.00 to 0.02 due to 200 days without verification
   Reason: Approaching TTL: 200/180 days (111%)
@@ -1294,14 +1294,14 @@ Memory: 'The API uses v2.3.1'
   Age: 45 days
   Staleness Level: uncertain
   Decay Score: 0.385
-  Action: Schedule verification — confirm this fact is still accurate
+  Action: Schedule verification  confirm this fact is still accurate
 
 Memory: 'Bob prefers dark mode'
   Category: user_preference
   Age: 365 days
   Staleness Level: stale
   Decay Score: 0.741
-  Action: Mark as unverified — do not use without confirmation
+  Action: Mark as unverified  do not use without confirmation
   Reason: Memory has not been updated in over a year
   Reason: Confidence degraded from 0.90 to 0.00 due to 365 days without verification
   Reason: Exceeded TTL: 365 days old, TTL is 90 days
@@ -1315,7 +1315,7 @@ Memory: 'Bob prefers dark mode'
 
 ### 4.1 Why Version Memories?
 
-When a memory updates, the old version is not worthless — it is **history**. Versioning gives us:
+When a memory updates, the old version is not worthless  it is **history**. Versioning gives us:
 
 - **Audit trail:** Know what was stored and when
 - **Rollback capability:** Undo incorrect updates
@@ -1845,7 +1845,7 @@ def demonstrate_versioned_memory():
         "alice_employer",
         target_version=2,
         changed_by="admin",
-        reason="Incorrect update — Alice is still at Acme Corp",
+        reason="Incorrect update  Alice is still at Acme Corp",
     )
     print(f"\nAfter rollback to v2:")
     print(f"  v{v4.version_number}: {v4.content}")
@@ -1888,13 +1888,13 @@ Temporal query (what was true at creation time):
 
 After rollback to v2:
   v4: Alice works at Acme Corp as a Staff Engineer
-  Reason: Incorrect update — Alice is still at Acme Corp (restored from version 2)
+  Reason: Incorrect update  Alice is still at Acme Corp (restored from version 2)
 
 Global changelog (4 entries):
   [created] alice_employer v1 by user_alice: Alice told us where she works
   [updated] alice_employer v2 by user_alice: Alice got promoted
   [updated] alice_employer v3 by user_alice: Alice changed companies
-  [rolled_back] alice_employer v4 by admin: Incorrect update — Alice is still at Acme Corp (restored from version 2)
+  [rolled_back] alice_employer v4 by admin: Incorrect update  Alice is still at Acme Corp (restored from version 2)
 ```
 
 > **Design decision:** Rollback creates a NEW version rather than deleting intermediate versions. This preserves the full audit trail. You can always see that version 3 existed and was rolled back. This is crucial for debugging and compliance.
@@ -1968,8 +1968,8 @@ class ConflictingFact:
     """A fact involved in a conflict."""
     content: str
     source: str
-    source_authority: float     # 0.0 to 1.0 — how authoritative the source is
-    confidence: float           # 0.0 to 1.0 — how confident we are
+    source_authority: float     # 0.0 to 1.0  how authoritative the source is
+    confidence: float           # 0.0 to 1.0  how confident we are
     timestamp: datetime         # When the fact was recorded
     context: Optional[str] = None  # Additional context (e.g., time period)
     corroborating_sources: int = 0  # How many other sources agree
@@ -2074,7 +2074,7 @@ class ConflictResolver:
         ):
             result.requires_human_review = True
             result.reasoning += (
-                f" (Low confidence {result.confidence:.2f} — "
+                f" (Low confidence {result.confidence:.2f}  "
                 f"flagged for human review)"
             )
 
@@ -2087,7 +2087,7 @@ class ConflictResolver:
         Simple strategy: the most recent write wins.
 
         Pros: Simple, predictable, fast
-        Cons: Ignores source quality — a bad recent source beats
+        Cons: Ignores source quality  a bad recent source beats
               a good older source
         """
         if new.timestamp >= existing.timestamp:
@@ -2122,7 +2122,7 @@ class ConflictResolver:
         Strategy: the higher-authority source wins.
 
         Pros: Respects data quality hierarchy
-        Cons: Inflexible — a user correction should beat official
+        Cons: Inflexible  a user correction should beat official
               docs if the docs are wrong
         """
         existing_auth = self.authorities.get(
@@ -2154,7 +2154,7 @@ class ConflictResolver:
                 ),
             )
 
-        # Similar authority — cannot decide
+        # Similar authority  cannot decide
         return ResolutionResult(
             outcome=ResolutionOutcome.DEFER_TO_HUMAN,
             winner=None,
@@ -2163,7 +2163,7 @@ class ConflictResolver:
             confidence=0.3,
             reasoning=(
                 f"Sources have similar authority "
-                f"({existing_auth:.2f} vs {new_auth:.2f}) — "
+                f"({existing_auth:.2f} vs {new_auth:.2f})  "
                 f"cannot determine winner"
             ),
             requires_human_review=True,
@@ -2207,7 +2207,7 @@ class ConflictResolver:
             confidence=0.3,
             reasoning=(
                 f"Similar confidence levels "
-                f"({existing.confidence:.2f} vs {new.confidence:.2f}) — "
+                f"({existing.confidence:.2f} vs {new.confidence:.2f})  "
                 f"cannot determine winner"
             ),
             requires_human_review=True,
@@ -2242,7 +2242,7 @@ class ConflictResolver:
                 strategy_used=ResolutionStrategy.TEMPORAL_ORDERING,
                 confidence=confidence,
                 reasoning=(
-                    f"New fact is {days_diff:.0f} days more recent — "
+                    f"New fact is {days_diff:.0f} days more recent  "
                     f"temporal context suggests it supersedes the old fact"
                 ),
             )
@@ -2255,7 +2255,7 @@ class ConflictResolver:
                 strategy_used=ResolutionStrategy.TEMPORAL_ORDERING,
                 confidence=confidence,
                 reasoning=(
-                    f"Existing fact is {days_diff:.0f} days more recent — "
+                    f"Existing fact is {days_diff:.0f} days more recent  "
                     f"new fact appears to be outdated information"
                 ),
             )
@@ -2486,7 +2486,7 @@ Scenario 1: User explicitly corrects an inferred fact
     [last_write_wins] New fact is more recent (2024-09-15 >= 2024-03-01)
     [source_authority] Source 'user_explicit' (authority 0.95) outranks 'inference' (authority 0.50)
     [confidence_based] Winner has higher confidence (0.95 vs 0.70)
-    [temporal_ordering] New fact is 198 days more recent — temporal context suggests it supersedes the old fact
+    [temporal_ordering] New fact is 198 days more recent  temporal context suggests it supersedes the old fact
     [consensus] Winner is supported by 1 sources vs 1
     -> Accept new: 0.68 vs keep existing: 0.09
 
