@@ -3,7 +3,7 @@ description: >-
   93 deeply technical articles covering Machine Learning, AI Memory, Voice Agents,
   RAG, Kafka, Redis, and LangChain — from first principles to production.
 url: ""
-baseurl: "/Article"
+baseurl: "/My-Medium-Article"
 
 # Markdown processing
 markdown: kramdown

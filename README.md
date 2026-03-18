@@ -171,7 +171,7 @@ Each series is designed to be read sequentially — Part 0 sets up foundations, 
 
 ## Live Site
 
-This content is deployed at: **[https://sachinchaurasiya360.github.io/Article/](https://sachinchaurasiya360.github.io/Article/)**
+This content is deployed at: **[https://sachinchaurasiya360.github.io/My-Medium-Article/](https://sachinchaurasiya360.github.io/My-Medium-Article/)**
 
 ---
 
