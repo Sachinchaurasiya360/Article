@@ -869,15 +869,17 @@ You now have the systems foundation that the rest of this series builds on. Here
 | Foundation (This Part) | Where It Goes Deep |
 |---|---|
 | Memory hierarchy, cache lines | **Part 1**  how Redis's EMBSTR encoding exploits cache lines; **Part 2**  encoding choices that maximize spatial locality |
-| Sockets, TCP, non-blocking I/O | **Part 1**  the `ae` event loop internals; **Part 4**  threaded I/O, pipelining performance, and connection pooling |
+| Sockets, TCP, non-blocking I/O | **Part 1**  the `ae` event loop internals; **Part 4**  threaded I/O, pipelining performance, and connection pooling; **Part 5**  the persistent TCP connection a replica opens to its master for the PSYNC replication stream; **Part 6**  the gossip TCP mesh that keeps Cluster nodes synchronized |
 | I/O multiplexing, event loop | **Part 1**  `aeMain()`, `aeProcessEvents()`, the entire client request lifecycle |
-| Processes, threads, forking, CoW | **Part 3**  BGSAVE internals, CoW amplification measurement, jemalloc's role in fork efficiency |
+| Processes, threads, forking, CoW | **Part 3**  BGSAVE internals, CoW amplification measurement, jemalloc's role in fork efficiency; **Part 5**  how a full replication resync triggers BGSAVE and ships the resulting RDB snapshot to the replica over TCP |
 | Context switches, cache locality | **Part 1**  why single-threaded beats multi-threaded for Redis's workload; **Part 4**  threaded I/O tradeoffs |
-| Latency, throughput, percentiles | **Part 4**  `redis-benchmark`, `LATENCY` framework, `SLOWLOG`; **Part 8**  production monitoring dashboards |
-| Big-O notation, amortized cost | **Part 1**  incremental rehashing; **Part 2**  every data type's operation complexity |
-| Data structures | **Part 2**  the full encoding duality system, from listpack to skip list |
-| Persistence (RDB, AOF, fsync) | **Part 3**  multi-part AOF, RDB format internals, fsync thread mechanics |
+| Latency, throughput, percentiles | **Part 4**  `redis-benchmark`, `LATENCY` framework, `SLOWLOG`; **Part 6**  cross-slot redirect overhead and intra-cluster network hop costs; **Part 8**  production monitoring dashboards and alert thresholds |
+| Big-O notation, amortized cost | **Part 1**  incremental rehashing; **Part 2**  every data type's operation complexity; **Part 7**  choosing the right data structure for each use-case pattern (sorted set for leaderboards, list for queues, string for counters) |
+| Data structures | **Part 2**  the full encoding duality system, from listpack to skip list; **Part 7**  how each canonical Redis pattern maps to a specific data type: distributed locks (string + NX/EX), rate limiters (sorted set + Lua), session storage (hash), real-time leaderboards (sorted set), and durable queues (list and stream) |
+| Hashing and hash tables | **Part 6**  how Redis Cluster uses CRC16 to assign every key to one of 16,384 hash slots, why multi-key commands break across slot boundaries, and how resharding migrates slots between nodes |
+| Persistence (RDB, AOF, fsync) | **Part 3**  multi-part AOF, RDB format internals, fsync thread mechanics; **Part 5**  RDB snapshot transfer as the first step of full replication resynchronization; **Part 8**  persistence configuration in production and the durability trade-offs for each workload type |
 | RESP wire protocol | **Part 4**  RESP3, inline commands, protocol-level pipelining |
+| Client-server model, distributed coordination | **Part 5**  replication asynchrony, the consistency gaps that cause data loss, and how Sentinel uses a quorum of monitors to automate failover; **Part 6**  Cluster's CAP trade-offs, split-brain behavior, and the conditions under which it prioritizes availability over consistency; **Part 7**  Redlock, the Martin Kleppmann controversy, and the inherent limits of distributed coordination with a single-threaded, eventually-consistent store |
 
 Part 1 picks up exactly where we left off: it opens Redis's event loop and walks through the code that makes all of these concepts real. Everything abstract in this article becomes concrete in the next.
 
