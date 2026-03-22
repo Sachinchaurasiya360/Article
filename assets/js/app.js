@@ -16,22 +16,50 @@ function extractTitle(markdown) {
 // ===== Navigation =====
 
 function buildNav() {
-  const nav = document.getElementById('nav-series-links');
-  if (!nav || typeof SERIES === 'undefined') return;
-  SERIES.forEach(s => {
-    const li = document.createElement('li');
-    const a = document.createElement('a');
-    a.href = `index.html#${s.id}`;
-    a.textContent = s.emoji + ' ' + s.title;
-    li.appendChild(a);
-    nav.appendChild(li);
-  });
+  if (typeof SERIES === 'undefined') return;
 
-  // Mobile toggle
+  // Dropdown menu (desktop)
+  const menu = document.getElementById('nav-series-links');
+  if (menu) {
+    SERIES.forEach(s => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = `series.html?id=${s.id}`;
+      a.innerHTML = `<i data-lucide="${s.icon}" style="stroke:${s.iconColor}"></i>${s.title}`;
+      li.appendChild(a);
+      menu.appendChild(li);
+    });
+  }
+
+  // Mobile grid
+  const mobileGrid = document.getElementById('mobile-series-grid');
+  if (mobileGrid) {
+    SERIES.forEach(s => {
+      const a = document.createElement('a');
+      a.href = `series.html?id=${s.id}`;
+      a.innerHTML = `<i data-lucide="${s.icon}" style="stroke:${s.iconColor}"></i>${s.title}`;
+      mobileGrid.appendChild(a);
+    });
+  }
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  // Dropdown toggle (click to open/close)
+  const dropdownBtn = document.getElementById('nav-dropdown-btn');
+  const dropdown = document.getElementById('nav-dropdown');
+  if (dropdownBtn && dropdown) {
+    dropdownBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      dropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', () => dropdown.classList.remove('open'));
+  }
+
+  // Mobile menu toggle
   const toggle = document.getElementById('nav-toggle');
-  const links = document.querySelector('.nav-links');
-  if (toggle && links) {
-    toggle.addEventListener('click', () => links.classList.toggle('open'));
+  const mobileMenu = document.getElementById('mobile-menu');
+  if (toggle && mobileMenu) {
+    toggle.addEventListener('click', () => mobileMenu.classList.toggle('open'));
   }
 }
 
@@ -129,7 +157,7 @@ function addCopyButtons(container) {
 
 function renderMermaid() {
   if (typeof mermaid !== 'undefined') {
-    mermaid.initialize({ startOnLoad: false, theme: 'dark', darkMode: true });
+    mermaid.initialize({ startOnLoad: false, theme: 'default' });
     mermaid.run();
   }
 }
@@ -138,29 +166,34 @@ function renderMermaid() {
 
 async function loadArticle() {
   const params = new URLSearchParams(location.search);
-  const path = params.get('path');
+  const filePath = params.get('path');
 
-  const container = document.getElementById('article-container');
-  if (!container) return;
+  const loadingEl = document.querySelector('#article-container .loading-state');
+  const headerEl  = document.getElementById('article-header-block');
+  const bodyEl    = document.getElementById('article-body');
+  const navEl     = document.getElementById('article-nav');
 
-  if (!path) {
-    container.innerHTML = '<div class="error-state"><h2>No article specified</h2><p>Add ?path=Series/filename.md to the URL</p></div>';
+  function showError(msg) {
+    if (loadingEl) loadingEl.innerHTML = `<div class="error-state"><h2>Failed to load article</h2><p>${msg}</p><p><a href="index.html">← Back to home</a></p></div>`;
+  }
+
+  if (!bodyEl) return; // not on article page
+
+  if (!filePath) {
+    showError('No article specified. Add ?path=Series/filename.md to the URL.');
     return;
   }
 
-  // Show loading
-  container.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading article…</p></div>';
-
   try {
-    const res = await fetch(path);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const res = await fetch(filePath);
+    if (!res.ok) throw new Error(`HTTP ${res.status} — could not fetch ${filePath}`);
     const raw = await res.text();
     const md = stripFrontMatter(raw);
 
     // Extract series/part info from path
-    const parts = path.split('/');
-    const seriesId = parts[0];
-    const fileName = parts[parts.length - 1].replace('.md', '');
+    const segments = filePath.split('/');
+    const seriesId = segments[0];
+    const fileName = segments[segments.length - 1].replace('.md', '');
     const partMatch = fileName.match(/part-(\d+)/);
     const partNum = partMatch ? parseInt(partMatch[1]) : 0;
 
@@ -174,40 +207,38 @@ async function loadArticle() {
 
     const title = (articleData && articleData.titles) ? articleData.titles : extractTitle(md) || 'Article';
 
-    // Build breadcrumb
+    // Breadcrumb
     const breadcrumb = document.getElementById('article-breadcrumb');
     if (breadcrumb && seriesData) {
       breadcrumb.innerHTML = `<a href="index.html">Home</a><span>›</span><a href="series.html?id=${seriesId}">${seriesData.title}</a><span>›</span>Part ${partNum}`;
     }
 
-    // Set page title
     document.title = title + ' — DeepDive';
 
-    // Set article heading
     const titleEl = document.getElementById('article-title');
     if (titleEl) titleEl.textContent = title;
 
     // Render markdown
-    if (typeof marked === 'undefined') throw new Error('marked.js not loaded');
-
-    marked.setOptions({
-      breaks: false,
-      gfm: true,
-    });
-
-    const html = marked.parse(md);
-
-    // Build article body
-    const body = document.getElementById('article-body');
-    body.innerHTML = html;
+    if (typeof marked === 'undefined') throw new Error('marked.js failed to load');
+    marked.setOptions({ breaks: false, gfm: true });
+    bodyEl.innerHTML = marked.parse(md);
 
     // Syntax highlighting
     if (typeof hljs !== 'undefined') {
-      body.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+      bodyEl.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
     }
 
-    // Mermaid
-    body.querySelectorAll('code.language-mermaid').forEach(code => {
+    // Wrap tables for horizontal scroll on mobile
+    bodyEl.querySelectorAll('table').forEach(table => {
+      if (table.parentElement.classList.contains('table-wrapper')) return;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'table-wrapper';
+      table.parentNode.insertBefore(wrapper, table);
+      wrapper.appendChild(table);
+    });
+
+    // Mermaid — replace fenced code blocks with .mermaid divs
+    bodyEl.querySelectorAll('code.language-mermaid').forEach(code => {
       const div = document.createElement('div');
       div.className = 'mermaid';
       div.textContent = code.textContent;
@@ -215,37 +246,41 @@ async function loadArticle() {
     });
     renderMermaid();
 
-    addCopyButtons(body);
-    buildTOC(body);
+    addCopyButtons(bodyEl);
+    buildTOC(bodyEl);
 
-    // Hide loading, show content
-    container.style.display = 'contents';
+    // Hide loading, reveal header
+    if (loadingEl) loadingEl.remove();
+    if (headerEl) headerEl.style.display = '';
 
     // Prev / Next nav
-    if (typeof getNeighbors === 'function') {
+    if (typeof getNeighbors === 'function' && navEl) {
       const { prev, next } = getNeighbors(seriesId, partNum);
-      const navEl = document.getElementById('article-nav');
-      if (navEl) {
-        if (prev) {
-          navEl.querySelector('.nav-prev').innerHTML = `
-            <a class="nav-card" href="article.html?path=${prev.file}">
-              <div class="nav-direction">← Previous</div>
+      if (prev) {
+        navEl.querySelector('.nav-prev').innerHTML = `
+          <a class="nav-card" href="article.html?path=${prev.file}">
+            <div class="nav-card-arrow">←</div>
+            <div class="nav-card-text">
+              <div class="nav-direction">Previous</div>
               <div class="nav-title">Part ${prev.num}: ${prev.titles || ''}</div>
-            </a>`;
-        }
-        if (next) {
-          navEl.querySelector('.nav-next').innerHTML = `
-            <a class="nav-card next" href="article.html?path=${next.file}">
-              <div class="nav-direction">Next →</div>
-              <div class="nav-title">Part ${next.num}: ${next.titles || ''}</div>
-            </a>`;
-        }
-        navEl.style.display = 'grid';
+            </div>
+          </a>`;
       }
+      if (next) {
+        navEl.querySelector('.nav-next').innerHTML = `
+          <a class="nav-card next" href="article.html?path=${next.file}">
+            <div class="nav-card-arrow">→</div>
+            <div class="nav-card-text">
+              <div class="nav-direction">Next</div>
+              <div class="nav-title">Part ${next.num}: ${next.titles || ''}</div>
+            </div>
+          </a>`;
+      }
+      if (prev || next) navEl.style.display = 'flex';
     }
 
   } catch (err) {
-    container.innerHTML = `<div class="error-state"><h2>Failed to load article</h2><p>${err.message}</p><p><a href="index.html">← Back to home</a></p></div>`;
+    showError(err.message);
   }
 }
 
@@ -268,7 +303,7 @@ function loadSeriesPage() {
 
   container.innerHTML = `
     <div class="series-header">
-      <div class="series-emoji">${s.emoji}</div>
+      <div class="series-icon" style="color:${s.iconColor}"><i data-lucide="${s.icon}"></i></div>
       <h1>${s.title}</h1>
       <p>${s.description}</p>
       <div class="card-meta">
@@ -283,6 +318,7 @@ function loadSeriesPage() {
           <div class="article-title">Part ${a.num}: ${a.titles || a.file}</div>
         </a>`).join('')}
     </div>`;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 // ===== Init =====

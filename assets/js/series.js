@@ -3,7 +3,7 @@ const SERIES = [
   {
     id: "Machine-Learning",
     title: "Machine Learning",
-    emoji: "🤖",
+    icon: "cpu", iconColor: "#8b5cf6",
     color: "purple",
     gradient: "linear-gradient(135deg,#8b5cf6,#6366f1)",
     description: "Linear regression to production ML platforms. Every algorithm built from scratch, then with PyTorch and scikit-learn.",
@@ -39,7 +39,7 @@ const SERIES = [
   {
     id: "AI-Memory",
     title: "AI Memory Systems",
-    emoji: "🧠",
+    icon: "brain", iconColor: "#3b82f6",
     color: "blue",
     gradient: "linear-gradient(135deg,#3b82f6,#2dd4bf)",
     description: "How machines remember, retrieve, and reason. Attention, embeddings, vector databases, and autonomous agents.",
@@ -75,7 +75,7 @@ const SERIES = [
   {
     id: "Voice-Agents",
     title: "Voice Agents",
-    emoji: "🎙️",
+    icon: "mic", iconColor: "#10b981",
     color: "green",
     gradient: "linear-gradient(135deg,#10b981,#3b82f6)",
     description: "Audio processing, ASR, TTS, voice cloning, real-time pipelines, WebRTC, and telephony integration.",
@@ -111,7 +111,7 @@ const SERIES = [
   {
     id: "RAG",
     title: "RAG",
-    emoji: "🔍",
+    icon: "search", iconColor: "#f59e0b",
     color: "orange",
     gradient: "linear-gradient(135deg,#f59e0b,#ef4444)",
     description: "Retrieval-Augmented Generation from scratch — chunking, embeddings, vector search, and production deployment.",
@@ -137,7 +137,7 @@ const SERIES = [
   {
     id: "Kafka",
     title: "Apache Kafka",
-    emoji: "⚡",
+    icon: "zap", iconColor: "#ef4444",
     color: "red",
     gradient: "linear-gradient(135deg,#ef4444,#f59e0b)",
     description: "Distributed logs, replication internals, stream processing, performance tuning, and production operations.",
@@ -164,7 +164,7 @@ const SERIES = [
   {
     id: "Redis",
     title: "Redis",
-    emoji: "🔥",
+    icon: "database", iconColor: "#ec4899",
     color: "pink",
     gradient: "linear-gradient(135deg,#ec4899,#f59e0b)",
     description: "Architecture internals, data structure encodings, persistence, clustering, and production engineering.",
@@ -189,7 +189,7 @@ const SERIES = [
   {
     id: "LangChain",
     title: "LangChain",
-    emoji: "🔗",
+    icon: "link-2", iconColor: "#14b8a6",
     color: "teal",
     gradient: "linear-gradient(135deg,#14b8a6,#3b82f6)",
     description: "Build LLM-powered apps: chains, prompts, agents, tools, memory, LangSmith, and production best practices.",

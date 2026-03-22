@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Series — DeepDive</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Series — Blog by Sachin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
@@ -13,10 +13,32 @@
   <div id="progress-bar"></div>
 
   <nav class="site-nav">
-    <a href="index.html" class="nav-logo">Deep<span>Dive</span></a>
-    <ul class="nav-links" id="nav-series-links"></ul>
-    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">☰</button>
+    <div class="nav-bar">
+      <a href="https://sachinchaurasiya.xyz" class="nav-portfolio" target="_blank" rel="noopener">
+        Sachin <i data-lucide="arrow-up-right"></i>
+      </a>
+      <a href="index.html" class="nav-logo">Blog <span>by Sachin</span></a>
+      <div class="nav-right">
+        <div class="nav-dropdown" id="nav-dropdown">
+          <button class="nav-dropdown-btn" id="nav-dropdown-btn">
+            Series <i data-lucide="chevron-down"></i>
+          </button>
+          <ul class="nav-dropdown-menu" id="nav-series-links"></ul>
+        </div>
+        <a href="index.html#about" class="nav-about">About</a>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+          <i data-lucide="menu"></i>
+        </button>
+      </div>
+    </div>
   </nav>
+  <div class="mobile-menu" id="mobile-menu">
+    <div class="mobile-menu-grid" id="mobile-series-grid"></div>
+    <div class="mobile-menu-footer">
+      <a href="index.html">Home</a>
+      <a href="index.html#about">About</a>
+    </div>
+  </div>
 
   <main>
     <div class="series-index" id="series-container">
@@ -31,22 +53,15 @@
 
   <button id="back-to-top" title="Back to top">↑</button>
 
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="assets/js/series.js"></script>
   <script src="assets/js/app.js"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const navLinks = document.getElementById('nav-series-links');
       const footer = document.getElementById('footer-series-links');
-      if (typeof SERIES !== 'undefined') {
+      if (typeof SERIES !== 'undefined' && footer) {
         SERIES.forEach(s => {
-          const li = document.createElement('li');
-          const a = document.createElement('a');
-          a.href = `series.html?id=${s.id}`;
-          a.textContent = s.emoji + ' ' + s.title;
-          li.appendChild(a);
-          navLinks.appendChild(li);
-
           const fa = document.createElement('a');
           fa.href = `series.html?id=${s.id}`;
           fa.textContent = s.title;
