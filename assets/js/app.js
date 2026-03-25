@@ -194,7 +194,7 @@ async function loadArticle() {
     const segments = filePath.split('/');
     const seriesId = segments[0];
     const fileName = segments[segments.length - 1].replace('.md', '');
-    const partMatch = fileName.match(/part-(\d+)/);
+    const partMatch = fileName.match(/part-(\d+)/) || fileName.match(/^(\d+)/);
     const partNum = partMatch ? parseInt(partMatch[1]) : 0;
 
     // Resolve series data

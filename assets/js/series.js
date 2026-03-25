@@ -204,6 +204,113 @@ const SERIES = [
         "Production LangChain — LangSmith and Deployment"
       ][i]
     }))
+  },
+  {
+    id: "Agentic-AI-Interview",
+    title: "Agentic AI Interview",
+    icon: "bot", iconColor: "#7c3aed",
+    color: "violet",
+    gradient: "linear-gradient(135deg,#7c3aed,#ec4899)",
+    description: "Complete interview prep for Agentic AI & LLM systems — fundamentals, RAG, agents, multi-agent, tool use, safety, and system design.",
+    level: "Intermediate → Advanced",
+    parts: 10,
+    articles: [
+      { num: 1, file: "Agentic-AI-Interview/01-ai-llm-fundamentals.md", titles: "AI & LLM Fundamentals" },
+      { num: 2, file: "Agentic-AI-Interview/02-prompt-engineering.md", titles: "Prompt Engineering" },
+      { num: 3, file: "Agentic-AI-Interview/03-embeddings-vector-databases.md", titles: "Embeddings & Vector Databases" },
+      { num: 4, file: "Agentic-AI-Interview/04-rag.md", titles: "Retrieval-Augmented Generation (RAG)" },
+      { num: 5, file: "Agentic-AI-Interview/05-agentic-ai-basics.md", titles: "Agentic AI Basics" },
+      { num: 6, file: "Agentic-AI-Interview/06-multi-agent-systems.md", titles: "Multi-Agent Systems & Orchestration" },
+      { num: 7, file: "Agentic-AI-Interview/07-tool-use-function-calling.md", titles: "Tool Use, Function Calling & APIs" },
+      { num: 8, file: "Agentic-AI-Interview/08-memory-planning-reasoning.md", titles: "Memory, Planning & Reasoning" },
+      { num: 9, file: "Agentic-AI-Interview/09-evaluation-guardrails-safety.md", titles: "Evaluation, Guardrails & Safety" },
+      { num: 10, file: "Agentic-AI-Interview/10-system-design-production.md", titles: "System Design & Production AI Systems" }
+    ]
+  },
+  {
+    id: "Python-FastAPI",
+    title: "Python & FastAPI",
+    icon: "terminal", iconColor: "#3b82f6",
+    color: "blue",
+    gradient: "linear-gradient(135deg,#3b82f6,#06b6d4)",
+    description: "Python fundamentals to production FastAPI — interview preparation covering core Python, advanced patterns, APIs, databases, and system design.",
+    level: "Beginner → Production",
+    parts: 7,
+    articles: [
+      { num: 1, file: "Python-FastAPI/01-python-fundamentals.md", titles: "Python Fundamentals" },
+      { num: 2, file: "Python-FastAPI/02-intermediate-python.md", titles: "Intermediate Python" },
+      { num: 3, file: "Python-FastAPI/03-advanced-python.md", titles: "Advanced Python" },
+      { num: 4, file: "Python-FastAPI/04-fastapi-fundamentals.md", titles: "FastAPI Fundamentals" },
+      { num: 5, file: "Python-FastAPI/05-fastapi-advanced-production.md", titles: "FastAPI Advanced & Production" },
+      { num: 6, file: "Python-FastAPI/06-databases-caching-async.md", titles: "Databases, Caching & Async Systems" },
+      { num: 7, file: "Python-FastAPI/07-system-design-architecture.md", titles: "System Design & Architecture" }
+    ]
+  },
+  {
+    id: "SQL-Database",
+    title: "SQL & Databases",
+    icon: "table-2", iconColor: "#f97316",
+    color: "orange",
+    gradient: "linear-gradient(135deg,#f97316,#eab308)",
+    description: "SQL fundamentals to advanced database internals, query optimization, NoSQL, and real-world system design scenarios.",
+    level: "Beginner → Advanced",
+    parts: 5,
+    articles: [
+      { num: 1, file: "SQL-Database/01-sql-fundamentals.md", titles: "SQL Fundamentals" },
+      { num: 2, file: "SQL-Database/02-intermediate-sql.md", titles: "Intermediate SQL & Query Optimization" },
+      { num: 3, file: "SQL-Database/03-advanced-sql.md", titles: "Advanced SQL & Database Internals" },
+      { num: 4, file: "SQL-Database/04-nosql.md", titles: "NoSQL & Modern Databases" },
+      { num: 5, file: "SQL-Database/05-system-design.md", titles: "System Design & Database Scenarios" }
+    ]
+  },
+  {
+    id: "DevOps",
+    title: "DevOps",
+    icon: "container", iconColor: "#0ea5e9",
+    color: "sky",
+    gradient: "linear-gradient(135deg,#0ea5e9,#8b5cf6)",
+    description: "DevOps fundamentals, Linux, Docker, CI/CD pipelines, cloud infrastructure, monitoring, and production system design.",
+    level: "Beginner → Production",
+    parts: 7,
+    articles: [
+      { num: 1, file: "DevOps/01-devops-fundamentals.md", titles: "DevOps Fundamentals" },
+      { num: 2, file: "DevOps/02-linux-networking.md", titles: "Linux & Networking" },
+      { num: 3, file: "DevOps/03-docker-fundamentals.md", titles: "Docker Fundamentals" },
+      { num: 4, file: "DevOps/04-advanced-docker.md", titles: "Advanced Docker & Containerization" },
+      { num: 5, file: "DevOps/05-cicd-pipelines.md", titles: "CI/CD Pipelines & Automation" },
+      { num: 6, file: "DevOps/06-cloud-monitoring.md", titles: "Cloud, Monitoring & Infrastructure" },
+      { num: 7, file: "DevOps/07-system-design.md", titles: "System Design & Real-World DevOps" }
+    ]
+  },
+  {
+    id: "WebSockets-WebRTC",
+    title: "WebSockets & WebRTC",
+    icon: "radio", iconColor: "#06b6d4",
+    color: "cyan",
+    gradient: "linear-gradient(135deg,#06b6d4,#10b981)",
+    description: "Real-time communication from WebSocket fundamentals to advanced WebRTC — scaling, peer-to-peer, and video/audio system design.",
+    level: "Intermediate → Advanced",
+    parts: 4,
+    articles: [
+      { num: 1, file: "WebSockets-WebRTC/01-websockets-fundamentals.md", titles: "WebSockets Fundamentals & Real-time Basics" },
+      { num: 2, file: "WebSockets-WebRTC/02-advanced-websockets.md", titles: "Advanced WebSockets & Scaling" },
+      { num: 3, file: "WebSockets-WebRTC/03-webrtc-fundamentals.md", titles: "WebRTC Fundamentals" },
+      { num: 4, file: "WebSockets-WebRTC/04-webrtc-advanced.md", titles: "WebRTC Advanced — Video/Audio System Design" }
+    ]
+  },
+  {
+    id: "Standalone-Guides",
+    title: "Standalone Guides",
+    icon: "book-open", iconColor: "#d946ef",
+    color: "fuchsia",
+    gradient: "linear-gradient(135deg,#d946ef,#f43f5e)",
+    description: "In-depth standalone interview and career guides — communication mastery, Next.js, and more.",
+    level: "All Levels",
+    parts: 2,
+    articles: [
+      { num: 1, file: "interview-communication-mastery.md", titles: "Interview & Communication Mastery" },
+      { num: 2, file: "nextjs-interview-guide.md", titles: "Next.js Interview Guide — Zero to Advanced" }
+    ]
   }
 ];
 
