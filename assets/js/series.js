@@ -299,17 +299,55 @@ const SERIES = [
     ]
   },
   {
+    id: "Web-Scraping",
+    title: "Web Scraping",
+    icon: "globe", iconColor: "#22d3ee",
+    color: "cyan",
+    gradient: "linear-gradient(135deg,#22d3ee,#3b82f6)",
+    description: "From HTTP basics to production data pipelines — Requests, BeautifulSoup, Selenium, Playwright, Scrapy, and async scraping.",
+    level: "Beginner → Production",
+    parts: 6,
+    articles: Array.from({length:6},(_,i)=>({
+      num: i,
+      file: `Web-Scraping/web-scraping-deep-dive-part-${i}.md`,
+      titles: [
+        "Foundations — HTTP, Ethics, and the Scraping Landscape",
+        "BeautifulSoup & Requests — Parsing and Extraction",
+        "Dynamic Content & Browser Automation",
+        "Scrapy Framework — Crawling at Scale",
+        "Anti-Scraping & Advanced Techniques",
+        "Production Scraping — Async, Scheduling, Monitoring"
+      ][i]
+    }))
+  },
+  {
+    id: "Scalable-Code",
+    title: "Scalable Code",
+    icon: "trending-up", iconColor: "#a855f7",
+    color: "purple",
+    gradient: "linear-gradient(135deg,#a855f7,#ec4899)",
+    description: "Writing scalable code from day one — frontend and backend foundations, traffic spikes, and production scaling for 100K+ users.",
+    level: "Intermediate → Advanced",
+    parts: 3,
+    articles: [
+      { num: 1, file: "scalable-code-day-one.md", titles: "Writing Scalable Code from Day 1" },
+      { num: 2, file: "scalable-code-traffic-spikes.md", titles: "Handling Sudden Traffic Spikes" },
+      { num: 3, file: "scalable-code-production-scaling.md", titles: "Scaling Systems in Production for 100K+ Users" }
+    ]
+  },
+  {
     id: "Standalone-Guides",
     title: "Standalone Guides",
     icon: "book-open", iconColor: "#d946ef",
     color: "fuchsia",
     gradient: "linear-gradient(135deg,#d946ef,#f43f5e)",
-    description: "In-depth standalone interview and career guides — communication mastery, Next.js, and more.",
+    description: "In-depth standalone interview and career guides — communication mastery, Next.js, vector databases, and more.",
     level: "All Levels",
-    parts: 2,
+    parts: 3,
     articles: [
       { num: 1, file: "interview-communication-mastery.md", titles: "Interview & Communication Mastery" },
-      { num: 2, file: "nextjs-interview-guide.md", titles: "Next.js Interview Guide — Zero to Advanced" }
+      { num: 2, file: "nextjs-interview-guide.md", titles: "Next.js Interview Guide — Zero to Advanced" },
+      { num: 3, file: "vector-databases-deep-dive.md", titles: "Vector Databases — The Engine Behind Modern AI Search" }
     ]
   }
 ];
