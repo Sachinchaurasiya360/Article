@@ -1,12 +1,12 @@
 # Part 2: Intermediate SQL & Query Optimization
 
-> Move beyond basics. Master subqueries, window functions, indexing, normalization, and transactions — the core toolkit for mid-level and senior SQL interviews.
+> Move beyond basics. Master subqueries, window functions, indexing, normalization, and transactions - the core toolkit for mid-level and senior SQL interviews.
 
 ---
 
 ## Table of Contents
 
-- [2.1 Subqueries — Scalar, Row, Table, Correlated](#21-subqueries--scalar-row-table-correlated)
+- [2.1 Subqueries - Scalar, Row, Table, Correlated](#21-subqueries--scalar-row-table-correlated)
 - [2.2 Common Table Expressions (CTEs)](#22-common-table-expressions-ctes)
 - [2.3 Window Functions](#23-window-functions)
 - [2.4 Indexing Basics](#24-indexing-basics)
@@ -58,7 +58,7 @@ CREATE TABLE products (
 
 ---
 
-## 2.1 Subqueries — Scalar, Row, Table, Correlated
+## 2.1 Subqueries - Scalar, Row, Table, Correlated
 
 ### Question: What are the different types of subqueries? When should you use each?
 
@@ -66,7 +66,7 @@ CREATE TABLE products (
 
 A subquery is a query nested inside another query. There are four main types:
 
-#### 1. Scalar Subquery — Returns a single value
+#### 1. Scalar Subquery - Returns a single value
 
 ```sql
 -- Find employees who earn more than the company average
@@ -82,10 +82,10 @@ SELECT
 FROM employees;
 ```
 
-#### 2. Row Subquery — Returns a single row with multiple columns
+#### 2. Row Subquery - Returns a single row with multiple columns
 
 ```sql
--- Find the employee with the highest salary (handles ties — returns one)
+-- Find the employee with the highest salary (handles ties - returns one)
 SELECT * FROM employees
 WHERE (dept_id, salary) = (
     SELECT dept_id, MAX(salary)
@@ -96,7 +96,7 @@ WHERE (dept_id, salary) = (
 );
 ```
 
-#### 3. Table Subquery — Returns multiple rows and columns
+#### 3. Table Subquery - Returns multiple rows and columns
 
 ```sql
 -- Find departments whose average salary is above 80000
@@ -110,7 +110,7 @@ WHERE dept_id IN (
 );
 ```
 
-#### 4. Correlated Subquery — References the outer query (executes once per outer row)
+#### 4. Correlated Subquery - References the outer query (executes once per outer row)
 
 ```sql
 -- Find employees who earn more than their department's average
@@ -127,9 +127,9 @@ WHERE e.salary > (
 
 ```sql
 -- Correlated subquery: executes inner query for EACH row of outer query
--- This can be O(n × m) — slow for large tables!
+-- This can be O(n × m) - slow for large tables!
 
--- Equivalent JOIN version (usually faster — optimizer can choose best algorithm):
+-- Equivalent JOIN version (usually faster - optimizer can choose best algorithm):
 SELECT e.first_name, e.salary, e.dept_id
 FROM employees e
 INNER JOIN (
@@ -226,7 +226,7 @@ FROM dept_comparison dc
 JOIN departments d ON dc.dept_id = d.dept_id;
 ```
 
-**Recursive CTE — for hierarchical data:**
+**Recursive CTE - for hierarchical data:**
 
 ```sql
 -- Find the entire management chain for employee 'Dave'
@@ -254,7 +254,7 @@ ORDER BY level;
 -- 3     | Alice      (Bob's manager / CEO)
 ```
 
-**CTE vs Subquery — when to use which:**
+**CTE vs Subquery - when to use which:**
 
 | Feature | CTE | Subquery |
 |---|---|---|
@@ -334,7 +334,7 @@ FROM employees;
 ```
 
 **Key differences:**
-- `ROW_NUMBER()`: Always unique (1, 2, 3, 4) — arbitrarily breaks ties
+- `ROW_NUMBER()`: Always unique (1, 2, 3, 4) - arbitrarily breaks ties
 - `RANK()`: Ties get same rank, then skips (1, 2, 2, 4)
 - `DENSE_RANK()`: Ties get same rank, no skip (1, 2, 2, 3)
 
@@ -352,7 +352,7 @@ SELECT
 FROM employees;
 ```
 
-### LAG and LEAD — Access previous/next rows
+### LAG and LEAD - Access previous/next rows
 
 ```sql
 -- Compare each employee's salary with the previous hire's salary
@@ -463,7 +463,7 @@ Choose based on requirements: "top 3 people" → `ROW_NUMBER`; "top 3 salary tie
 
 **Answer:**
 
-An index is a **data structure** (usually a B-tree) that speeds up data retrieval at the cost of slower writes and additional storage space. Think of it like a book's index — instead of reading every page, you look up the topic and jump to the right page.
+An index is a **data structure** (usually a B-tree) that speeds up data retrieval at the cost of slower writes and additional storage space. Think of it like a book's index - instead of reading every page, you look up the topic and jump to the right page.
 
 **Without index (Sequential Scan):**
 ```
@@ -501,7 +501,7 @@ CREATE INDEX idx_employees_lower_email ON employees (LOWER(email));
 SELECT * FROM employees WHERE LOWER(email) = 'alice@test.com';
 ```
 
-#### Composite Index — Column Order Matters
+#### Composite Index - Column Order Matters
 
 ```sql
 CREATE INDEX idx_dept_salary ON employees (dept_id, salary);
@@ -533,9 +533,9 @@ SELECT * FROM employees WHERE salary > 80000;
 - Foreign key columns (PostgreSQL doesn't auto-index FKs!)
 
 **Do NOT index:**
-- Small tables (< 1000 rows) — sequential scan is faster
+- Small tables (< 1000 rows) - sequential scan is faster
 - Columns with very low cardinality (e.g., `gender` with only 2 values)
-- Tables with heavy write load — each INSERT/UPDATE/DELETE must update all indexes
+- Tables with heavy write load - each INSERT/UPDATE/DELETE must update all indexes
 - Columns that are rarely queried
 
 **Cost of indexes:**
@@ -608,7 +608,7 @@ EXPLAIN SELECT * FROM orders WHERE customer_id = 42;
 -- Index Scan using idx_orders_customer_id on orders  (cost=0.29..8.50 rows=50 width=...)
 ```
 
-**2. Avoid SELECT * — select only needed columns:**
+**2. Avoid SELECT * - select only needed columns:**
 
 ```sql
 -- ❌ Bad: fetches all columns (more I/O, can't use covering index)
@@ -691,7 +691,7 @@ order_id | customer_name | customer_email    | product_names          | product_
 
 ---
 
-#### First Normal Form (1NF) — Atomic values, no repeating groups
+#### First Normal Form (1NF) - Atomic values, no repeating groups
 
 **Rule:** Each column contains only **atomic (indivisible) values**. No arrays, no comma-separated lists.
 
@@ -710,7 +710,7 @@ order_id | customer_name | customer_email    | product_names          | product_
 
 ---
 
-#### Second Normal Form (2NF) — No partial dependencies
+#### Second Normal Form (2NF) - No partial dependencies
 
 **Rule:** Must be in 1NF + every non-key column must depend on the **entire** primary key (not just part of a composite key).
 
@@ -735,7 +735,7 @@ CREATE TABLE order_items (
 
 ---
 
-#### Third Normal Form (3NF) — No transitive dependencies
+#### Third Normal Form (3NF) - No transitive dependencies
 
 **Rule:** Must be in 2NF + no non-key column depends on another non-key column.
 
@@ -774,7 +774,7 @@ CREATE TABLE order_items (
 
 ---
 
-#### Boyce-Codd Normal Form (BCNF) — Stricter 3NF
+#### Boyce-Codd Normal Form (BCNF) - Stricter 3NF
 
 **Rule:** For every functional dependency X → Y, X must be a **superkey**. This handles edge cases where 3NF still allows anomalies when there are multiple candidate keys.
 
@@ -822,7 +822,7 @@ CREATE TABLE order_items (
 
 A **transaction** is a sequence of operations treated as a single unit of work. ACID properties guarantee data reliability.
 
-#### Atomicity — All or Nothing
+#### Atomicity - All or Nothing
 
 ```sql
 -- Transfer $500 from Account A to Account B
@@ -836,7 +836,7 @@ COMMIT;
 -- You never end up in a state where money "disappeared"
 ```
 
-#### Consistency — Valid state to valid state
+#### Consistency - Valid state to valid state
 
 ```sql
 -- Constraints ensure the database moves from one valid state to another
@@ -852,7 +852,7 @@ BEGIN;
 COMMIT;
 ```
 
-#### Isolation — Concurrent transactions don't interfere
+#### Isolation - Concurrent transactions don't interfere
 
 ```sql
 -- Two concurrent transactions:
@@ -864,10 +864,10 @@ COMMIT;
 --   → Report shows $500 "missing"
 
 -- With proper isolation, Transaction 2 sees either:
---   Both BEFORE the transfer, or both AFTER — never a partial state
+--   Both BEFORE the transfer, or both AFTER - never a partial state
 ```
 
-#### Durability — Committed = Permanent
+#### Durability - Committed = Permanent
 
 ```sql
 -- After COMMIT returns successfully:
@@ -904,7 +904,7 @@ BEGIN;
 COMMIT;  -- order + correct order_item are committed
 ```
 
-**Real-world scenario — What happens without ACID:**
+**Real-world scenario - What happens without ACID:**
 
 ```
 Scenario: E-commerce checkout
@@ -938,7 +938,7 @@ WITH a transaction:
 
 **Answer:**
 
-#### Regular View — A stored query (not data)
+#### Regular View - A stored query (not data)
 
 ```sql
 -- Create a view for department statistics
@@ -957,10 +957,10 @@ GROUP BY d.dept_id, d.dept_name;
 SELECT * FROM v_department_stats WHERE headcount > 5;
 
 -- The query is re-executed every time you SELECT from the view
--- No data is stored — it's just a named query
+-- No data is stored - it's just a named query
 ```
 
-#### Materialized View — Cached query results
+#### Materialized View - Cached query results
 
 ```sql
 -- Create a materialized view (stores actual data)
@@ -973,7 +973,7 @@ FROM orders
 GROUP BY DATE_TRUNC('month', order_date)
 ORDER BY month;
 
--- Query it (reads from cached data — very fast)
+-- Query it (reads from cached data - very fast)
 SELECT * FROM mv_monthly_revenue WHERE month >= '2024-01-01';
 
 -- Refresh when underlying data changes
@@ -1138,7 +1138,7 @@ WHERE NOT EXISTS (
 
 ---
 
-### Problem 6: Debugging — Incorrect Aggregation
+### Problem 6: Debugging - Incorrect Aggregation
 
 ```sql
 -- Bug: This query is supposed to show total order amount per customer,
@@ -1227,7 +1227,7 @@ SELECT n, n * n AS square FROM nums;
 
 | Topic | What to Remember |
 |---|---|
-| Correlated subqueries | Execute per row — can be slow; try rewriting as JOIN |
+| Correlated subqueries | Execute per row - can be slow; try rewriting as JOIN |
 | CTEs | Improve readability; PostgreSQL 12+ inlines them by default |
 | Window functions | PARTITION BY + ORDER BY; know RANK vs DENSE_RANK vs ROW_NUMBER |
 | Indexes | B-tree by default; composite index order matters; FKs need manual indexing |
@@ -1238,5 +1238,5 @@ SELECT n, n * n AS square FROM nums;
 
 ---
 
-**Previous:** [← Part 1 — SQL Fundamentals](./01-sql-fundamentals.md)
-**Next:** [Part 3 — Advanced SQL & Database Internals →](./03-advanced-sql.md)
+**Previous:** [← Part 1 - SQL Fundamentals](./01-sql-fundamentals.md)
+**Next:** [Part 3 - Advanced SQL & Database Internals →](./03-advanced-sql.md)

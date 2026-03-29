@@ -1,6 +1,6 @@
-# Cloud, Monitoring & Infrastructure — Interview Preparation
+# Cloud, Monitoring & Infrastructure - Interview Preparation
 
-> Section 6 of 7 — AWS core services, load balancing, auto-scaling, Prometheus, Grafana, and the ELK stack.
+> Section 6 of 7 - AWS core services, load balancing, auto-scaling, Prometheus, Grafana, and the ELK stack.
 
 ---
 
@@ -176,7 +176,7 @@ resource "aws_subnet" "private" {
   tags = { Name = "private-${count.index + 1}" }
 }
 
-# Data subnets (databases — no internet)
+# Data subnets (databases - no internet)
 resource "aws_subnet" "data" {
   count             = 2
   vpc_id            = aws_vpc.main.id
@@ -201,7 +201,7 @@ resource "aws_nat_gateway" "main" {
 ### Security Groups (Firewall Rules)
 
 ```hcl
-# ALB — allow HTTP/HTTPS from internet
+# ALB - allow HTTP/HTTPS from internet
 resource "aws_security_group" "alb" {
   vpc_id = aws_vpc.main.id
 
@@ -213,7 +213,7 @@ resource "aws_security_group" "alb" {
   }
 }
 
-# Application — allow traffic only from ALB
+# Application - allow traffic only from ALB
 resource "aws_security_group" "app" {
   vpc_id = aws_vpc.main.id
 
@@ -225,7 +225,7 @@ resource "aws_security_group" "app" {
   }
 }
 
-# Database — allow traffic only from application
+# Database - allow traffic only from application
 resource "aws_security_group" "db" {
   vpc_id = aws_vpc.main.id
 
@@ -296,14 +296,14 @@ IAM Group     → Collection of users sharing policies
 ### Least Privilege Examples
 
 ```
-BAD — Over-permissive (common mistake):
+BAD - Over-permissive (common mistake):
 {
   "Effect": "Allow",
   "Action": "s3:*",          ← ALL S3 operations
   "Resource": "*"            ← ALL S3 buckets
 }
 
-GOOD — Minimal permissions:
+GOOD - Minimal permissions:
 {
   "Effect": "Allow",
   "Action": [
@@ -317,7 +317,7 @@ GOOD — Minimal permissions:
 ### Role-based access for services
 
 ```hcl
-# Terraform — ECS task role (least privilege)
+# Terraform - ECS task role (least privilege)
 resource "aws_iam_role" "ecs_task" {
   name = "api-task-role"
 
@@ -370,21 +370,21 @@ resource "aws_iam_role_policy" "api_permissions" {
 ### AWS Load Balancer Types
 
 ```
-Application Load Balancer (ALB) — Layer 7
+Application Load Balancer (ALB) - Layer 7
 ─────────────────────────────────────────
   Operates at: HTTP/HTTPS level
   Routes by: URL path, host header, query string, HTTP method
   Features: WebSocket, HTTP/2, gRPC, WAF integration
   Use for: Web apps, microservices, REST APIs
 
-Network Load Balancer (NLB) — Layer 4
+Network Load Balancer (NLB) - Layer 4
 ───────────────────────────────────────
   Operates at: TCP/UDP level
   Routes by: IP + port
   Features: Ultra-low latency (<100μs), static IP, TLS termination
   Use for: Gaming, IoT, real-time, non-HTTP protocols
 
-Classic Load Balancer (CLB) — Legacy
+Classic Load Balancer (CLB) - Legacy
 ─────────────────────────────────────
   Don't use for new projects. Use ALB or NLB.
 ```
@@ -442,7 +442,7 @@ resource "aws_lb_target_group" "api" {
 ### What a good health check endpoint looks like
 
 ```javascript
-// /health endpoint — checks all critical dependencies
+// /health endpoint - checks all critical dependencies
 app.get('/health', async (req, res) => {
   const checks = {};
 
@@ -473,7 +473,7 @@ app.get('/health', async (req, res) => {
 
 **Follow-up:** *Your ALB health checks are passing but users report errors. What could be wrong?*
 
-The health check endpoint might be too simple (just returns 200) and doesn't check actual dependencies. The app might be running but the database connection pool is exhausted, or an external API it depends on is down. Fix: make health checks **deep** — verify database, cache, and critical services.
+The health check endpoint might be too simple (just returns 200) and doesn't check actual dependencies. The app might be running but the database connection pool is exhausted, or an external API it depends on is down. Fix: make health checks **deep** - verify database, cache, and critical services.
 
 ---
 
@@ -535,7 +535,7 @@ resource "aws_autoscaling_group" "api" {
 ### Scaling Policies
 
 ```hcl
-# Target Tracking — Simplest (recommended)
+# Target Tracking - Simplest (recommended)
 resource "aws_autoscaling_policy" "cpu" {
   name                   = "cpu-target-tracking"
   autoscaling_group_name = aws_autoscaling_group.api.name
@@ -550,7 +550,7 @@ resource "aws_autoscaling_policy" "cpu" {
   }
 }
 
-# Step Scaling — More control
+# Step Scaling - More control
 resource "aws_autoscaling_policy" "step" {
   name                   = "request-count-step"
   autoscaling_group_name = aws_autoscaling_group.api.name
@@ -568,7 +568,7 @@ resource "aws_autoscaling_policy" "step" {
   }
 }
 
-# Scheduled Scaling — Predictable patterns
+# Scheduled Scaling - Predictable patterns
 resource "aws_autoscaling_schedule" "morning" {
   scheduled_action_name  = "scale-up-morning"
   autoscaling_group_name = aws_autoscaling_group.api.name
@@ -632,13 +632,13 @@ spec:
 
 **Why interviewer asks this:** Auto-scaling is how you handle traffic without over-provisioning.
 
-**Follow-up:** *Your auto-scaler keeps oscillating — scaling up and immediately down. How do you fix it?*
+**Follow-up:** *Your auto-scaler keeps oscillating - scaling up and immediately down. How do you fix it?*
 
 This is called **flapping**. Fixes:
-1. **Increase cooldown period** — wait longer between scaling actions
-2. **Use stabilization windows** — don't scale down until metric is stable for X minutes
-3. **Choose better metrics** — CPU can spike momentarily; request count per second is more stable
-4. **Increase scale-down delay** — scale up fast, scale down slow
+1. **Increase cooldown period** - wait longer between scaling actions
+2. **Use stabilization windows** - don't scale down until metric is stable for X minutes
+3. **Choose better metrics** - CPU can spike momentarily; request count per second is more stable
+4. **Increase scale-down delay** - scale up fast, scale down slow
 
 ---
 
@@ -831,10 +831,10 @@ Modern variant (EFK):
 ### Structured Logging (Application Side)
 
 ```javascript
-// BAD — Unstructured log (hard to parse)
+// BAD - Unstructured log (hard to parse)
 console.log('User 123 logged in from 192.168.1.100');
 
-// GOOD — Structured JSON (easy to parse and search)
+// GOOD - Structured JSON (easy to parse and search)
 logger.info({
   event: 'user_login',
   userId: 123,
@@ -864,7 +864,7 @@ Debugging: DEBUG and above (temporarily)
 ### Fluent Bit Configuration (Kubernetes)
 
 ```yaml
-# DaemonSet — runs on every node, collects all container logs
+# DaemonSet - runs on every node, collects all container logs
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -998,16 +998,16 @@ Use a **correlation ID** (also called trace ID or request ID). Generate a unique
 ```
 BAD:
 ❌ CPU > 80% → Page
-   (CPU can spike during deployments — not a user-facing symptom)
+   (CPU can spike during deployments - not a user-facing symptom)
 
 ❌ Alert on every single error
-   (Some errors are expected — rate matters, not count)
+   (Some errors are expected - rate matters, not count)
 
 ❌ No runbook linked
    ("Something is broken" at 3 AM with no guidance = useless)
 
 ❌ 100 alerts firing simultaneously
-   (Alert fatigue — people ignore ALL alerts)
+   (Alert fatigue - people ignore ALL alerts)
 
 GOOD:
 ✓ Error rate > 1% for 5 minutes → Page
@@ -1059,8 +1059,8 @@ receivers:
 
 **Follow-up:** *What's the difference between symptom-based and cause-based alerting?*
 
-- **Symptom-based** (preferred for paging): Alerts on what users experience — errors, latency, downtime. "Our users are seeing errors" is always actionable.
-- **Cause-based** (better for tickets): Alerts on underlying causes — disk full, high CPU, certificate expiring. These are leading indicators that might cause symptoms later. Good for prevention.
+- **Symptom-based** (preferred for paging): Alerts on what users experience - errors, latency, downtime. "Our users are seeing errors" is always actionable.
+- **Cause-based** (better for tickets): Alerts on underlying causes - disk full, high CPU, certificate expiring. These are leading indicators that might cause symptoms later. Good for prevention.
 
 ---
 
@@ -1170,12 +1170,12 @@ aws cloudwatch put-metric-alarm \
 
 **Follow-up:** *Your AWS bill doubled last month. How do you investigate?*
 
-1. **Cost Explorer** — break down by service, identify which service increased
-2. **Tag-based analysis** — if resources are tagged by team/project, identify the owner
-3. **Check for orphaned resources** — unused EBS volumes, idle load balancers, stopped-but-not-terminated instances
-4. **Check auto-scaling** — did a scaling event cause it (and did it scale back down)?
-5. **Check data transfer** — cross-region or internet data transfer is expensive
-6. **Check NAT Gateway** — often a hidden cost center for private subnets
+1. **Cost Explorer** - break down by service, identify which service increased
+2. **Tag-based analysis** - if resources are tagged by team/project, identify the owner
+3. **Check for orphaned resources** - unused EBS volumes, idle load balancers, stopped-but-not-terminated instances
+4. **Check auto-scaling** - did a scaling event cause it (and did it scale back down)?
+5. **Check data transfer** - cross-region or internet data transfer is expensive
+6. **Check NAT Gateway** - often a hidden cost center for private subnets
 
 ---
 
@@ -1284,4 +1284,4 @@ readinessProbe:
 
 ---
 
-*Next: [07 — System Design & Real-world Scenarios →](./07-system-design.md)*
+*Next: [07 - System Design & Real-world Scenarios →](./07-system-design.md)*

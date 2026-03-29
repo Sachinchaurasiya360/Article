@@ -6,9 +6,9 @@
 
 ## Table of Contents
 
-- [Socket.IO — When Raw WebSockets Aren't Enough](#socketio--when-raw-websockets-arent-enough)
+- [Socket.IO - When Raw WebSockets Aren't Enough](#socketio--when-raw-websockets-arent-enough)
 - [Authentication & Authorization](#authentication--authorization)
-- [Message Protocols — Designing Your Wire Format](#message-protocols--designing-your-wire-format)
+- [Message Protocols - Designing Your Wire Format](#message-protocols--designing-your-wire-format)
 - [Scaling WebSockets Horizontally](#scaling-websockets-horizontally)
 - [Redis Pub/Sub for Cross-Server Communication](#redis-pubsub-for-cross-server-communication)
 - [Load Balancing WebSocket Connections](#load-balancing-websocket-connections)
@@ -20,7 +20,7 @@
 
 ---
 
-## Socket.IO — When Raw WebSockets Aren't Enough
+## Socket.IO - When Raw WebSockets Aren't Enough
 
 The raw `ws` library gives you pure WebSocket connections. **Socket.IO** builds on top of WebSockets and adds features you'll inevitably need in production:
 
@@ -62,7 +62,7 @@ const io = new Server(httpServer, {
   }
 });
 
-// Middleware — authentication
+// Middleware - authentication
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
   try {
@@ -74,7 +74,7 @@ io.use((socket, next) => {
   }
 });
 
-// Namespaces — separate concerns
+// Namespaces - separate concerns
 const chatNamespace = io.of('/chat');
 const notificationsNamespace = io.of('/notifications');
 
@@ -275,7 +275,7 @@ io.use((socket, next) => {
 });
 ```
 
-### Authorization — Room-Level Permissions
+### Authorization - Room-Level Permissions
 
 ```javascript
 // Middleware for room join authorization
@@ -319,7 +319,7 @@ socket.on('refreshToken', async ({ token }) => {
 
 ---
 
-## Message Protocols — Designing Your Wire Format
+## Message Protocols - Designing Your Wire Format
 
 Every message needs a structure. Here's a protocol design that scales.
 
@@ -339,16 +339,16 @@ Every message needs a structure. Here's a protocol design that scales.
 }
 
 // Message types follow a verb pattern:
-// chat.message      — new chat message
-// chat.edit         — edit existing message
-// chat.delete       — delete message
-// chat.typing       — typing indicator
-// user.online       — user came online
-// user.offline      — user went offline
-// room.join         — user joined room
-// room.leave        — user left room
-// system.error      — error from server
-// system.ack        — acknowledgment
+// chat.message      - new chat message
+// chat.edit         - edit existing message
+// chat.delete       - delete message
+// chat.typing       - typing indicator
+// user.online       - user came online
+// user.offline      - user went offline
+// room.join         - user joined room
+// room.leave        - user left room
+// system.error      - error from server
+// system.ack        - acknowledgment
 ```
 
 ### Why This Design Works
@@ -357,14 +357,14 @@ Every message needs a structure. Here's a protocol design that scales.
 1. "type" field enables routing without parsing the entire message
 2. "id" field enables deduplication (important with retries)
 3. "timestamp" field is set by SERVER (clients can't be trusted for ordering)
-4. "payload" is type-specific — keeps the envelope stable while payloads evolve
+4. "payload" is type-specific - keeps the envelope stable while payloads evolve
 5. Dot-separated types enable wildcard subscriptions: "chat.*"
 ```
 
-### Message Serialization — JSON vs Binary
+### Message Serialization - JSON vs Binary
 
 ```javascript
-// JSON — simple, debuggable, universal
+// JSON - simple, debuggable, universal
 // Overhead: ~40% larger than binary for typical messages
 ws.send(JSON.stringify({
   type: 'position',
@@ -372,7 +372,7 @@ ws.send(JSON.stringify({
 }));
 // → 62 bytes as JSON string
 
-// MessagePack — binary, ~30% smaller than JSON
+// MessagePack - binary, ~30% smaller than JSON
 const msgpack = require('msgpack-lite');
 ws.send(msgpack.encode({
   type: 'position',
@@ -380,7 +380,7 @@ ws.send(msgpack.encode({
 }));
 // → ~42 bytes as binary
 
-// Protocol Buffers — smallest, fastest, but requires schema definition
+// Protocol Buffers - smallest, fastest, but requires schema definition
 // Best for high-frequency messages (game state, financial data)
 // position.proto:
 // message Position {
@@ -590,7 +590,7 @@ wss.on('connection', (ws) => {
 ```
 Redis Pub/Sub is fire-and-forget:
 - If a server is down when a message is published, it MISSES the message
-- No message persistence — Redis doesn't store pub/sub messages
+- No message persistence - Redis doesn't store pub/sub messages
 - No delivery guarantees
 
 For guaranteed delivery, consider:
@@ -599,7 +599,7 @@ For guaranteed delivery, consider:
 - NATS JetStream (lightweight, persistent)
 ```
 
-### Redis Streams — Persistent Alternative
+### Redis Streams - Persistent Alternative
 
 ```javascript
 // Redis Streams provide persistence + consumer groups
@@ -765,7 +765,7 @@ wss.on('connection', (ws) => {
 function sendToClient(ws, message) {
   if (ws.readyState !== ws.OPEN) return;
   if (ws.bufferedAmount > MAX_BUFFER) {
-    // Client is too slow — drop this message
+    // Client is too slow - drop this message
     ws.slowClientDropCount = (ws.slowClientDropCount || 0) + 1;
     if (ws.slowClientDropCount > 100) {
       ws.close(1008, 'Client too slow');
@@ -867,7 +867,7 @@ class ReliableMessageSender {
     for (const [id, entry] of this.pending) {
       if (now - entry.timestamp > 5000) {
         if (entry.retryCount >= 3) {
-          // Give up — notify the UI
+          // Give up - notify the UI
           this.pending.delete(id);
           this.onMessageFailed?.(entry.message);
           continue;
@@ -891,7 +891,7 @@ const processedMessages = new Map(); // messageId → timestamp
 socket.on('message', (message) => {
   // Deduplicate
   if (processedMessages.has(message.id)) {
-    // Already processed — just re-send ack
+    // Already processed - just re-send ack
     socket.emit('ack', { messageId: message.id });
     return;
   }
@@ -949,7 +949,7 @@ Let's design a chat system that handles **1 million concurrent users**.
              └──────────┘ └──────────┘ └──────────────┘
 ```
 
-### Data Flow — Sending a Message
+### Data Flow - Sending a Message
 
 ```
 Step-by-step:
@@ -1147,7 +1147,7 @@ const wss = new WebSocketServer({
 });
 
 // Compression reduces bandwidth by 60-80% for text data
-// But adds CPU overhead — profile before enabling
+// But adds CPU overhead - profile before enabling
 // Don't use for already-compressed data (images, audio)
 ```
 
@@ -1164,7 +1164,7 @@ Connection Management:
 □ Graceful server shutdown (close code 1012)
 
 Security:
-□ WSS (TLS) only — no unencrypted ws://
+□ WSS (TLS) only - no unencrypted ws://
 □ Authentication on handshake (JWT or session)
 □ Message validation and sanitization (prevent XSS)
 □ Rate limiting per connection (token bucket)
@@ -1212,5 +1212,5 @@ Reliability:
 
 ---
 
-**Previous:** [← Blog 1 — WebSocket Fundamentals](./01-websockets-fundamentals.md)
-**Next:** [Blog 3 — WebRTC Fundamentals →](./03-webrtc-fundamentals.md)
+**Previous:** [← Blog 1 - WebSocket Fundamentals](./01-websockets-fundamentals.md)
+**Next:** [Blog 3 - WebRTC Fundamentals →](./03-webrtc-fundamentals.md)

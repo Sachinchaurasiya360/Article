@@ -1,6 +1,6 @@
 # Fine-Tuning LLMs: The Complete Engineering Guide
 
-*From pre-trained models to production-ready AI — when to fine-tune, how to do it right, and the mistakes that will cost you thousands in GPU hours.*
+*From pre-trained models to production-ready AI - when to fine-tune, how to do it right, and the mistakes that will cost you thousands in GPU hours.*
 
 ---
 
@@ -19,7 +19,7 @@ Fine-tuned LLM (on hospital records + medical guidelines):
   accounts for patient demographics
 ```
 
-Think of it this way: a pre-trained model is a fresh medical school graduate. Fine-tuning is the residency — specialized, hands-on training that turns general knowledge into domain expertise.
+Think of it this way: a pre-trained model is a fresh medical school graduate. Fine-tuning is the residency - specialized, hands-on training that turns general knowledge into domain expertise.
 
 ---
 
@@ -43,11 +43,11 @@ Does prompt engineering solve it?
 
 | Scenario | Prompting | RAG | Fine-Tuning |
 |----------|-----------|-----|-------------|
-| Customer support bot for your product | Okay with long prompts | Good | Best — learns tone, policies, edge cases |
-| Legal document summarization | Poor — misses domain nuance | Good | Best — learns legal language and structure |
-| Code generation for internal framework | Poor | Good with docs | Best — learns your patterns and conventions |
+| Customer support bot for your product | Okay with long prompts | Good | Best - learns tone, policies, edge cases |
+| Legal document summarization | Poor - misses domain nuance | Good | Best - learns legal language and structure |
+| Code generation for internal framework | Poor | Good with docs | Best - learns your patterns and conventions |
 | General Q&A chatbot | Great | Great | Overkill |
-| Real-time data queries | Poor | Best | Wrong tool — data changes too fast |
+| Real-time data queries | Poor | Best | Wrong tool - data changes too fast |
 
 ---
 
@@ -97,7 +97,7 @@ There are far more than three ways to fine-tune an LLM. Each method exists becau
 
 ### Method 1: Full Fine-Tuning (FFT)
 
-Update every single parameter in the model. The original approach — brute force but effective.
+Update every single parameter in the model. The original approach - brute force but effective.
 
 ```
 How it works:
@@ -117,17 +117,17 @@ Total trainable params: 100% (billions)
 ```
 
 **Pros:**
-- Maximum quality ceiling — the model fully adapts to your domain
-- No architectural constraints — every layer learns your task
+- Maximum quality ceiling - the model fully adapts to your domain
+- No architectural constraints - every layer learns your task
 - Best for creating entirely new model behaviors (e.g., new language, new modality)
-- No inference overhead — no adapters to load or merge
+- No inference overhead - no adapters to load or merge
 
 **Cons:**
-- Astronomical GPU cost — 70B model needs 8x A100 80GB ($260+/hour on AWS)
-- High risk of catastrophic forgetting — model may "unlearn" general knowledge
-- Slow iteration — each training run takes hours to days
+- Astronomical GPU cost - 70B model needs 8x A100 80GB ($260+/hour on AWS)
+- High risk of catastrophic forgetting - model may "unlearn" general knowledge
+- Slow iteration - each training run takes hours to days
 - Requires massive, high-quality datasets to justify the compute
-- Model versioning is painful — each fine-tune produces a full copy of all weights
+- Model versioning is painful - each fine-tune produces a full copy of all weights
 
 **When to use:**
 - You're building a foundation model or a heavily specialized model (medical, legal, code)
@@ -139,18 +139,18 @@ Total trainable params: 100% (billions)
 - Your dataset is under 10K examples (you'll overfit)
 - You need fast iteration cycles
 - You're a startup or small team with limited GPU budget
-- The task is "adjust tone and format" — that's a sledgehammer for a nail
+- The task is "adjust tone and format" - that's a sledgehammer for a nail
 
-**Production readiness: HIGH** — no adapter overhead, standard model serving. But expensive to maintain and version.
+**Production readiness: HIGH** - no adapter overhead, standard model serving. But expensive to maintain and version.
 
 ```python
-# Full fine-tuning setup — note the massive memory requirements
+# Full fine-tuning setup - note the massive memory requirements
 from transformers import AutoModelForCausalLM, TrainingArguments, Trainer
 
 model = AutoModelForCausalLM.from_pretrained(
     "meta-llama/Meta-Llama-3.1-8B-Instruct",
     torch_dtype=torch.bfloat16,
-    # NO quantization — full precision for full fine-tuning
+    # NO quantization - full precision for full fine-tuning
 )
 
 # All parameters are trainable by default
@@ -200,19 +200,19 @@ Savings: ~99.2% fewer trainable parameters
 
 **Pros:**
 - 10-100x less memory than full fine-tuning
-- Fast training — minutes to hours instead of days
-- Low catastrophic forgetting — base model weights are frozen
+- Fast training - minutes to hours instead of days
+- Low catastrophic forgetting - base model weights are frozen
 - Multiple adapters can share one base model (huge cost savings in production)
-- Easy to version, rollback, and A/B test — adapters are tiny files (10-100MB)
+- Easy to version, rollback, and A/B test - adapters are tiny files (10-100MB)
 
 **Cons:**
 - Slightly lower quality ceiling than full fine-tuning (~95% quality)
 - Rank selection requires experimentation (r=8 vs r=16 vs r=32)
-- Not all layers are equally important — choosing `target_modules` matters
+- Not all layers are equally important - choosing `target_modules` matters
 - Inference has slight overhead if adapter isn't merged
 
 **When to use:**
-- Most fine-tuning tasks — this is the default choice
+- Most fine-tuning tasks - this is the default choice
 - You have 500 to 50,000 training examples
 - You need fast iteration and experimentation
 - You want to serve multiple specialized models from one base
@@ -222,7 +222,7 @@ Savings: ~99.2% fewer trainable parameters
 - You're extremely memory-constrained (even LoRA on 70B needs ~40GB) → use QLoRA
 - Your task only needs formatting/style adjustment → consider Prompt Tuning first
 
-**Production readiness: EXCELLENT** — merge adapter into base model for zero-overhead inference, or use multi-adapter serving with vLLM/LoRAX.
+**Production readiness: EXCELLENT** - merge adapter into base model for zero-overhead inference, or use multi-adapter serving with vLLM/LoRAX.
 
 ```python
 from peft import LoraConfig, get_peft_model
@@ -269,14 +269,14 @@ How it works:
 - Fine-tune 70B models on a single GPU (A100 80GB or even 48GB A6000)
 - Fine-tune 7-13B models on consumer GPUs (RTX 3090/4090 with 24GB)
 - Nearly identical quality to standard LoRA (~98% of LoRA quality)
-- Democratizes fine-tuning — no multi-GPU clusters needed
+- Democratizes fine-tuning - no multi-GPU clusters needed
 - Cost-effective for experimentation and prototyping
 
 **Cons:**
 - Slightly lower quality than full-precision LoRA (quantization noise)
 - Training is ~15-20% slower due to quantization/dequantization overhead
-- Requires `bitsandbytes` library — limited to NVIDIA GPUs (no AMD/Intel support yet)
-- Merged model needs careful handling — merge in fp16, then re-quantize for serving
+- Requires `bitsandbytes` library - limited to NVIDIA GPUs (no AMD/Intel support yet)
+- Merged model needs careful handling - merge in fp16, then re-quantize for serving
 - Debugging quantization issues can be tricky
 
 **When to use:**
@@ -286,16 +286,16 @@ How it works:
 - Rapid prototyping before committing to full LoRA or Full FT
 
 **When NOT to use:**
-- You have ample GPU memory — standard LoRA is faster and slightly higher quality
+- You have ample GPU memory - standard LoRA is faster and slightly higher quality
 - You need to deploy on non-NVIDIA hardware
-- You're fine-tuning small models (<3B) — memory savings are minimal
+- You're fine-tuning small models (<3B) - memory savings are minimal
 
-**Production readiness: GOOD** — merge adapter in fp16/bf16 for production. Don't serve the quantized training model directly.
+**Production readiness: GOOD** - merge adapter in fp16/bf16 for production. Don't serve the quantized training model directly.
 
 ```python
 from transformers import BitsAndBytesConfig
 
-# The "Q" in QLoRA — 4-bit quantization config
+# The "Q" in QLoRA - 4-bit quantization config
 bnb_config = BitsAndBytesConfig(
     load_in_4bit=True,
     bnb_4bit_quant_type="nf4",           # NormalFloat4: best for LLM weights
@@ -340,17 +340,17 @@ Prefix Tuning (variant):
 ```
 
 **Pros:**
-- Extremely lightweight — only trains a few thousand parameters
-- Zero risk of catastrophic forgetting — model is completely untouched
+- Extremely lightweight - only trains a few thousand parameters
+- Zero risk of catastrophic forgetting - model is completely untouched
 - Multiple tasks = multiple soft prompts, same frozen model
 - Training is very fast (minutes, not hours)
-- Incredibly cheap — can train on a T4 or even CPU for small models
+- Incredibly cheap - can train on a T4 or even CPU for small models
 
 **Cons:**
 - Lower quality ceiling than LoRA (~80% of full fine-tuning quality)
 - Doesn't work well for complex tasks requiring deep behavior changes
 - Performance degrades on tasks very different from pre-training
-- Harder to interpret — what do "virtual tokens" mean?
+- Harder to interpret - what do "virtual tokens" mean?
 - Limited community tooling compared to LoRA
 
 **When to use:**
@@ -362,9 +362,9 @@ Prefix Tuning (variant):
 **When NOT to use:**
 - Complex generation tasks (creative writing, code generation, reasoning)
 - You need significant behavior changes from the base model
-- Quality is critical — LoRA is almost as cheap and much better
+- Quality is critical - LoRA is almost as cheap and much better
 
-**Production readiness: MODERATE** — simple to serve, but limited capability. Best as a screening method before investing in LoRA.
+**Production readiness: MODERATE** - simple to serve, but limited capability. Best as a screening method before investing in LoRA.
 
 ```python
 from peft import PromptTuningConfig, TaskType, get_peft_model
@@ -409,9 +409,9 @@ Bottleneck size controls capacity vs. efficiency.
 
 **Pros:**
 - Well-studied in research with strong theoretical grounding
-- Modular — adapters can be composed, stacked, and mixed
+- Modular - adapters can be composed, stacked, and mixed
 - AdapterHub ecosystem provides pre-trained adapters for many tasks
-- Supports adapter fusion — combine knowledge from multiple fine-tuned adapters
+- Supports adapter fusion - combine knowledge from multiple fine-tuned adapters
 
 **Cons:**
 - Adds inference latency (sequential bottleneck computation at every layer)
@@ -428,7 +428,7 @@ Bottleneck size controls capacity vs. efficiency.
 - General fine-tuning → LoRA is simpler and more efficient
 - Latency-sensitive production → adapters add per-layer overhead that can't be merged away
 
-**Production readiness: MODERATE** — works, but adapters can't be "merged" into the base model like LoRA. Always adds some inference latency.
+**Production readiness: MODERATE** - works, but adapters can't be "merged" into the base model like LoRA. Always adds some inference latency.
 
 ```python
 from transformers import AutoModelForSeq2SeqLM
@@ -450,7 +450,7 @@ model.train_adapter("domain-adapter")  # Freeze everything else
 
 ### Method 6: DPO (Direct Preference Optimization)
 
-Not a parameter-efficient method — it's a *training objective*. Instead of supervised learning on "good" examples, DPO learns from pairs of preferred vs rejected responses.
+Not a parameter-efficient method - it's a *training objective*. Instead of supervised learning on "good" examples, DPO learns from pairs of preferred vs rejected responses.
 
 ```
 How it works:
@@ -479,15 +479,15 @@ DPO (the modern way):
 ```
 
 **Pros:**
-- Directly aligns model with human preferences — not just imitation
+- Directly aligns model with human preferences - not just imitation
 - Much simpler and more stable than RLHF (no reward model, no PPO)
 - Produces higher quality outputs than SFT alone for subjective tasks
-- Works with LoRA — combine DPO + LoRA for efficient preference tuning
+- Works with LoRA - combine DPO + LoRA for efficient preference tuning
 - Great for reducing harmful/unhelpful outputs
 
 **Cons:**
-- Requires preference data (chosen/rejected pairs) — harder to collect than SFT data
-- Sensitive to data quality — bad preference labels lead to misalignment
+- Requires preference data (chosen/rejected pairs) - harder to collect than SFT data
+- Sensitive to data quality - bad preference labels lead to misalignment
 - The `beta` hyperparameter needs careful tuning
 - Less effective for purely factual tasks (better for style, safety, helpfulness)
 - Typically a second stage after SFT (adds pipeline complexity)
@@ -495,15 +495,15 @@ DPO (the modern way):
 **When to use:**
 - You've done SFT and want to improve output quality/safety/helpfulness
 - You have human preference data (or can generate it with a stronger model)
-- The task is subjective — tone, style, helpfulness, safety
+- The task is subjective - tone, style, helpfulness, safety
 - You're building a chatbot or assistant and want it to "feel" better
 
 **When NOT to use:**
 - You don't have preference data (do SFT first)
 - The task is purely factual or extractive (classification, NER, extraction)
-- You haven't done SFT yet — DPO works best as a refinement on top of SFT
+- You haven't done SFT yet - DPO works best as a refinement on top of SFT
 
-**Production readiness: HIGH** — same serving as any fine-tuned model. The DPO stage only affects training, not inference.
+**Production readiness: HIGH** - same serving as any fine-tuned model. The DPO stage only affects training, not inference.
 
 ```python
 from trl import DPOTrainer, DPOConfig
@@ -542,7 +542,7 @@ trainer.train()
 The original alignment technique used by ChatGPT. Train a reward model, then use PPO to optimize the LLM.
 
 ```
-How it works — 3-stage pipeline:
+How it works - 3-stage pipeline:
 
 Stage 1: Supervised Fine-Tuning (SFT)
   Pre-trained model → Train on demonstrations → SFT model
@@ -570,14 +570,14 @@ Stage 3: PPO Optimization
 ```
 
 **Pros:**
-- Most expressive alignment method — can optimize any reward signal
+- Most expressive alignment method - can optimize any reward signal
 - Battle-tested at scale (ChatGPT, Claude, etc.)
 - Can capture complex preferences that DPO's simple loss can't
 - Supports online learning from real user interactions
 
 **Cons:**
-- Complex 3-stage pipeline — many moving parts that can fail
-- PPO is notoriously unstable — reward hacking, mode collapse, training divergence
+- Complex 3-stage pipeline - many moving parts that can fail
+- PPO is notoriously unstable - reward hacking, mode collapse, training divergence
 - Requires training a separate reward model (doubles compute/data requirements)
 - Needs 4 models in memory during PPO: policy, reference, reward, value
 - Requires significant ML engineering expertise to get right
@@ -590,11 +590,11 @@ Stage 3: PPO Optimization
 - DPO doesn't capture the nuance of your preferences
 
 **When NOT to use:**
-- Almost always — use DPO instead unless you have a specific reason
+- Almost always - use DPO instead unless you have a specific reason
 - You're a small/medium team without dedicated ML infra engineers
 - Your preference data is static (DPO is strictly simpler)
 
-**Production readiness: HIGH** (for the final model) — but the training pipeline is extremely complex and fragile.
+**Production readiness: HIGH** (for the final model) - but the training pipeline is extremely complex and fragile.
 
 ---
 
@@ -625,14 +625,14 @@ The "odds ratio" compares:
 ```
 
 **Pros:**
-- Single-stage training — simpler pipeline than SFT + DPO
-- No reference model needed — lower memory footprint during training
+- Single-stage training - simpler pipeline than SFT + DPO
+- No reference model needed - lower memory footprint during training
 - Competitive quality with DPO on most benchmarks
 - Faster end-to-end (one training run instead of two)
 - Easier to implement and debug
 
 **Cons:**
-- Newer method — less community experience and fewer production case studies
+- Newer method - less community experience and fewer production case studies
 - May underperform DPO when preferences are very nuanced
 - Still requires preference pair data (chosen/rejected)
 - The `lambda` balancing weight between SFT and OR loss needs tuning
@@ -647,7 +647,7 @@ The "odds ratio" compares:
 - You don't have preference data → do SFT only
 - You need maximum alignment quality → SFT + DPO is more proven
 
-**Production readiness: GOOD** — same serving as any model. Less proven at scale than DPO/RLHF.
+**Production readiness: GOOD** - same serving as any model. Less proven at scale than DPO/RLHF.
 
 ```python
 from trl import ORPOTrainer, ORPOConfig
@@ -713,11 +713,11 @@ How it works:
 - The student model is fully under your control (privacy, deployment, cost)
 
 **Cons:**
-- Quality ceiling is limited by the teacher — student can't exceed teacher
+- Quality ceiling is limited by the teacher - student can't exceed teacher
 - Generating teacher outputs for large datasets is expensive (API costs)
 - Logit-level distillation requires access to teacher logits (not available for API models)
 - May violate terms of service for some API providers (check before distilling)
-- Requires careful task definition — distilled models are narrow specialists
+- Requires careful task definition - distilled models are narrow specialists
 
 **When to use:**
 - You need production inference to be fast and cheap, but quality must be high
@@ -730,7 +730,7 @@ How it works:
 - The task changes frequently (re-distillation is expensive)
 - Teacher model quality is insufficient for your task
 
-**Production readiness: EXCELLENT** — the whole point is production deployment. Small, fast, cheap.
+**Production readiness: EXCELLENT** - the whole point is production deployment. Small, fast, cheap.
 
 ```python
 # Step 1: Generate teacher outputs
@@ -803,7 +803,7 @@ With continued pre-training:
 
 **Cons:**
 - Requires large domain corpora (millions of tokens of raw text)
-- Computationally expensive — essentially a second pre-training phase
+- Computationally expensive - essentially a second pre-training phase
 - Risk of catastrophic forgetting if not done carefully
 - Two-stage pipeline adds complexity
 - May not help if the base model already has good domain coverage
@@ -819,11 +819,11 @@ With continued pre-training:
 - You only need style/format changes (LoRA is enough)
 - You don't have substantial domain text (at least 100M tokens)
 
-**Production readiness: HIGH** — produces a standard model that can be served normally.
+**Production readiness: HIGH** - produces a standard model that can be served normally.
 
 ```python
 # Continued pre-training uses causal language modeling (next-token prediction)
-# on raw domain text — no instruction formatting needed
+# on raw domain text - no instruction formatting needed
 
 from transformers import AutoModelForCausalLM, TrainingArguments, Trainer
 from transformers import DataCollatorForLanguageModeling
@@ -831,7 +831,7 @@ from transformers import DataCollatorForLanguageModeling
 model = AutoModelForCausalLM.from_pretrained("meta-llama/Meta-Llama-3.1-8B")
 
 # Raw domain text, chunked into max_length segments
-# No instruction formatting — just raw text
+# No instruction formatting - just raw text
 # Example: medical papers, legal documents, codebases
 
 training_args = TrainingArguments(
@@ -999,7 +999,7 @@ Combo 5: "The Multi-Tenant" (many use cases, one GPU)
 
 ---
 
-## Part 1: Data — The Most Important Step
+## Part 1: Data - The Most Important Step
 
 Fine-tuning is only as good as your data. Period. A 7B model fine-tuned on excellent data will outperform a 70B model fine-tuned on garbage.
 
@@ -1034,7 +1034,7 @@ Most fine-tuning frameworks expect conversational format (chat-style) or instruc
 Before you start training, audit your data:
 
 ```python
-# data_audit.py — Quick quality checks for fine-tuning datasets
+# data_audit.py - Quick quality checks for fine-tuning datasets
 
 import json
 from collections import Counter
@@ -1060,7 +1060,7 @@ def audit_dataset(filepath: str):
         elif "output" in item:
             lengths.append(len(item["output"]))
 
-    print(f"Response length — min: {min(lengths)}, max: {max(lengths)}, "
+    print(f"Response length - min: {min(lengths)}, max: {max(lengths)}, "
           f"avg: {sum(lengths)//len(lengths)}")
 
     # 3. Flag suspiciously short responses
@@ -1116,9 +1116,9 @@ pip install transformers datasets accelerate peft bitsandbytes
 pip install trl wandb scipy
 ```
 
-### LoRA Fine-Tuning — Step by Step
+### LoRA Fine-Tuning - Step by Step
 
-**LoRA (Low-Rank Adaptation)** works by injecting small trainable matrices into the frozen model's attention layers. Instead of updating billions of parameters, you update millions — 100x fewer.
+**LoRA (Low-Rank Adaptation)** works by injecting small trainable matrices into the frozen model's attention layers. Instead of updating billions of parameters, you update millions - 100x fewer.
 
 ```
 Original weight matrix W (4096 x 4096 = 16M params):
@@ -1142,7 +1142,7 @@ Final output: W_new = W_frozen + α × (A × B)
 ### Full Training Script
 
 ```python
-# finetune_lora.py — Production-ready LoRA fine-tuning script
+# finetune_lora.py - Production-ready LoRA fine-tuning script
 
 import torch
 from datasets import load_dataset
@@ -1167,7 +1167,7 @@ MAX_SEQ_LENGTH = 2048
 # QLoRA: 4-bit quantization config
 bnb_config = BitsAndBytesConfig(
     load_in_4bit=True,
-    bnb_4bit_quant_type="nf4",              # NormalFloat4 — best for LLMs
+    bnb_4bit_quant_type="nf4",              # NormalFloat4 - best for LLMs
     bnb_4bit_compute_dtype=torch.bfloat16,   # Compute in bf16 for stability
     bnb_4bit_use_double_quant=True,          # Nested quantization saves more memory
 )
@@ -1194,7 +1194,7 @@ model = prepare_model_for_kbit_training(model)
 # ============================================================
 
 lora_config = LoraConfig(
-    r=16,                          # Rank — higher = more capacity, more memory
+    r=16,                          # Rank - higher = more capacity, more memory
     lora_alpha=32,                 # Scaling factor (usually 2x rank)
     lora_dropout=0.05,             # Regularization
     bias="none",
@@ -1319,7 +1319,7 @@ print("  merged = merged.merge_and_unload()")
 │ Epochs           │ 1–3 for large datasets (>10K examples)   │
 │                  │ 3–5 for medium datasets (1K–10K)         │
 │                  │ 5–10 for small datasets (<1K)            │
-│                  │ Watch eval loss — stop if it goes up      │
+│                  │ Watch eval loss - stop if it goes up      │
 ├──────────────────┼──────────────────────────────────────────┤
 │ Batch size       │ Larger = more stable gradients            │
 │                  │ Use gradient_accumulation to simulate      │
@@ -1332,14 +1332,14 @@ print("  merged = merged.merge_and_unload()")
 
 ---
 
-## Part 3: Evaluation — How to Know If It Worked
+## Part 3: Evaluation - How to Know If It Worked
 
 Training loss going down is necessary but not sufficient. You need proper evaluation.
 
 ### Automated Metrics
 
 ```python
-# evaluate_model.py — Evaluate fine-tuned model quality
+# evaluate_model.py - Evaluate fine-tuned model quality
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -1433,7 +1433,7 @@ def run_evaluation(model, tokenizer, eval_file):
 ### LLM-as-Judge Evaluation
 
 ```python
-# llm_judge.py — Use a strong model to evaluate your fine-tuned model
+# llm_judge.py - Use a strong model to evaluate your fine-tuned model
 
 JUDGE_PROMPT = """You are evaluating an AI assistant's response.
 
@@ -1482,12 +1482,12 @@ After good fine-tuning:
 - Use LoRA instead of full fine-tuning (inherently limits forgetting)
 - Keep learning rate low (2e-4 for LoRA, 2e-5 for full FT)
 - Mix 5–10% general-purpose data into your training set
-- Use fewer epochs — stop when eval loss plateaus
+- Use fewer epochs - stop when eval loss plateaus
 
 ### 2. Overfitting on Small Datasets
 
 ```python
-# Signs of overfitting — watch your training curves:
+# Signs of overfitting - watch your training curves:
 
 # HEALTHY:
 # Train loss: 1.2 → 0.8 → 0.6 → 0.5
@@ -1498,7 +1498,7 @@ After good fine-tuning:
 # Eval loss:  1.3 → 0.9 → 0.95 → 1.1   ← Starts going UP
 
 # SOLUTIONS:
-# 1. Early stopping — stop when eval loss increases for N steps
+# 1. Early stopping - stop when eval loss increases for N steps
 # 2. Increase dropout (lora_dropout=0.1)
 # 3. Reduce rank (r=8 instead of r=16)
 # 4. Reduce epochs
@@ -1527,12 +1527,12 @@ def check_leakage(train_file, eval_file):
 
 ### 4. The Formatting Trap
 
-Your model outputs great content but in the wrong format — because your training data had inconsistent formatting.
+Your model outputs great content but in the wrong format - because your training data had inconsistent formatting.
 
 ```
 BAD training data (inconsistent):
   Example 1: "The answer is: Yes"
-  Example 2: "**Yes** — the answer is affirmative"
+  Example 2: "**Yes** - the answer is affirmative"
   Example 3: "yes"
   Example 4: "Answer: Yes. Explanation: ..."
 
@@ -1549,7 +1549,7 @@ GOOD training data (consistent):
 ### Merging LoRA Adapters for Production
 
 ```python
-# merge_and_export.py — Merge LoRA weights into base model for deployment
+# merge_and_export.py - Merge LoRA weights into base model for deployment
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
@@ -1595,7 +1595,7 @@ python -m vllm.entrypoints.openai.api_server \
 ```
 
 ```python
-# Client code — use it like any OpenAI-compatible API
+# Client code - use it like any OpenAI-compatible API
 import openai
 
 client = openai.OpenAI(base_url="http://localhost:8000/v1", api_key="dummy")
@@ -1673,7 +1673,7 @@ Lambda Labs       A100 80GB        80 GB    $1.10     QLoRA 70B
 RunPod            A100 80GB        80 GB    $1.64     Quick experiments
 AWS (p4d)         A100 40GB x8     320 GB   $32.77    Full FT large models
 Google Cloud      A100 80GB        80 GB    $3.67     Vertex AI integration
-Together AI       Various          —        $0.50+    Managed fine-tuning
+Together AI       Various          -        $0.50+    Managed fine-tuning
 Modal             A100 / H100      80 GB    $1.10+    Serverless GPU
 
 Budget-friendly options:
@@ -1724,7 +1724,7 @@ Do you have preference data (chosen/rejected pairs)?
 
 ### Multi-Adapter Serving
 
-Serve one base model with multiple LoRA adapters for different tasks — massive cost savings.
+Serve one base model with multiple LoRA adapters for different tasks - massive cost savings.
 
 ```python
 # Serve multiple fine-tuned "models" from a single base model
@@ -1740,7 +1740,7 @@ adapters = {
 }
 
 def get_response(task_name, user_input):
-    # Hot-swap LoRA adapters — same base model, different specializations
+    # Hot-swap LoRA adapters - same base model, different specializations
     model = PeftModel.from_pretrained(base_model, adapters[task_name])
     # Generate response...
 ```
@@ -1784,9 +1784,9 @@ POST-TRAINING:
 
 ## Closing Thoughts
 
-Fine-tuning is not magic. It's engineering — messy, iterative, and dependent on good data more than anything else. The teams that succeed at fine-tuning aren't the ones with the biggest GPUs or the most parameters. They're the ones with the cleanest data, the clearest evaluation criteria, and the discipline to try prompting first.
+Fine-tuning is not magic. It's engineering - messy, iterative, and dependent on good data more than anything else. The teams that succeed at fine-tuning aren't the ones with the biggest GPUs or the most parameters. They're the ones with the cleanest data, the clearest evaluation criteria, and the discipline to try prompting first.
 
-Start small. Fine-tune a 7B model on 500 examples with QLoRA. Evaluate rigorously. Then scale up *only if the results justify it*. That approach will get you to production faster — and cheaper — than chasing the biggest model with the most data.
+Start small. Fine-tune a 7B model on 500 examples with QLoRA. Evaluate rigorously. Then scale up *only if the results justify it*. That approach will get you to production faster - and cheaper - than chasing the biggest model with the most data.
 
 The best fine-tuned model is the smallest one that solves your problem.
 

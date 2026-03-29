@@ -1,8 +1,8 @@
-# Machine Learning Deep Dive — Part 10: Convolutional Neural Networks — Teaching Machines to See
+# Machine Learning Deep Dive - Part 10: Convolutional Neural Networks - Teaching Machines to See
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
 **Part:** 10 of 19 (Deep Learning)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~55 minutes
@@ -11,9 +11,9 @@
 
 ## Recap: Where We Left Off
 
-In Part 9, we built our PyTorch foundation from the ground up. We explored tensors — the multi-dimensional arrays that power all deep learning computation — and unpacked autograd, PyTorch's automatic differentiation engine that computes gradients by building a dynamic computation graph during the forward pass. We assembled a complete training loop: forward pass, loss computation, backward pass, and optimizer step. We also examined common optimizers (SGD, Adam, AdamW) and loss functions, then trained a multi-layer perceptron on real data.
+In Part 9, we built our PyTorch foundation from the ground up. We explored tensors - the multi-dimensional arrays that power all deep learning computation - and unpacked autograd, PyTorch's automatic differentiation engine that computes gradients by building a dynamic computation graph during the forward pass. We assembled a complete training loop: forward pass, loss computation, backward pass, and optimizer step. We also examined common optimizers (SGD, Adam, AdamW) and loss functions, then trained a multi-layer perceptron on real data.
 
-We have PyTorch in our toolkit. Now let's use it to tackle images. A fully-connected network treating each pixel as a separate input ignores spatial structure — that a pixel at position (10, 10) is closely related to (11, 10). **Convolutional Neural Networks** exploit this spatial structure and are the reason machines can now recognize faces, detect tumors, and drive cars.
+We have PyTorch in our toolkit. Now let's use it to tackle images. A fully-connected network treating each pixel as a separate input ignores spatial structure - that a pixel at position (10, 10) is closely related to (11, 10). **Convolutional Neural Networks** exploit this spatial structure and are the reason machines can now recognize faces, detect tumors, and drive cars.
 
 ---
 
@@ -55,7 +55,7 @@ MNIST at 784 inputs is manageable. But ImageNet at 150,528 inputs creates a **pa
 Parameters in layer 1 = 150,528 × 1,000 = 150,528,000
 ```
 
-That is 150 million parameters in one layer alone, before any other layers, before the output layer. A 10-layer network would be completely intractable. Modern ImageNet models like ResNet-50 achieve competitive accuracy with about 25 million parameters total — far fewer — by using convolutions.
+That is 150 million parameters in one layer alone, before any other layers, before the output layer. A 10-layer network would be completely intractable. Modern ImageNet models like ResNet-50 achieve competitive accuracy with about 25 million parameters total - far fewer - by using convolutions.
 
 ### The Spatial Invariance Problem
 
@@ -85,7 +85,7 @@ image_shifted = np.array([
 flat_original = image_original.flatten()
 flat_shifted  = image_shifted.flatten()
 
-# Cosine similarity — how similar are these inputs to an FCN?
+# Cosine similarity - how similar are these inputs to an FCN?
 from numpy.linalg import norm
 similarity = np.dot(flat_original, flat_shifted) / (norm(flat_original) * norm(flat_shifted))
 print(f"Cosine similarity between original and 1-pixel-shifted image: {similarity:.4f}")
@@ -94,7 +94,7 @@ print(f"Cosine similarity between original and 1-pixel-shifted image: {similarit
 # Cosine similarity between original and 1-pixel-shifted image: 0.0000
 ```
 
-The cosine similarity is **zero**. To an FCN, a bright spot at pixel (0,0) and the same bright spot at pixel (0,1) are completely orthogonal inputs. The network must learn completely separate weights to recognize each possible position of every object. CNNs solve this through **parameter sharing** — the same filter is applied at every position.
+The cosine similarity is **zero**. To an FCN, a bright spot at pixel (0,0) and the same bright spot at pixel (0,1) are completely orthogonal inputs. The network must learn completely separate weights to recognize each possible position of every object. CNNs solve this through **parameter sharing** - the same filter is applied at every position.
 
 ### What We Actually Want
 
@@ -312,7 +312,7 @@ for stride in [1, 2, 4]:
 
 The **receptive field** is the region of the original input that influences a particular neuron's output. After one 3×3 convolution, each output neuron "sees" a 3×3 patch. After two stacked 3×3 convolutions, each output neuron effectively sees a 5×5 patch of the original input. After three layers, it sees a 7×7 patch.
 
-> **Key Insight**: Stacking multiple small filters is more parameter-efficient than using a single large filter, while achieving the same effective receptive field. Two 3×3 conv layers use 2 × (9 × C²) = 18C² parameters, while one 5×5 layer uses 25C² parameters — and the two-layer version has more non-linearities.
+> **Key Insight**: Stacking multiple small filters is more parameter-efficient than using a single large filter, while achieving the same effective receptive field. Two 3×3 conv layers use 2 × (9 × C²) = 18C² parameters, while one 5×5 layer uses 25C² parameters - and the two-layer version has more non-linearities.
 
 ---
 
@@ -531,15 +531,15 @@ feature_map = np.array([
 print("Input feature map (4x4):")
 print(feature_map)
 
-print("\nMax pooling (2x2, stride=2) — output (2x2):")
+print("\nMax pooling (2x2, stride=2) - output (2x2):")
 max_out = max_pool2d(feature_map, pool_size=2, stride=2)
 print(max_out)
 
-print("\nAverage pooling (2x2, stride=2) — output (2x2):")
+print("\nAverage pooling (2x2, stride=2) - output (2x2):")
 avg_out = avg_pool2d(feature_map, pool_size=2, stride=2)
 print(avg_out)
 
-print(f"\nGlobal average pooling — single scalar: {global_avg_pool2d(feature_map):.2f}")
+print(f"\nGlobal average pooling - single scalar: {global_avg_pool2d(feature_map):.2f}")
 
 # Expected output:
 # Input feature map (4x4):
@@ -548,15 +548,15 @@ print(f"\nGlobal average pooling — single scalar: {global_avg_pool2d(feature_m
 #  [3. 2. 7. 8.]
 #  [1. 4. 3. 5.]]
 #
-# Max pooling (2x2, stride=2) — output (2x2):
+# Max pooling (2x2, stride=2) - output (2x2):
 # [[6. 4.]
 #  [4. 8.]]
 #
-# Average pooling (2x2, stride=2) — output (2x2):
+# Average pooling (2x2, stride=2) - output (2x2):
 # [[3.75 2.25]
 #  [2.5  5.75]]
 #
-# Global average pooling — single scalar: 3.56
+# Global average pooling - single scalar: 3.56
 ```
 
 ### Translation Invariance from Max Pooling
@@ -612,7 +612,7 @@ print(f"\nAre outputs identical? {np.array_equal(pool_A, pool_B)}")
 # Are outputs identical? True
 ```
 
-The max-pooled outputs are identical — the small shift of the detection spike within the 2×2 window has been absorbed.
+The max-pooled outputs are identical - the small shift of the detection spike within the 2×2 window has been absorbed.
 
 ### Pooling Type Comparison
 
@@ -630,7 +630,7 @@ Modern architectures like ResNet use **Global Average Pooling** as the final spa
 Benefits:
 - Reduces parameters dramatically (no FC weights)
 - More spatially interpretable (each channel's average activation)
-- Better generalization — less prone to overfitting
+- Better generalization - less prone to overfitting
 - Enables variable-size input images at inference
 
 ---
@@ -651,7 +651,7 @@ conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1)
 # nn.MaxPool2d(kernel_size, stride=None, padding=0)
 pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
-# nn.AdaptiveAvgPool2d — outputs a specified size regardless of input size
+# nn.AdaptiveAvgPool2d - outputs a specified size regardless of input size
 gap = nn.AdaptiveAvgPool2d(output_size=(1, 1))  # Global Average Pooling
 
 # Demonstrate shapes
@@ -827,7 +827,7 @@ class SimpleCNN(nn.Module):
         x = self.dropout(x)
         x = self.fc(x)
 
-        return x  # Raw logits — apply softmax externally if needed
+        return x  # Raw logits - apply softmax externally if needed
 
 # Test the model
 model = SimpleCNN(num_classes=10)
@@ -990,7 +990,7 @@ class ResidualBlock(nn.Module):
                                kernel_size=3, stride=1, padding=1, bias=False)
         self.bn2   = nn.BatchNorm2d(out_channels)
 
-        # Shortcut path — only needed when dimensions change
+        # Shortcut path - only needed when dimensions change
         self.shortcut = nn.Sequential()
         if stride != 1 or in_channels != out_channels:
             # 1x1 conv to match dimensions
@@ -1071,7 +1071,7 @@ print(f"Parameters: {sum(p.numel() for p in model.parameters()):,}")
 # Parameters: 2,794,314
 ```
 
-> **Why Skip Connections Work**: Consider training a 20-layer network. With skip connections, if the optimal solution is to do nothing in layers 3-10, the network can easily learn `F(x) = 0` (making the block behave as identity). Without skip connections, the network would need to somehow learn the identity function through weight matrices — much harder.
+> **Why Skip Connections Work**: Consider training a 20-layer network. With skip connections, if the optimal solution is to do nothing in layers 3-10, the network can easily learn `F(x) = 0` (making the block behave as identity). Without skip connections, the network would need to somehow learn the identity function through weight matrices - much harder.
 
 ---
 
@@ -1142,11 +1142,11 @@ x = torch.randn(N, C) * 5 + 3   # Non-zero mean and large std
 gamma = torch.ones(C)
 beta  = torch.zeros(C)
 
-print(f"Input  — mean: {x.mean():.3f}, std: {x.std():.3f}")
+print(f"Input  - mean: {x.mean():.3f}, std: {x.std():.3f}")
 
 out, mean, var = batch_norm_1d_forward(x, gamma, beta)
-print(f"Output — mean: {out.mean():.4f}, std: {out.std():.4f}")
-print(f"(Approximately 0 mean and 1 std — then γ/β can shift as needed)")
+print(f"Output - mean: {out.mean():.4f}, std: {out.std():.4f}")
+print(f"(Approximately 0 mean and 1 std - then γ/β can shift as needed)")
 
 # Compare with PyTorch's implementation
 bn = nn.BatchNorm1d(C)
@@ -1155,15 +1155,15 @@ with torch.no_grad():
     bn.bias.fill_(0.0)
     torch_out = bn(x)
 
-print(f"\nPyTorch BN output — mean: {torch_out.mean():.4f}, std: {torch_out.std():.4f}")
+print(f"\nPyTorch BN output - mean: {torch_out.mean():.4f}, std: {torch_out.std():.4f}")
 print(f"Match with manual: {torch.allclose(out, torch_out, atol=1e-4)}")
 
 # Expected output:
-# Input  — mean: 3.048, std: 4.983
-# Output — mean: 0.0001, std: 0.9997
-# (Approximately 0 mean and 1 std — then γ/β can shift as needed)
+# Input  - mean: 3.048, std: 4.983
+# Output - mean: 0.0001, std: 0.9997
+# (Approximately 0 mean and 1 std - then γ/β can shift as needed)
 #
-# PyTorch BN output — mean: 0.0001, std: 0.9997
+# PyTorch BN output - mean: 0.0001, std: 0.9997
 # Match with manual: True
 ```
 
@@ -1249,7 +1249,7 @@ There is ongoing discussion in the deep learning community about the optimal pla
 
 The original placement (Conv → BN → ReLU) remains the most widely used in practice.
 
-> **Practical Note**: When using Batch Normalization, set `bias=False` in your `nn.Conv2d` layers. The BN layer's learnable `β` parameter subsumes the bias — adding both wastes parameters.
+> **Practical Note**: When using Batch Normalization, set `bias=False` in your `nn.Conv2d` layers. The BN layer's learnable `β` parameter subsumes the bias - adding both wastes parameters.
 
 ---
 
@@ -1596,7 +1596,7 @@ Understanding what a trained CNN focuses on when making predictions is crucial f
 
 1. Forward pass an image, note the class score for the target class
 2. Backpropagate gradients back to a chosen convolutional layer
-3. Compute the global average of the gradients over the spatial dimensions — this gives an importance weight for each channel
+3. Compute the global average of the gradients over the spatial dimensions - this gives an importance weight for each channel
 4. Compute a weighted combination of the feature maps using these weights
 5. Apply ReLU (keep only positive contributions)
 6. Upsample to the original image size
@@ -1627,7 +1627,7 @@ class GradCAM:
     """
     Gradient-weighted Class Activation Mapping (Selvaraju et al., 2017).
 
-    Works with any CNN architecture — just specify which layer to hook.
+    Works with any CNN architecture - just specify which layer to hook.
     """
 
     def __init__(self, model, target_layer):
@@ -1662,7 +1662,7 @@ class GradCAM:
         """
         Compute Grad-CAM heatmap.
 
-        input_tensor: (1, C, H, W) — single image
+        input_tensor: (1, C, H, W) - single image
         class_idx:    target class. If None, uses the predicted class.
 
         Returns:
@@ -2221,7 +2221,7 @@ def plot_training_history(history, save_path=None):
     overfitting_gap = history['train_acc'][-1] - history['val_acc'][-1]
     print(f"  Overfitting gap:      {overfitting_gap:.2f}%")
     if overfitting_gap > 10:
-        print("  WARNING: Large gap suggests overfitting — try more augmentation or dropout")
+        print("  WARNING: Large gap suggests overfitting - try more augmentation or dropout")
 
 # Usage:
 # plot_training_history(history, save_path='training_curves.png')
@@ -2378,14 +2378,14 @@ for epoch in [0, 50, 100, 150, 199]:
 |------|-----------|
 | **Convolution (2D)** | Sliding a filter over an input, computing dot products at each position to produce a feature map |
 | **Filter / Kernel** | Small matrix of learnable weights that acts as a feature detector |
-| **Feature Map** | The output of applying a filter to an input — shows where the filter's pattern was detected |
-| **Parameter Sharing** | Same filter weights reused at every spatial position — the key to CNNs' efficiency |
+| **Feature Map** | The output of applying a filter to an input - shows where the filter's pattern was detected |
+| **Parameter Sharing** | Same filter weights reused at every spatial position - the key to CNNs' efficiency |
 | **Receptive Field** | The region of the original input that influences a particular neuron's output |
-| **Valid Padding** | No padding — output is smaller than input after convolution |
+| **Valid Padding** | No padding - output is smaller than input after convolution |
 | **Same Padding** | Zero-pad input so output has same spatial size as input (with stride=1) |
 | **Stride** | Number of pixels the filter moves at each step; stride=2 halves spatial dimensions |
-| **Max Pooling** | Takes the maximum value in each pooling window — provides translation invariance |
-| **Global Average Pooling** | Averages each entire feature map to a single value — replaces FC layers |
+| **Max Pooling** | Takes the maximum value in each pooling window - provides translation invariance |
+| **Global Average Pooling** | Averages each entire feature map to a single value - replaces FC layers |
 | **Batch Normalization** | Normalizes layer activations across the mini-batch; adds learnable scale (γ) and shift (β) |
 | **Internal Covariate Shift** | The phenomenon where each layer's input distribution changes as earlier layers update |
 | **Residual Block** | Block that learns F(x) and adds the identity skip connection: output = F(x) + x |
@@ -2395,7 +2395,7 @@ for epoch in [0, 50, 100, 150, 199]:
 | **Transfer Learning** | Reusing weights trained on a large dataset as a starting point for a new task |
 | **Fine-Tuning** | Continuing to train a pretrained network on new data, typically with a low learning rate |
 | **Feature Extraction** | Freezing pretrained layers and training only a new classifier head |
-| **Grad-CAM** | Gradient-weighted Class Activation Mapping — visualizes which image regions influenced a prediction |
+| **Grad-CAM** | Gradient-weighted Class Activation Mapping - visualizes which image regions influenced a prediction |
 | **Label Smoothing** | Softens hard class labels (e.g., 1.0 → 0.9, 0.0 → 0.01) to reduce overconfidence |
 | **MixUp** | Augmentation that linearly interpolates between two training images and their labels |
 | **CutMix** | Augmentation that pastes a rectangular region from one image into another |
@@ -2418,19 +2418,19 @@ In this article, we built a complete understanding of Convolutional Neural Netwo
 - The evolution from LeNet-5's 60K parameters to ResNet's skip connections that enabled 100+ layer training
 - Data augmentation strategies that serve as cost-free regularization
 - Transfer learning, which lets you stand on the shoulders of ImageNet-trained giants
-- Grad-CAM for interpretability — understanding what the model actually "sees"
+- Grad-CAM for interpretability - understanding what the model actually "sees"
 - A complete CIFAR-10 project achieving 85%+ test accuracy
 
-### Part 11 Preview: Sequence Models — RNNs, LSTMs, and the Path to Transformers
+### Part 11 Preview: Sequence Models - RNNs, LSTMs, and the Path to Transformers
 
-CNNs conquer spatial data by exploiting locality in 2D grids. But what about **sequential data** — text, time series, audio, DNA sequences — where the order of elements is fundamental to meaning?
+CNNs conquer spatial data by exploiting locality in 2D grids. But what about **sequential data** - text, time series, audio, DNA sequences - where the order of elements is fundamental to meaning?
 
 In Part 11, we will explore:
 
 - **Why feedforward networks fail on sequences**: no memory of previous inputs
 - **Recurrent Neural Networks (RNNs)**: processing sequences with a hidden state that carries information forward through time
 - The **vanishing gradient problem in sequences**: why standard RNNs forget information from early in a sequence
-- **Long Short-Term Memory (LSTM)**: the gated cell that learns what to remember, what to forget, and what to output — with a 30-year track record on sequential data
+- **Long Short-Term Memory (LSTM)**: the gated cell that learns what to remember, what to forget, and what to output - with a 30-year track record on sequential data
 - **Gated Recurrent Units (GRUs)**: a streamlined alternative to LSTMs with fewer parameters
 - **Bidirectional RNNs**: reading sequences both forward and backward for richer context
 - **Sequence-to-Sequence architectures**: the foundation of machine translation
@@ -2443,11 +2443,11 @@ The sequence modeling paradigm is the direct predecessor to the Transformer arch
 
 ## Key Takeaways
 
-1. **Convolutions are efficient**: parameter sharing means the same edge detector works at every position — compare 640 parameters in a conv layer vs. 65,600 in an equivalent FC layer.
+1. **Convolutions are efficient**: parameter sharing means the same edge detector works at every position - compare 640 parameters in a conv layer vs. 65,600 in an equivalent FC layer.
 
 2. **Depth enables hierarchy**: shallow networks detect individual features; deep networks compose features into parts, then objects. Depth, not width, is the key.
 
-3. **Skip connections are transformative**: ResNet's key insight — by making identity mapping trivially easy to learn, skip connections allow gradients to flow freely and enable arbitrarily deep networks.
+3. **Skip connections are transformative**: ResNet's key insight - by making identity mapping trivially easy to learn, skip connections allow gradients to flow freely and enable arbitrarily deep networks.
 
 4. **Batch normalization is almost always beneficial**: it stabilizes training, allows higher learning rates, and acts as mild regularization. Use it with `bias=False` in preceding conv layers.
 
@@ -2455,10 +2455,10 @@ The sequence modeling paradigm is the direct predecessor to the Transformer arch
 
 6. **Transfer learning is the practical default**: if you have fewer than 100K labeled images, start with a pretrained model. Training from scratch on small datasets rarely beats fine-tuning a pretrained backbone.
 
-7. **Always monitor both train and validation accuracy**: a large gap (>10%) indicates overfitting — add more augmentation, dropout, or reduce model capacity.
+7. **Always monitor both train and validation accuracy**: a large gap (>10%) indicates overfitting - add more augmentation, dropout, or reduce model capacity.
 
-8. **The feature map size formula matters**: `floor((H - F + 2P) / S) + 1`. Know this cold — it prevents shape errors that are the most common CNN debugging headache.
+8. **The feature map size formula matters**: `floor((H - F + 2P) / S) + 1`. Know this cold - it prevents shape errors that are the most common CNN debugging headache.
 
 ---
 
-*Part 10 of the Machine Learning Deep Dive series. Continue to [Part 11: Sequence Models — RNNs, LSTMs, and the Path to Transformers](#).*
+*Part 10 of the Machine Learning Deep Dive series. Continue to [Part 11: Sequence Models - RNNs, LSTMs, and the Path to Transformers](#).*

@@ -1,6 +1,6 @@
 # Blog 1: WebSockets Fundamentals & Real-time Basics
 
-> Everything you need to understand WebSockets — from the HTTP handshake to building a working real-time chat system. No fluff, just the mechanics that matter.
+> Everything you need to understand WebSockets - from the HTTP handshake to building a working real-time chat system. No fluff, just the mechanics that matter.
 
 ---
 
@@ -9,7 +9,7 @@
 - [Why Real-time Matters](#why-real-time-matters)
 - [The Problem with HTTP](#the-problem-with-http)
 - [What Are WebSockets](#what-are-websockets)
-- [HTTP vs WebSockets — The Complete Comparison](#http-vs-websockets--the-complete-comparison)
+- [HTTP vs WebSockets - The Complete Comparison](#http-vs-websockets--the-complete-comparison)
 - [The WebSocket Handshake (Under the Hood)](#the-websocket-handshake-under-the-hood)
 - [WebSocket Connection Lifecycle](#websocket-connection-lifecycle)
 - [Building a Real-time Chat System](#building-a-real-time-chat-system)
@@ -24,7 +24,7 @@
 
 Modern applications don't wait for users to hit "refresh." When someone sends a message on Slack, their teammate sees it instantly. When a stock price changes, your trading dashboard updates immediately. When a player moves in a multiplayer game, every other player sees it within milliseconds.
 
-This is **real-time communication** — and it fundamentally breaks the traditional request-response model the web was built on.
+This is **real-time communication** - and it fundamentally breaks the traditional request-response model the web was built on.
 
 The technologies powering this are **WebSockets** and **WebRTC**. In this first blog, we'll master WebSockets from the ground up.
 
@@ -53,7 +53,7 @@ When you need real-time updates, HTTP forces you into awkward patterns:
 The client repeatedly asks "anything new?" at fixed intervals.
 
 ```javascript
-// Short Polling — the naive approach
+// Short Polling - the naive approach
 setInterval(async () => {
   const response = await fetch('/api/messages?since=' + lastTimestamp);
   const messages = await response.json();
@@ -65,7 +65,7 @@ setInterval(async () => {
 ```
 
 **Problems:**
-- 99% of requests return nothing new — wasted bandwidth
+- 99% of requests return nothing new - wasted bandwidth
 - 3-second delay between message sent and message seen
 - Polling faster means more server load; polling slower means worse UX
 - Each request carries full HTTP headers (~800 bytes) for maybe 0 bytes of useful data
@@ -75,7 +75,7 @@ setInterval(async () => {
 The server holds the request open until it has something to send.
 
 ```javascript
-// Long Polling — better, but still awkward
+// Long Polling - better, but still awkward
 async function longPoll() {
   try {
     const response = await fetch('/api/messages/subscribe', {
@@ -84,7 +84,7 @@ async function longPoll() {
     const messages = await response.json();
     renderMessages(messages);
   } catch (err) {
-    // Timeout or error — reconnect
+    // Timeout or error - reconnect
   }
   // Immediately start next long poll
   longPoll();
@@ -103,7 +103,7 @@ longPoll();
 The server can push data to the client over a single long-lived HTTP connection.
 
 ```javascript
-// Server-Sent Events — good for one-way push
+// Server-Sent Events - good for one-way push
 const eventSource = new EventSource('/api/stream');
 
 eventSource.onmessage = (event) => {
@@ -116,7 +116,7 @@ eventSource.onerror = () => {
 };
 ```
 
-**SSE is genuinely useful for one-way streams** (live feeds, notifications, stock tickers), but it's **unidirectional** — the client can't send messages back over the same connection. For chat, collaborative editing, or gaming, you need something truly bidirectional.
+**SSE is genuinely useful for one-way streams** (live feeds, notifications, stock tickers), but it's **unidirectional** - the client can't send messages back over the same connection. For chat, collaborative editing, or gaming, you need something truly bidirectional.
 
 ---
 
@@ -149,7 +149,7 @@ Client ◄──────── message ─────────  Server
 
 ---
 
-## HTTP vs WebSockets — The Complete Comparison
+## HTTP vs WebSockets - The Complete Comparison
 
 | Aspect | HTTP | WebSockets |
 |---|---|---|
@@ -164,7 +164,7 @@ Client ◄──────── message ─────────  Server
 | Proxy support | Universal | Some older proxies struggle with Upgrade |
 | Use cases | APIs, page loads, file downloads | Chat, gaming, live dashboards, collaboration |
 
-**The critical insight:** HTTP is optimized for **content delivery** (cacheable, stateless, well-understood). WebSockets are optimized for **real-time interaction** (persistent, stateful, low-latency). They're not competing — they serve different purposes, and most production apps use both.
+**The critical insight:** HTTP is optimized for **content delivery** (cacheable, stateless, well-understood). WebSockets are optimized for **real-time interaction** (persistent, stateful, low-latency). They're not competing - they serve different purposes, and most production apps use both.
 
 ---
 
@@ -186,11 +186,11 @@ Origin: http://example.com
 ```
 
 **Key headers explained:**
-- `Upgrade: websocket` — "I want to switch to WebSocket protocol"
-- `Connection: Upgrade` — "This connection should be upgraded"
-- `Sec-WebSocket-Key` — A random Base64-encoded 16-byte value. Used to prove the server understood the WebSocket protocol (not for security)
-- `Sec-WebSocket-Version: 13` — The WebSocket protocol version (always 13 for RFC 6455)
-- `Sec-WebSocket-Protocol` — Optional sub-protocols the client supports
+- `Upgrade: websocket` - "I want to switch to WebSocket protocol"
+- `Connection: Upgrade` - "This connection should be upgraded"
+- `Sec-WebSocket-Key` - A random Base64-encoded 16-byte value. Used to prove the server understood the WebSocket protocol (not for security)
+- `Sec-WebSocket-Version: 13` - The WebSocket protocol version (always 13 for RFC 6455)
+- `Sec-WebSocket-Protocol` - Optional sub-protocols the client supports
 
 ### Server Response
 
@@ -221,7 +221,7 @@ computeAcceptKey('dGhlIHNhbXBsZSBub25jZQ==');
 // → 's3pPLMBiTxaQ9kYGzzhZRbK+xOo='
 ```
 
-This isn't encryption or authentication — it's a simple proof that the server speaks WebSocket protocol and isn't accidentally accepting the upgrade. **Real authentication should be done via cookies, tokens, or query parameters during the handshake.**
+This isn't encryption or authentication - it's a simple proof that the server speaks WebSocket protocol and isn't accidentally accepting the upgrade. **Real authentication should be done via cookies, tokens, or query parameters during the handshake.**
 
 ### What happens after the handshake
 
@@ -310,7 +310,7 @@ ws.close(1000, 'User logged out');
 | 1001 | Going away (page navigating, server shutting down) |
 | 1002 | Protocol error |
 | 1003 | Unsupported data type |
-| 1006 | Abnormal closure (no close frame received — usually network issue) |
+| 1006 | Abnormal closure (no close frame received - usually network issue) |
 | 1008 | Policy violation |
 | 1009 | Message too large |
 | 1011 | Unexpected server error |
@@ -524,8 +524,8 @@ const HEARTBEAT_INTERVAL = 30000; // 30 seconds
 const heartbeatTimer = setInterval(() => {
   for (const [ws, client] of clients) {
     if (!client.isAlive) {
-      // Didn't respond to last ping — terminate
-      console.log(`[${client.id}] Heartbeat timeout — terminating`);
+      // Didn't respond to last ping - terminate
+      console.log(`[${client.id}] Heartbeat timeout - terminating`);
       clients.delete(ws);
       ws.terminate();
       return;
@@ -605,7 +605,7 @@ server.listen(PORT, () => {
       ws = new WebSocket(`${protocol}//${location.host}`);
 
       ws.onopen = () => {
-        statusEl.textContent = 'Connected — set your username';
+        statusEl.textContent = 'Connected - set your username';
         statusEl.style.color = '#4ecca3';
 
         // Prompt for username
@@ -747,7 +747,7 @@ server.listen(PORT, () => {
 </html>
 ```
 
-### How It Works — Step by Step
+### How It Works - Step by Step
 
 ```
 1. Server starts HTTP server + WebSocket server on same port
@@ -779,7 +779,7 @@ server.listen(PORT, () => {
  (Carol)    WSS    │  └─────────────────────────────┘   │
                     │                                     │
                     │  ┌─────────────────────────────┐   │
-                    │  │  Express (HTTP) — static files│   │
+                    │  │  Express (HTTP) - static files│   │
                     │  └─────────────────────────────┘   │
                     └───────────────────────────────────┘
 ```
@@ -915,7 +915,7 @@ class ReconnectingWebSocket {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(data);
     } else {
-      console.warn('Cannot send — WebSocket is not open');
+      console.warn('Cannot send - WebSocket is not open');
     }
   }
 
@@ -942,7 +942,7 @@ ws.onclose = (event) => console.log('Disconnected:', event.code);
 ### Why Exponential Backoff with Jitter Matters
 
 ```
-Without jitter — thundering herd problem:
+Without jitter - thundering herd problem:
 Server restarts at T=0
 ├── T=1s:  All 10,000 clients reconnect simultaneously → server overloaded again
 ├── T=2s:  All retry again → overloaded again
@@ -960,7 +960,7 @@ Server restarts at T=0
 
 ### Server-Side Heartbeat (Detecting Dead Connections)
 
-TCP connections can go "half-open" — one side thinks it's connected, but the other side has disappeared (client crashed, network changed, etc.). TCP keepalive exists but operates on much longer timescales (minutes to hours).
+TCP connections can go "half-open" - one side thinks it's connected, but the other side has disappeared (client crashed, network changed, etc.). TCP keepalive exists but operates on much longer timescales (minutes to hours).
 
 WebSocket ping/pong solves this at the application level:
 
@@ -973,7 +973,7 @@ function setupHeartbeat(wss) {
   setInterval(() => {
     for (const client of wss.clients) {
       if (client.isAlive === false) {
-        console.log('Client heartbeat timeout — terminating');
+        console.log('Client heartbeat timeout - terminating');
         client.terminate(); // Hard close (no close frame)
         return;
       }
@@ -991,7 +991,7 @@ wss.on('connection', (ws) => {
 });
 ```
 
-**Note:** The browser WebSocket API automatically responds to ping frames with pong frames. You don't need to handle this in client-side JavaScript — it happens at the protocol level.
+**Note:** The browser WebSocket API automatically responds to ping frames with pong frames. You don't need to handle this in client-side JavaScript - it happens at the protocol level.
 
 ---
 
@@ -1111,7 +1111,7 @@ wss.on('connection', (ws) => {
 ### 6. Not Using WSS (Encrypted WebSockets) in Production
 
 ```javascript
-// ❌ Unencrypted — data visible to anyone on the network
+// ❌ Unencrypted - data visible to anyone on the network
 new WebSocket('ws://api.example.com/chat');
 
 // ✅ Always use wss:// in production (TLS encrypted)
@@ -1158,4 +1158,4 @@ WebSockets aren't always the right tool:
 
 ---
 
-**Next:** [Blog 2 — Advanced WebSockets & Scaling Real-time Systems →](./02-advanced-websockets.md)
+**Next:** [Blog 2 - Advanced WebSockets & Scaling Real-time Systems →](./02-advanced-websockets.md)

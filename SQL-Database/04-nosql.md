@@ -8,10 +8,10 @@
 
 - [4.1 NoSQL Overview & Types](#41-nosql-overview--types)
 - [4.2 When to Use NoSQL vs SQL](#42-when-to-use-nosql-vs-sql)
-- [4.3 Document Databases — MongoDB](#43-document-databases--mongodb)
-- [4.4 Key-Value Stores — Redis & DynamoDB](#44-key-value-stores--redis--dynamodb)
-- [4.5 Column-Family Stores — Cassandra](#45-column-family-stores--cassandra)
-- [4.6 Graph Databases — Neo4j](#46-graph-databases--neo4j)
+- [4.3 Document Databases - MongoDB](#43-document-databases--mongodb)
+- [4.4 Key-Value Stores - Redis & DynamoDB](#44-key-value-stores--redis--dynamodb)
+- [4.5 Column-Family Stores - Cassandra](#45-column-family-stores--cassandra)
+- [4.6 Graph Databases - Neo4j](#46-graph-databases--neo4j)
 - [4.7 Denormalization](#47-denormalization)
 - [4.8 CAP Theorem](#48-cap-theorem)
 - [4.9 NewSQL & Modern Hybrid Databases](#49-newsql--modern-hybrid-databases)
@@ -54,7 +54,7 @@ Structure: key → value (opaque blob)
 │ cache:page1 │ <HTML content>             │
 └─────────────┴────────────────────────────┘
 
-Operations: GET, SET, DELETE — O(1)
+Operations: GET, SET, DELETE - O(1)
 No queries on values (just key lookup)
 Examples: Redis, Memcached, DynamoDB
 Use cases: Caching, session storage, rate limiting
@@ -121,7 +121,7 @@ Examples: Neo4j, Amazon Neptune, ArangoDB
 Use cases: Social networks, recommendations, fraud detection
 ```
 
-> **Why the interviewer asks this:** They want to see you can choose the right database for the job. Listing types isn't enough — you must explain the trade-offs and access patterns each type optimizes for.
+> **Why the interviewer asks this:** They want to see you can choose the right database for the job. Listing types isn't enough - you must explain the trade-offs and access patterns each type optimizes for.
 
 **Follow-up:** *Give me a scenario where you'd migrate from SQL to NoSQL mid-project. What would trigger that decision?*
 
@@ -181,12 +181,12 @@ This is one of the most important architectural decisions. Here's a systematic f
 ```
 ❌ Using MongoDB for financial transactions (no multi-document ACID until v4.0)
 ❌ Using SQL for 100TB+ event logs (scale + write throughput issues)
-❌ Using Redis as primary database (volatility — data loss on crash)
+❌ Using Redis as primary database (volatility - data loss on crash)
 ❌ Using a graph database for simple CRUD (over-engineering)
 ❌ "We might need to scale someday" → Don't optimize prematurely
 ```
 
-#### Polyglot Persistence — Use Multiple Databases
+#### Polyglot Persistence - Use Multiple Databases
 
 ```
 Real-world architecture often uses MULTIPLE databases:
@@ -202,13 +202,13 @@ Real-world architecture often uses MULTIPLE databases:
                     Application Layer
 ```
 
-> **Why the interviewer asks this:** This question tests architectural thinking. The best answer isn't "always SQL" or "always NoSQL" — it's demonstrating you can evaluate trade-offs based on specific requirements.
+> **Why the interviewer asks this:** This question tests architectural thinking. The best answer isn't "always SQL" or "always NoSQL" - it's demonstrating you can evaluate trade-offs based on specific requirements.
 
 **Follow-up:** *What is polyglot persistence and what challenges does it introduce?*
 
 ---
 
-## 4.3 Document Databases — MongoDB
+## 4.3 Document Databases - MongoDB
 
 ### Question: Explain MongoDB's data model, query language, and indexing.
 
@@ -216,10 +216,10 @@ Real-world architecture often uses MULTIPLE databases:
 
 MongoDB stores data as **BSON documents** (Binary JSON) organized in **collections** (analogous to tables).
 
-#### Data Modeling — Embedding vs Referencing
+#### Data Modeling - Embedding vs Referencing
 
 ```javascript
-// EMBEDDED (Denormalized) — store related data together
+// EMBEDDED (Denormalized) - store related data together
 // Best for: 1:1, 1:few relationships, data accessed together
 {
     "_id": ObjectId("..."),
@@ -243,7 +243,7 @@ MongoDB stores data as **BSON documents** (Binary JSON) organized in **collectio
     ]
 }
 
-// REFERENCED (Normalized) — store reference ID, query separately
+// REFERENCED (Normalized) - store reference ID, query separately
 // Best for: 1:many, many:many, large/unbounded arrays, shared data
 // users collection:
 {
@@ -375,7 +375,7 @@ try {
 
 ---
 
-## 4.4 Key-Value Stores — Redis & DynamoDB
+## 4.4 Key-Value Stores - Redis & DynamoDB
 
 ### Question: Explain Redis data structures and common use patterns.
 
@@ -463,7 +463,7 @@ def get_user(user_id):
     if cached:
         return json.loads(cached)
 
-    # 2. Cache miss — query database
+    # 2. Cache miss - query database
     user = db.query("SELECT * FROM users WHERE id = %s", user_id)
 
     # 3. Store in cache (TTL: 5 minutes)
@@ -520,7 +520,7 @@ Query: Get items in order 001
 
 ---
 
-## 4.5 Column-Family Stores — Cassandra
+## 4.5 Column-Family Stores - Cassandra
 
 ### Question: Explain Cassandra's architecture and data model. When would you choose it?
 
@@ -528,7 +528,7 @@ Query: Get items in order 001
 
 Apache Cassandra is a **distributed, wide-column store** designed for massive write throughput and high availability across multiple data centers.
 
-#### Architecture — Ring Topology
+#### Architecture - Ring Topology
 
 ```
          Node A
@@ -585,7 +585,7 @@ Example:
 Query 1: "Get all orders for a customer" → Table: orders_by_customer
 Query 2: "Get all orders by status" → Table: orders_by_status (separate table!)
 
--- Same data, different partition key — denormalized by design
+-- Same data, different partition key - denormalized by design
 CREATE TABLE orders_by_status (
     status      TEXT,
     order_date  TIMESTAMP,
@@ -627,7 +627,7 @@ Write ONE + Read ONE = eventual consistency
 
 ---
 
-## 4.6 Graph Databases — Neo4j
+## 4.6 Graph Databases - Neo4j
 
 ### Question: When would you use a graph database and how does it differ from SQL for relationship queries?
 
@@ -651,7 +651,7 @@ CREATE (bob)-[:WORKS_AT {since: 2022}]->(google)
 CREATE (alice)-[:FRIENDS_WITH {since: 2019}]->(bob)
 ```
 
-#### SQL vs Graph — Relationship Queries
+#### SQL vs Graph - Relationship Queries
 
 ```sql
 -- SQL: "Find friends of friends of Alice" (6 degrees of separation style)
@@ -724,7 +724,7 @@ Neo4j:
 Denormalization is **intentionally adding redundancy** to a database schema to improve read performance, at the cost of write complexity and data consistency risk.
 
 ```sql
--- NORMALIZED (3NF) — no redundancy
+-- NORMALIZED (3NF) - no redundancy
 -- orders table:
 -- order_id | customer_id | product_id | quantity
 --
@@ -735,7 +735,7 @@ JOIN customers c ON o.customer_id = c.customer_id
 JOIN products p ON o.product_id = p.product_id;
 -- Requires 2 JOINs every time
 
--- DENORMALIZED — store customer name and product name directly
+-- DENORMALIZED - store customer name and product name directly
 -- orders table:
 -- order_id | customer_id | customer_name | product_id | product_name | quantity
 --
@@ -842,7 +842,7 @@ CA (Consistency + Availability):
   Examples: Single-node PostgreSQL, single-node MySQL
 ```
 
-#### Beyond CAP — PACELC
+#### Beyond CAP - PACELC
 
 The PACELC theorem extends CAP:
 
@@ -888,7 +888,7 @@ CockroachDB     | PC         | EC
 
 **Answer:**
 
-Eventual consistency guarantees that **if no new writes occur, all replicas will eventually converge to the same value.** There's no guarantee on *when* — it could be milliseconds or seconds.
+Eventual consistency guarantees that **if no new writes occur, all replicas will eventually converge to the same value.** There's no guarantee on *when* - it could be milliseconds or seconds.
 
 ```
 Write to Node A: user.name = "Alice Smith"
@@ -897,7 +897,7 @@ Write to Node A: user.name = "Alice Smith"
   ▼                 ▼                 ▼
 Node A             Node B            Node C
 "Alice Smith"    "Alice Jones"     "Alice Jones"
-(updated)        (stale — hasn't   (stale)
+(updated)        (stale - hasn't   (stale)
                   received update)
 
 ... time passes (usually milliseconds) ...
@@ -914,7 +914,7 @@ Node A             Node B            Node C
 |---|---|
 | Social media like count | Showing 4,999 likes instead of 5,000 for 200ms is fine |
 | Product catalog | Seeing a slightly stale price for a few seconds is OK |
-| DNS propagation | TTL-based caching means DNS updates take hours — and it works |
+| DNS propagation | TTL-based caching means DNS updates take hours - and it works |
 | Shopping cart | Cart state can be eventually consistent across devices |
 | User profile updates | Bio change doesn't need instant consistency |
 
@@ -953,7 +953,7 @@ NewSQL:              ✅                   ✅
 | Vitess | MySQL sharding middleware | Used by YouTube/Slack/Square |
 
 ```sql
--- CockroachDB example — looks like PostgreSQL, scales like NoSQL
+-- CockroachDB example - looks like PostgreSQL, scales like NoSQL
 CREATE TABLE orders (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     customer_id UUID NOT NULL,
@@ -1080,7 +1080,7 @@ Question: Design a DynamoDB table for an e-commerce platform that needs:
 3. Get order details by order_id
 4. Get all orders by status (e.g., "pending")
 
-Solution — Single-table design:
+Solution - Single-table design:
 
 PK                | SK              | GSI1-PK    | GSI1-SK         | Attributes
 ──────────────────┼─────────────────┼────────────┼─────────────────┼──────────
@@ -1095,12 +1095,12 @@ Access patterns:
 2. Customer orders:  PK = "CUSTOMER#c1", SK begins_with "ORDER#"
 3. Order by ID:      GSI1-PK = "ORDER#o1"
 4. Orders by status: GSI1-SK begins_with "STATUS#pending"
-   (requires a GSI with status as partition key — or scan + filter)
+   (requires a GSI with status as partition key - or scan + filter)
 ```
 
 ---
 
-### Problem 4: Conceptual — CAP Theorem Application
+### Problem 4: Conceptual - CAP Theorem Application
 
 ```
 Question: You're building a global e-commerce platform. Different components
@@ -1123,7 +1123,7 @@ Session management | Eventual (OK)      | Redis              | Worst case: re-lo
 
 ---
 
-### Problem 5: Output-Based — Redis Sorted Set
+### Problem 5: Output-Based - Redis Sorted Set
 
 ```
 Question: What does this Redis sequence produce?
@@ -1145,7 +1145,7 @@ ZREVRANGE scores 0 -1 WITHSCORES
 4) "carol"  - 150
 ```
 
-Note: bob and dave both have score 200. With equal scores, Redis sorts **lexicographically** — "bob" < "dave", so in ZREVRANGE (high to low), we reverse to get bob before dave... actually with ZREVRANGE, for equal scores the lexicographic order is also reversed, so "dave" would come first. Let me correct:
+Note: bob and dave both have score 200. With equal scores, Redis sorts **lexicographically** - "bob" < "dave", so in ZREVRANGE (high to low), we reverse to get bob before dave... actually with ZREVRANGE, for equal scores the lexicographic order is also reversed, so "dave" would come first. Let me correct:
 
 ```
 1) "dave"   - 200    (same score as bob, "d" > "b" lexicographically → first in reverse)
@@ -1160,16 +1160,16 @@ Note: bob and dave both have score 200. With equal scores, Redis sorts **lexicog
 
 | Topic | What to Remember |
 |---|---|
-| NoSQL types | Key-Value, Document, Column-Family, Graph — each optimizes for different access patterns |
+| NoSQL types | Key-Value, Document, Column-Family, Graph - each optimizes for different access patterns |
 | SQL vs NoSQL | Not "which is better" but "which fits these specific requirements" |
 | MongoDB | Embed for 1:few; reference for 1:many; aggregation pipeline for complex queries |
-| Redis | Not just a cache — sorted sets, streams, pub/sub; choose eviction policy carefully |
+| Redis | Not just a cache - sorted sets, streams, pub/sub; choose eviction policy carefully |
 | Cassandra | Model tables around queries, not entities; tunable consistency |
 | CAP theorem | Really CP vs AP (partitions are inevitable); most databases are tunable |
 | Denormalization | Intentional redundancy for read performance; must manage consistency |
-| NewSQL | CockroachDB, Spanner, TiDB — ACID + scale; the modern compromise |
+| NewSQL | CockroachDB, Spanner, TiDB - ACID + scale; the modern compromise |
 
 ---
 
-**Previous:** [← Part 3 — Advanced SQL & Database Internals](./03-advanced-sql.md)
-**Next:** [Part 5 — System Design & Real-world Database Scenarios →](./05-system-design.md)
+**Previous:** [← Part 3 - Advanced SQL & Database Internals](./03-advanced-sql.md)
+**Next:** [Part 5 - System Design & Real-world Database Scenarios →](./05-system-design.md)

@@ -29,8 +29,8 @@ This guide is organized into **5 progressive sections**, from beginner to advanc
 
 ### For Each Question
 - Detailed, interview-level answer
-- "Why the interviewer asks this" — understand the intent
-- Follow-up question — prepare for the next level
+- "Why the interviewer asks this" - understand the intent
+- Follow-up question - prepare for the next level
 
 ### SQL Syntax
 - PostgreSQL-style syntax throughout

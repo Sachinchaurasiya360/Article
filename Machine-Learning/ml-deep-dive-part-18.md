@@ -1,8 +1,8 @@
-# Machine Learning Deep Dive — Part 18: MLOps — From Notebook to Production Pipeline
+# Machine Learning Deep Dive - Part 18: MLOps - From Notebook to Production Pipeline
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
 **Part:** 18 of 19 (Production ML)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~60 minutes
@@ -11,9 +11,9 @@
 
 ## Recap: Where We Left Off
 
-In Part 17 we tackled ML system design — how to architect scalable systems with feature stores, real-time versus batch serving trade-offs, and A/B testing frameworks that let you safely roll out new models to subsets of traffic. You saw how decisions made at the architecture level determine whether a model scales to millions of requests or falls over under load.
+In Part 17 we tackled ML system design - how to architect scalable systems with feature stores, real-time versus batch serving trade-offs, and A/B testing frameworks that let you safely roll out new models to subsets of traffic. You saw how decisions made at the architecture level determine whether a model scales to millions of requests or falls over under load.
 
-You have a great model and a system design. Now how do you ship it reliably, repeatedly, and safely? **MLOps — Machine Learning Operations** — is the practice of treating ML systems like software systems: with version control, automated testing, CI/CD pipelines, and continuous monitoring. It's the difference between a model that lives forever in a notebook and one that runs in production for years.
+You have a great model and a system design. Now how do you ship it reliably, repeatedly, and safely? **MLOps - Machine Learning Operations** - is the practice of treating ML systems like software systems: with version control, automated testing, CI/CD pipelines, and continuous monitoring. It's the difference between a model that lives forever in a notebook and one that runs in production for years.
 
 ---
 
@@ -40,7 +40,7 @@ You have a great model and a system design. Now how do you ship it reliably, rep
 
 Software engineering has DevOps. Machine learning has **MLOps**.
 
-The term blends "Machine Learning" with "Operations" and refers to the set of practices, tools, and cultural norms that bring the discipline of software engineering to the ML lifecycle. The core insight is simple but powerful: a model that never makes it to production — or that degrades silently once it does — has zero business value.
+The term blends "Machine Learning" with "Operations" and refers to the set of practices, tools, and cultural norms that bring the discipline of software engineering to the ML lifecycle. The core insight is simple but powerful: a model that never makes it to production - or that degrades silently once it does - has zero business value.
 
 ### The ML Lifecycle
 
@@ -98,7 +98,7 @@ All three must be versioned in lockstep. If you retrain a model six months from 
 | **Rollback** | Deploy previous version | Deploy previous model version |
 | **Reproducibility** | Code + config | Code + config + data + random seed |
 
-The most dangerous failure mode in ML is **silent degradation** — the model keeps returning HTTP 200 but its accuracy has fallen off a cliff because the world changed. That never happens in traditional software.
+The most dangerous failure mode in ML is **silent degradation** - the model keeps returning HTTP 200 but its accuracy has fallen off a cliff because the world changed. That never happens in traditional software.
 
 ---
 
@@ -226,7 +226,7 @@ def train_model(n_estimators: int, max_depth: int, min_samples_split: int):
             registered_model_name="breast-cancer-rf",
         )
 
-        print(f"Run complete — accuracy={accuracy:.4f}, AUC={auc:.4f}")
+        print(f"Run complete - accuracy={accuracy:.4f}, AUC={auc:.4f}")
         return mlflow.active_run().info.run_id
 
 
@@ -482,7 +482,7 @@ for epoch in range(config.epochs):
     train_loss = ...  # your training logic
     val_accuracy = ...
 
-    # Log metrics — shows up in W&B dashboard in real time
+    # Log metrics - shows up in W&B dashboard in real time
     wandb.log({
         "train/loss": train_loss,
         "val/accuracy": val_accuracy,
@@ -506,7 +506,7 @@ wandb.finish()
 ### W&B Sweeps: Automated Hyperparameter Optimization
 
 ```python
-# sweep_config.py — define the sweep
+# sweep_config.py - define the sweep
 sweep_config = {
     "method": "bayes",  # bayesian optimization (also: grid, random)
     "metric": {
@@ -702,7 +702,7 @@ def validate_staging_model(model_name: str, version: str) -> bool:
     accuracy = accuracy_score(y_test, y_pred)
     auc = roc_auc_score(y_test, y_proba)
 
-    print(f"Staging model — Accuracy: {accuracy:.4f}, AUC: {auc:.4f}")
+    print(f"Staging model - Accuracy: {accuracy:.4f}, AUC: {auc:.4f}")
 
     # Gates: must exceed thresholds to proceed to Production
     ACCURACY_THRESHOLD = 0.92
@@ -774,7 +774,7 @@ input_schema = Schema([
 output_schema = Schema([ColSpec("integer", "prediction")])
 signature = ModelSignature(inputs=input_schema, outputs=output_schema)
 
-# Log model with signature — MLflow will validate inputs at serve time
+# Log model with signature - MLflow will validate inputs at serve time
 with mlflow.start_run():
     mlflow.sklearn.log_model(
         model,
@@ -817,7 +817,7 @@ git commit -m "Configure DVC remote"
 ```bash
 # Track a large dataset with DVC
 dvc add data/raw/breast_cancer.csv
-# Creates: data/raw/breast_cancer.csv.dvc  (small pointer file — commit to git)
+# Creates: data/raw/breast_cancer.csv.dvc  (small pointer file - commit to git)
 # Adds:    data/raw/breast_cancer.csv to .gitignore
 
 git add data/raw/breast_cancer.csv.dvc data/raw/.gitignore
@@ -838,7 +838,7 @@ dvc pull  # downloads breast_cancer.csv from S3
 DVC pipelines define reproducible ML workflows as a directed acyclic graph (DAG).
 
 ```yaml
-# dvc.yaml — define your ML pipeline
+# dvc.yaml - define your ML pipeline
 stages:
   prepare:
     cmd: python src/prepare.py
@@ -890,7 +890,7 @@ stages:
 ```
 
 ```yaml
-# params.yaml — pipeline parameters
+# params.yaml - pipeline parameters
 prepare:
   test_size: 0.2
   random_seed: 42
@@ -916,7 +916,7 @@ dvc dag
 ### DVC Data Lineage
 
 ```python
-# src/prepare.py — DVC pipeline stage
+# src/prepare.py - DVC pipeline stage
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -1385,7 +1385,7 @@ USER appuser
 # Add user's local bin to PATH
 ENV PATH=/home/appuser/.local/bin:$PATH
 
-# Health check — Docker/Kubernetes will call this endpoint
+# Health check - Docker/Kubernetes will call this endpoint
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
@@ -1639,7 +1639,7 @@ async def lifespan(app: FastAPI):
 
     yield  # application runs here
 
-    logger.info("Shutting down — releasing model resources")
+    logger.info("Shutting down - releasing model resources")
     model_state.model = None
 
 
@@ -2016,9 +2016,9 @@ if __name__ == "__main__":
 
 Once deployed, the work is not done. **Production monitoring** is arguably more important than the initial deployment. Three categories of things can go wrong:
 
-1. **System failures** — API goes down, memory leak, high latency
-2. **Data drift** — input data distribution shifts from what the model was trained on
-3. **Concept drift** — the relationship between inputs and outputs changes
+1. **System failures** - API goes down, memory leak, high latency
+2. **Data drift** - input data distribution shifts from what the model was trained on
+3. **Concept drift** - the relationship between inputs and outputs changes
 
 ### What to Monitor
 
@@ -2091,8 +2091,8 @@ def compute_psi(
 
     Rules of thumb:
       PSI < 0.1:  No significant change
-      PSI 0.1-0.2: Moderate change — investigate
-      PSI > 0.2:  Significant change — model likely needs retraining
+      PSI 0.1-0.2: Moderate change - investigate
+      PSI > 0.2:  Significant change - model likely needs retraining
     """
     # Create bins based on expected distribution
     breakpoints = np.percentile(expected, np.linspace(0, 100, n_bins + 1))
@@ -2306,9 +2306,9 @@ class ProductionMonitor:
 ## 11. Automated Retraining Pipeline
 
 **Retraining triggers** can be:
-- **Scheduled**: "Retrain every Monday at 2am" — simple but may be wasteful or too infrequent
-- **Drift-based**: "Retrain when PSI > 0.2 on any critical feature" — responsive to actual change
-- **Performance-based**: "Retrain when rolling accuracy drops below 90%" — requires ground truth labels
+- **Scheduled**: "Retrain every Monday at 2am" - simple but may be wasteful or too infrequent
+- **Drift-based**: "Retrain when PSI > 0.2 on any critical feature" - responsive to actual change
+- **Performance-based**: "Retrain when rolling accuracy drops below 90%" - requires ground truth labels
 
 ```mermaid
 flowchart TD
@@ -2384,7 +2384,7 @@ class RetrainingOrchestrator:
                 self.model_name, stages=["Production"]
             )
             if not versions:
-                logger.info("No production model found — new model will be promoted automatically")
+                logger.info("No production model found - new model will be promoted automatically")
                 return None
 
             v = versions[0]
@@ -2559,7 +2559,7 @@ ml-ops-project/
 ### Main Training Script
 
 ```python
-# src/train.py — the heart of the pipeline
+# src/train.py - the heart of the pipeline
 import os
 import json
 import pickle
@@ -2718,7 +2718,7 @@ import sys
 def check_metrics(metrics_file: str, min_accuracy: float, min_auc: float) -> bool:
     """
     Read metrics from file and assert they meet minimum thresholds.
-    Exits with code 1 if any metric fails — used as a CI gate.
+    Exits with code 1 if any metric fails - used as a CI gate.
     """
     with open(metrics_file) as f:
         metrics = json.load(f)
@@ -2751,16 +2751,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not check_metrics(args.metrics_file, args.min_accuracy, args.min_auc):
-        print("\nMetrics check FAILED — deployment blocked")
+        print("\nMetrics check FAILED - deployment blocked")
         sys.exit(1)
 
-    print("\nAll metrics checks PASSED — proceeding with deployment")
+    print("\nAll metrics checks PASSED - proceeding with deployment")
 ```
 
 ### API Integration Test
 
 ```python
-# tests/test_api.py — integration tests for the serving endpoint
+# tests/test_api.py - integration tests for the serving endpoint
 import pytest
 import httpx
 
@@ -2912,7 +2912,7 @@ echo "=== Starting Local MLOps Stack ==="
 
 # Check prerequisites
 command -v docker >/dev/null 2>&1 || { echo "Docker not found"; exit 1; }
-command -v dvc >/dev/null 2>&1 || { echo "DVC not found — pip install dvc"; exit 1; }
+command -v dvc >/dev/null 2>&1 || { echo "DVC not found - pip install dvc"; exit 1; }
 
 # Pull data from DVC remote (if configured)
 echo "Pulling data..."
@@ -2989,7 +2989,7 @@ echo "  Prometheus: http://localhost:9090"
 
 ## What's Next
 
-In **Part 19 — The Capstone: End-to-End ML System**, we bring everything from the entire series together into a single, production-ready ML system. You will:
+In **Part 19 - The Capstone: End-to-End ML System**, we bring everything from the entire series together into a single, production-ready ML system. You will:
 
 - Design a complete ML system from requirements to deployment
 - Apply all techniques from Parts 1-18 in a unified project
@@ -2999,11 +2999,11 @@ In **Part 19 — The Capstone: End-to-End ML System**, we bring everything from 
 - Set up full monitoring with drift detection and automated retraining
 - Write a CI/CD pipeline that automatically tests, trains, and deploys on every commit
 
-The capstone is where the theory becomes a portfolio project. Every piece we have built — from gradient descent in Part 1 to the MLOps infrastructure in this article — will be assembled into something you can run, show, and be proud of.
+The capstone is where the theory becomes a portfolio project. Every piece we have built - from gradient descent in Part 1 to the MLOps infrastructure in this article - will be assembled into something you can run, show, and be proud of.
 
 ---
 
-*Part 18 of 19 — Machine Learning: A Developer's Deep Dive from Fundamentals to Production*
+*Part 18 of 19 - Machine Learning: A Developer's Deep Dive from Fundamentals to Production*
 
-*Previous: [Part 17 — ML System Design: Architecture, A/B Testing, and Feature Stores](./ml-deep-dive-part-17.md)*
-*Next: [Part 19 — The Capstone: End-to-End ML System](./ml-deep-dive-part-19.md)*
+*Previous: [Part 17 - ML System Design: Architecture, A/B Testing, and Feature Stores](./ml-deep-dive-part-17.md)*
+*Next: [Part 19 - The Capstone: End-to-End ML System](./ml-deep-dive-part-19.md)*

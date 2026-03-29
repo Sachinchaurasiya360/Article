@@ -1,6 +1,6 @@
 # Handling Sudden Traffic Spikes: When Your App Goes from 1K to 100K Users Overnight
 
-*A war-room guide: what breaks first, how to diagnose it, and how to fix it — based on real production incidents.*
+*A war-room guide: what breaks first, how to diagnose it, and how to fix it - based on real production incidents.*
 
 ---
 
@@ -16,7 +16,7 @@ This article walks through four real scenarios, in order of how they typically h
 
 ---
 
-## Scenario 1: Traffic Jumps from 1K to 20K — What Breaks First?
+## Scenario 1: Traffic Jumps from 1K to 20K - What Breaks First?
 
 ### The Situation
 
@@ -49,7 +49,7 @@ Users see loading spinners. They refresh. Each refresh doubles the load. This is
 
 ### The Immediate Fix (Triage Order)
 
-**Step 1: Connection pooling — Fix the database bottleneck first**
+**Step 1: Connection pooling - Fix the database bottleneck first**
 
 ```javascript
 // ❌ BEFORE: Default mongoose connection (creates connections on demand, no limit)
@@ -81,13 +81,13 @@ const result = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
 
 **Why 50 and not 500?** Each database connection uses memory (~10MB for PostgreSQL). 50 connections × 10MB = 500MB just for connections. Your database server has limits too. 50 connections handling requests efficiently beats 500 connections all competing for DB CPU.
 
-**Step 2: Add request timeouts — Stop the bleeding**
+**Step 2: Add request timeouts - Stop the bleeding**
 
 ```javascript
-// Timeout middleware — kill requests that take too long
+// Timeout middleware - kill requests that take too long
 app.use((req, res, next) => {
   res.setTimeout(10000, () => {
-    res.status(503).json({ error: 'Request timeout — server is overloaded' });
+    res.status(503).json({ error: 'Request timeout - server is overloaded' });
   });
   next();
 });
@@ -96,7 +96,7 @@ app.use((req, res, next) => {
 **Step 3: Add basic in-memory caching for hot endpoints**
 
 ```javascript
-// Quick and dirty — cache responses for frequently hit endpoints
+// Quick and dirty - cache responses for frequently hit endpoints
 const NodeCache = require('node-cache');
 const cache = new NodeCache({ stdTTL: 60 }); // 60-second TTL
 
@@ -105,7 +105,7 @@ app.get('/api/v1/products', async (req, res) => {
   const cached = cache.get(cacheKey);
 
   if (cached) {
-    return res.json(cached); // Serve from memory — 0 DB load
+    return res.json(cached); // Serve from memory - 0 DB load
   }
 
   const products = await productService.list(req.query);
@@ -134,15 +134,15 @@ app.use((req, res, next) => {
 
 When traffic spikes, check these in order:
 
-1. **`htop` or cloud monitoring** — CPU and memory usage
-2. **Database connection count** — `db.serverStatus().connections` (Mongo) or `SELECT count(*) FROM pg_stat_activity` (Postgres)
-3. **Slow query log** — What queries are taking > 1s?
-4. **Event loop lag** — `process.hrtime()` or libraries like `event-loop-stats`
-5. **Network I/O** — Are you saturating your bandwidth?
+1. **`htop` or cloud monitoring** - CPU and memory usage
+2. **Database connection count** - `db.serverStatus().connections` (Mongo) or `SELECT count(*) FROM pg_stat_activity` (Postgres)
+3. **Slow query log** - What queries are taking > 1s?
+4. **Event loop lag** - `process.hrtime()` or libraries like `event-loop-stats`
+5. **Network I/O** - Are you saturating your bandwidth?
 
 ---
 
-## Scenario 2: API Becomes Slow — Database Queries Are Lagging
+## Scenario 2: API Becomes Slow - Database Queries Are Lagging
 
 ### The Situation
 
@@ -211,7 +211,7 @@ Order.collection.createIndex({
 ### Problem B: The N+1 Query Problem
 
 ```javascript
-// ❌ BAD: N+1 — Fetches 1 query for orders, then 1 query PER order for the user
+// ❌ BAD: N+1 - Fetches 1 query for orders, then 1 query PER order for the user
 app.get('/api/v1/orders', async (req, res) => {
   const orders = await Order.find({ status: 'pending' }); // 1 query
 
@@ -262,15 +262,15 @@ const totalOrders = await Order.countDocuments({ userId: '123' });
 // ❌ BAD: Fetching all fields when you only need two
 const users = await User.find({});
 
-// ✅ GOOD: Projection — only fetch what you need
+// ✅ GOOD: Projection - only fetch what you need
 const users = await User.find({}, { name: 1, email: 1 }); // 90% less data transferred
 ```
 
 ### The Optimization Playbook (In Order of Impact)
 
-1. **Add missing indexes** — Check `explain()` on every slow query
-2. **Fix N+1 queries** — Batch and use `$in` or `populate`
-3. **Add projections** — Only select fields you need
+1. **Add missing indexes** - Check `explain()` on every slow query
+2. **Fix N+1 queries** - Batch and use `$in` or `populate`
+3. **Add projections** - Only select fields you need
 4. **Use countDocuments()** instead of `.find().length`
 5. **Add Redis caching** for data that doesn't change every request (covered in Scenario 4)
 
@@ -427,7 +427,7 @@ function Dashboard() {
     </>
   );
 }
-// Each section loads independently — users see content as it arrives
+// Each section loads independently - users see content as it arrives
 ```
 
 ### Problem C: Rendering Thousands of Items
@@ -445,7 +445,7 @@ function ProductList({ products }) {
 }
 // 10,000 DOM nodes. Browser freezes. Scroll is unusable.
 
-// ✅ GOOD: Virtualized list — only renders visible items
+// ✅ GOOD: Virtualized list - only renders visible items
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useRef } from 'react';
 
@@ -514,7 +514,7 @@ import Image from 'next/image';
 
 ---
 
-## Scenario 4: Too Many Requests Hitting the Backend — Rate Limiting, Caching, and Queues
+## Scenario 4: Too Many Requests Hitting the Backend - Rate Limiting, Caching, and Queues
 
 ### The Situation
 
@@ -523,7 +523,7 @@ Your frontend fixes reduced the number of API calls per user. But with 20K users
 - Repeated identical queries hitting the database
 - Users spamming the "submit order" button
 
-### Layer 1: Rate Limiting — Protect Your Backend
+### Layer 1: Rate Limiting - Protect Your Backend
 
 ```javascript
 const rateLimit = require('express-rate-limit');
@@ -571,7 +571,7 @@ const limiter = rateLimit({
 });
 ```
 
-### Layer 2: Redis Caching — Stop Hitting the Database
+### Layer 2: Redis Caching - Stop Hitting the Database
 
 The products endpoint gets 5,000 req/s, but the product list only changes every few minutes. Why query the database 5,000 times for the same data?
 
@@ -586,10 +586,10 @@ class ProductService {
     // 1. Try cache first
     const cached = await client.get(cacheKey);
     if (cached) {
-      return JSON.parse(cached); // Cache hit — 0.5ms instead of 50ms
+      return JSON.parse(cached); // Cache hit - 0.5ms instead of 50ms
     }
 
-    // 2. Cache miss — query database
+    // 2. Cache miss - query database
     const products = await productRepository.find(filters);
 
     // 3. Store in cache with TTL
@@ -616,7 +616,7 @@ class ProductService {
 }
 ```
 
-**Cache-aside pattern — the most common caching strategy:**
+**Cache-aside pattern - the most common caching strategy:**
 
 ```
 Request → Check Redis → Hit? → Return cached data
@@ -635,7 +635,7 @@ Request → Check Redis → Hit? → Return cached data
 | Session data | 24 hours | Needs to persist across requests |
 | Real-time data (stock prices, live scores) | Don't cache | Staleness is unacceptable |
 
-### Layer 3: Message Queues — Handle What Can't Be Done Immediately
+### Layer 3: Message Queues - Handle What Can't Be Done Immediately
 
 Some operations shouldn't happen during the HTTP request:
 
@@ -660,7 +660,7 @@ const orderQueue = new Queue('order-processing', process.env.REDIS_URL);
 
 app.post('/api/v1/orders', async (req, res) => {
   const order = await createOrder(req.body);         // 50ms
-  await chargePayment(order);                         // 2000ms — must be sync (user needs to know)
+  await chargePayment(order);                         // 2000ms - must be sync (user needs to know)
 
   // Everything else goes to the queue
   await orderQueue.add('post-order', {
@@ -691,7 +691,7 @@ orderQueue.process('post-order', async (job) => {
 3. **Retries are built in.** If the email service is down, Bull retries automatically.
 4. **Backpressure is handled.** If 1,000 orders come in at once, the queue buffers them. Workers process at their own pace.
 
-### Layer 4: CDN — Serve Static Assets from the Edge
+### Layer 4: CDN - Serve Static Assets from the Edge
 
 ```javascript
 // ❌ BAD: Your Node.js server serves static files
@@ -800,7 +800,7 @@ Is the database overloaded?
 
 ---
 
-## Monitoring — How to See Problems Before Users Do
+## Monitoring - How to See Problems Before Users Do
 
 Set up these alerts from day one:
 
@@ -837,12 +837,12 @@ app.get('/health', async (req, res) => {
 ```
 
 **Key metrics to monitor:**
-- **Response time (p95, p99)** — not averages. If your p99 is 5s, 1 in 100 users waits 5+ seconds.
-- **Error rate** — % of 5xx responses. Alert at > 1%.
-- **Database connection pool utilization** — Alert at > 80%.
-- **Memory usage trend** — Gradually increasing = memory leak.
-- **Queue depth** — Growing queue = workers can't keep up.
+- **Response time (p95, p99)** - not averages. If your p99 is 5s, 1 in 100 users waits 5+ seconds.
+- **Error rate** - % of 5xx responses. Alert at > 1%.
+- **Database connection pool utilization** - Alert at > 80%.
+- **Memory usage trend** - Gradually increasing = memory leak.
+- **Queue depth** - Growing queue = workers can't keep up.
 
 ---
 
-*Next up: [Blog 3 — Scaling to 100K+ users: load balancing, horizontal scaling, failure recovery, and the architecture that makes it all work.](scalable-code-production-scaling.md)*
+*Next up: [Blog 3 - Scaling to 100K+ users: load balancing, horizontal scaling, failure recovery, and the architecture that makes it all work.](scalable-code-production-scaling.md)*

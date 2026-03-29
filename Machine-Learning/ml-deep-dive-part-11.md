@@ -1,19 +1,19 @@
-# Machine Learning Deep Dive — Part 11: Sequence Models — RNNs, LSTMs, and Time Series
+# Machine Learning Deep Dive - Part 11: Sequence Models - RNNs, LSTMs, and Time Series
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
 **Part:** 11 of 19 (Deep Learning)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~55 minutes
 
 ---
 
-## Recap: Part 10 — Convolutional Neural Networks
+## Recap: Part 10 - Convolutional Neural Networks
 
-In Part 10 we explored Convolutional Neural Networks — how convolution filters slide across images to produce feature maps, how pooling reduces spatial dimensions, and how stacking conv layers builds a hierarchy from edges to shapes to objects. We built an image classifier from scratch and saw how CNNs dominate computer vision tasks by exploiting the 2D spatial structure of image data.
+In Part 10 we explored Convolutional Neural Networks - how convolution filters slide across images to produce feature maps, how pooling reduces spatial dimensions, and how stacking conv layers builds a hierarchy from edges to shapes to objects. We built an image classifier from scratch and saw how CNNs dominate computer vision tasks by exploiting the 2D spatial structure of image data.
 
-CNNs taught machines to understand space — the 2D structure of images. But what about sequences? Language, time series, audio — these have temporal structure where ORDER matters. The word "not" before "good" completely changes the meaning. Recurrent Neural Networks were designed specifically for this: networks with memory.
+CNNs taught machines to understand space - the 2D structure of images. But what about sequences? Language, time series, audio - these have temporal structure where ORDER matters. The word "not" before "good" completely changes the meaning. Recurrent Neural Networks were designed specifically for this: networks with memory.
 
 ---
 
@@ -36,32 +36,32 @@ CNNs taught machines to understand space — the 2D structure of images. But wha
 
 ## 1. Why Sequences Need Special Treatment
 
-Every data type we have dealt with so far — tabular rows, image pixels — lives in a fixed-size container. A 28×28 image always has 784 pixels. A housing dataset row always has the same columns. Standard feedforward networks accept a fixed-size input vector and produce a fixed-size output. This assumption breaks completely when data is sequential.
+Every data type we have dealt with so far - tabular rows, image pixels - lives in a fixed-size container. A 28×28 image always has 784 pixels. A housing dataset row always has the same columns. Standard feedforward networks accept a fixed-size input vector and produce a fixed-size output. This assumption breaks completely when data is sequential.
 
 ### 1.1 The Problem with Fixed-Size Thinking
 
 Consider the sentence: *"The trophy did not fit in the suitcase because it was too big."*
 
-What does "it" refer to — the trophy or the suitcase? To a human the answer is obvious: the trophy was too big. But determining this requires tracking a reference across 12 words of context. A feedforward network that sees only a fixed window cannot handle this kind of long-range dependency.
+What does "it" refer to - the trophy or the suitcase? To a human the answer is obvious: the trophy was too big. But determining this requires tracking a reference across 12 words of context. A feedforward network that sees only a fixed window cannot handle this kind of long-range dependency.
 
 Now consider time series data: a sequence of 1,000 daily stock prices. If you want to predict day 1,001, you need to process all 1,000 historical values in some ordered fashion. You cannot simply treat them as an unordered bag of numbers.
 
 **Sequence problems** share three defining characteristics:
 
-1. **Variable length** — inputs and outputs can have different lengths (a sentence of 5 words vs 50 words)
-2. **Order matters** — shuffling the sequence destroys meaning ("dog bites man" ≠ "man bites dog")
-3. **Long-range dependencies** — elements far apart in the sequence can influence each other
+1. **Variable length** - inputs and outputs can have different lengths (a sentence of 5 words vs 50 words)
+2. **Order matters** - shuffling the sequence destroys meaning ("dog bites man" ≠ "man bites dog")
+3. **Long-range dependencies** - elements far apart in the sequence can influence each other
 
 ### 1.2 Domains Where Sequences Appear
 
 | Domain | Input Sequence | Output |
 |--------|---------------|--------|
-| NLP — Sentiment Analysis | Words in a review | Positive / Negative |
-| NLP — Machine Translation | English sentence | French sentence |
-| Time Series — Forecasting | Historical stock prices | Future price |
-| Time Series — Anomaly Detection | Sensor readings | Normal / Anomaly flag |
-| Audio — Speech Recognition | Sound wave frames | Text transcript |
-| Audio — Music Generation | Previous notes | Next note |
+| NLP - Sentiment Analysis | Words in a review | Positive / Negative |
+| NLP - Machine Translation | English sentence | French sentence |
+| Time Series - Forecasting | Historical stock prices | Future price |
+| Time Series - Anomaly Detection | Sensor readings | Normal / Anomaly flag |
+| Audio - Speech Recognition | Sound wave frames | Text transcript |
+| Audio - Music Generation | Previous notes | Next note |
 | Bioinformatics | DNA base pairs | Protein function |
 | Video | Frames over time | Action label |
 
@@ -73,7 +73,7 @@ Now consider time series data: a sequence of 1,000 daily stock prices. If you wa
 
 **Temporal ordering:** Shuffling the pixels of an image produces a meaningless image. Shuffling the words of a sentence produces nonsense. The position of each element carries meaning that must be preserved.
 
-The solution: give the network a **hidden state** — a compact memory that gets updated at each step of the sequence and carries information forward through time.
+The solution: give the network a **hidden state** - a compact memory that gets updated at each step of the sequence and carries information forward through time.
 
 ---
 
@@ -81,26 +81,26 @@ The solution: give the network a **hidden state** — a compact memory that gets
 
 ### 2.1 The Core Idea
 
-A **Recurrent Neural Network** processes a sequence one element at a time. At each time step $t$, it takes the current input $x_t$ AND the previous hidden state $h_{t-1}$, combines them, and produces a new hidden state $h_t$. This hidden state is the network's "memory" — it encodes everything the network has seen so far.
+A **Recurrent Neural Network** processes a sequence one element at a time. At each time step $t$, it takes the current input $x_t$ AND the previous hidden state $h_{t-1}$, combines them, and produces a new hidden state $h_t$. This hidden state is the network's "memory" - it encodes everything the network has seen so far.
 
 The recurrence equation is:
 
 $$h_t = \tanh(W_h \cdot h_{t-1} + W_x \cdot x_t + b)$$
 
 Where:
-- $h_t$ — hidden state at time $t$ (the memory vector)
-- $h_{t-1}$ — hidden state from the previous time step
-- $x_t$ — input at time $t$
-- $W_h$ — weight matrix for the hidden-to-hidden connection
-- $W_x$ — weight matrix for the input-to-hidden connection
-- $b$ — bias vector
-- $\tanh$ — activation function that squashes values into $[-1, 1]$
+- $h_t$ - hidden state at time $t$ (the memory vector)
+- $h_{t-1}$ - hidden state from the previous time step
+- $x_t$ - input at time $t$
+- $W_h$ - weight matrix for the hidden-to-hidden connection
+- $W_x$ - weight matrix for the input-to-hidden connection
+- $b$ - bias vector
+- $\tanh$ - activation function that squashes values into $[-1, 1]$
 
 The output at each time step (if needed):
 
 $$y_t = W_y \cdot h_t + b_y$$
 
-> The RNN reuses the SAME weights $W_h$ and $W_x$ at every time step. This is what makes it recurrent — the same transformation is applied repeatedly, but the hidden state accumulates context.
+> The RNN reuses the SAME weights $W_h$ and $W_x$ at every time step. This is what makes it recurrent - the same transformation is applied repeatedly, but the hidden state accumulates context.
 
 ### 2.2 RNN Unrolled Through Time
 
@@ -130,17 +130,17 @@ graph LR
     style h4 fill:#4a90d9,color:#fff
 ```
 
-Each box $h_t$ is the hidden state — the same set of weights $W_h$ and $W_x$ are used at every step (shown by identical-looking connections), but the state accumulates sequence history.
+Each box $h_t$ is the hidden state - the same set of weights $W_h$ and $W_x$ are used at every step (shown by identical-looking connections), but the state accumulates sequence history.
 
 ### 2.3 Backpropagation Through Time (BPTT)
 
-Training an RNN uses **Backpropagation Through Time (BPTT)**. Because the unrolled RNN looks like a deep feedforward network, we can apply standard backpropagation — but the gradients must flow backward through all the time steps.
+Training an RNN uses **Backpropagation Through Time (BPTT)**. Because the unrolled RNN looks like a deep feedforward network, we can apply standard backpropagation - but the gradients must flow backward through all the time steps.
 
 For a sequence of length $T$, the gradient of the loss with respect to $W_h$ involves a chain of $T$ Jacobian matrices:
 
 $$\frac{\partial L}{\partial W_h} = \sum_{t=1}^{T} \frac{\partial L_t}{\partial W_h}$$
 
-Each $\frac{\partial L_t}{\partial h_1}$ involves multiplying $T-1$ Jacobian matrices together — which is what causes the vanishing gradient problem (covered in Section 3).
+Each $\frac{\partial L_t}{\partial h_1}$ involves multiplying $T-1$ Jacobian matrices together - which is what causes the vanishing gradient problem (covered in Section 3).
 
 ### 2.4 RNN From Scratch with NumPy
 
@@ -404,11 +404,11 @@ $$\frac{\partial h_T}{\partial h_1} = \prod_{t=2}^{T} \frac{\partial h_t}{\parti
 
 The $\text{diag}(1 - h_t^2)$ term comes from the derivative of $\tanh$. Since $\tanh$ squashes outputs to $[-1, 1]$, its derivative $1 - \tanh^2(x)$ is at most 1 and typically much less than 1 for saturated neurons.
 
-**If the largest singular value of $W_h$ is less than 1**, the product of matrices shrinks exponentially with $T$. After 100 time steps, the gradient signal is essentially zero — the network cannot learn anything about the input at step 1 from the loss at step 100.
+**If the largest singular value of $W_h$ is less than 1**, the product of matrices shrinks exponentially with $T$. After 100 time steps, the gradient signal is essentially zero - the network cannot learn anything about the input at step 1 from the loss at step 100.
 
 > This is the **vanishing gradient problem**: gradients flowing back through long sequences become astronomically small, making it impossible for the network to learn long-range dependencies.
 
-The opposite problem — **exploding gradients** — occurs when the singular value exceeds 1. Gradients grow exponentially and training becomes unstable (NaN losses).
+The opposite problem - **exploding gradients** - occurs when the singular value exceeds 1. Gradients grow exponentially and training becomes unstable (NaN losses).
 
 ### 3.2 Demonstrating Vanishing Gradients
 
@@ -523,7 +523,7 @@ import torch
 
 def clip_gradients_numpy(gradients, max_norm=5.0):
     """
-    Clip gradients by global norm — the standard approach.
+    Clip gradients by global norm - the standard approach.
 
     If the total gradient norm exceeds max_norm,
     scale ALL gradients down proportionally.
@@ -574,7 +574,7 @@ def pytorch_gradient_clipping_example():
     total_norm_before = total_norm_before ** 0.5
     print(f"Gradient norm before clipping: {total_norm_before:.4f}")
 
-    # Clip gradients — standard practice with RNNs
+    # Clip gradients - standard practice with RNNs
     torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 
     # Check gradient norm AFTER clipping
@@ -609,29 +609,29 @@ The vanilla RNN has one hidden state $h_t$ that must simultaneously act as both 
 
 The **Long Short-Term Memory (LSTM)**, introduced by Hochreiter and Schmidhuber in 1997, solves this with a critical architectural change: it separates short-term and long-term memory into TWO vectors:
 
-- **$h_t$** — the hidden state (short-term, like RNN) — output to subsequent layers
-- **$c_t$** — the cell state (long-term) — the "conveyor belt" that carries information across many time steps
+- **$h_t$** - the hidden state (short-term, like RNN) - output to subsequent layers
+- **$c_t$** - the cell state (long-term) - the "conveyor belt" that carries information across many time steps
 
-> The LSTM's cell state is like a conveyor belt that runs through the entire sequence — information can be added or removed at each step with minimal modification. Crucially, information can travel across hundreds of steps with gradients that stay non-zero.
+> The LSTM's cell state is like a conveyor belt that runs through the entire sequence - information can be added or removed at each step with minimal modification. Crucially, information can travel across hundreds of steps with gradients that stay non-zero.
 
 ### 4.2 The Three Gates
 
-The LSTM controls information flow using **gates** — sigmoid-activated linear transformations whose output is in $[0, 1]$, functioning as soft on/off switches. There are three gates:
+The LSTM controls information flow using **gates** - sigmoid-activated linear transformations whose output is in $[0, 1]$, functioning as soft on/off switches. There are three gates:
 
-**Forget Gate** — decides what to ERASE from the cell state:
+**Forget Gate** - decides what to ERASE from the cell state:
 $$f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f)$$
 
-**Input Gate** — decides what NEW information to WRITE to the cell state:
+**Input Gate** - decides what NEW information to WRITE to the cell state:
 $$i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)$$
 $$\tilde{c}_t = \tanh(W_c \cdot [h_{t-1}, x_t] + b_c) \quad \text{(candidate values)}$$
 
-**Output Gate** — decides what to READ from the cell state:
+**Output Gate** - decides what to READ from the cell state:
 $$o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o)$$
 
-**Cell State Update** — combine forget and input gates:
+**Cell State Update** - combine forget and input gates:
 $$c_t = f_t \odot c_{t-1} + i_t \odot \tilde{c}_t$$
 
-**Hidden State** — filtered cell state through output gate:
+**Hidden State** - filtered cell state through output gate:
 $$h_t = o_t \odot \tanh(c_t)$$
 
 Where $\sigma$ is the sigmoid function, $\odot$ is element-wise multiplication, and $[h_{t-1}, x_t]$ denotes concatenation.
@@ -676,7 +676,7 @@ The critical insight is in the cell state update:
 
 $$c_t = f_t \odot c_{t-1} + i_t \odot \tilde{c}_t$$
 
-The gradient flowing backward through $c_t$ to $c_{t-1}$ is simply $f_t$ — a learnable value that the network can set close to 1.0 for dimensions that need to remember information long-term. Unlike the tanh-gated hidden state in vanilla RNNs, the cell state gradient pathway is:
+The gradient flowing backward through $c_t$ to $c_{t-1}$ is simply $f_t$ - a learnable value that the network can set close to 1.0 for dimensions that need to remember information long-term. Unlike the tanh-gated hidden state in vanilla RNNs, the cell state gradient pathway is:
 - **Additive** (not multiplicative through tanh) for the dominant path
 - **Controlled by learned gates** that can be near 1.0
 
@@ -897,7 +897,7 @@ class LSTMModel(nn.Module):
         """
         Args:
             x: input tensor, shape (batch, seq_len, input_size)
-            hidden: optional initial (h0, c0) — defaults to zeros
+            hidden: optional initial (h0, c0) - defaults to zeros
         Returns:
             out: output at last time step, shape (batch, output_size)
             (hn, cn): final hidden and cell states
@@ -957,7 +957,7 @@ def train_lstm_demo():
 
         optimizer.zero_grad()
         loss.backward()
-        # Gradient clipping — crucial for stable LSTM training
+        # Gradient clipping - crucial for stable LSTM training
         nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()
 
@@ -995,10 +995,10 @@ Model parameter count: 13,729
 
 The **Gated Recurrent Unit (GRU)**, introduced by Cho et al. in 2014, is a simplified variant of the LSTM that merges the cell state and hidden state into a single vector and uses only two gates instead of three:
 
-**Reset Gate** — controls how much of the past to forget when computing the candidate:
+**Reset Gate** - controls how much of the past to forget when computing the candidate:
 $$r_t = \sigma(W_r \cdot [h_{t-1}, x_t] + b_r)$$
 
-**Update Gate** — controls the balance between old and new hidden state:
+**Update Gate** - controls the balance between old and new hidden state:
 $$z_t = \sigma(W_z \cdot [h_{t-1}, x_t] + b_z)$$
 
 **Candidate Hidden State:**
@@ -1207,7 +1207,7 @@ A standard RNN processes sequences left-to-right. At time step $t$, it has seen 
 
 Consider the sentence: *"The bank can guarantee deposits will eventually cover future tuition costs."*
 
-The word "bank" is ambiguous — financial institution or riverbank? To disambiguate it, we need context from LATER in the sentence ("deposits," "tuition"). A left-to-right RNN cannot use this future context when encoding "bank."
+The word "bank" is ambiguous - financial institution or riverbank? To disambiguate it, we need context from LATER in the sentence ("deposits," "tuition"). A left-to-right RNN cannot use this future context when encoding "bank."
 
 A **Bidirectional RNN** solves this by running two independent RNNs:
 - A **forward RNN** that processes left-to-right: produces $\overrightarrow{h}_t$
@@ -1362,7 +1362,7 @@ Sample logits: [-0.0234  0.0891]
 
 ### 7.1 The Encoder-Decoder Architecture
 
-So far we have covered sequence-to-vector (classify a sequence) and vector-to-sequence problems. But what about **sequence-to-sequence (seq2seq)** — translating a French sentence to English, or summarizing a document?
+So far we have covered sequence-to-vector (classify a sequence) and vector-to-sequence problems. But what about **sequence-to-sequence (seq2seq)** - translating a French sentence to English, or summarizing a document?
 
 The core architecture is **encoder-decoder**:
 
@@ -1416,7 +1416,7 @@ class Encoder(nn.Module):
         Args:
             src: (batch, src_len) token indices
         Returns:
-            hidden: (num_layers, batch, hidden_size) — passed to decoder
+            hidden: (num_layers, batch, hidden_size) - passed to decoder
             cell: (num_layers, batch, hidden_size)
         """
         embedded = self.dropout(self.embedding(src))
@@ -1440,7 +1440,7 @@ class Decoder(nn.Module):
         Processes ONE token at a time.
 
         Args:
-            input_token: (batch,) — the current input token
+            input_token: (batch,) - the current input token
             hidden, cell: from previous step or encoder
         Returns:
             prediction: (batch, output_vocab_size)
@@ -1543,7 +1543,7 @@ Total params:  1,216,488
 
 ### 7.3 The Bottleneck Problem
 
-The standard seq2seq architecture has a critical limitation: the **entire source sequence must be compressed into a single fixed-size context vector** (the encoder's final hidden state). For long sequences — a paragraph, a page of text — this is asking too much.
+The standard seq2seq architecture has a critical limitation: the **entire source sequence must be compressed into a single fixed-size context vector** (the encoder's final hidden state). For long sequences - a paragraph, a page of text - this is asking too much.
 
 Information gets lost. The decoder must reconstruct the entire translation from a single $h_T$ vector, regardless of source length.
 
@@ -1601,8 +1601,8 @@ class BahdanauAttention(nn.Module):
                 Current decoder hidden state
 
         Returns:
-            context: (batch, encoder_hidden) — weighted sum of encoder states
-            weights: (batch, src_len) — attention weight distribution
+            context: (batch, encoder_hidden) - weighted sum of encoder states
+            weights: (batch, src_len) - attention weight distribution
         """
         src_len = encoder_outputs.shape[1]
 
@@ -1765,8 +1765,8 @@ def create_sequences(data, window_size, forecast_horizon=1):
         forecast_horizon: number of future steps to predict
 
     Returns:
-        X: (N, window_size, 1) — input sequences
-        y: (N, forecast_horizon) — target values
+        X: (N, window_size, 1) - input sequences
+        y: (N, forecast_horizon) - target values
     """
     X, y = [], []
     N = len(data)
@@ -1955,7 +1955,7 @@ After log-differencing:
 
 ## 10. Project: Stock Price Predictor + Text Generator
 
-### 10.1 Part A — LSTM for Time Series Forecasting
+### 10.1 Part A - LSTM for Time Series Forecasting
 
 ```python
 # filename: lstm_forecaster.py
@@ -2004,7 +2004,7 @@ class LSTMForecaster(nn.Module):
                 nn.init.orthogonal_(param.data)
             elif 'bias' in name:
                 param.data.fill_(0)
-                # Set forget gate bias to 1 — helps with longer sequences
+                # Set forget gate bias to 1 - helps with longer sequences
                 n = param.size(0)
                 param.data[n//4:n//2].fill_(1.0)
 
@@ -2024,7 +2024,7 @@ def generate_synthetic_stock_data(n_days=1000, seed=42):
     """
     np.random.seed(seed)
 
-    # Geometric Brownian Motion (GBM) — standard stock price model
+    # Geometric Brownian Motion (GBM) - standard stock price model
     dt = 1 / 252  # daily time step (252 trading days/year)
     mu = 0.10     # annual drift (10%)
     sigma = 0.20  # annual volatility (20%)
@@ -2235,16 +2235,16 @@ def engineer_features(prices, window=30):
     """
     df = pd.DataFrame({'price': prices})
 
-    # Moving averages — capture trend
+    # Moving averages - capture trend
     df['ma_5'] = df['price'].rolling(5).mean()
     df['ma_10'] = df['price'].rolling(10).mean()
     df['ma_30'] = df['price'].rolling(30).mean()
 
-    # Returns — more stationary than raw prices
+    # Returns - more stationary than raw prices
     df['return_1d'] = df['price'].pct_change(1)
     df['return_5d'] = df['price'].pct_change(5)
 
-    # Volatility — rolling standard deviation of returns
+    # Volatility - rolling standard deviation of returns
     df['volatility_10'] = df['return_1d'].rolling(10).std()
     df['volatility_20'] = df['return_1d'].rolling(20).std()
 
@@ -2304,7 +2304,7 @@ This gives us a 10-dimensional input to the LSTM
 (instead of just 1 dimension for raw price)
 ```
 
-### 10.3 Part B — Character-Level Text Generation
+### 10.3 Part B - Character-Level Text Generation
 
 Training a character-level RNN/LSTM is one of the most satisfying introductory NLP projects. The model learns to generate text that mimics the style of the training corpus.
 
@@ -2321,12 +2321,12 @@ To be, or not to be, that is the question:
 Whether 'tis nobler in the mind to suffer
 The slings and arrows of outrageous fortune,
 Or to take arms against a sea of troubles
-And by opposing end them. To die—to sleep,
+And by opposing end them. To die-to sleep,
 No more; and by a sleep to say we end
 The heart-ache and the thousand natural shocks
 That flesh is heir to: 'tis a consummation
 Devoutly to be wish'd. To die, to sleep;
-To sleep, perchance to dream—ay, there's the rub:
+To sleep, perchance to dream-ay, there's the rub:
 For in that sleep of death what dreams may come,
 When we have shuffled off this mortal coil,
 Must give us pause. There's the respect
@@ -2630,16 +2630,16 @@ def compute_perplexity(model, dataset, n_batches=50):
 | **Recurrent Neural Network (RNN)** | Neural network that processes sequences by maintaining a hidden state updated at each time step |
 | **Hidden State** | The RNN's "memory" vector $h_t$ that encodes information seen so far in the sequence |
 | **Unrolling** | Visualizing/computing an RNN as a deep feedforward network with one layer per time step |
-| **BPTT** | Backpropagation Through Time — applying standard backprop to the unrolled RNN graph |
+| **BPTT** | Backpropagation Through Time - applying standard backprop to the unrolled RNN graph |
 | **Vanishing Gradient** | Gradients shrinking exponentially as they propagate back through many time steps, preventing learning of long-range dependencies |
 | **Exploding Gradient** | Gradients growing exponentially, causing unstable training (NaN losses) |
-| **Gradient Clipping** | Scaling down gradients if their norm exceeds a threshold — prevents exploding gradients |
-| **LSTM** | Long Short-Term Memory — RNN variant with separate cell state and gates to control information flow |
-| **Cell State ($c_t$)** | LSTM's long-term memory — a separate vector that carries information across many time steps |
+| **Gradient Clipping** | Scaling down gradients if their norm exceeds a threshold - prevents exploding gradients |
+| **LSTM** | Long Short-Term Memory - RNN variant with separate cell state and gates to control information flow |
+| **Cell State ($c_t$)** | LSTM's long-term memory - a separate vector that carries information across many time steps |
 | **Forget Gate** | LSTM gate that decides what to erase from the cell state ($f_t \in [0,1]$) |
 | **Input Gate** | LSTM gate that decides what new information to write to the cell state ($i_t \in [0,1]$) |
 | **Output Gate** | LSTM gate that decides what to read from the cell state ($o_t \in [0,1]$) |
-| **GRU** | Gated Recurrent Unit — simplified LSTM with 2 gates and no separate cell state |
+| **GRU** | Gated Recurrent Unit - simplified LSTM with 2 gates and no separate cell state |
 | **Reset Gate** | GRU gate controlling how much of the past hidden state to incorporate into the candidate |
 | **Update Gate** | GRU gate controlling interpolation between old and new hidden state |
 | **Bidirectional RNN** | Runs two RNNs (forward + backward), concatenating their hidden states for full context |
@@ -2653,8 +2653,8 @@ def compute_perplexity(model, dataset, n_batches=50):
 | **Sliding Window** | Technique for converting a time series to supervised learning format using overlapping windows |
 | **Stationarity** | Property of a time series where statistical properties (mean, variance) are constant over time |
 | **Temperature** | Parameter controlling sampling randomness in text generation: low=deterministic, high=random |
-| **Perplexity** | $\exp(\text{cross-entropy})$ — measures how surprised the model is by a sequence; lower is better |
-| **MAPE** | Mean Absolute Percentage Error — forecasting metric: mean of $\|(\text{true}-\text{pred})/\text{true}\|$ |
+| **Perplexity** | $\exp(\text{cross-entropy})$ - measures how surprised the model is by a sequence; lower is better |
+| **MAPE** | Mean Absolute Percentage Error - forecasting metric: mean of $\|(\text{true}-\text{pred})/\text{true}\|$ |
 
 ---
 
@@ -2679,21 +2679,21 @@ Let us review what we have built in this part:
 
 ## What's Next
 
-**Part 12: Training Deep Networks — Optimizers, Regularization, and Debugging**
+**Part 12: Training Deep Networks - Optimizers, Regularization, and Debugging**
 
-In Part 11 we focused on sequence architectures. But having the right architecture is only half the battle — training it effectively is the other half. Part 12 covers:
+In Part 11 we focused on sequence architectures. But having the right architecture is only half the battle - training it effectively is the other half. Part 12 covers:
 
-- **Optimizers in depth**: SGD with momentum, RMSProp, Adam, AdamW — what they actually do to the loss landscape and when to use each
-- **Learning rate schedules**: warmup, cosine annealing, reduce-on-plateau — why the learning rate is the most important hyperparameter
-- **Regularization techniques**: Dropout, L1/L2, weight decay, early stopping — the complete toolkit
+- **Optimizers in depth**: SGD with momentum, RMSProp, Adam, AdamW - what they actually do to the loss landscape and when to use each
+- **Learning rate schedules**: warmup, cosine annealing, reduce-on-plateau - why the learning rate is the most important hyperparameter
+- **Regularization techniques**: Dropout, L1/L2, weight decay, early stopping - the complete toolkit
 - **Batch normalization and layer normalization**: why they help and where to put them
-- **Debugging deep networks**: diagnosing overfit, underfit, exploding gradients, dead neurons — a systematic debugging protocol
+- **Debugging deep networks**: diagnosing overfit, underfit, exploding gradients, dead neurons - a systematic debugging protocol
 - **Experiment tracking with MLflow/Weights & Biases**: because running experiments without tracking is like science without a lab notebook
 
 By the end of Part 12, you will have a systematic, evidence-based approach to training any deep learning model to convergence.
 
 ---
 
-*Part 11 of the Machine Learning — A Developer's Deep Dive series.*
-*Next: [Part 12 — Training Deep Networks: Optimizers, Regularization, and Debugging](ml-deep-dive-part-12.md)*
-*Previous: [Part 10 — Convolutional Neural Networks and Computer Vision](ml-deep-dive-part-10.md)*
+*Part 11 of the Machine Learning - A Developer's Deep Dive series.*
+*Next: [Part 12 - Training Deep Networks: Optimizers, Regularization, and Debugging](ml-deep-dive-part-12.md)*
+*Previous: [Part 10 - Convolutional Neural Networks and Computer Vision](ml-deep-dive-part-10.md)*

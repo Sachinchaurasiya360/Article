@@ -1,9 +1,9 @@
-# Machine Learning Deep Dive — Part 19: The Capstone — Building a Production ML Platform
+# Machine Learning Deep Dive - Part 19: The Capstone - Building a Production ML Platform
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
-**Part:** 19 of 19 (Production ML — Capstone)
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
+**Part:** 19 of 19 (Production ML - Capstone)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~70 minutes
 
@@ -11,9 +11,9 @@
 
 ## Recap: Where We Left Off
 
-In Part 18 we built out the full MLOps stack — experiment tracking with MLflow and Weights & Biases, model registries with versioned promotion workflows, data versioning with DVC, CI/CD pipelines for automated testing and deployment, containerization with Docker, and production monitoring with PSI-based drift detection and automated retraining triggers. You saw how every layer of tooling exists to close the loop between training and a healthy production system.
+In Part 18 we built out the full MLOps stack - experiment tracking with MLflow and Weights & Biases, model registries with versioned promotion workflows, data versioning with DVC, CI/CD pipelines for automated testing and deployment, containerization with Docker, and production monitoring with PSI-based drift detection and automated retraining triggers. You saw how every layer of tooling exists to close the loop between training and a healthy production system.
 
-This is it — the final part. Over 19 articles, you've gone from "what is ML?" to deep learning, system design, and MLOps. Now we build a complete, production-grade ML platform that ties everything together. No toy examples. No hand-waving. A real system, real code, and real operational thinking from first principle to final `docker compose up`.
+This is it - the final part. Over 19 articles, you've gone from "what is ML?" to deep learning, system design, and MLOps. Now we build a complete, production-grade ML platform that ties everything together. No toy examples. No hand-waving. A real system, real code, and real operational thinking from first principle to final `docker compose up`.
 
 ---
 
@@ -26,7 +26,7 @@ This is it — the final part. Over 19 articles, you've gone from "what is ML?" 
 5. [FastAPI Serving Endpoint](#5-fastapi-serving-endpoint)
 6. [Monitoring Service](#6-monitoring-service)
 7. [Automated Retraining Trigger](#7-automated-retraining-trigger)
-8. [Docker Compose — Full Stack](#8-docker-compose--full-stack)
+8. [Docker Compose - Full Stack](#8-docker-compose--full-stack)
 9. [Load Testing](#9-load-testing)
 10. [Series Conclusion](#10-series-conclusion)
 
@@ -34,7 +34,7 @@ This is it — the final part. Over 19 articles, you've gone from "what is ML?" 
 
 ## 1. Platform Overview
 
-We are building a **customer churn prediction platform** — a canonical, high-value ML use case that touches every layer of the stack. A telecom company wants to predict which subscribers are likely to cancel their service in the next 30 days so the retention team can intervene proactively. The estimated value is straightforward: if a churned customer costs $500 in lost annual revenue and your model correctly identifies 200 at-risk customers per month, even a 20% conversion rate on retention offers saves $20,000 per month.
+We are building a **customer churn prediction platform** - a canonical, high-value ML use case that touches every layer of the stack. A telecom company wants to predict which subscribers are likely to cancel their service in the next 30 days so the retention team can intervene proactively. The estimated value is straightforward: if a churned customer costs $500 in lost annual revenue and your model correctly identifies 200 at-risk customers per month, even a 20% conversion rate on retention offers saves $20,000 per month.
 
 This is not a tutorial where we train one model and call it done. This is a living system that:
 
@@ -47,7 +47,7 @@ This is not a tutorial where we train one model and call it done. This is a livi
 - Triggers automated retraining when drift thresholds are breached
 - Validates new model candidates against the production baseline before promoting
 
-Every component in this platform maps directly to concepts you have studied across this series. The architecture is deliberately opinionated — real teams will adapt it, but the patterns are industry standard.
+Every component in this platform maps directly to concepts you have studied across this series. The architecture is deliberately opinionated - real teams will adapt it, but the patterns are industry standard.
 
 ### Component Architecture
 
@@ -140,7 +140,7 @@ churn-platform/
 └── Makefile                    # Common dev commands
 ```
 
-> The directory structure is a contract with your team. Every engineer should be able to open this repository and immediately understand where each concern lives and which file owns which responsibility. Consistency here is not aesthetic — it reduces cognitive load on every future code review and incident.
+> The directory structure is a contract with your team. Every engineer should be able to open this repository and immediately understand where each concern lives and which file owns which responsibility. Consistency here is not aesthetic - it reduces cognitive load on every future code review and incident.
 
 ---
 
@@ -148,12 +148,12 @@ churn-platform/
 
 ### The Churn Dataset Schema
 
-Our dataset contains features per customer — usage metrics, contract details, and billing information. **Schema validation** at ingestion time catches upstream data pipeline failures before they silently corrupt your model's input distribution.
+Our dataset contains features per customer - usage metrics, contract details, and billing information. **Schema validation** at ingestion time catches upstream data pipeline failures before they silently corrupt your model's input distribution.
 
 The pattern here separates two concerns that engineers often collapse into one:
 
-1. **Structural validation** — does each record have the right fields with the right types and the right ranges? (Pydantic)
-2. **Statistical validation** — is the overall dataset healthy? (custom checks)
+1. **Structural validation** - does each record have the right fields with the right types and the right ranges? (Pydantic)
+2. **Statistical validation** - is the overall dataset healthy? (custom checks)
 
 ```python
 # src/ingestion.py
@@ -224,7 +224,7 @@ def load_and_validate(
 
     if error_rate > 0.10:
         logger.error(
-            f"Error rate {error_rate:.1%} exceeds 10% threshold — "
+            f"Error rate {error_rate:.1%} exceeds 10% threshold - "
             "check upstream data pipeline"
         )
 
@@ -233,7 +233,7 @@ def load_and_validate(
 
 ### Data Quality Validation
 
-Schema validation checks structure. **Data quality validation** checks content — the subtle statistical issues that pass schema checks but corrupt model behaviour at inference time.
+Schema validation checks structure. **Data quality validation** checks content - the subtle statistical issues that pass schema checks but corrupt model behaviour at inference time.
 
 ```python
 # src/validation.py
@@ -273,10 +273,10 @@ def validate_data_quality(df: pd.DataFrame) -> ValidationReport:
     for col, pct in null_pct.items():
         if pct > 0.30:
             report.add_issue("missing_values",
-                             f"{col}: {pct:.1%} null — exceeds 30% hard limit", "error")
+                             f"{col}: {pct:.1%} null - exceeds 30% hard limit", "error")
         elif pct > 0.05:
             report.add_issue("missing_values",
-                             f"{col}: {pct:.1%} null — investigate upstream", "warning")
+                             f"{col}: {pct:.1%} null - investigate upstream", "warning")
 
     # --- Check 2: Numerical outliers (IQR method) ---
     num_cols = df.select_dtypes(include=[np.number]).columns
@@ -297,7 +297,7 @@ def validate_data_quality(df: pd.DataFrame) -> ValidationReport:
         churn_rate = df["churn"].mean()
         if churn_rate < 0.02 or churn_rate > 0.60:
             report.add_issue("class_imbalance",
-                             f"churn rate = {churn_rate:.1%} — outside expected 2–60% range",
+                             f"churn rate = {churn_rate:.1%} - outside expected 2–60% range",
                              "error")
 
     # --- Check 4: Duplicate customer IDs ---
@@ -311,7 +311,7 @@ def validate_data_quality(df: pd.DataFrame) -> ValidationReport:
     # --- Check 5: Minimum row count ---
     if len(df) < 500:
         report.add_issue("row_count",
-                         f"Only {len(df)} rows — insufficient for reliable training",
+                         f"Only {len(df)} rows - insufficient for reliable training",
                          "error")
 
     return report
@@ -325,7 +325,7 @@ def validate_data_quality(df: pd.DataFrame) -> ValidationReport:
 
 The **feature pipeline** transforms raw validated data into the numerical representation the model expects. Wrapping everything in a sklearn `Pipeline` gives you three critical properties: reproducibility, no data leakage (fit only on training data, transform both train and test with the same fitted parameters), and serialisability (save the fitted pipeline as a joblib artifact and load it identically at serving time).
 
-The pipeline you fit at training time and the pipeline you use at inference time must be byte-for-byte identical. If they are not, you have a **training-serving skew** — one of the most insidious bugs in production ML.
+The pipeline you fit at training time and the pipeline you use at inference time must be byte-for-byte identical. If they are not, you have a **training-serving skew** - one of the most insidious bugs in production ML.
 
 ```python
 # src/feature_pipeline.py
@@ -424,7 +424,7 @@ flowchart LR
 
 | Issue | Manual Transforms | sklearn Pipeline |
 |---|---|---|
-| Data leakage | Easy to accidentally fit on test data | Impossible — fit only called on train |
+| Data leakage | Easy to accidentally fit on test data | Impossible - fit only called on train |
 | Serving consistency | Must re-implement transform at inference | Load joblib → same behaviour guaranteed |
 | Hyperparameter search | Must rebuild manually per trial | Integrate directly in HPO loop |
 | Testing | Hard to unit-test individual steps | Each step testable independently |
@@ -437,7 +437,7 @@ flowchart LR
 This is where the pieces come together. **Optuna** searches the hyperparameter space efficiently using Tree-structured Parzen Estimators (TPE), a Bayesian optimisation algorithm that builds a probabilistic model of which hyperparameter regions produce good scores. Every trial is tracked automatically in **MLflow**. The best model is registered to the model registry, tagged with metadata, and ready to be promoted to production.
 
 ```python
-# src/train.py  — Part 1: Imports, config, MLflow setup
+# src/train.py  - Part 1: Imports, config, MLflow setup
 import argparse
 import mlflow
 import mlflow.xgboost
@@ -463,9 +463,9 @@ optuna.logging.set_verbosity(optuna.logging.WARNING)
 ```
 
 ```python
-# src/train.py  — Part 2: Optuna objective function
+# src/train.py  - Part 2: Optuna objective function
 def objective(trial: optuna.Trial, X: np.ndarray, y: np.ndarray) -> float:
-    """Single Optuna trial — suggest hyperparams, evaluate via CV, return score."""
+    """Single Optuna trial - suggest hyperparams, evaluate via CV, return score."""
     params = {
         "n_estimators":      trial.suggest_int("n_estimators", 100, 800),
         "max_depth":         trial.suggest_int("max_depth", 3, 10),
@@ -485,7 +485,7 @@ def objective(trial: optuna.Trial, X: np.ndarray, y: np.ndarray) -> float:
 ```
 
 ```python
-# src/train.py  — Part 3: Full training run with MLflow logging
+# src/train.py  - Part 3: Full training run with MLflow logging
 def train(data_path: str, pipeline_path: str, n_trials: int = 50) -> str:
     """Run HPO study, log best model to MLflow, return run_id."""
     df = pd.read_parquet(data_path)
@@ -580,7 +580,7 @@ sequenceDiagram
 
 ## 5. FastAPI Serving Endpoint
 
-The serving layer must be fast, observable, and safe. **FastAPI** gives us async request handling, automatic OpenAPI documentation, and Pydantic validation on every request and response. The **lifespan** context manager ensures the model is loaded once at startup — not on every request, which would be catastrophically slow.
+The serving layer must be fast, observable, and safe. **FastAPI** gives us async request handling, automatic OpenAPI documentation, and Pydantic validation on every request and response. The **lifespan** context manager ensures the model is loaded once at startup - not on every request, which would be catastrophically slow.
 
 ```python
 # api/schemas.py
@@ -833,7 +833,7 @@ def compute_psi(
     ref_counts = np.histogram(reference, bins=breakpoints)[0]
     cur_counts = np.histogram(current,   bins=breakpoints)[0]
 
-    # Clip to avoid log(0) — small epsilon maintains numerical stability
+    # Clip to avoid log(0) - small epsilon maintains numerical stability
     ref_pct = (ref_counts / max(len(reference), 1)).clip(1e-6)
     cur_pct = (cur_counts / max(len(current),   1)).clip(1e-6)
 
@@ -913,7 +913,7 @@ class MonitoringService:
         current_df = self.get_recent_predictions(hours)
 
         if len(current_df) < self.min_records:
-            logger.warning(f"Only {len(current_df)} records — skipping drift check")
+            logger.warning(f"Only {len(current_df)} records - skipping drift check")
             return {"status": "insufficient_data", "n_records": len(current_df)}
 
         results  = detect_drift(self.reference_df, current_df, NUMERICAL_FEATURES)
@@ -943,9 +943,9 @@ class MonitoringService:
 
 ## 7. Automated Retraining Trigger
 
-Detecting drift is half the job. Automatically triggering retraining — and validating the new model beats the incumbent before promoting it — closes the loop. This is what separates a monitored system from a self-healing one.
+Detecting drift is half the job. Automatically triggering retraining - and validating the new model beats the incumbent before promoting it - closes the loop. This is what separates a monitored system from a self-healing one.
 
-The key design principle here is **champion-challenger evaluation**: never promote a new model unless it demonstrably outperforms the production model on held-out data. A drift event is not sufficient justification for promotion — the new model must earn it.
+The key design principle here is **champion-challenger evaluation**: never promote a new model unless it demonstrably outperforms the production model on held-out data. A drift event is not sufficient justification for promotion - the new model must earn it.
 
 ```python
 # pipelines/retrain_pipeline.py
@@ -970,7 +970,7 @@ def get_production_metric(metric: str = "cv_roc_auc") -> float:
     client = mlflow.tracking.MlflowClient()
     prod_versions = client.get_latest_versions(MODEL_NAME, stages=["Production"])
     if not prod_versions:
-        logger.warning("No Production model found — treating baseline as 0.0")
+        logger.warning("No Production model found - treating baseline as 0.0")
         return 0.0
     run = client.get_run(prod_versions[0].run_id)
     return float(run.data.metrics.get(metric, 0.0))
@@ -1011,7 +1011,7 @@ def run_retrain_pipeline(
 
     logger.info(
         f"Drift detected in features: {drift_report.get('drifted_features')} "
-        f"— initiating retraining at {datetime.utcnow().isoformat()}"
+        f"- initiating retraining at {datetime.utcnow().isoformat()}"
     )
 
     result = subprocess.run(
@@ -1046,7 +1046,7 @@ def run_retrain_pipeline(
             "improvement":    round(new_auc - prod_auc, 4),
         }
     else:
-        logger.info("Challenger did not beat champion — keeping Production model")
+        logger.info("Challenger did not beat champion - keeping Production model")
         return {
             "action":         "rejected",
             "new_run_id":     new_run_id,
@@ -1077,9 +1077,9 @@ flowchart TD
 
 ---
 
-## 8. Docker Compose — Full Stack
+## 8. Docker Compose - Full Stack
 
-Everything runs in containers. The `docker-compose.yml` defines the entire platform as code — spin it up on any machine with a single command: `docker compose up -d`.
+Everything runs in containers. The `docker-compose.yml` defines the entire platform as code - spin it up on any machine with a single command: `docker compose up -d`.
 
 ```dockerfile
 # Dockerfile.api
@@ -1382,19 +1382,19 @@ cat results/load_test_*_stats.csv
 | Error rate | < 0.01% | < 0.1% | > 1% |
 | Redis cache hit rate | > 60% | > 30% | < 10% |
 
-> Performance testing is not optional. Discovering that your API can only handle 20 req/s on launch day is a production incident waiting to happen. Measure latency at p95 and p99 — the average lies. Real users experience tail latency.
+> Performance testing is not optional. Discovering that your API can only handle 20 req/s on launch day is a production incident waiting to happen. Measure latency at p95 and p99 - the average lies. Real users experience tail latency.
 
 ### Performance Tuning Checklist
 
 If your load test results fall below targets, work through this checklist in order:
 
-1. **Verify model is loaded once** — not on every request (check `lifespan`)
-2. **Check Redis cache hit rate** — low rates mean cache is cold or TTL is too short
-3. **Profile the transform step** — `feature_pipeline.transform()` should be < 5ms
-4. **Increase uvicorn workers** — aim for 1 worker per physical CPU core
-5. **Scale API replicas** — add replicas in `docker-compose.yml` or Kubernetes HPA
-6. **Check for GIL contention** — XGBoost predict_proba releases the GIL; numpy ops do not
-7. **Consider ONNX export** — converting XGBoost to ONNX Runtime can reduce inference latency 30–60%
+1. **Verify model is loaded once** - not on every request (check `lifespan`)
+2. **Check Redis cache hit rate** - low rates mean cache is cold or TTL is too short
+3. **Profile the transform step** - `feature_pipeline.transform()` should be < 5ms
+4. **Increase uvicorn workers** - aim for 1 worker per physical CPU core
+5. **Scale API replicas** - add replicas in `docker-compose.yml` or Kubernetes HPA
+6. **Check for GIL contention** - XGBoost predict_proba releases the GIL; numpy ops do not
+7. **Consider ONNX export** - converting XGBoost to ONNX Runtime can reduce inference latency 30–60%
 
 ---
 
@@ -1411,11 +1411,11 @@ In this final article alone, you implemented:
 - A **hyperparameter-optimised XGBoost model** with Optuna's TPE sampler running 50 trials across 9 hyperparameters, fully tracked in MLflow
 - A **production FastAPI serving endpoint** with async handlers, Redis caching, batch prediction up to 500 records, and graceful lifespan management
 - A **PSI-based drift detection service** that computes Population Stability Index per feature and classifies shift as stable, warning, or drift
-- An **automated retraining pipeline** implementing champion-challenger evaluation — a new model must beat production by a minimum margin before promotion
+- An **automated retraining pipeline** implementing champion-challenger evaluation - a new model must beat production by a minimum margin before promotion
 - A **complete Docker Compose stack** orchestrating PostgreSQL, Redis, MLflow tracking server, the API (3 replicas), and the monitoring scheduler with health checks and proper dependency ordering
 - A **Locust load test** verifying the system meets performance SLAs under 100 concurrent users
 
-### The Full Series — All 19 Parts
+### The Full Series - All 19 Parts
 
 | Part | Title | Key Takeaway |
 |---|---|---|
@@ -1438,7 +1438,7 @@ In this final article alone, you implemented:
 | 16 | Natural Language Processing | Text preprocessing, TF-IDF, word2vec, sequence classification |
 | 17 | ML System Design | Feature stores, real-time vs batch serving, A/B testing at scale |
 | 18 | MLOps | Experiment tracking, CI/CD, model registry, monitoring, DVC |
-| 19 | Capstone | End-to-end production ML platform — this article |
+| 19 | Capstone | End-to-end production ML platform - this article |
 
 ### Career Paths From Here
 
@@ -1460,7 +1460,7 @@ You have the foundations. Here is where the frontier is moving:
 | **Retrieval-Augmented Generation (RAG)** | Ground LLMs in proprietary data without fine-tuning | LangChain docs, LlamaIndex tutorials, "RAG Survey" paper |
 | **Reinforcement Learning** | Agents, game AI, robotics, RLHF for LLM alignment | Sutton & Barto textbook, CleanRL, OpenAI Gym |
 | **Graph Neural Networks** | Fraud detection, drug discovery, social network analysis | PyTorch Geometric, Stanford CS224W lectures |
-| **Causal Inference** | Move from correlation to causation for better decisions | "The Book of Why" — Pearl, DoWhy library, EconML |
+| **Causal Inference** | Move from correlation to causation for better decisions | "The Book of Why" - Pearl, DoWhy library, EconML |
 | **Diffusion Models** | State-of-the-art image, audio, and video generation | "Annotated Diffusion" blog, Hugging Face Diffusers |
 | **Multimodal ML** | Models that see, hear, and reason together | LLaVA, CLIP, OpenAI DALL-E 3 technical reports |
 | **ML Compilers & Inference** | Deploying models 10–100x faster at lower cost | TensorRT, ONNX Runtime, torch.compile, Triton Inference Server |
@@ -1480,42 +1480,42 @@ You have the foundations. Here is where the frontier is moving:
 
 **Courses**
 
-- fast.ai Practical Deep Learning — top-down, code-first, free
-- Stanford CS229 Machine Learning — rigorous mathematical foundation, free on YouTube
-- DeepLearning.AI MLOps Specialisation — Coursera, production track
-- Full Stack Deep Learning (FSDL) — end-to-end ML systems, free on YouTube
-- Stanford CS224W — Machine Learning with Graphs, free lectures
+- fast.ai Practical Deep Learning - top-down, code-first, free
+- Stanford CS229 Machine Learning - rigorous mathematical foundation, free on YouTube
+- DeepLearning.AI MLOps Specialisation - Coursera, production track
+- Full Stack Deep Learning (FSDL) - end-to-end ML systems, free on YouTube
+- Stanford CS224W - Machine Learning with Graphs, free lectures
 
 **Papers Worth Reading**
 
-- "Attention Is All You Need" (Vaswani et al., 2017) — the Transformer foundation paper
+- "Attention Is All You Need" (Vaswani et al., 2017) - the Transformer foundation paper
 - "XGBoost: A Scalable Tree Boosting System" (Chen & Guestrin, 2016)
-- "Hidden Technical Debt in Machine Learning Systems" (Sculley et al., 2015) — a must-read before any production deployment
+- "Hidden Technical Debt in Machine Learning Systems" (Sculley et al., 2015) - a must-read before any production deployment
 - "BERT: Pre-training of Deep Bidirectional Transformers" (Devlin et al., 2018)
 - "Machine Learning: The High-Interest Credit Card of Technical Debt" (Sculley et al., 2014)
-- "Rules of Machine Learning: Best Practices for ML Engineering" (Zinkevich, Google, 2019) — free PDF
+- "Rules of Machine Learning: Best Practices for ML Engineering" (Zinkevich, Google, 2019) - free PDF
 
 ---
 
 ### A Final Word
 
-When you read Part 0 of this series, machine learning might have seemed like a black box — mathematics you weren't sure you could grasp, systems too complex to reason about, a field reserved for PhDs with GPUs and infinite compute budgets.
+When you read Part 0 of this series, machine learning might have seemed like a black box - mathematics you weren't sure you could grasp, systems too complex to reason about, a field reserved for PhDs with GPUs and infinite compute budgets.
 
 Look at what you can do now.
 
-You can take a raw dataset and understand its structure, clean it with purpose, and engineer features that capture real-world signal. You can choose between a linear model and a gradient-boosted tree and articulate exactly why — not just "I tried both and XGBoost was better", but a principled explanation of what properties of the data make tree-based methods effective. You can train a neural network, understand what backpropagation is actually computing at the chain-rule level, and explain the attention mechanism in a Transformer in terms that another engineer can verify.
+You can take a raw dataset and understand its structure, clean it with purpose, and engineer features that capture real-world signal. You can choose between a linear model and a gradient-boosted tree and articulate exactly why - not just "I tried both and XGBoost was better", but a principled explanation of what properties of the data make tree-based methods effective. You can train a neural network, understand what backpropagation is actually computing at the chain-rule level, and explain the attention mechanism in a Transformer in terms that another engineer can verify.
 
 You can design an ML system that handles millions of predictions, set up A/B tests that produce statistically valid results, build the monitoring infrastructure that keeps a model healthy for years after its initial deployment, and write the retraining pipeline that ensures your system improves rather than decays over time.
 
-The code in this capstone is not a classroom exercise. It is the skeleton of a system you could take to a job interview, to a side project, or to a production environment today. The patterns — Pydantic validation, sklearn pipelines, MLflow tracking, FastAPI serving, PSI monitoring, champion-challenger promotion — are used at companies ranging from startups to some of the largest ML organisations in the world.
+The code in this capstone is not a classroom exercise. It is the skeleton of a system you could take to a job interview, to a side project, or to a production environment today. The patterns - Pydantic validation, sklearn pipelines, MLflow tracking, FastAPI serving, PSI monitoring, champion-challenger promotion - are used at companies ranging from startups to some of the largest ML organisations in the world.
 
-The most important thing you can do with everything you have learned is to build something real. Not a notebook. Not a toy script. A system with real data, real failure modes, and real users. You will hit bugs you didn't expect. You will encounter data quality issues that no tutorial prepared you for. You will discover that the hardest problems in production ML are not algorithmic — they are operational, organisational, and ethical.
+The most important thing you can do with everything you have learned is to build something real. Not a notebook. Not a toy script. A system with real data, real failure modes, and real users. You will hit bugs you didn't expect. You will encounter data quality issues that no tutorial prepared you for. You will discover that the hardest problems in production ML are not algorithmic - they are operational, organisational, and ethical.
 
-> "The goal of ML engineering is not to build the smartest model — it is to build the most reliable system for turning data into decisions."
+> "The goal of ML engineering is not to build the smartest model - it is to build the most reliable system for turning data into decisions."
 
 Machine learning is not a destination. Every paper published this week introduces a new technique. Every production system you build teaches you something no course could. The field moves fast, and that is what makes it endlessly interesting.
 
-You now have the foundation to keep learning, keep building, and contribute meaningfully to a field that is reshaping every industry on earth. The frameworks, libraries, and model architectures you use two years from now will look different from what you learned here. The principles — rigour, reproducibility, observability, humility about what a model can and cannot do — will not change.
+You now have the foundation to keep learning, keep building, and contribute meaningfully to a field that is reshaping every industry on earth. The frameworks, libraries, and model architectures you use two years from now will look different from what you learned here. The principles - rigour, reproducibility, observability, humility about what a model can and cannot do - will not change.
 
 The best time to start applying what you have learned was when you read Part 1. The second best time is right now.
 
@@ -1523,7 +1523,7 @@ The best time to start applying what you have learned was when you read Part 1. 
 
 ---
 
-*Part 19 of 19 — Machine Learning: A Developer's Deep Dive from Fundamentals to Production*
+*Part 19 of 19 - Machine Learning: A Developer's Deep Dive from Fundamentals to Production*
 
 *If this series helped you, share it with someone who is just starting out. The best way to solidify your own understanding is to teach what you know.*
 

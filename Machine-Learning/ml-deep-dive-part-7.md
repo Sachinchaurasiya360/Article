@@ -1,8 +1,8 @@
-# Machine Learning Deep Dive — Part 7: Feature Engineering — The Art That Makes or Breaks ML Models
+# Machine Learning Deep Dive - Part 7: Feature Engineering - The Art That Makes or Breaks ML Models
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
 **Part:** 7 of 19 (Core Algorithms)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~50 minutes
@@ -11,7 +11,7 @@
 
 ## Recap: Where We Left Off
 
-In Part 6, we explored the unsupervised learning landscape — K-Means and hierarchical clustering for grouping similar data points, Principal Component Analysis (PCA) for dimensionality reduction, and t-SNE for visualization. We built a customer segmentation pipeline that compressed hundreds of behavioral features into actionable clusters, letting a business treat different customer groups with targeted strategies. Those techniques showed us that even without labels, structure lives in data.
+In Part 6, we explored the unsupervised learning landscape - K-Means and hierarchical clustering for grouping similar data points, Principal Component Analysis (PCA) for dimensionality reduction, and t-SNE for visualization. We built a customer segmentation pipeline that compressed hundreds of behavioral features into actionable clusters, letting a business treat different customer groups with targeted strategies. Those techniques showed us that even without labels, structure lives in data.
 
 Now we pivot to one of the highest-leverage skills in all of applied machine learning.
 
@@ -19,7 +19,7 @@ Here's a dirty secret of ML: in most real-world projects, the algorithm matters 
 
 ---
 
-> "Coming up with features is difficult, time-consuming, requires expert knowledge. Applied machine learning is basically feature engineering." — Andrew Ng
+> "Coming up with features is difficult, time-consuming, requires expert knowledge. Applied machine learning is basically feature engineering." - Andrew Ng
 
 ---
 
@@ -44,7 +44,7 @@ Here's a dirty secret of ML: in most real-world projects, the algorithm matters 
 
 ### The Data Cascade Problem
 
-In 2021, Sambasivan et al. published a landmark study titled *"Everyone wants to do the model work, not the data work"*. They interviewed 53 AI practitioners across 6 countries and found a consistent pattern: organizations that treated data as a second-class citizen — raw, uncleaned, poorly represented — consistently shipped underperforming systems, regardless of how sophisticated their models were.
+In 2021, Sambasivan et al. published a landmark study titled *"Everyone wants to do the model work, not the data work"*. They interviewed 53 AI practitioners across 6 countries and found a consistent pattern: organizations that treated data as a second-class citizen - raw, uncleaned, poorly represented - consistently shipped underperforming systems, regardless of how sophisticated their models were.
 
 They coined the term **Data Cascade**: a chain reaction where poor upstream data quality produces compounding failures downstream. A model trained on badly engineered features will learn the wrong patterns. You can swap in a neural network instead of logistic regression and still get garbage outputs because the garbage entered at the feature level.
 
@@ -60,7 +60,7 @@ This article focuses primarily on the first two. Feature learning is covered in 
 
 ### The Proof Is in the Numbers
 
-Let's look at a concrete example. We'll use the classic Titanic survival dataset — same algorithm (logistic regression), radically different feature sets:
+Let's look at a concrete example. We'll use the classic Titanic survival dataset - same algorithm (logistic regression), radically different feature sets:
 
 ```python
 # filename: feature_impact_demo.py
@@ -155,7 +155,7 @@ Engineered features accuracy: 0.8341 ± 0.0188
 Improvement:                  +5.2 percentage points
 ```
 
-Five percentage points of improvement — without changing the model at all. In a competition, that's the difference between rank 500 and rank 50. In production, it's the difference between a model that gets deployed and one that gets shelved.
+Five percentage points of improvement - without changing the model at all. In a competition, that's the difference between rank 500 and rank 50. In production, it's the difference between a model that gets deployed and one that gets shelved.
 
 ### The Feature Engineering Mindset
 
@@ -187,7 +187,7 @@ Effective feature engineering is a blend of three things:
 
 ### The Scaling Problem
 
-Most algorithms (SVMs, neural networks, gradient descent-based models, KNN) are sensitive to feature scales. A feature ranging from 0 to 1,000,000 will dominate a feature ranging from 0 to 1 unless you scale. Tree-based methods (random forests, gradient boosting) are the notable exception — they're scale-invariant.
+Most algorithms (SVMs, neural networks, gradient descent-based models, KNN) are sensitive to feature scales. A feature ranging from 0 to 1,000,000 will dominate a feature ranging from 0 to 1 unless you scale. Tree-based methods (random forests, gradient boosting) are the notable exception - they're scale-invariant.
 
 Let's implement all three major scalers from scratch:
 
@@ -236,7 +236,7 @@ class MinMaxScalerScratch:
 
 
 class RobustScalerScratch:
-    """Scale using median and IQR — resistant to outliers.
+    """Scale using median and IQR - resistant to outliers.
        x_scaled = (x - median) / IQR
     """
 
@@ -319,13 +319,13 @@ sqrt_incomes   = np.sqrt(incomes)
 
 # Measure skewness before and after
 print("Transformation Comparison:")
-print(f"  Original    — mean: {incomes.mean():>12.2f}  skewness: {stats.skew(incomes):.4f}")
-print(f"  Log(1+x)    — mean: {log_incomes.mean():>12.4f}  skewness: {stats.skew(log_incomes):.4f}")
-print(f"  Square root — mean: {sqrt_incomes.mean():>12.4f}  skewness: {stats.skew(sqrt_incomes):.4f}")
+print(f"  Original    - mean: {incomes.mean():>12.2f}  skewness: {stats.skew(incomes):.4f}")
+print(f"  Log(1+x)    - mean: {log_incomes.mean():>12.4f}  skewness: {stats.skew(log_incomes):.4f}")
+print(f"  Square root - mean: {sqrt_incomes.mean():>12.4f}  skewness: {stats.skew(sqrt_incomes):.4f}")
 
 # Box-Cox requires strictly positive values
 bc_incomes, lambda_val = stats.boxcox(incomes + 1)
-print(f"  Box-Cox     — mean: {bc_incomes.mean():>12.4f}  skewness: {stats.skew(bc_incomes):.4f}  lambda={lambda_val:.4f}")
+print(f"  Box-Cox     - mean: {bc_incomes.mean():>12.4f}  skewness: {stats.skew(bc_incomes):.4f}  lambda={lambda_val:.4f}")
 
 # Plot distributions
 fig, axes = plt.subplots(1, 4, figsize=(16, 4))
@@ -346,10 +346,10 @@ print("\nPlot saved to skew_transforms.png")
 Expected output:
 ```
 Transformation Comparison:
-  Original    — mean:     69482.12  skewness: 8.2341
-  Log(1+x)    — mean:       10.5037  skewness: 0.1823
-  Square root — mean:      208.8112  skewness: 2.4561
-  Box-Cox     — mean:        0.2041  skewness: 0.0034  lambda=0.0821
+  Original    - mean:     69482.12  skewness: 8.2341
+  Log(1+x)    - mean:       10.5037  skewness: 0.1823
+  Square root - mean:      208.8112  skewness: 2.4561
+  Box-Cox     - mean:        0.2041  skewness: 0.0034  lambda=0.0821
 
 Plot saved to skew_transforms.png
 ```
@@ -358,7 +358,7 @@ Plot saved to skew_transforms.png
 
 ### Binning and Discretization
 
-Sometimes a continuous feature carries more signal as a category. Age is the classic example — "is this person a child, adult, or senior" is often more predictive than their exact age.
+Sometimes a continuous feature carries more signal as a category. Age is the classic example - "is this person a child, adult, or senior" is often more predictive than their exact age.
 
 ```python
 # filename: binning_demo.py
@@ -383,7 +383,7 @@ df['age_equalwidth'] = pd.cut(
     labels=['0-20', '20-40', '40-60', '60-80', '80-100']
 )
 
-# Equal-frequency binning (quantile-based — each bin has same count)
+# Equal-frequency binning (quantile-based - each bin has same count)
 df['age_equalfreq'] = pd.qcut(
     df['age'],
     q=5,
@@ -430,7 +430,7 @@ Equal-frequency bin edges:
   Q5: [55.2, 99.1]
 ```
 
-**Equal-width binning** creates bins with uniform range — appropriate when the distribution matters (e.g., sensor readings). **Equal-frequency binning** creates bins with equal count — appropriate when you want balanced classes or to capture percentile-based behavior.
+**Equal-width binning** creates bins with uniform range - appropriate when the distribution matters (e.g., sensor readings). **Equal-frequency binning** creates bins with equal count - appropriate when you want balanced classes or to capture percentile-based behavior.
 
 ### Interaction Features and Polynomial Features
 
@@ -520,7 +520,7 @@ from sklearn.preprocessing import LabelEncoder
 le = LabelEncoder()
 colors_bad = le.fit_transform(colors)
 print(f"\nNominal color (BAD label encoding): {colors_bad}")
-print("Problem: model will think blue(0) < green(1) < red(2) — FALSE relationship!")
+print("Problem: model will think blue(0) < green(1) < red(2) - FALSE relationship!")
 ```
 
 Expected output:
@@ -536,7 +536,7 @@ Education label encoding:
 6       Master        2
 
 Nominal color (BAD label encoding): [2 0 1 2 0]
-Problem: model will think blue(0) < green(1) < red(2) — FALSE relationship!
+Problem: model will think blue(0) < green(1) < red(2) - FALSE relationship!
 ```
 
 ### One-Hot Encoding from Scratch
@@ -1080,7 +1080,7 @@ Features containing "not": ['but not', 'great not', 'not good', 'not great']
 
 ## 5. Time Features
 
-Time series data requires specialized feature engineering. Raw timestamps are useless as integers — you must extract the meaningful components.
+Time series data requires specialized feature engineering. Raw timestamps are useless as integers - you must extract the meaningful components.
 
 ### Extracting Temporal Components
 
@@ -1133,9 +1133,9 @@ Temporal features extracted:
 7 2022-01-13 01:35:00     1            3      1        1           0             0
 ```
 
-### Cyclical Encoding — The Critical Step
+### Cyclical Encoding - The Critical Step
 
-This is one of the most commonly missed concepts in feature engineering. Consider encoding the hour of day as a raw integer (0–23). The model will see hour 23 and hour 0 as being 23 units apart — but they're actually adjacent (11pm and midnight). The same problem applies to months, days of week, and compass bearings.
+This is one of the most commonly missed concepts in feature engineering. Consider encoding the hour of day as a raw integer (0–23). The model will see hour 23 and hour 0 as being 23 units apart - but they're actually adjacent (11pm and midnight). The same problem applies to months, days of week, and compass bearings.
 
 **Cyclical encoding** using sine and cosine solves this:
 
@@ -1168,7 +1168,7 @@ hours = np.arange(24)
 
 # Raw encoding problem
 print("Distance between hour 23 and hour 0:")
-print(f"  Raw integer distance:    {abs(23 - 0)} units  (WRONG — they're neighbors)")
+print(f"  Raw integer distance:    {abs(23 - 0)} units  (WRONG - they're neighbors)")
 
 # Cyclical encoding
 hour_sin = np.sin(2 * np.pi * hours / 24)
@@ -1184,9 +1184,9 @@ d_0_12  = cyclical_distance(0, 12, 24)
 d_6_18  = cyclical_distance(6, 18, 24)
 
 print(f"\nCyclical distance (Euclidean in sin/cos space):")
-print(f"  Hour 23 to Hour 0:   {d_23_0:.4f}  (correctly small — neighbors)")
-print(f"  Hour 0  to Hour 12:  {d_0_12:.4f}  (correctly large — opposite)")
-print(f"  Hour 6  to Hour 18:  {d_6_18:.4f}  (correctly large — opposite)")
+print(f"  Hour 23 to Hour 0:   {d_23_0:.4f}  (correctly small - neighbors)")
+print(f"  Hour 0  to Hour 12:  {d_0_12:.4f}  (correctly large - opposite)")
+print(f"  Hour 6  to Hour 18:  {d_6_18:.4f}  (correctly large - opposite)")
 
 # Build full feature set
 df = pd.DataFrame({
@@ -1211,12 +1211,12 @@ print(df[['hour', 'hour_sin', 'hour_cos']].head(6).round(4))
 Expected output:
 ```
 Distance between hour 23 and hour 0:
-  Raw integer distance:    23 units  (WRONG — they're neighbors)
+  Raw integer distance:    23 units  (WRONG - they're neighbors)
 
 Cyclical distance (Euclidean in sin/cos space):
-  Hour 23 to Hour 0:   0.2611  (correctly small — neighbors)
-  Hour 0  to Hour 12:  2.0000  (correctly large — opposite)
-  Hour 6  to Hour 18:  2.0000  (correctly large — opposite)
+  Hour 23 to Hour 0:   0.2611  (correctly small - neighbors)
+  Hour 0  to Hour 12:  2.0000  (correctly large - opposite)
+  Hour 6  to Hour 18:  2.0000  (correctly large - opposite)
 
 Cyclical features for first few hours of the year:
    hour  hour_sin  hour_cos
@@ -1269,7 +1269,7 @@ df['volatility']   = df['roll_std_7'] / df['roll_mean_7']  # coefficient of vari
 print("Lag and rolling features:")
 print(df[['date', 'sales', 'lag_1', 'lag_7', 'roll_mean_7', 'roll_std_7', 'momentum']].iloc[14:22].round(2).to_string())
 
-print(f"\nNull counts from lag/rolling (expected — need historical data):")
+print(f"\nNull counts from lag/rolling (expected - need historical data):")
 print(df[['lag_1', 'lag_7', 'lag_30', 'roll_mean_7', 'roll_mean_14']].isnull().sum())
 ```
 
@@ -1286,7 +1286,7 @@ Lag and rolling features:
 20  2023-01-21   81.19   88.73   102.47        95.44        7.38    -13.74
 21  2023-01-22   96.45   81.19   93.57        92.31        8.12    -12.38
 
-Null counts from lag/rolling (expected — need historical data):
+Null counts from lag/rolling (expected - need historical data):
 lag_1           1
 lag_7           7
 lag_30         30
@@ -1307,20 +1307,20 @@ Missing data is unavoidable in production systems. How you handle it can dramati
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                     Types of Missing Data                               │
 │                                                                         │
-│  MCAR — Missing Completely At Random                                    │
+│  MCAR - Missing Completely At Random                                    │
 │  ────────────────────────────────────                                   │
 │  Probability of missing is independent of all variables.                │
 │  Example: Survey respondent accidentally skipped a page.                │
 │  Safe to use: mean/median imputation; can also drop rows.               │
 │                                                                         │
-│  MAR — Missing At Random                                                │
+│  MAR - Missing At Random                                                │
 │  ───────────────────────                                                │
 │  Probability of missing depends on OTHER observed variables.            │
 │  Example: Men less likely to report weight; women less likely           │
 │  to report age. Missing-ness predicted by gender (observed).            │
 │  Use: Model-based imputation (KNN, iterative).                          │
 │                                                                         │
-│  MNAR — Missing Not At Random                                           │
+│  MNAR - Missing Not At Random                                           │
 │  ──────────────────────────────                                         │
 │  Probability of missing depends on the MISSING VALUE ITSELF.            │
 │  Example: High earners skip income question. Low scorers skip           │
@@ -1420,7 +1420,7 @@ df_knn['income']= X_knn[:, 1]
 df_knn['score'] = X_knn[:, 2]
 
 # ── Strategy 4: Iterative Imputation (MICE) ──────────────────────────────────
-# Models each feature as a function of all others — most powerful
+# Models each feature as a function of all others - most powerful
 iter_imp = IterativeImputer(max_iter=10, random_state=42)
 X_iter   = iter_imp.fit_transform(X_num)
 
@@ -1430,7 +1430,7 @@ df_iter['income']= X_iter[:, 1]
 df_iter['score']= X_iter[:, 2]
 
 # ── Compare imputed distributions ────────────────────────────────────────────
-print("\nImputation comparison — 'age' column statistics:")
+print("\nImputation comparison - 'age' column statistics:")
 print(f"  Original (no missing):   mean={df['age'].dropna().mean():.2f}, std={df['age'].dropna().std():.2f}")
 print(f"  Mean imputation:         mean={df_simple['age'].mean():.2f}, std={df_simple['age'].std():.2f}")
 print(f"  KNN imputation:          mean={df_knn['age'].mean():.2f}, std={df_knn['age'].std():.2f}")
@@ -1455,7 +1455,7 @@ score_missing       15
 category_missing    10
 dtype: int64
 
-Imputation comparison — 'age' column statistics:
+Imputation comparison - 'age' column statistics:
   Original (no missing):   mean=35.18, std=11.94
   Mean imputation:         mean=35.18, std=11.16
   KNN imputation:          mean=35.11, std=11.88
@@ -1498,7 +1498,7 @@ graph TD
     C --> C2[Forward Selection\nAdd best one at a time]
     C --> C3[Backward Elimination\nRemove worst one at a time]
 
-    D --> D1[L1 Regularization\nLasso — zeros out features]
+    D --> D1[L1 Regularization\nLasso - zeros out features]
     D --> D2[Tree-based Importance\nRandom Forest / XGBoost]
     D --> D3[SelectFromModel\nsklearn wrapper]
 ```
@@ -1590,7 +1590,7 @@ feature_names = [f'feature_{i:02d}' for i in range(20)]
 # Variance threshold
 vt = VarianceThresholdScratch(threshold=0.05)
 vt.fit(X)
-print(f"Variance Threshold — kept {vt.support_.sum()} of {X.shape[1]} features")
+print(f"Variance Threshold - kept {vt.support_.sum()} of {X.shape[1]} features")
 print(f"  Removed low-variance: {[feature_names[i] for i in range(20) if not vt.support_[i]]}")
 
 # Mutual Information
@@ -1602,13 +1602,13 @@ for name, score in mi_ranking[:8]:
 
 # Correlation-based selection
 selected_idx, target_corr, selected_names = correlation_selector(X, y, threshold=0.05)
-print(f"\nCorrelation-based — selected {len(selected_names)} features:")
+print(f"\nCorrelation-based - selected {len(selected_names)} features:")
 print(f"  {selected_names}")
 ```
 
 Expected output:
 ```
-Variance Threshold — kept 19 of 20 features
+Variance Threshold - kept 19 of 20 features
   Removed low-variance: ['feature_00']
 
 Top 8 features by Mutual Information:
@@ -1621,7 +1621,7 @@ Top 8 features by Mutual Information:
   feature_03: 0.1842
   feature_16: 0.1621
 
-Correlation-based — selected 14 features:
+Correlation-based - selected 14 features:
   ['feature_01', 'feature_02', 'feature_03', 'feature_04', 'feature_05',
    'feature_06', 'feature_07', 'feature_08', 'feature_10', 'feature_11',
    'feature_13', 'feature_14', 'feature_16', 'feature_18']
@@ -1750,10 +1750,10 @@ True informative features (ground truth): ['f01', 'f02', 'f05', 'f07', 'f09', 'f
 As ML moves to production, feature engineering faces a new set of challenges:
 
 - The same feature (e.g., "user's 7-day purchase total") might be needed by 5 different models
-- Training uses historical data; serving uses live data — these must be consistent
+- Training uses historical data; serving uses live data - these must be consistent
 - Recomputing features from scratch for each model wastes compute
 
-A **feature store** is a centralized platform for storing, versioning, serving, and reusing ML features. It eliminates the "training-serving skew" problem — one of the most insidious production bugs in ML.
+A **feature store** is a centralized platform for storing, versioning, serving, and reusing ML features. It eliminates the "training-serving skew" problem - one of the most insidious production bugs in ML.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -1786,13 +1786,13 @@ A **feature store** is a centralized platform for storing, versioning, serving, 
 | **Freshness** | Historical snapshots | Near real-time |
 | **Example** | "User's 90-day purchase history" | "User's current session features" |
 
-### Feast — The Open-Source Feature Store
+### Feast - The Open-Source Feature Store
 
 **Feast** (Feature Store) is the most popular open-source feature store. A minimal setup looks like:
 
 ```python
 # filename: feast_example.py
-# Minimal Feast feature store definition (conceptual — requires feast installed)
+# Minimal Feast feature store definition (conceptual - requires feast installed)
 # pip install feast
 
 # feature_repo/feature_store.yaml
@@ -1850,7 +1850,7 @@ customer_stats_fv = FeatureView(
 
 print("Feature store definition structure shown above.")
 print("Key benefit: same feature definitions used for training AND serving.")
-print("Eliminates training-serving skew — one of production ML's biggest bugs.")
+print("Eliminates training-serving skew - one of production ML's biggest bugs.")
 ```
 
 ---
@@ -1859,7 +1859,7 @@ print("Eliminates training-serving skew — one of production ML's biggest bugs.
 
 ### Featuretools and Deep Feature Synthesis
 
-Manual feature engineering is powerful but time-consuming. **Featuretools** automates it through **Deep Feature Synthesis (DFS)** — a systematic algorithm for creating features from relational data.
+Manual feature engineering is powerful but time-consuming. **Featuretools** automates it through **Deep Feature Synthesis (DFS)** - a systematic algorithm for creating features from relational data.
 
 ```python
 # filename: featuretools_demo.py
@@ -1937,10 +1937,10 @@ Sample:
 
 | Scenario | Recommendation |
 |---|---|
-| Relational data with multiple tables | Featuretools DFS — excellent fit |
+| Relational data with multiple tables | Featuretools DFS - excellent fit |
 | Time series with many lags needed | Automated (tsfresh) |
 | Domain expertise available | Manual first; automate to expand |
-| Competition with complex feature interactions | Both — start manual, augment with DFS |
+| Competition with complex feature interactions | Both - start manual, augment with DFS |
 | Production with strict latency | Manual (more control over complexity) |
 | Prototype / exploratory | Automated to quickly find signal |
 
@@ -2291,7 +2291,7 @@ df_results = pd.DataFrame(results)
 df_results['Improvement'] = df_results['CV ROC-AUC'] - df_results['CV ROC-AUC'].iloc[0]
 print(df_results.round(4).to_string(index=False))
 print(f"\nROC-AUC improvement: +{(0.8312 - 0.7841):.4f} ({(0.8312 - 0.7841)*100:.1f} percentage points)")
-print("This is purely from feature engineering — the model is identical.")
+print("This is purely from feature engineering - the model is identical.")
 ```
 
 Expected output:
@@ -2301,7 +2301,7 @@ Expected output:
      Engineered features     0.8312  0.0187        0.8289            34       0.0471
 
 ROC-AUC improvement: +0.0471 (4.7 percentage points)
-This is purely from feature engineering — the model is identical.
+This is purely from feature engineering - the model is identical.
 ```
 
 ---
@@ -2328,19 +2328,19 @@ This is purely from feature engineering — the model is identical.
 | **Cyclical Encoding** | sin/cos transform for cyclic features (hours, months) to preserve circular distance |
 | **Lag Feature** | Value of a time series feature at a prior time step (t-1, t-7, etc.) |
 | **Rolling Statistic** | Aggregate (mean, std, max) computed over a sliding time window |
-| **MCAR** | Missing Completely At Random — missingness independent of all variables |
-| **MAR** | Missing At Random — missingness depends on other observed variables |
-| **MNAR** | Missing Not At Random — missingness depends on the missing value itself |
+| **MCAR** | Missing Completely At Random - missingness independent of all variables |
+| **MAR** | Missing At Random - missingness depends on other observed variables |
+| **MNAR** | Missing Not At Random - missingness depends on the missing value itself |
 | **KNN Imputation** | Fills missing values using the mean of k nearest neighbors |
 | **MICE / Iterative Imputation** | Imputes each feature as a function of all other features via iterative regression |
 | **Missing Indicator** | Binary column added to flag where a value was missing; the "missingness as signal" trick |
 | **Variance Threshold** | Filter method that removes features with near-zero variance |
 | **Mutual Information** | Measures the statistical dependence between a feature and the target |
-| **RFE** | Recursive Feature Elimination — wrapper method that iteratively removes least important features |
+| **RFE** | Recursive Feature Elimination - wrapper method that iteratively removes least important features |
 | **Lasso (L1)** | Regularization that forces some feature coefficients to exactly zero; built-in selection |
 | **Feature Store** | Centralized platform for storing, versioning, and serving ML features |
-| **Training-Serving Skew** | When features computed at training differ from those computed at inference — causes silent model degradation |
-| **DFS** | Deep Feature Synthesis — automated method for generating features from relational tables |
+| **Training-Serving Skew** | When features computed at training differ from those computed at inference - causes silent model degradation |
+| **DFS** | Deep Feature Synthesis - automated method for generating features from relational tables |
 | **ColumnTransformer** | sklearn utility for applying different pipelines to different column types simultaneously |
 | **Pipeline** | sklearn utility that chains preprocessing steps and a final estimator into one object |
 
@@ -2356,7 +2356,7 @@ Before we close, here is a concise summary of the principles that should guide e
 
 **3. Never apply one-hot encoding to ordinal variables.** You'll destroy the ordering information. Use label encoding with explicit ordinal mapping.
 
-**4. Always add a missing indicator column.** The fact that a value was missing is often as informative as the value itself — especially for MNAR data.
+**4. Always add a missing indicator column.** The fact that a value was missing is often as informative as the value itself - especially for MNAR data.
 
 **5. Cyclical encoding is non-negotiable for time features.** Raw hour (0–23) or month (1–12) as integers will confuse any distance-based model. Always use sin/cos pairs.
 
@@ -2372,13 +2372,13 @@ Before we close, here is a concise summary of the principles that should guide e
 
 In **Part 8: Neural Networks from Scratch**, we'll build everything we've been preprocessing data for:
 
-- **The perceptron** — the fundamental unit of every neural network, implemented from scratch
-- **Forward propagation** — matrix math that flows through layers
-- **Backpropagation** — the chain rule at the heart of all deep learning, derived step by step
-- **Activation functions** — sigmoid, ReLU, tanh, Leaky ReLU — when and why each works
-- **Gradient descent variants** — vanilla SGD, Mini-batch, Momentum, Adam
-- **Regularization** — dropout, L2, batch normalization
-- **Building a 3-layer network** that achieves 98% accuracy on MNIST — no frameworks, pure numpy
+- **The perceptron** - the fundamental unit of every neural network, implemented from scratch
+- **Forward propagation** - matrix math that flows through layers
+- **Backpropagation** - the chain rule at the heart of all deep learning, derived step by step
+- **Activation functions** - sigmoid, ReLU, tanh, Leaky ReLU - when and why each works
+- **Gradient descent variants** - vanilla SGD, Mini-batch, Momentum, Adam
+- **Regularization** - dropout, L2, batch normalization
+- **Building a 3-layer network** that achieves 98% accuracy on MNIST - no frameworks, pure numpy
 
 The features we've spent this entire article engineering will be fed directly into those networks. The log-transformed, cyclically encoded, imputed, and scaled feature matrices we build here are exactly what neural networks need as inputs.
 

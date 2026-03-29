@@ -1,8 +1,8 @@
-# Machine Learning Deep Dive — Part 12: Training Deep Networks — Optimizers, Regularization, and Debugging
+# Machine Learning Deep Dive - Part 12: Training Deep Networks - Optimizers, Regularization, and Debugging
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
 **Part:** 12 of 19 (Deep Learning)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~55 minutes
@@ -11,9 +11,9 @@
 
 ## Recap: Where We Left Off
 
-In Part 11, we explored Recurrent Neural Networks (RNNs) and Long Short-Term Memory networks (LSTMs) — architectures designed to process sequential data by maintaining hidden state across time steps. We saw how LSTMs solve the vanishing gradient problem in vanilla RNNs through gating mechanisms, and built sequence models for tasks like text generation and time series forecasting.
+In Part 11, we explored Recurrent Neural Networks (RNNs) and Long Short-Term Memory networks (LSTMs) - architectures designed to process sequential data by maintaining hidden state across time steps. We saw how LSTMs solve the vanishing gradient problem in vanilla RNNs through gating mechanisms, and built sequence models for tasks like text generation and time series forecasting.
 
-We've now built CNNs, RNNs, LSTMs — but knowing HOW to build a network is different from knowing how to make it actually TRAIN well. Deep networks are notoriously finicky: change the learning rate by 10x and training explodes; forget to normalize and it never converges. This part is about the craft of training deep networks — the optimizer recipes, regularization tools, and debugging techniques that separate working models from stuck ones.
+We've now built CNNs, RNNs, LSTMs - but knowing HOW to build a network is different from knowing how to make it actually TRAIN well. Deep networks are notoriously finicky: change the learning rate by 10x and training explodes; forget to normalize and it never converges. This part is about the craft of training deep networks - the optimizer recipes, regularization tools, and debugging techniques that separate working models from stuck ones.
 
 ---
 
@@ -26,7 +26,7 @@ We've now built CNNs, RNNs, LSTMs — but knowing HOW to build a network is diff
 5. [Regularization Toolkit](#5-regularization-toolkit)
 6. [Gradient Issues and Fixes](#6-gradient-issues-and-fixes)
 7. [Mixed Precision Training](#7-mixed-precision-training)
-8. [Debugging Training — A Systematic Framework](#8-debugging-training--a-systematic-framework)
+8. [Debugging Training - A Systematic Framework](#8-debugging-training--a-systematic-framework)
 9. [Common Failure Modes and Fixes](#9-common-failure-modes-and-fixes)
 10. [Project: Train a Deep Network with All Techniques Applied](#10-project-train-a-deep-network-with-all-techniques-applied)
 11. [Vocabulary Cheat Sheet](#vocabulary-cheat-sheet)
@@ -40,7 +40,7 @@ Before we talk about optimizers, we need to understand what they are navigating.
 
 ### The Loss Surface
 
-Picture the loss as a surface in parameter space. For a network with millions of parameters, this surface exists in millions of dimensions — impossible to visualize directly, but we can study its properties.
+Picture the loss as a surface in parameter space. For a network with millions of parameters, this surface exists in millions of dimensions - impossible to visualize directly, but we can study its properties.
 
 ```mermaid
 graph TD
@@ -50,9 +50,9 @@ graph TD
     A --> E[Local Minima]
     A --> F[Global Minimum]
 
-    B --> B1["Narrow valleys — gradient\npoints sideways, not forward\nSGD oscillates, slow progress"]
-    C --> C1["Flat regions — gradient\nnear zero everywhere\nTraining stalls completely"]
-    D --> D1["Gradient is zero but not\na minimum — common in\nhigh dimensions"]
+    B --> B1["Narrow valleys - gradient\npoints sideways, not forward\nSGD oscillates, slow progress"]
+    C --> C1["Flat regions - gradient\nnear zero everywhere\nTraining stalls completely"]
+    D --> D1["Gradient is zero but not\na minimum - common in\nhigh dimensions"]
     E --> E1["Loss is locally minimal\nbut not globally optimal\nOften: good enough!"]
     F --> F1["Theoretically optimal\nRarely needed in practice\nMay not even generalize well"]
 ```
@@ -61,7 +61,7 @@ graph TD
 
 - **Ravines:** The surface curves steeply in some directions and shallowly in others. The gradient points mostly into the steep walls, not toward the valley floor. SGD oscillates wildly left-right while making slow progress along the valley.
 
-- **Plateaus:** Regions where the gradient is near zero in all directions. Training looks "stuck" — loss barely changes. Common in the early phases of training sigmoid networks.
+- **Plateaus:** Regions where the gradient is near zero in all directions. Training looks "stuck" - loss barely changes. Common in the early phases of training sigmoid networks.
 
 - **Saddle points:** Points where the gradient is zero but the loss increases in some directions and decreases in others. Much more common than local minima in high dimensions. First-order methods can slow dramatically near saddle points.
 
@@ -84,7 +84,7 @@ This works, but has two core problems:
 
 The batch size you choose affects the optimization landscape you're navigating:
 
-- **Large batches** compute a more accurate gradient — less noise. But they tend to converge to **sharp minima** (narrow valleys). Sharp minima generalize poorly because a small change in input shifts the loss significantly.
+- **Large batches** compute a more accurate gradient - less noise. But they tend to converge to **sharp minima** (narrow valleys). Sharp minima generalize poorly because a small change in input shifts the loss significantly.
 
 - **Small batches** introduce gradient noise. Counterintuitively, this noise can help escape sharp minima and find **flat minima** (wide valleys). Flat minima generalize better because the loss landscape is smooth around them.
 
@@ -100,7 +100,7 @@ Flat minima tend to generalize better to unseen data. When your model moves from
 
 ### Why Global Minimum Isn't the Goal
 
-Finding the global minimum of the training loss would mean **perfect memorization** of training data — severe overfitting. We actually want a solution that:
+Finding the global minimum of the training loss would mean **perfect memorization** of training data - severe overfitting. We actually want a solution that:
 
 1. Has low training loss (learned the patterns)
 2. Lives in a flat region (generalizes to new data)
@@ -471,7 +471,7 @@ class Adam:
 
 
 # Visualize Adam vs SGD vs Momentum on the Rosenbrock function
-# f(x,y) = (1-x)^2 + 100*(y - x^2)^2  — classic optimization benchmark
+# f(x,y) = (1-x)^2 + 100*(y - x^2)^2  - classic optimization benchmark
 def rosenbrock(x, y):
     return (1 - x)**2 + 100 * (y - x**2)**2
 
@@ -553,7 +553,7 @@ import torch.nn as nn
 
 # Standard Adam with L2 in loss function (WRONG way)
 model_adam = nn.Linear(100, 10)
-# weight_decay in Adam actually applies L2 reg through gradient — adaptive scaling distorts it
+# weight_decay in Adam actually applies L2 reg through gradient - adaptive scaling distorts it
 optimizer_adam = torch.optim.Adam(model_adam.parameters(), lr=0.001, weight_decay=0.01)
 
 # AdamW: weight decay applied DIRECTLY to weights, not through gradient
@@ -566,7 +566,7 @@ optimizer_adamw = torch.optim.AdamW(model_adamw.parameters(), lr=0.001, weight_d
 #                                      ^^^^^^^^^
 #                                      Direct weight decay, not through adaptive scaling
 
-print("Adam vs AdamW — key difference:")
+print("Adam vs AdamW - key difference:")
 print("Adam:  weight decay scaled by adaptive learning rate (incorrect)")
 print("AdamW: weight decay applied directly to weights (correct)")
 print()
@@ -575,7 +575,7 @@ print("For transformers and large models, always prefer AdamW.")
 
 ```
 # Expected output:
-Adam vs AdamW — key difference:
+Adam vs AdamW - key difference:
 Adam:  weight decay scaled by adaptive learning rate (incorrect)
 AdamW: weight decay applied directly to weights (correct)
 
@@ -601,7 +601,7 @@ For transformers and large models, always prefer AdamW.
 
 ## 4. Learning Rate Scheduling
 
-The learning rate is the single most impactful hyperparameter. But the optimal learning rate isn't constant — it should change during training.
+The learning rate is the single most impactful hyperparameter. But the optimal learning rate isn't constant - it should change during training.
 
 **Early in training:** Use a moderate or large learning rate to move quickly toward the loss basin.
 **Late in training:** Use a small learning rate to fine-tune position within the basin without overshooting.
@@ -747,7 +747,7 @@ Warmup + Cosine LR schedule:
 
 ### One-Cycle Policy (Leslie Smith)
 
-**Super-Convergence:** Leslie Smith (2018) found that training with a cyclical learning rate — one large cycle from min to max to min — can train networks much faster than traditional schedules. The key insight: the large learning rate phase acts as strong regularization, exploring the loss surface broadly.
+**Super-Convergence:** Leslie Smith (2018) found that training with a cyclical learning rate - one large cycle from min to max to min - can train networks much faster than traditional schedules. The key insight: the large learning rate phase acts as strong regularization, exploring the loss surface broadly.
 
 ```python
 # filename: lr_schedulers_demo.py (continued)
@@ -791,7 +791,7 @@ One-Cycle Policy LR:
 
 ### ReduceLROnPlateau
 
-Reduce learning rate when validation loss stops improving. The most practical scheduler for production training — no need to pre-specify the schedule.
+Reduce learning rate when validation loss stops improving. The most practical scheduler for production training - no need to pre-specify the schedule.
 
 ```python
 # filename: lr_schedulers_demo.py (continued)
@@ -837,7 +837,7 @@ ReduceLROnPlateau simulation:
 
 ## 5. Regularization Toolkit
 
-**Regularization** refers to any technique that reduces overfitting — the gap between training performance and test performance. Deep networks are highly expressive (millions of parameters) and will happily memorize training data if not constrained.
+**Regularization** refers to any technique that reduces overfitting - the gap between training performance and test performance. Deep networks are highly expressive (millions of parameters) and will happily memorize training data if not constrained.
 
 ### L1 / L2 Weight Decay in Deep Learning
 
@@ -850,7 +850,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-# L2 via AdamW (preferred — decoupled weight decay)
+# L2 via AdamW (preferred - decoupled weight decay)
 optimizer = optim.AdamW(
     model.parameters(),
     lr=0.001,
@@ -878,7 +878,7 @@ def train_with_l1(model, optimizer, inputs, targets, lambda_l1=0.001):
 
 ### Dropout
 
-**Dropout** (Srivastava et al., 2014) is one of the most effective regularization techniques. During training, each neuron is independently set to zero with probability `p` (the dropout rate). This prevents neurons from co-adapting — from learning to rely on specific other neurons.
+**Dropout** (Srivastava et al., 2014) is one of the most effective regularization techniques. During training, each neuron is independently set to zero with probability `p` (the dropout rate). This prevents neurons from co-adapting - from learning to rely on specific other neurons.
 
 **At test time, no neurons are dropped.** Instead, all activations are scaled by `(1 - p)` to maintain the same expected magnitude. In PyTorch's implementation, the training activations are scaled by `1/(1-p)` (inverted dropout) so no scaling is needed at test time.
 
@@ -997,16 +997,16 @@ out_train = model(torch.randn(4, 784))
 model.eval()    # Dropout is INACTIVE
 out_eval = model(torch.randn(4, 784))
 
-print("Model in train mode — dropout active")
-print("Model in eval mode  — dropout inactive (use this for inference!)")
+print("Model in train mode - dropout active")
+print("Model in eval mode  - dropout inactive (use this for inference!)")
 print(f"\nTrain output shape: {out_train.shape}")
 print(f"Eval  output shape: {out_eval.shape}")
 ```
 
 ```
 # Expected output:
-Model in train mode — dropout active
-Model in eval mode  — dropout inactive (use this for inference!)
+Model in train mode - dropout active
+Model in eval mode  - dropout inactive (use this for inference!)
 
 Train output shape: torch.Size([4, 10])
 Eval  output shape: torch.Size([4, 10])
@@ -1324,7 +1324,7 @@ Gradient was clipped
 
 ### Vanishing Gradients in Deep Networks
 
-While we covered vanishing gradients in RNNs (Part 11), they also affect feedforward networks. In a deep network with sigmoid activations, gradients are multiplied by the sigmoid derivative (max ~0.25) at each layer. With 10+ layers, the gradient reaching the early layers is `0.25^10 ≈ 0.000001` — effectively zero.
+While we covered vanishing gradients in RNNs (Part 11), they also affect feedforward networks. In a deep network with sigmoid activations, gradients are multiplied by the sigmoid derivative (max ~0.25) at each layer. With 10+ layers, the gradient reaching the early layers is `0.25^10 ≈ 0.000001` - effectively zero.
 
 **Modern fixes:**
 
@@ -1340,7 +1340,7 @@ While we covered vanishing gradients in RNNs (Part 11), they also affect feedfor
 y = F(x) + x
 ```
 
-During backpropagation, the gradient flows through both the residual path `F(x)` and the identity shortcut `x`. The identity shortcut has gradient 1 — it doesn't shrink. This allows training networks with 100+ layers.
+During backpropagation, the gradient flows through both the residual path `F(x)` and the identity shortcut `x`. The identity shortcut has gradient 1 - it doesn't shrink. This allows training networks with 100+ layers.
 
 ```python
 # filename: residual_block.py
@@ -1414,8 +1414,8 @@ res_first = list(res_grads.values())[0]
 plain_last  = list(plain_grads.values())[-1]
 res_last  = list(res_grads.values())[-1]
 
-print(f"Gradient norm at first layer — Plain: {plain_first:.6f} | Residual: {res_first:.6f}")
-print(f"Gradient norm at last layer  — Plain: {plain_last:.6f} | Residual: {res_last:.6f}")
+print(f"Gradient norm at first layer - Plain: {plain_first:.6f} | Residual: {res_first:.6f}")
+print(f"Gradient norm at last layer  - Plain: {plain_last:.6f} | Residual: {res_last:.6f}")
 print(f"\nRatio (last/first):")
 print(f"  Plain net:    {plain_last/plain_first:.4f}  (significant vanishing)")
 print(f"  Residual net: {res_last/res_first:.4f}  (healthy gradient flow)")
@@ -1423,8 +1423,8 @@ print(f"  Residual net: {res_last/res_first:.4f}  (healthy gradient flow)")
 
 ```
 # Expected output:
-Gradient norm at first layer — Plain: 0.000234 | Residual: 0.042156
-Gradient norm at last layer  — Plain: 0.041823 | Residual: 0.038941
+Gradient norm at first layer - Plain: 0.000234 | Residual: 0.042156
+Gradient norm at last layer  - Plain: 0.041823 | Residual: 0.038941
 
 Ratio (last/first):
   Plain net:    178.7521  (significant vanishing)
@@ -1698,7 +1698,7 @@ GradScaler mechanics:
 
 ---
 
-## 8. Debugging Training — A Systematic Framework
+## 8. Debugging Training - A Systematic Framework
 
 Training a deep network that doesn't converge is one of the most frustrating experiences in machine learning. Here is a systematic debugging framework.
 
@@ -1709,12 +1709,12 @@ flowchart TD
     C -->|No| D["Architecture bug\nCheck shapes, activations,\nloss function implementation"]
     C -->|Yes| E["Step 2: Check full training\nloss on all data"]
     E --> F{"Training loss\ndecreasing?"}
-    F -->|No — too slow| G["LR too low?\nOptimizer wrong?\nVanishing gradients?"]
-    F -->|No — oscillating| H["LR too high?\nExploding gradients?\nMissing normalization?"]
-    F -->|No — NaN/Inf| I["Add gradient clipping\nReduce LR\nCheck data preprocessing"]
+    F -->|No - too slow| G["LR too low?\nOptimizer wrong?\nVanishing gradients?"]
+    F -->|No - oscillating| H["LR too high?\nExploding gradients?\nMissing normalization?"]
+    F -->|No - NaN/Inf| I["Add gradient clipping\nReduce LR\nCheck data preprocessing"]
     F -->|Yes| J["Step 3: Check validation loss"]
     J --> K{"Val loss\nbehavior?"}
-    K -->|"Higher than train\nbut both decrease"| L["Normal — add more\nregularization if gap large"]
+    K -->|"Higher than train\nbut both decrease"| L["Normal - add more\nregularization if gap large"]
     K -->|"Val loss increasing\ntrain loss decreasing"| M["Overfitting:\nAdd dropout, weight decay,\ndata augmentation, early stop"]
     K -->|"Val loss same\nas train loss"| N["Underfitting:\nMore capacity, less regularization,\nlonger training"]
     K -->|Both plateau early| O["LR too small, increase\nor check data pipeline\nor wrong architecture"]
@@ -1898,7 +1898,7 @@ Layer                           Mean      Std    %Zero     %Sat Status
 
 | Pattern | What It Looks Like | Diagnosis | Fix |
 |---------|-------------------|-----------|-----|
-| Normal | Smooth decrease, val tracks train | Training correctly | — |
+| Normal | Smooth decrease, val tracks train | Training correctly | - |
 | Oscillating | Loss jumps up and down | LR too high | Reduce LR by 5-10x |
 | Plateau early | Loss stops immediately | LR too low, dead neurons, wrong arch | Increase LR, check gradients |
 | NaN/Inf | Loss becomes undefined | Exploding gradients, LR too high | Gradient clipping, reduce LR |
@@ -1975,9 +1975,9 @@ def run_training_diagnostics(model, train_loader, val_loader,
                 print(f"  Expected random loss: {expected_random_loss:.4f}")
                 ratio = loss.item() / expected_random_loss
                 if 0.5 < ratio < 2.0:
-                    print(f"  Loss ratio: {ratio:.2f} — looks reasonable")
+                    print(f"  Loss ratio: {ratio:.2f} - looks reasonable")
                 else:
-                    print(f"  Loss ratio: {ratio:.2f} — WARNING: unusual initial loss")
+                    print(f"  Loss ratio: {ratio:.2f} - WARNING: unusual initial loss")
         except Exception as e:
             print(f"  ERROR in forward pass: {e}")
             return
@@ -2000,9 +2000,9 @@ def run_training_diagnostics(model, train_loader, val_loader,
     print(f"  Any gradient NaN: {any(np.isnan(g) for g in grad_norms)}")
 
     if max(grad_norms) > 10:
-        print("  WARNING: Large gradients detected — consider gradient clipping")
+        print("  WARNING: Large gradients detected - consider gradient clipping")
     if min(grad_norms) < 1e-7 and len(grad_norms) > 1:
-        print("  WARNING: Very small gradients — possible vanishing gradient problem")
+        print("  WARNING: Very small gradients - possible vanishing gradient problem")
 
     # ── Check 4: One batch overfit ───────────────────────────────
     print("\n[4] One-Batch Overfit Test")
@@ -2021,9 +2021,9 @@ def run_training_diagnostics(model, train_loader, val_loader,
     print(f"  Loss at step 50: {losses[-1]:.4f}")
     print(f"  Reduction: {loss_reduction:.1f}%")
     if loss_reduction > 50:
-        print("  Result: PASS — model can learn from data")
+        print("  Result: PASS - model can learn from data")
     else:
-        print("  Result: FAIL — model may have architecture issues")
+        print("  Result: FAIL - model may have architecture issues")
 
     print("\n" + "=" * 60)
 ```
@@ -2431,7 +2431,7 @@ ablation_results = {
     'No cosine schedule':           {'val_acc': 87.91, 'epochs_to_85': 112},
 }
 
-print(f"\n{'Ablation Study — CIFAR-10 ResNet':^60}")
+print(f"\n{'Ablation Study - CIFAR-10 ResNet':^60}")
 print("=" * 60)
 print(f"{'Experiment':<35} {'Val Acc':>9} {'Delta':>8} {'Epochs→85%':>11}")
 print("-" * 60)
@@ -2445,16 +2445,16 @@ for name, result in ablation_results.items():
 
 print("\nDNR = Did Not Reach 85% in 200 epochs")
 print("\nKey findings:")
-print("  1. Batch normalization: -8.3% — the most critical component")
-print("  2. Residual connections: -12.5% — enables deep training")
-print("  3. Data augmentation: -6.8% — essential for CIFAR-10 generalization")
-print("  4. Warmup: -2.4% — important for stable early training")
+print("  1. Batch normalization: -8.3% - the most critical component")
+print("  2. Residual connections: -12.5% - enables deep training")
+print("  3. Data augmentation: -6.8% - essential for CIFAR-10 generalization")
+print("  4. Warmup: -2.4% - important for stable early training")
 print("  5. Mixed precision: ~0% accuracy impact, but 2.5x training speedup")
 ```
 
 ```
 # Expected output:
-        Ablation Study — CIFAR-10 ResNet
+        Ablation Study - CIFAR-10 ResNet
 ============================================================
 Experiment                          Val Acc    Delta  Epochs→85%
 ------------------------------------------------------------
@@ -2474,10 +2474,10 @@ No cosine schedule                   87.91%   -2.80%         112
 DNR = Did Not Reach 85% in 200 epochs
 
 Key findings:
-  1. Batch normalization: -8.3% — the most critical component
-  2. Residual connections: -12.5% — enables deep training
-  3. Data augmentation: -6.8% — essential for CIFAR-10 generalization
-  4. Warmup: -2.4% — important for stable early training
+  1. Batch normalization: -8.3% - the most critical component
+  2. Residual connections: -12.5% - enables deep training
+  3. Data augmentation: -6.8% - essential for CIFAR-10 generalization
+  4. Warmup: -2.4% - important for stable early training
   5. Mixed precision: ~0% accuracy impact, but 2.5x training speedup
 ```
 
@@ -2505,7 +2505,7 @@ graph LR
 | **Loss surface** | The landscape of loss values as a function of all model parameters |
 | **Saddle point** | Point where gradient is zero but is neither a minimum nor maximum |
 | **Flat minimum** | Region of parameter space where loss stays low over a wide area; generalizes better |
-| **SGD** | Stochastic Gradient Descent — update params by subtracting scaled gradient |
+| **SGD** | Stochastic Gradient Descent - update params by subtracting scaled gradient |
 | **Momentum** | Accumulate velocity in gradient direction to smooth optimization path |
 | **Nesterov momentum** | Compute gradient at look-ahead position before applying momentum |
 | **AdaGrad** | Per-parameter adaptive learning rates using cumulative squared gradient |
@@ -2521,7 +2521,7 @@ graph LR
 | **Label smoothing** | Replace one-hot targets with soft distributions to prevent over-confidence |
 | **Gradient clipping** | Cap gradient norm before update to prevent exploding gradients |
 | **Exploding gradient** | Gradient norm grows uncontrollably, destabilizing training |
-| **Dead ReLU** | Neuron that always outputs 0 and has zero gradient — permanently inactive |
+| **Dead ReLU** | Neuron that always outputs 0 and has zero gradient - permanently inactive |
 | **Mixed precision** | Use FP16/BF16 for speed with FP32 for critical accumulations |
 | **GradScaler** | Scales loss to prevent FP16 gradient underflow, unscales before optimizer step |
 | **Early stopping** | Halt training when validation loss stops improving to prevent overfitting |
@@ -2538,14 +2538,14 @@ In **Part 13: Transfer Learning and Fine-Tuning**, we'll take the training skill
 
 We'll cover:
 
-- **Why transfer learning works** — understanding feature hierarchies and what pre-trained networks actually learn
-- **Feature extraction vs fine-tuning** — when to freeze layers and when to unfreeze them
-- **Progressive unfreezing** — the Fastai technique for stable fine-tuning
-- **Discriminative learning rates** — use different LRs for different layers
-- **Domain adaptation** — handling distribution shift between source and target domains
-- **Practical recipes for vision** — fine-tuning ResNet, EfficientNet, ViT on custom datasets
-- **Practical recipes for NLP** — fine-tuning BERT, RoBERTa, and GPT-style models
-- **Catastrophic forgetting** — and how to avoid it
+- **Why transfer learning works** - understanding feature hierarchies and what pre-trained networks actually learn
+- **Feature extraction vs fine-tuning** - when to freeze layers and when to unfreeze them
+- **Progressive unfreezing** - the Fastai technique for stable fine-tuning
+- **Discriminative learning rates** - use different LRs for different layers
+- **Domain adaptation** - handling distribution shift between source and target domains
+- **Practical recipes for vision** - fine-tuning ResNet, EfficientNet, ViT on custom datasets
+- **Practical recipes for NLP** - fine-tuning BERT, RoBERTa, and GPT-style models
+- **Catastrophic forgetting** - and how to avoid it
 
 The key insight: in 2024, almost no one trains large models from scratch. Transfer learning is the default. Part 13 will make you dangerous with pre-trained models.
 
@@ -2555,31 +2555,31 @@ The key insight: in 2024, almost no one trains large models from scratch. Transf
 
 This part covered the complete toolkit for making deep networks train reliably:
 
-1. **Optimization landscape** — ravines, plateaus, saddle points; why flat minima generalize better
+1. **Optimization landscape** - ravines, plateaus, saddle points; why flat minima generalize better
 
-2. **SGD variants** — vanilla SGD, momentum (velocity accumulation), Nesterov (look-ahead gradient)
+2. **SGD variants** - vanilla SGD, momentum (velocity accumulation), Nesterov (look-ahead gradient)
 
-3. **Adaptive optimizers** — AdaGrad (cumulative), RMSprop (decaying), Adam (momentum + RMSprop + bias correction), AdamW (decoupled weight decay)
+3. **Adaptive optimizers** - AdaGrad (cumulative), RMSprop (decaying), Adam (momentum + RMSprop + bias correction), AdamW (decoupled weight decay)
 
-4. **LR scheduling** — step decay, cosine annealing, warmup, one-cycle policy, ReduceLROnPlateau
+4. **LR scheduling** - step decay, cosine annealing, warmup, one-cycle policy, ReduceLROnPlateau
 
-5. **Regularization toolkit** — L1/L2 weight decay, dropout (inverted), BatchNorm, LayerNorm, early stopping, label smoothing
+5. **Regularization toolkit** - L1/L2 weight decay, dropout (inverted), BatchNorm, LayerNorm, early stopping, label smoothing
 
-6. **Gradient issues** — exploding (gradient clipping), vanishing (residual connections), monitoring with hooks
+6. **Gradient issues** - exploding (gradient clipping), vanishing (residual connections), monitoring with hooks
 
-7. **Mixed precision** — FP16/BF16, PyTorch AMP, GradScaler for numerical stability
+7. **Mixed precision** - FP16/BF16, PyTorch AMP, GradScaler for numerical stability
 
-8. **Debugging framework** — systematic flowchart: overfit one batch first, check gradients, check activations, analyze loss curves
+8. **Debugging framework** - systematic flowchart: overfit one batch first, check gradients, check activations, analyze loss curves
 
-9. **Failure mode diagnosis** — NaN loss, no decrease, oscillation, overfitting/underfitting patterns
+9. **Failure mode diagnosis** - NaN loss, no decrease, oscillation, overfitting/underfitting patterns
 
-10. **Project: CIFAR-10 ResNet** — all techniques together, 90%+ accuracy, ablation study showing each component's value
+10. **Project: CIFAR-10 ResNet** - all techniques together, 90%+ accuracy, ablation study showing each component's value
 
 The craft of training deep networks is about knowing which tools to reach for and when. With this part's toolkit, you have everything needed to diagnose and fix training problems systematically rather than through random hyperparameter searches.
 
 ---
 
-*Part 12 of 19 — Machine Learning: A Developer's Deep Dive from Fundamentals to Production*
+*Part 12 of 19 - Machine Learning: A Developer's Deep Dive from Fundamentals to Production*
 
-*Previous: [Part 11 — Sequence Models: RNNs and LSTMs](ml-deep-dive-part-11.md)*
-*Next: [Part 13 — Transfer Learning and Fine-Tuning](ml-deep-dive-part-13.md)*
+*Previous: [Part 11 - Sequence Models: RNNs and LSTMs](ml-deep-dive-part-11.md)*
+*Next: [Part 13 - Transfer Learning and Fine-Tuning](ml-deep-dive-part-13.md)*

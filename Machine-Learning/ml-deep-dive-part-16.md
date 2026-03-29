@@ -1,8 +1,8 @@
-# Machine Learning Deep Dive — Part 16: Model Evaluation and Selection — Beyond Accuracy
+# Machine Learning Deep Dive - Part 16: Model Evaluation and Selection - Beyond Accuracy
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
 **Part:** 16 of 19 (Applied ML)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~55 minutes
@@ -11,16 +11,16 @@
 
 ## Recap: Part 15
 
-In Part 15 we went deep into advanced computer vision — building object detection pipelines with YOLO and Faster R-CNN, implementing anchor-based and anchor-free detection heads, and exploring Generative Adversarial Networks from DCGAN to StyleGAN. We trained models that could see, locate, and even generate images indistinguishable from real ones.
+In Part 15 we went deep into advanced computer vision - building object detection pipelines with YOLO and Faster R-CNN, implementing anchor-based and anchor-free detection heads, and exploring Generative Adversarial Networks from DCGAN to StyleGAN. We trained models that could see, locate, and even generate images indistinguishable from real ones.
 
-You've trained models. But how do you know if they're actually good? "It got 95% accuracy" is almost never the right answer. Model evaluation is the science of actually measuring what matters — and it's full of traps that have led to production disasters, biased systems, and wasted engineering effort.
+You've trained models. But how do you know if they're actually good? "It got 95% accuracy" is almost never the right answer. Model evaluation is the science of actually measuring what matters - and it's full of traps that have led to production disasters, biased systems, and wasted engineering effort.
 
 ---
 
 ## Table of Contents
 
 1. [The Evaluation Mindset](#1-the-evaluation-mindset)
-2. [Cross-Validation — Deep Dive](#2-cross-validation--deep-dive)
+2. [Cross-Validation - Deep Dive](#2-cross-validation--deep-dive)
 3. [The Full Classification Metrics Zoo](#3-the-full-classification-metrics-zoo)
 4. [Regression Metrics Deep Dive](#4-regression-metrics-deep-dive)
 5. [Model Calibration](#5-model-calibration)
@@ -36,7 +36,7 @@ You've trained models. But how do you know if they're actually good? "It got 95%
 
 ### Goodhart's Law
 
-> "When a measure becomes a target, it ceases to be a good measure." — Charles Goodhart, 1975
+> "When a measure becomes a target, it ceases to be a good measure." - Charles Goodhart, 1975
 
 This law is the foundation of every ML evaluation failure you will ever encounter. The moment your team decides "we optimize for metric X," the model will find every shortcut available to maximize X that has nothing to do with the actual goal.
 
@@ -75,7 +75,7 @@ flowchart TD
     style G fill:#51cf66
 ```
 
-### Train / Validation / Test Split — Why the Split Matters
+### Train / Validation / Test Split - Why the Split Matters
 
 The **three-way split** is non-negotiable in serious ML work:
 
@@ -85,7 +85,7 @@ The **three-way split** is non-negotiable in serious ML work:
 | **Validation set** | Tune hyperparameters, select model | 10-20% |
 | **Test set** | Final unbiased performance estimate | 10-20% |
 
-The critical rule: **the test set is touched exactly once**. The moment you make any decision based on test set performance — including "this threshold looks better" — you have contaminated it. It is no longer an unbiased estimate.
+The critical rule: **the test set is touched exactly once**. The moment you make any decision based on test set performance - including "this threshold looks better" - you have contaminated it. It is no longer an unbiased estimate.
 
 ```python
 # file: split_strategy.py
@@ -143,7 +143,7 @@ Test positive rate: 0.500
 
 There are two primary forms:
 
-**1. Target Leakage** — A feature is derived from or correlated with the target in a way that would not be available at prediction time.
+**1. Target Leakage** - A feature is derived from or correlated with the target in a way that would not be available at prediction time.
 
 ```python
 # file: leakage_demo.py
@@ -165,7 +165,7 @@ df = pd.DataFrame({
 # True target: default based on debt ratio
 df['defaulted'] = (df['debt_ratio'] > 0.6).astype(int)
 
-# LEAKY feature: "account_closed" — happens AFTER default
+# LEAKY feature: "account_closed" - happens AFTER default
 df['account_closed'] = df['defaulted'].copy()
 # Add some noise to make it less obvious
 noise_mask = np.random.random(n) < 0.05
@@ -199,7 +199,7 @@ Leakage inflation: +0.124 AUC
 (This model would fail catastrophically in production)
 ```
 
-**2. Pipeline Leakage** — Preprocessing (scaling, imputation, feature selection) is fitted on the full dataset before splitting.
+**2. Pipeline Leakage** - Preprocessing (scaling, imputation, feature selection) is fitted on the full dataset before splitting.
 
 ```python
 # file: pipeline_leakage.py
@@ -271,9 +271,9 @@ Leakage inflation: +0.190
 
 ---
 
-## 2. Cross-Validation — Deep Dive
+## 2. Cross-Validation - Deep Dive
 
-A single train/test split is a noisy estimate of model performance. The estimate depends heavily on which samples ended up in which split — pure chance. **Cross-validation** uses multiple splits to get a more stable, less biased estimate.
+A single train/test split is a noisy estimate of model performance. The estimate depends heavily on which samples ended up in which split - pure chance. **Cross-validation** uses multiple splits to get a more stable, less biased estimate.
 
 ### Why Train/Test Split Alone is Insufficient
 
@@ -300,7 +300,7 @@ scores = np.array(scores)
 print(f"Single split scores: {[f'{s:.3f}' for s in scores]}")
 print(f"Mean:  {scores.mean():.3f}")
 print(f"Std:   {scores.std():.3f}")
-print(f"Range: {scores.min():.3f} — {scores.max():.3f}")
+print(f"Range: {scores.min():.3f} - {scores.max():.3f}")
 print(f"\nThe best split overstates performance by +{scores.max() - scores.mean():.3f}")
 print(f"The worst split understates performance by -{scores.mean() - scores.min():.3f}")
 ```
@@ -310,7 +310,7 @@ print(f"The worst split understates performance by -{scores.mean() - scores.min(
 Single split scores: ['0.830', '0.860', '0.810', '0.840', '0.820', ...]
 Mean:  0.832
 Std:   0.019
-Range: 0.790 — 0.870
+Range: 0.790 - 0.870
 
 The best split overstates performance by +0.038
 The worst split understates performance by -0.042
@@ -416,16 +416,16 @@ X, y = make_classification(
 print(f"Overall positive rate: {y.mean():.3f}")
 print()
 
-# Standard KFold — class distribution varies
-print("Standard KFold — positive rate per fold:")
+# Standard KFold - class distribution varies
+print("Standard KFold - positive rate per fold:")
 kf = KFold(n_splits=5, shuffle=True, random_state=42)
 for fold, (_, val_idx) in enumerate(kf.split(X)):
     print(f"  Fold {fold+1}: {y[val_idx].mean():.3f}")
 
 print()
 
-# Stratified KFold — consistent distribution
-print("Stratified KFold — positive rate per fold:")
+# Stratified KFold - consistent distribution
+print("Stratified KFold - positive rate per fold:")
 skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 for fold, (_, val_idx) in enumerate(skf.split(X, y)):
     print(f"  Fold {fold+1}: {y[val_idx].mean():.3f}")
@@ -435,14 +435,14 @@ for fold, (_, val_idx) in enumerate(skf.split(X, y)):
 ```
 Overall positive rate: 0.050
 
-Standard KFold — positive rate per fold:
+Standard KFold - positive rate per fold:
   Fold 1: 0.060
   Fold 2: 0.045
   Fold 3: 0.030
   Fold 4: 0.065
   Fold 5: 0.050
 
-Stratified KFold — positive rate per fold:
+Stratified KFold - positive rate per fold:
   Fold 1: 0.050
   Fold 2: 0.050
   Fold 3: 0.050
@@ -452,7 +452,7 @@ Stratified KFold — positive rate per fold:
 
 ### Time Series CV: No Peeking at the Future
 
-Standard k-Fold shuffles data, which is catastrophically wrong for time series — it allows the model to be trained on future data to predict the past. **TimeSeriesSplit** enforces that training data always precedes validation data.
+Standard k-Fold shuffles data, which is catastrophically wrong for time series - it allows the model to be trained on future data to predict the past. **TimeSeriesSplit** enforces that training data always precedes validation data.
 
 ```python
 # file: timeseries_cv.py
@@ -533,7 +533,7 @@ param_grid = {'C': [0.1, 1, 10], 'gamma': ['scale', 'auto']}
 inner_cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
 clf = GridSearchCV(SVC(), param_grid, cv=inner_cv, scoring='accuracy')
-# Reporting score from GridSearchCV's best_score_ is WRONG — it's biased
+# Reporting score from GridSearchCV's best_score_ is WRONG - it's biased
 clf.fit(X, y)
 print(f"Wrong approach (biased): {clf.best_score_:.3f}")
 print(f"Best params: {clf.best_params_}")
@@ -639,12 +639,12 @@ specificity = tn / (tn + fp)   # TNR
 f1          = 2 * precision * recall / (precision + recall)
 fpr         = fp / (fp + tn)   # False Positive Rate
 
-print(f"Accuracy:    {accuracy:.4f}  — correct out of all")
-print(f"Precision:   {precision:.4f}  — correct out of predicted positive")
-print(f"Recall:      {recall:.4f}  — correct out of actual positive")
-print(f"Specificity: {specificity:.4f}  — correct out of actual negative")
-print(f"F1 Score:    {f1:.4f}  — harmonic mean of P and R")
-print(f"FPR:         {fpr:.4f}  — false alarm rate")
+print(f"Accuracy:    {accuracy:.4f}  - correct out of all")
+print(f"Precision:   {precision:.4f}  - correct out of predicted positive")
+print(f"Recall:      {recall:.4f}  - correct out of actual positive")
+print(f"Specificity: {specificity:.4f}  - correct out of actual negative")
+print(f"F1 Score:    {f1:.4f}  - harmonic mean of P and R")
+print(f"FPR:         {fpr:.4f}  - false alarm rate")
 ```
 
 **Expected output:**
@@ -728,7 +728,7 @@ MCC formula check: 0.949
 
 ### ROC-AUC: Implement from Scratch
 
-**ROC-AUC** (Receiver Operating Characteristic — Area Under Curve) measures the model's ability to discriminate between classes across all possible thresholds.
+**ROC-AUC** (Receiver Operating Characteristic - Area Under Curve) measures the model's ability to discriminate between classes across all possible thresholds.
 
 ```python
 # file: roc_auc_from_scratch.py
@@ -788,7 +788,7 @@ for name, m in models.items():
 plt.plot([0,1],[0,1],'k--', label='Random (AUC=0.500)')
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('ROC Curves — Comparison')
+plt.title('ROC Curves - Comparison')
 plt.legend()
 plt.tight_layout()
 plt.savefig('roc_curves.png', dpi=120)
@@ -806,7 +806,7 @@ ROC curves saved to roc_curves.png
 
 ### Precision-Recall AUC (Better for Imbalanced Data)
 
-> When positive class is rare, PR-AUC is more informative than ROC-AUC. A naive classifier that predicts all negatives achieves ROC-AUC of 0.5 but PR-AUC near 0 — correctly reflecting its uselessness.
+> When positive class is rare, PR-AUC is more informative than ROC-AUC. A naive classifier that predicts all negatives achieves ROC-AUC of 0.5 but PR-AUC near 0 - correctly reflecting its uselessness.
 
 ```python
 # file: pr_auc_demo.py
@@ -1101,8 +1101,8 @@ SMAPE gives symmetric treatment: 66.7% both ways
 | **MAE** | mean(|y-ŷ|) | 0-∞ | No | Yes (same units) |
 | **MSE** | mean((y-ŷ)²) | 0-∞ | Yes (squares errors) | No |
 | **RMSE** | √MSE | 0-∞ | Yes | Yes (same units) |
-| **MAPE** | mean(|y-ŷ|/|y|)·100 | 0-∞ | No | Yes (%) — but asymmetric |
-| **SMAPE** | mean(2|y-ŷ|/(|y|+|ŷ|))·100 | 0-200% | No | Yes (%) — symmetric |
+| **MAPE** | mean(|y-ŷ|/|y|)·100 | 0-∞ | No | Yes (%) - but asymmetric |
+| **SMAPE** | mean(2|y-ŷ|/(|y|+|ŷ|))·100 | 0-200% | No | Yes (%) - symmetric |
 | **R²** | 1 - SS_res/SS_tot | -∞ to 1 | Yes | Yes (explained variance) |
 | **Huber** | L1 for large |r|, L2 for small | 0-∞ | Robust | Moderate |
 
@@ -1110,7 +1110,7 @@ SMAPE gives symmetric treatment: 66.7% both ways
 
 ## 5. Model Calibration
 
-A model that says "80% probability of default" should be right 80% of the time. Most models are not calibrated by default — especially tree-based ensembles.
+A model that says "80% probability of default" should be right 80% of the time. Most models are not calibrated by default - especially tree-based ensembles.
 
 ### Reliability Diagrams
 
@@ -1216,7 +1216,7 @@ Calibration curves saved to calibration_curves.png
 | **Temperature Scaling** | Single parameter T scales logits | Neural networks | Only adjusts confidence, not order |
 | **Beta Calibration** | Beta distribution mapping | General purpose | More complex |
 
-> Business Impact: A loan model that outputs 0.7 probability but is actually right only 55% of the time will cause credit risk departments to extend too much credit. Calibration isn't academic — it directly affects business decisions made from model outputs.
+> Business Impact: A loan model that outputs 0.7 probability but is actually right only 55% of the time will cause credit risk departments to extend too much credit. Calibration isn't academic - it directly affects business decisions made from model outputs.
 
 ---
 
@@ -1237,7 +1237,7 @@ from sklearn.model_selection import StratifiedKFold, cross_val_predict
 def mcnemar_test(y_true, y_pred_a, y_pred_b):
     """
     McNemar's test: are two classifiers significantly different?
-    Tests on matched pairs — same test samples.
+    Tests on matched pairs - same test samples.
     """
     # Contingency table
     # b = A correct, B wrong
@@ -1372,7 +1372,7 @@ If two models' CIs don't overlap, they're significantly different
 
 ## 7. Fairness and Bias Evaluation
 
-A model can be technically accurate while being systematically discriminatory. This is not a hypothetical concern — facial recognition systems, loan approval models, and hiring tools have all demonstrated measurable bias.
+A model can be technically accurate while being systematically discriminatory. This is not a hypothetical concern - facial recognition systems, loan approval models, and hiring tools have all demonstrated measurable bias.
 
 ### Fairness Metrics
 
@@ -1723,7 +1723,7 @@ plt.savefig('pdp_ice_plots.png', dpi=100)
 print("PDP + ICE plots saved to pdp_ice_plots.png")
 print()
 print("PDP shows average effect of a feature across all samples")
-print("ICE lines show heterogeneous effects — when they cross,")
+print("ICE lines show heterogeneous effects - when they cross,")
 print("there's an interaction between the feature and other features")
 ```
 
@@ -1857,7 +1857,7 @@ X, y = make_classification(
 cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
 
 def objective(trial):
-    """Optuna objective function — returns metric to minimize."""
+    """Optuna objective function - returns metric to minimize."""
 
     # Define hyperparameter search space
     params = {
@@ -2092,7 +2092,7 @@ class EvaluationSuite:
         X : array-like, shape (n_samples, n_features)
         y : array-like, shape (n_samples,)
         feature_names : list of str, optional
-        protected_attr : array-like, optional — for fairness evaluation
+        protected_attr : array-like, optional - for fairness evaluation
         """
         task = self._detect_task(y)
         cv   = self._get_cv(task, y)
@@ -2309,7 +2309,7 @@ for model_name, model in classification_models.items():
     print('='*50)
     suite = EvaluationSuite(model, task='classification', n_splits=5)
 
-    # Note: SHAP may not work with Pipeline — skip for non-tree models
+    # Note: SHAP may not work with Pipeline - skip for non-tree models
     report = suite.evaluate(
         X_cls, y_cls,
         feature_names=feature_names,
@@ -2474,24 +2474,24 @@ flowchart TD
 | **Data Leakage** | Future or target-derived information contaminating training data |
 | **Nested CV** | Outer CV for evaluation, inner CV for hyperparameter selection |
 | **Stratified k-Fold** | CV preserving class distribution in each fold |
-| **MCC** | Matthews Correlation Coefficient — single-number binary classification quality |
+| **MCC** | Matthews Correlation Coefficient - single-number binary classification quality |
 | **ROC-AUC** | Area under Receiver Operating Characteristic curve |
-| **PR-AUC** | Area under Precision-Recall curve — better for imbalanced problems |
+| **PR-AUC** | Area under Precision-Recall curve - better for imbalanced problems |
 | **Calibration** | Whether predicted probabilities match actual frequencies |
 | **Platt Scaling** | Logistic regression post-hoc calibration |
 | **Brier Score** | Mean squared error between probabilities and outcomes |
 | **McNemar's Test** | Statistical test for comparing two classifiers on paired data |
 | **Disparate Impact** | Ratio of positive prediction rates across demographic groups |
-| **SHAP** | SHapley Additive exPlanations — game-theoretic feature attribution |
+| **SHAP** | SHapley Additive exPlanations - game-theoretic feature attribution |
 | **LIME** | Local Interpretable Model-Agnostic Explanations |
-| **PDP** | Partial Dependence Plot — marginal effect of a feature |
-| **ICE Plot** | Individual Conditional Expectation — per-sample PDPs |
+| **PDP** | Partial Dependence Plot - marginal effect of a feature |
+| **ICE Plot** | Individual Conditional Expectation - per-sample PDPs |
 | **Permutation Importance** | Feature importance via random shuffling |
 | **Grid Search** | Exhaustive search over hyperparameter grid |
 | **Random Search** | Random sampling of hyperparameter space |
 | **Bayesian Optimization** | Surrogate model-guided hyperparameter search |
 | **Optuna** | Python HPO framework using TPE sampler |
-| **TPE** | Tree-structured Parzen Estimator — Bayesian HPO algorithm |
+| **TPE** | Tree-structured Parzen Estimator - Bayesian HPO algorithm |
 | **SMAPE** | Symmetric Mean Absolute Percentage Error |
 | **Fairness** | Equitable model behavior across demographic groups |
 | **Equalized Odds** | Equal TPR and FPR across protected groups |
@@ -2510,7 +2510,7 @@ In **Part 17: ML System Design**, we move from evaluating models in notebooks to
 - **Feedback Loops**: Online learning, retraining pipelines
 - **ML Platform Design**: End-to-end MLOps with MLflow, Feast, and BentoML
 
-The skills from this article — choosing the right metrics, understanding calibration, detecting bias, and running statistically sound comparisons — are the foundation for making production deployment decisions with confidence.
+The skills from this article - choosing the right metrics, understanding calibration, detecting bias, and running statistically sound comparisons - are the foundation for making production deployment decisions with confidence.
 
 ---
 
@@ -2519,7 +2519,7 @@ The skills from this article — choosing the right metrics, understanding calib
 You now have a complete toolkit for going beyond "95% accuracy":
 
 1. **The Evaluation Mindset**: Goodhart's Law, metric alignment, and data leakage as the silent killer
-2. **Cross-Validation**: k-Fold, stratified, time-series, group, and nested CV — when to use each
+2. **Cross-Validation**: k-Fold, stratified, time-series, group, and nested CV - when to use each
 3. **Classification Metrics**: The full zoo from accuracy to MCC to PR-AUC, with when-to-use guidance
 4. **Regression Metrics**: MAE/RMSE/R² plus MAPE traps and SMAPE solutions
 5. **Calibration**: Reliability diagrams, Platt scaling, isotonic regression
@@ -2529,7 +2529,7 @@ You now have a complete toolkit for going beyond "95% accuracy":
 9. **HPO**: Grid, random, and Bayesian optimization with Optuna
 10. **EvaluationSuite**: A production-grade framework tying it all together
 
-The difference between a data scientist and an ML engineer is not the ability to train models — it's the discipline to evaluate them honestly.
+The difference between a data scientist and an ML engineer is not the ability to train models - it's the discipline to evaluate them honestly.
 
 ---
 

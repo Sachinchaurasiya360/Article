@@ -1,8 +1,8 @@
-# Machine Learning Deep Dive — Part 4: Trees and Forests — Decision Trees, Random Forests, and Ensemble Methods
+# Machine Learning Deep Dive - Part 4: Trees and Forests - Decision Trees, Random Forests, and Ensemble Methods
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
 **Part:** 4 of 19 (Core Algorithms)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~50 minutes
@@ -11,16 +11,16 @@
 
 ## Recap: Where We Left Off
 
-In Part 3, we tackled the world of classification — teaching machines to sort data into discrete categories. We implemented **logistic regression** from scratch, explored the sigmoid function, and built a solid understanding of evaluation metrics like precision, recall, F1-score, and the ROC-AUC curve. We saw how a linear decision boundary, while elegant, has fundamental limitations when data isn't linearly separable.
+In Part 3, we tackled the world of classification - teaching machines to sort data into discrete categories. We implemented **logistic regression** from scratch, explored the sigmoid function, and built a solid understanding of evaluation metrics like precision, recall, F1-score, and the ROC-AUC curve. We saw how a linear decision boundary, while elegant, has fundamental limitations when data isn't linearly separable.
 
-That limitation leads us directly to today's topic. Decision trees are the algorithm that thinks like humans — a series of yes/no questions to arrive at a prediction. And when you combine thousands of them, you get one of the most powerful algorithms in production ML today.
+That limitation leads us directly to today's topic. Decision trees are the algorithm that thinks like humans - a series of yes/no questions to arrive at a prediction. And when you combine thousands of them, you get one of the most powerful algorithms in production ML today.
 
 ---
 
 ## Table of Contents
 
 1. [Decision Trees Intuition](#1-decision-trees-intuition)
-2. [Splitting Criteria — Implement from Scratch](#2-splitting-criteria--implement-from-scratch)
+2. [Splitting Criteria - Implement from Scratch](#2-splitting-criteria--implement-from-scratch)
 3. [Building a Decision Tree from Scratch](#3-building-a-decision-tree-from-scratch)
 4. [Overfitting in Trees](#4-overfitting-in-trees)
 5. [Random Forests](#5-random-forests)
@@ -38,11 +38,11 @@ That limitation leads us directly to today's topic. Decision trees are the algor
 
 ### The 20 Questions Game
 
-You have almost certainly played 20 Questions. One person thinks of something, and the other asks up to 20 yes/no questions to guess what it is. A clever player doesn't ask random questions — they ask questions that eliminate the largest possible portion of remaining possibilities first.
+You have almost certainly played 20 Questions. One person thinks of something, and the other asks up to 20 yes/no questions to guess what it is. A clever player doesn't ask random questions - they ask questions that eliminate the largest possible portion of remaining possibilities first.
 
-"Is it alive?" — eliminates half the universe.
-"Is it an animal?" — eliminates half again.
-"Does it have four legs?" — narrows further.
+"Is it alive?" - eliminates half the universe.
+"Is it an animal?" - eliminates half again.
+"Does it have four legs?" - narrows further.
 
 This is **exactly** how a decision tree works. Given a dataset, the algorithm asks a sequence of binary questions about feature values, routing each data point down a path until it reaches a final answer. The machine's job is to figure out which questions are most informative, in what order to ask them, and when to stop.
 
@@ -70,9 +70,9 @@ This recursive structure is the essence of a decision tree.
 
 A decision tree has three types of nodes:
 
-- **Root Node**: The very first split — the single most informative question for the entire dataset. Every data point passes through this node.
+- **Root Node**: The very first split - the single most informative question for the entire dataset. Every data point passes through this node.
 - **Decision Nodes** (Internal Nodes): Intermediate splits that further subdivide the data. Each has exactly two children (for binary trees).
-- **Leaf Nodes** (Terminal Nodes): The endpoints where predictions are made. A leaf node contains no further splits — just a class label (for classification) or a numeric value (for regression).
+- **Leaf Nodes** (Terminal Nodes): The endpoints where predictions are made. A leaf node contains no further splits - just a class label (for classification) or a numeric value (for regression).
 
 ```mermaid
 graph TD
@@ -196,11 +196,11 @@ print("Plot saved: decision_boundary_comparison.png")
 # At depth=10: jagged boundary (overfitting visible)
 ```
 
-> **Key Insight**: Notice how the decision boundary becomes increasingly jagged as depth increases. At depth=10, the tree is memorizing the training data — a perfect illustration of the bias-variance tradeoff in action.
+> **Key Insight**: Notice how the decision boundary becomes increasingly jagged as depth increases. At depth=10, the tree is memorizing the training data - a perfect illustration of the bias-variance tradeoff in action.
 
 ---
 
-## 2. Splitting Criteria — Implement from Scratch
+## 2. Splitting Criteria - Implement from Scratch
 
 The heart of a decision tree is the question: **which split is best?** We need a mathematical measure of "goodness" for each possible split. The three most important criteria are **Entropy**, **Gini Impurity**, and **Variance Reduction** (for regression).
 
@@ -210,7 +210,7 @@ The heart of a decision tree is the question: **which split is best?** We need a
 
 $$H(S) = -\sum_{i=1}^{C} p_i \log_2(p_i)$$
 
-Entropy is zero when all samples belong to one class (perfectly pure — no uncertainty). It's maximized when classes are equally distributed (maximum uncertainty).
+Entropy is zero when all samples belong to one class (perfectly pure - no uncertainty). It's maximized when classes are equally distributed (maximum uncertainty).
 
 - A node with 100% class A: $H = -(1.0 \cdot \log_2 1.0) = 0$ (pure)
 - A node with 50% A, 50% B: $H = -(0.5 \cdot \log_2 0.5 + 0.5 \cdot \log_2 0.5) = 1.0$ (maximum impurity)
@@ -220,7 +220,7 @@ Entropy is zero when all samples belong to one class (perfectly pure — no unce
 
 $$IG(S, \text{split}) = H(S) - \sum_{v \in \text{values}} \frac{|S_v|}{|S|} \cdot H(S_v)$$
 
-We want to maximize information gain — pick the split that creates the most homogeneous child nodes.
+We want to maximize information gain - pick the split that creates the most homogeneous child nodes.
 
 ```python
 # file: entropy_from_scratch.py
@@ -455,7 +455,7 @@ print(f"Variance Reduction: {vr:.2f}")
 | **Variance** | $\text{Var}(y)$ | [0, ∞) | Regression trees | Continuous target variables |
 | **MAE** | Mean absolute error | [0, ∞) | Some regression trees | Robust to outliers |
 
-> **Key Insight**: Entropy and Gini tend to give very similar splits in practice. The main advantage of Gini is that it avoids the logarithm computation, making it faster — especially important when evaluating millions of candidate splits on large datasets.
+> **Key Insight**: Entropy and Gini tend to give very similar splits in practice. The main advantage of Gini is that it avoids the logarithm computation, making it faster - especially important when evaluating millions of candidate splits on large datasets.
 
 ### 2.5 Finding the Best Split: Full Algorithm
 
@@ -555,12 +555,12 @@ print(f"Gini gain achieved:  {gain:.4f}")
 
 ## 3. Building a Decision Tree from Scratch
 
-Now we'll build a complete, functional decision tree classifier. This is one of the most educational exercises in ML — it forces you to understand every single detail.
+Now we'll build a complete, functional decision tree classifier. This is one of the most educational exercises in ML - it forces you to understand every single detail.
 
 ### 3.1 The Node Class
 
 ```python
-# file: decision_tree_scratch.py — Part 1: Node Structure
+# file: decision_tree_scratch.py - Part 1: Node Structure
 import numpy as np
 from collections import Counter
 
@@ -603,7 +603,7 @@ class TreeNode:
 ### 3.2 The Full DecisionTreeClassifier
 
 ```python
-# file: decision_tree_scratch.py — Part 2: Full Classifier
+# file: decision_tree_scratch.py - Part 2: Full Classifier
 # (continued from Part 1)
 
 class DecisionTreeClassifier:
@@ -966,7 +966,7 @@ graph TD
 
 ### The Curse of Unlimited Depth
 
-A fully grown decision tree (with no depth limit) will keep splitting until every leaf is pure — meaning it will perfectly memorize every training sample. This is a textbook case of **overfitting**: the model fits the noise in the training data, not the underlying pattern.
+A fully grown decision tree (with no depth limit) will keep splitting until every leaf is pure - meaning it will perfectly memorize every training sample. This is a textbook case of **overfitting**: the model fits the noise in the training data, not the underlying pattern.
 
 ```python
 # file: overfitting_demonstration.py
@@ -1092,23 +1092,23 @@ for cfg in configs:
 # Combined                  |   0.8800 |   0.8367 |      6 |      28
 ```
 
-> **Key Insight**: The "Combined" configuration shows that tuning multiple parameters together often outperforms tuning any single parameter. The sweet spot is where test accuracy peaks — typically well before the training accuracy plateau.
+> **Key Insight**: The "Combined" configuration shows that tuning multiple parameters together often outperforms tuning any single parameter. The sweet spot is where test accuracy peaks - typically well before the training accuracy plateau.
 
 ---
 
 ## 5. Random Forests
 
-A single decision tree is fragile. It's highly sensitive to the exact training data — change a few points, and the tree structure can change dramatically. **Random Forests** solve this through the power of democracy: train many trees on different versions of the data, then let them vote.
+A single decision tree is fragile. It's highly sensitive to the exact training data - change a few points, and the tree structure can change dramatically. **Random Forests** solve this through the power of democracy: train many trees on different versions of the data, then let them vote.
 
 ### 5.1 Bagging (Bootstrap Aggregating)
 
 **Bagging** is the core technique behind Random Forests. Here's the process:
 
-1. From a training set of $n$ samples, create $B$ **bootstrap samples** — each of size $n$, drawn with replacement.
+1. From a training set of $n$ samples, create $B$ **bootstrap samples** - each of size $n$, drawn with replacement.
 2. Train one decision tree on each bootstrap sample.
 3. For prediction, aggregate all trees (majority vote for classification, mean for regression).
 
-Because each bootstrap sample is drawn with replacement, roughly 63.2% of original samples appear in each bootstrap sample. The remaining ~36.8% are the **out-of-bag (OOB) samples** — a free validation set!
+Because each bootstrap sample is drawn with replacement, roughly 63.2% of original samples appear in each bootstrap sample. The remaining ~36.8% are the **out-of-bag (OOB) samples** - a free validation set!
 
 ```mermaid
 graph LR
@@ -1145,12 +1145,12 @@ graph LR
 
 ### 5.2 Feature Subsampling
 
-The second key ingredient: at each split, only a **random subset of features** is considered. This is what makes the trees in a Random Forest genuinely different from each other — even with the same bootstrap sample, different features are available at each node.
+The second key ingredient: at each split, only a **random subset of features** is considered. This is what makes the trees in a Random Forest genuinely different from each other - even with the same bootstrap sample, different features are available at each node.
 
 - Classification: typically use $\sqrt{n\_features}$ features per split
 - Regression: typically use $n\_features / 3$ features per split
 
-This deliberately injects noise, but the noise is actually beneficial — it prevents all trees from being dominated by the same strong features, creating a more diverse ensemble.
+This deliberately injects noise, but the noise is actually beneficial - it prevents all trees from being dominated by the same strong features, creating a more diverse ensemble.
 
 ### 5.3 Why Averaging Reduces Variance
 
@@ -1164,7 +1164,7 @@ $$\text{Var}(\bar{f}) = \rho \sigma^2 + \frac{1-\rho}{B} \sigma^2$$
 
 As $B \to \infty$, the second term vanishes. The remaining variance $\rho \sigma^2$ depends only on correlation between trees. By using feature subsampling, we reduce $\rho$, directly reducing the ensemble's variance.
 
-> **Key Insight**: Random Forests don't reduce bias (each tree is still potentially overfit), they reduce variance. This is why they work so well — trees have low bias but high variance, and averaging reduces that variance dramatically.
+> **Key Insight**: Random Forests don't reduce bias (each tree is still potentially overfit), they reduce variance. This is why they work so well - trees have low bias but high variance, and averaging reduces that variance dramatically.
 
 ### 5.4 RandomForest from Scratch
 
@@ -1376,7 +1376,7 @@ print(f"RF (sklearn) OOB Score: {rf_sklearn.oob_score_:.4f}")
 
 ## 6. Feature Importance
 
-One of the most practically valuable outputs of tree-based models is **feature importance** — which input variables actually drive the predictions?
+One of the most practically valuable outputs of tree-based models is **feature importance** - which input variables actually drive the predictions?
 
 ### 6.1 Impurity-Based (Mean Decrease Impurity)
 
@@ -1543,7 +1543,7 @@ flowchart TD
 
 ## 7. Gradient Boosting
 
-While Random Forests train trees in **parallel** (independent of each other), **Gradient Boosting** trains trees **sequentially** — each new tree corrects the errors of all previous trees combined.
+While Random Forests train trees in **parallel** (independent of each other), **Gradient Boosting** trains trees **sequentially** - each new tree corrects the errors of all previous trees combined.
 
 ### 7.1 Bagging vs Boosting
 
@@ -1575,7 +1575,7 @@ graph LR
 
 **AdaBoost** (Adaptive Boosting) was one of the first practical boosting algorithms. It works by:
 
-1. Train a weak learner (usually a shallow tree — a "stump") on the original data
+1. Train a weak learner (usually a shallow tree - a "stump") on the original data
 2. Increase the weight of misclassified samples
 3. Train the next learner on the re-weighted data (misclassified points get more attention)
 4. Repeat $T$ times
@@ -1669,7 +1669,7 @@ for m in range(n_estimators):
     mse = np.mean((y_true - F) ** 2)
     mse_history.append(mse)
 
-print("Gradient Boosting (from scratch) — MSE progression:")
+print("Gradient Boosting (from scratch) - MSE progression:")
 print(f"{'Estimator':>10} | {'MSE':>10}")
 print("-" * 25)
 for i in [0, 4, 9, 19, 49]:
@@ -1678,7 +1678,7 @@ for i in [0, 4, 9, 19, 49]:
 print(f"\nFinal MSE after {n_estimators} estimators: {mse_history[-1]:.6f}")
 
 # Expected Output:
-# Gradient Boosting (from scratch) — MSE progression:
+# Gradient Boosting (from scratch) - MSE progression:
 #  Estimator |        MSE
 # -------------------------
 #          1 |   0.254731
@@ -1892,7 +1892,7 @@ print(top5.to_string(index=False))
 
 ### 8.3 RandomizedSearchCV for Efficiency
 
-When the parameter space is large, **RandomizedSearchCV** samples a fixed number of configurations randomly — typically giving 90% of GridSearchCV's performance in 20% of the time:
+When the parameter space is large, **RandomizedSearchCV** samples a fixed number of configurations randomly - typically giving 90% of GridSearchCV's performance in 20% of the time:
 
 ```python
 # file: randomized_search_example.py
@@ -2059,7 +2059,7 @@ plot_tree(
     fontsize=10,
     ax=ax
 )
-plt.title('Decision Tree (max_depth=3) — Iris Dataset', fontsize=14, pad=20)
+plt.title('Decision Tree (max_depth=3) - Iris Dataset', fontsize=14, pad=20)
 plt.tight_layout()
 plt.savefig('iris_decision_tree.png', dpi=150, bbox_inches='tight')
 plt.show()
@@ -2152,7 +2152,7 @@ for name, model in models:
 
 ## 10. Project: Customer Churn Prediction
 
-Let's put everything together with a real-world project. **Customer churn prediction** — predicting which customers are likely to cancel their subscription — is one of the most common ML applications in business.
+Let's put everything together with a real-world project. **Customer churn prediction** - predicting which customers are likely to cancel their subscription - is one of the most common ML applications in business.
 
 ### 10.1 Dataset Setup
 
@@ -2475,7 +2475,7 @@ fig, ax = plt.subplots(figsize=(12, 7))
 imp_series.head(15).plot.barh(ax=ax, color='steelblue', edgecolor='navy', alpha=0.8)
 ax.invert_yaxis()
 ax.set_xlabel('Feature Importance (Mean Decrease Impurity)')
-ax.set_title('Top 15 Features — Random Forest Churn Prediction')
+ax.set_title('Top 15 Features - Random Forest Churn Prediction')
 ax.axvline(x=0, color='black', linewidth=0.5)
 plt.tight_layout()
 plt.savefig('churn_feature_importance.png', dpi=150, bbox_inches='tight')
@@ -2538,7 +2538,7 @@ xgb_pipeline.fit(X_train, y_train)
 y_pred = xgb_pipeline.predict(X_test)
 y_prob = xgb_pipeline.predict_proba(X_test)[:, 1]
 
-print("=== XGBoost — Customer Churn ===\n")
+print("=== XGBoost - Customer Churn ===\n")
 print(classification_report(y_test, y_pred, target_names=['No Churn', 'Churn']))
 print(f"ROC-AUC:  {roc_auc_score(y_test, y_prob):.4f}")
 print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
@@ -2548,7 +2548,7 @@ cv_scores = cross_val_score(xgb_pipeline, X, y, cv=5, scoring='roc_auc', n_jobs=
 print(f"\n5-Fold CV ROC-AUC: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
 
 # Expected Output:
-# === XGBoost — Customer Churn ===
+# === XGBoost - Customer Churn ===
 #
 #               precision    recall  f1-score   support
 #    No Churn       0.91      0.93      0.92       691
@@ -2576,7 +2576,7 @@ final_results = {
 }
 
 df_results = pd.DataFrame(final_results).T
-print("=== Final Model Comparison — Customer Churn ===\n")
+print("=== Final Model Comparison - Customer Churn ===\n")
 print(df_results.to_string())
 
 print("\n\n=== Business Insights from Feature Importance ===")
@@ -2601,7 +2601,7 @@ for insight in insights:
     print(insight)
 
 # Expected Output:
-# === Final Model Comparison — Customer Churn ===
+# === Final Model Comparison - Customer Churn ===
 #
 #                    Accuracy  F1-Churn  ROC-AUC  Interpretable     Speed
 # Decision Tree         0.821     0.696    0.840            Yes      Fast
@@ -2617,42 +2617,42 @@ for insight in insights:
 | Term | Definition |
 |------|-----------|
 | **Decision Tree** | A hierarchical model that makes predictions through a sequence of binary splits on feature values |
-| **Root Node** | The first (topmost) split in a decision tree — applies to all training samples |
+| **Root Node** | The first (topmost) split in a decision tree - applies to all training samples |
 | **Leaf Node** | A terminal node with no further splits; contains the final prediction |
 | **Entropy** | Information-theoretic measure of impurity: $H = -\sum p_i \log_2 p_i$ |
 | **Gini Impurity** | Probability of misclassification with random labeling: $G = 1 - \sum p_i^2$ |
 | **Information Gain** | Reduction in entropy achieved by a split; used as the splitting criterion in ID3/C4.5 |
 | **Pre-pruning** | Stopping tree growth early via constraints like `max_depth`, `min_samples_leaf` |
 | **Post-pruning** | Removing branches from a fully grown tree to reduce overfitting |
-| **Bagging** | Bootstrap Aggregating — training models on random bootstrap samples and averaging predictions |
+| **Bagging** | Bootstrap Aggregating - training models on random bootstrap samples and averaging predictions |
 | **Bootstrap Sample** | A random sample of size $n$ drawn with replacement from a dataset of size $n$ |
-| **Out-of-Bag (OOB)** | Samples not selected in a bootstrap — provides a free validation set for RF |
+| **Out-of-Bag (OOB)** | Samples not selected in a bootstrap - provides a free validation set for RF |
 | **Random Forest** | Ensemble of decision trees trained on bootstrap samples with feature subsampling |
 | **Feature Subsampling** | Considering only $\sqrt{n}$ random features at each split in Random Forest |
 | **Ensemble Method** | Combining multiple models to produce better predictions than any single model |
 | **Bagging** | Parallel ensemble method; trees trained independently on bootstrap samples |
 | **Boosting** | Sequential ensemble method; each model corrects errors of its predecessors |
-| **AdaBoost** | Adaptive Boosting — reweights misclassified samples for next learner |
+| **AdaBoost** | Adaptive Boosting - reweights misclassified samples for next learner |
 | **Gradient Boosting** | Fits each new tree to the residuals (negative gradient) of the current ensemble |
 | **Residuals** | The difference between actual targets and current model predictions |
 | **Learning Rate (shrinkage)** | Scalar multiplier on each tree's contribution; smaller = more regularized |
-| **XGBoost** | Extreme Gradient Boosting — optimized GBM with regularization and second-order gradients |
-| **LightGBM** | Light Gradient Boosting Machine — histogram-based GBM for extreme speed |
+| **XGBoost** | Extreme Gradient Boosting - optimized GBM with regularization and second-order gradients |
+| **LightGBM** | Light Gradient Boosting Machine - histogram-based GBM for extreme speed |
 | **Feature Importance** | Score indicating how much a feature contributes to reducing impurity across the ensemble |
 | **Permutation Importance** | Feature importance measured by performance drop when feature values are shuffled |
 | **Mean Decrease Impurity (MDI)** | Impurity-based feature importance; sum of weighted impurity reductions per feature |
 | **Bias-Variance Tradeoff** | Tension between model complexity (low bias) and generalization (low variance) |
 | **GridSearchCV** | Exhaustive hyperparameter search over a specified parameter grid with cross-validation |
-| **RandomizedSearchCV** | Random sampling from hyperparameter distributions — more efficient than grid search |
+| **RandomizedSearchCV** | Random sampling from hyperparameter distributions - more efficient than grid search |
 
 ---
 
 ## What's Next
 
-In **Part 5: The Algorithm Zoo — SVMs, KNN, and Naive Bayes**, we'll step outside the tree-based world and explore three fundamentally different approaches to classification:
+In **Part 5: The Algorithm Zoo - SVMs, KNN, and Naive Bayes**, we'll step outside the tree-based world and explore three fundamentally different approaches to classification:
 
 - **Support Vector Machines (SVMs)**: Finding the maximum-margin hyperplane that separates classes. We'll implement the kernel trick from scratch to handle non-linear data.
-- **K-Nearest Neighbors (KNN)**: The beautifully simple "you are who your neighbors are" algorithm — no training phase, just memory.
+- **K-Nearest Neighbors (KNN)**: The beautifully simple "you are who your neighbors are" algorithm - no training phase, just memory.
 - **Naive Bayes**: The probabilistic classifier that's "naively" fast and surprisingly effective for text classification, spam detection, and anything with high-dimensional sparse features.
 
 We'll compare all three against today's tree-based models on a unified benchmark, and you'll develop intuition for which algorithm to reach for first in different scenarios.
@@ -2665,7 +2665,7 @@ You've covered a tremendous amount of ground today. Here's what you've mastered:
 
 **Decision Trees:**
 - The recursive binary splitting algorithm and how it mirrors human decision-making
-- Entropy, Information Gain, and Gini Impurity — with full from-scratch implementations
+- Entropy, Information Gain, and Gini Impurity - with full from-scratch implementations
 - Why unconstrained trees overfit perfectly and how pre-pruning fixes it
 - A complete 150+ line `DecisionTreeClassifier` in pure NumPy
 
@@ -2693,5 +2693,5 @@ You've covered a tremendous amount of ground today. Here's what you've mastered:
 
 ---
 
-*Article by the Machine Learning Deep Dive Series — Part 4 of 19*
-*Next: Part 5 — The Algorithm Zoo: SVMs, KNN, and Naive Bayes*
+*Article by the Machine Learning Deep Dive Series - Part 4 of 19*
+*Next: Part 5 - The Algorithm Zoo: SVMs, KNN, and Naive Bayes*

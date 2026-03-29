@@ -1,6 +1,6 @@
-# CI/CD Pipelines & Automation — Interview Preparation
+# CI/CD Pipelines & Automation - Interview Preparation
 
-> Section 5 of 7 — Pipeline design, GitHub Actions, GitLab CI, deployment strategies, rollbacks, and artifact management.
+> Section 5 of 7 - Pipeline design, GitHub Actions, GitLab CI, deployment strategies, rollbacks, and artifact management.
 
 ---
 
@@ -91,7 +91,7 @@ GOOD:
 
 **Follow-up:** *What's the most important metric for a CI/CD pipeline?*
 
-**Lead time** — the time from code push to running in production. If this is under 1 hour, your pipeline is effective. If it's over a day, something is wrong. Secondary metrics: pipeline success rate (should be >95%), flaky test rate (should be <1%), and cost per build.
+**Lead time** - the time from code push to running in production. If this is under 1 hour, your pipeline is effective. If it's over a day, something is wrong. Secondary metrics: pipeline success rate (should be >95%), flaky test rate (should be <1%), and cost per build.
 
 ---
 
@@ -596,7 +596,7 @@ Time 4:  [v2] [v2] [v2] [v2]  ← Complete!
 - **How:** Replace instances one by one
 - **Downtime:** Zero (some instances always running)
 - **Rollback:** Reverse the rolling update
-- **Risk:** Both versions run simultaneously — must be backward compatible
+- **Risk:** Both versions run simultaneously - must be backward compatible
 
 ```yaml
 # Kubernetes rolling update
@@ -717,7 +717,7 @@ kubectl rollout status deployment/api
 ### Docker-based Rollback (without Kubernetes)
 
 ```bash
-# Images are immutable — previous version still exists in registry
+# Images are immutable - previous version still exists in registry
 # Rollback = deploy the previous image tag
 
 # Option 1: Redeploy previous SHA
@@ -733,7 +733,7 @@ docker compose up -d
 ### Automated Rollback in CI/CD
 
 ```yaml
-# GitHub Actions — automatic rollback on failed smoke test
+# GitHub Actions - automatic rollback on failed smoke test
 deploy-production:
   steps:
     - name: Save current version
@@ -773,7 +773,7 @@ deploy-production:
 
 # Prisma
 npx prisma migrate deploy    # Apply migrations
-# Rollback: manually — Prisma doesn't auto-rollback
+# Rollback: manually - Prisma doesn't auto-rollback
 
 # Flyway
 flyway migrate               # Apply
@@ -828,7 +828,7 @@ Production:
 ### Environment-specific Configuration
 
 ```yaml
-# GitHub Actions — using environments
+# GitHub Actions - using environments
 jobs:
   deploy:
     strategy:
@@ -892,11 +892,11 @@ API_URL=https://api.example.com
 
 **Follow-up:** *How do you ensure staging is truly representative of production?*
 
-1. **Same infrastructure code** — Terraform modules parameterized by environment, not separate configs
-2. **Same Docker images** — same image, different config (env vars)
-3. **Same Kubernetes manifests** — Kustomize overlays for environment-specific values only
-4. **Production data copy** — anonymized production data loaded into staging weekly
-5. **Same network topology** — staging has its own VPC but mirrors production's architecture
+1. **Same infrastructure code** - Terraform modules parameterized by environment, not separate configs
+2. **Same Docker images** - same image, different config (env vars)
+3. **Same Kubernetes manifests** - Kustomize overlays for environment-specific values only
+4. **Production data copy** - anonymized production data loaded into staging weekly
+5. **Same network topology** - staging has its own VPC but mirrors production's architecture
 
 ---
 
@@ -907,14 +907,14 @@ API_URL=https://api.example.com
 ### The Problem
 
 ```
-BAD — Secrets hardcoded (visible in Git history FOREVER):
+BAD - Secrets hardcoded (visible in Git history FOREVER):
   DATABASE_URL=postgresql://admin:password123@db.example.com:5432/prod
 
-BAD — Secrets in CI config (visible to anyone with repo access):
+BAD - Secrets in CI config (visible to anyone with repo access):
   env:
     API_KEY: sk-secret-key-123
 
-BAD — Secrets in Docker image:
+BAD - Secrets in Docker image:
   ENV SECRET_KEY=my-secret
   COPY .env /app/.env
 ```
@@ -922,7 +922,7 @@ BAD — Secrets in Docker image:
 ### Solution 1: CI Platform Secrets
 
 ```yaml
-# GitHub Actions — stored in Settings → Secrets → Actions
+# GitHub Actions - stored in Settings → Secrets → Actions
 steps:
   - name: Deploy
     env:
@@ -1004,7 +1004,7 @@ env:
 
 **Follow-up:** *A developer committed an AWS access key to a public repo. Walk through the incident response.*
 
-Covered in detail in [File 01 — Q10: DevSecOps](./01-devops-fundamentals.md#q10-what-is-devsecops). Key steps: **Revoke immediately**, check CloudTrail for unauthorized usage, remove from Git history with BFG, add prevention (pre-commit hooks, CI scanning).
+Covered in detail in [File 01 - Q10: DevSecOps](./01-devops-fundamentals.md#q10-what-is-devsecops). Key steps: **Revoke immediately**, check CloudTrail for unauthorized usage, remove from Git history with BFG, add prevention (pre-commit hooks, CI scanning).
 
 ---
 
@@ -1051,7 +1051,7 @@ Retention policies:
 ```
 
 ```yaml
-# GitHub Actions — upload test artifacts
+# GitHub Actions - upload test artifacts
 - name: Upload test results
   if: always()
   uses: actions/upload-artifact@v4
@@ -1201,11 +1201,11 @@ After:  Parallel + cached + split = 6 minutes
 
 **Follow-up:** *Your pipeline has flaky tests that fail ~5% of the time. How do you handle this?*
 
-1. **Don't retry** — retrying masks the problem
-2. **Quarantine** — move flaky tests to a separate non-blocking job
-3. **Track** — log every flaky test failure and create tickets
-4. **Fix root causes** — usually: race conditions, time-dependent logic, shared state between tests, external service dependencies (mock them)
-5. **Set a budget** — "No more than 1% of test runs should be flaky" — alert when exceeded
+1. **Don't retry** - retrying masks the problem
+2. **Quarantine** - move flaky tests to a separate non-blocking job
+3. **Track** - log every flaky test failure and create tickets
+4. **Fix root causes** - usually: race conditions, time-dependent logic, shared state between tests, external service dependencies (mock them)
+5. **Set a budget** - "No more than 1% of test runs should be flaky" - alert when exceeded
 
 ---
 
@@ -1238,7 +1238,7 @@ Fix:
 Cause 2: Missing environment variables
 ───────────────────────────────────────
 Local:  .env file loaded automatically
-CI:     No .env file — variables must be set explicitly
+CI:     No .env file - variables must be set explicitly
 
 Debug:
   # CI logs show: "Error: DATABASE_URL is not defined"
@@ -1329,11 +1329,11 @@ Fix:
 
 **Follow-up:** *How do you prevent "works locally, fails in CI" problems?*
 
-1. **Dev containers** — develop inside the same Docker image used in CI
-2. **Pre-commit hooks** — run linting and basic tests before push
-3. **Consistent tooling** — `.nvmrc`, `.python-version`, `rust-toolchain.toml`
-4. **CI-first mindset** — if it doesn't pass CI, it doesn't work (regardless of local results)
+1. **Dev containers** - develop inside the same Docker image used in CI
+2. **Pre-commit hooks** - run linting and basic tests before push
+3. **Consistent tooling** - `.nvmrc`, `.python-version`, `rust-toolchain.toml`
+4. **CI-first mindset** - if it doesn't pass CI, it doesn't work (regardless of local results)
 
 ---
 
-*Next: [06 — Cloud, Monitoring & Infrastructure →](./06-cloud-monitoring.md)*
+*Next: [06 - Cloud, Monitoring & Infrastructure →](./06-cloud-monitoring.md)*

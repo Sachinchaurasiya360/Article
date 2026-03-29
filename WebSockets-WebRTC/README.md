@@ -1,4 +1,4 @@
-# WebSockets & WebRTC — Real-time Communication Guide
+# WebSockets & WebRTC - Real-time Communication Guide
 
 > A 4-part deep dive into real-time web technologies. From your first WebSocket connection to designing a video conferencing platform that handles thousands of concurrent calls.
 
@@ -47,7 +47,7 @@ Blog 3: WebRTC Fundamentals
 ├── WebRTC vs WebSockets (when to use each)
 ├── Signaling (the part WebRTC doesn't handle)
 ├── SDP (Session Description Protocol)
-├── ICE, STUN, TURN — NAT traversal explained
+├── ICE, STUN, TURN - NAT traversal explained
 ├── NAT types & why they matter
 ├── Complete connection flow (step by step)
 ├── Media streams (getUserMedia, getDisplayMedia)
@@ -124,4 +124,4 @@ Live streaming (1-to-many)       → WebRTC ingest + HLS/DASH delivery
 
 ---
 
-*Built for developers who want to understand real-time systems deeply — not just copy-paste code.*
+*Built for developers who want to understand real-time systems deeply - not just copy-paste code.*

@@ -8,17 +8,17 @@
 
 > **We have an exceptional 20-part AI Memory deep-dive series. This section provides interview-focused questions. For complete coverage, refer to:**
 >
-> - [AI Memory Part 0: What Is Memory in AI?](../AI-Memory/ai-memory-deep-dive-part-0.md) — Five types of AI memory, memory architecture
-> - [AI Memory Part 4: Transformers & Context Windows](../AI-Memory/ai-memory-deep-dive-part-4.md) — Context window limitations, position encoding
-> - [AI Memory Part 5: The Memory Wall](../AI-Memory/ai-memory-deep-dive-part-5.md) — Context limits, KV cache, breaking through limitations
-> - [AI Memory Part 6: External Memory](../AI-Memory/ai-memory-deep-dive-part-6.md) — External memory systems, persistent storage
-> - [AI Memory Part 11: Short-Term vs Long-Term Memory](../AI-Memory/ai-memory-deep-dive-part-11.md) — Conversation memory, summarization, consolidation
-> - [AI Memory Part 12: Memory Compression](../AI-Memory/ai-memory-deep-dive-part-12.md) — Summarization techniques, token efficiency
-> - [AI Memory Part 13: Updating & Editing Memory](../AI-Memory/ai-memory-deep-dive-part-13.md) — Knowledge updates, contradiction handling
-> - [AI Memory Part 14: Personalization](../AI-Memory/ai-memory-deep-dive-part-14.md) — User profiling, adaptive systems
-> - [AI Memory Part 16: Autonomous Agents With Memory](../AI-Memory/ai-memory-deep-dive-part-16.md) — Agent architecture, working/episodic/semantic/procedural memory
-> - [AI Memory Part 17: Scaling Memory Systems](../AI-Memory/ai-memory-deep-dive-part-17.md) — Distributed memory, production deployment
-> - [AI Memory Part 19: Production Memory Platform](../AI-Memory/ai-memory-deep-dive-part-19.md) — Complete production system capstone
+> - [AI Memory Part 0: What Is Memory in AI?](../AI-Memory/ai-memory-deep-dive-part-0.md) - Five types of AI memory, memory architecture
+> - [AI Memory Part 4: Transformers & Context Windows](../AI-Memory/ai-memory-deep-dive-part-4.md) - Context window limitations, position encoding
+> - [AI Memory Part 5: The Memory Wall](../AI-Memory/ai-memory-deep-dive-part-5.md) - Context limits, KV cache, breaking through limitations
+> - [AI Memory Part 6: External Memory](../AI-Memory/ai-memory-deep-dive-part-6.md) - External memory systems, persistent storage
+> - [AI Memory Part 11: Short-Term vs Long-Term Memory](../AI-Memory/ai-memory-deep-dive-part-11.md) - Conversation memory, summarization, consolidation
+> - [AI Memory Part 12: Memory Compression](../AI-Memory/ai-memory-deep-dive-part-12.md) - Summarization techniques, token efficiency
+> - [AI Memory Part 13: Updating & Editing Memory](../AI-Memory/ai-memory-deep-dive-part-13.md) - Knowledge updates, contradiction handling
+> - [AI Memory Part 14: Personalization](../AI-Memory/ai-memory-deep-dive-part-14.md) - User profiling, adaptive systems
+> - [AI Memory Part 16: Autonomous Agents With Memory](../AI-Memory/ai-memory-deep-dive-part-16.md) - Agent architecture, working/episodic/semantic/procedural memory
+> - [AI Memory Part 17: Scaling Memory Systems](../AI-Memory/ai-memory-deep-dive-part-17.md) - Distributed memory, production deployment
+> - [AI Memory Part 19: Production Memory Platform](../AI-Memory/ai-memory-deep-dive-part-19.md) - Complete production system capstone
 
 ---
 
@@ -98,7 +98,7 @@ Store in memory:
 cost_per_call_full_context = 200_000 / 1000 * 0.003  # $0.60 per call
 # Plus: slow, lost-in-the-middle, includes irrelevant conversations
 
-# Approach 2: Memory system — retrieve only relevant context
+# Approach 2: Memory system - retrieve only relevant context
 relevant_tokens = 2000  # Top 5 relevant past interactions
 cost_per_call_memory = 2000 / 1000 * 0.003  # $0.006 per call
 # 100× cheaper, faster, more accurate
@@ -117,7 +117,7 @@ cost_per_call_memory = 2000 / 1000 * 0.003  # $0.006 per call
                                     Total: ~4200 tokens (vs 200K for full history)
 ```
 
-> **Deep dive**: See [AI Memory Part 5](../AI-Memory/ai-memory-deep-dive-part-5.md) for "The Memory Wall" — why context windows have fundamental limits.
+> **Deep dive**: See [AI Memory Part 5](../AI-Memory/ai-memory-deep-dive-part-5.md) for "The Memory Wall" - why context windows have fundamental limits.
 
 **Why interviewer asks this:** Common misconception that "bigger context = solved memory." Tests understanding of scaling constraints.
 
@@ -130,7 +130,7 @@ cost_per_call_memory = 2000 / 1000 * 0.003  # $0.006 per call
 **Answer:**
 
 ```python
-# Strategy 1: Buffer Memory — keep everything
+# Strategy 1: Buffer Memory - keep everything
 class BufferMemory:
     """Keep all messages. Simplest but doesn't scale."""
     def __init__(self):
@@ -140,10 +140,10 @@ class BufferMemory:
         self.messages.append(message)
 
     def get_context(self):
-        return self.messages  # Returns ALL messages — context grows unbounded
+        return self.messages  # Returns ALL messages - context grows unbounded
 
 
-# Strategy 2: Window Memory — keep last N messages
+# Strategy 2: Window Memory - keep last N messages
 class WindowMemory:
     """Keep only the most recent N messages."""
     def __init__(self, window_size: int = 20):
@@ -157,7 +157,7 @@ class WindowMemory:
         return self.messages[-self.window_size:]  # Loses early context
 
 
-# Strategy 3: Summary Memory — summarize old conversations
+# Strategy 3: Summary Memory - summarize old conversations
 class SummaryMemory:
     """Progressively summarize older messages to save tokens."""
     def __init__(self, llm, summary_threshold: int = 20):
@@ -190,7 +190,7 @@ class SummaryMemory:
         return context
 
 
-# Strategy 4: Hybrid — summary + semantic retrieval + recent window
+# Strategy 4: Hybrid - summary + semantic retrieval + recent window
 class HybridMemory:
     """
     Production-grade memory combining:
@@ -243,10 +243,10 @@ class HybridMemory:
 
 | Strategy | Token Usage | Information Loss | Best For |
 |----------|-----------|-----------------|----------|
-| Buffer | O(n) — grows forever | None | Short conversations (<20 turns) |
-| Window | O(1) — fixed | Loses early context | Simple chatbots, FAQ |
-| Summary | O(log n) — compressed | Lossy compression | Long conversations |
-| Hybrid | O(k) — selective | Minimal | Production agents |
+| Buffer | O(n) - grows forever | None | Short conversations (<20 turns) |
+| Window | O(1) - fixed | Loses early context | Simple chatbots, FAQ |
+| Summary | O(log n) - compressed | Lossy compression | Long conversations |
+| Hybrid | O(k) - selective | Minimal | Production agents |
 
 > **Deep dive**: See [AI Memory Part 11](../AI-Memory/ai-memory-deep-dive-part-11.md) for detailed coverage of all memory strategies.
 
@@ -739,7 +739,7 @@ class PersistentMemory:
 The conversation exceeded the context window, and early messages were dropped. With 15+ messages (especially with tool calls), the context can easily hit model limits.
 
 **Root causes:**
-1. No conversation memory management — just appending messages until they overflow
+1. No conversation memory management - just appending messages until they overflow
 2. No summarization of older messages
 3. Critical information (user name, project) only exists in early messages
 
@@ -802,7 +802,7 @@ class SmartConversationManager:
 
 **Answer:**
 
-Without quality filtering, the memory system stores everything — including greetings, filler, and irrelevant exchanges. When you search for relevant memories, noise drowns out signal.
+Without quality filtering, the memory system stores everything - including greetings, filler, and irrelevant exchanges. When you search for relevant memories, noise drowns out signal.
 
 **Fix: Add importance scoring and memory consolidation.**
 

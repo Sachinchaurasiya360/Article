@@ -1,6 +1,6 @@
-# Advanced Docker & Containerization — Interview Preparation
+# Advanced Docker & Containerization - Interview Preparation
 
-> Section 4 of 7 — Multi-stage builds, Docker Compose, image optimization, security, and production patterns.
+> Section 4 of 7 - Multi-stage builds, Docker Compose, image optimization, security, and production patterns.
 
 ---
 
@@ -28,7 +28,7 @@ Multi-stage builds let you use **multiple `FROM` statements** in a single Docker
 ### The Problem
 
 ```dockerfile
-# Single-stage build — BLOATED IMAGE
+# Single-stage build - BLOATED IMAGE
 FROM node:20
 WORKDIR /app
 COPY . .
@@ -147,7 +147,7 @@ docker build --target deps -t myapp:deps .
 
 **Follow-up:** *Can you copy files from an external image (not a build stage)?*
 
-Yes — you can copy from any image:
+Yes - you can copy from any image:
 ```dockerfile
 FROM alpine
 COPY --from=nginx:latest /etc/nginx/nginx.conf /etc/nginx/nginx.conf
@@ -166,7 +166,7 @@ Docker Compose is a tool for defining and running **multi-container applications
 
 ```yaml
 # docker-compose.yml
-# (or compose.yml — modern standard)
+# (or compose.yml - modern standard)
 
 services:
   # ─────────── Application ───────────
@@ -315,7 +315,7 @@ networks:
     driver: bridge
   backend:
     driver: bridge
-    internal: true  # No external access — only service-to-service
+    internal: true  # No external access - only service-to-service
 ```
 
 ### Essential Compose Commands
@@ -360,10 +360,10 @@ REDIS_PASSWORD=redis-secret
 **Follow-up:** *When should you NOT use Docker Compose in production?*
 
 When you need:
-- **Multi-host deployment** — Compose runs on a single machine
-- **Auto-scaling** — Compose doesn't auto-scale based on load
-- **Rolling updates with zero downtime** — Compose restarts cause brief downtime
-- **Service mesh features** — no built-in load balancing, circuit breaking
+- **Multi-host deployment** - Compose runs on a single machine
+- **Auto-scaling** - Compose doesn't auto-scale based on load
+- **Rolling updates with zero downtime** - Compose restarts cause brief downtime
+- **Service mesh features** - no built-in load balancing, circuit breaking
 
 At that point, you need **Kubernetes**, **Docker Swarm**, or a managed container service (ECS, Cloud Run).
 
@@ -395,12 +395,12 @@ scratch                   0MB
 ### Strategy 3: Minimize layers and clean up in the same layer
 
 ```dockerfile
-# BAD — package lists persist in layer 1 even though removed in layer 2
+# BAD - package lists persist in layer 1 even though removed in layer 2
 RUN apt-get update
 RUN apt-get install -y curl
 RUN rm -rf /var/lib/apt/lists/*
 
-# GOOD — cleanup happens in same layer
+# GOOD - cleanup happens in same layer
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl && \
     rm -rf /var/lib/apt/lists/*
@@ -436,7 +436,7 @@ RUN npm prune --production
 # Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Go (static binary — no runtime needed)
+# Go (static binary - no runtime needed)
 RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /app/server .
 # -s removes symbol table, -w removes DWARF debug info
 ```
@@ -447,7 +447,7 @@ RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /app/server .
 # Export and re-import to flatten layers
 docker build -t myapp:build .
 docker export $(docker create myapp:build) | docker import - myapp:squashed
-# WARNING: loses CMD, ENV, EXPOSE metadata — use as last resort
+# WARNING: loses CMD, ENV, EXPOSE metadata - use as last resort
 ```
 
 ### Real Optimization Example
@@ -487,7 +487,7 @@ dive myapp:latest
 
 **Follow-up:** *What is a distroless image and when would you use it?*
 
-Distroless images (by Google) contain **only the application runtime** — no shell, no package manager, no utilities. Example: `gcr.io/distroless/nodejs20` has Node.js but no `sh`, `bash`, `apt`, `curl`, etc.
+Distroless images (by Google) contain **only the application runtime** - no shell, no package manager, no utilities. Example: `gcr.io/distroless/nodejs20` has Node.js but no `sh`, `bash`, `apt`, `curl`, etc.
 
 **Pros:** Minimal attack surface (no shell = can't get a shell if compromised), smallest possible size.
 **Cons:** Can't `docker exec` into it for debugging. Use a separate debug image for troubleshooting.
@@ -566,12 +566,12 @@ trivy image --exit-code 1 --severity CRITICAL myapp:latest
 ### 5. Never store secrets in images
 
 ```dockerfile
-# BAD — secret baked into image layer (visible with docker history)
+# BAD - secret baked into image layer (visible with docker history)
 ENV API_KEY=sk-secret123
 COPY .env /app/.env
 RUN echo "password" > /app/config
 
-# GOOD — pass at runtime
+# GOOD - pass at runtime
 # docker run -e API_KEY=$API_KEY myapp
 # Or use Docker secrets (Swarm) or external secret managers
 ```
@@ -588,10 +588,10 @@ RUN --mount=type=secret,id=npmrc,target=/root/.npmrc npm ci
 ### 6. Pin image digests for reproducibility
 
 ```dockerfile
-# Tags are mutable — node:20-alpine today might differ from tomorrow
+# Tags are mutable - node:20-alpine today might differ from tomorrow
 FROM node:20-alpine
 
-# Digests are immutable — always the exact same image
+# Digests are immutable - always the exact same image
 FROM node:20-alpine@sha256:abc123...
 ```
 
@@ -616,7 +616,7 @@ networks:
     driver: bridge
   backend:
     driver: bridge
-    internal: true    # No internet access — only service-to-service
+    internal: true    # No internet access - only service-to-service
 
 services:
   api:
@@ -714,7 +714,7 @@ networks:
 ```
 
 ```nginx
-# nginx.conf — routes traffic by path
+# nginx.conf - routes traffic by path
 upstream api_backend {
     server api:3000;
 }
@@ -756,7 +756,7 @@ nslookup api
 # Address: 172.20.0.5
 ```
 
-### Pattern 3: Overlay Network (Multi-host — Docker Swarm)
+### Pattern 3: Overlay Network (Multi-host - Docker Swarm)
 
 ```bash
 # Create overlay network (spans multiple Docker hosts)
@@ -1029,7 +1029,7 @@ aws ecr put-lifecycle-policy --repository-name myapp --lifecycle-policy-text '{
 }'
 ```
 
-**Why interviewer asks this:** Registry management is a core DevOps responsibility — image storage, access control, and cleanup.
+**Why interviewer asks this:** Registry management is a core DevOps responsibility - image storage, access control, and cleanup.
 
 **Follow-up:** *How do you handle image signing and verification?*
 
@@ -1074,7 +1074,7 @@ docker run --cpus 1.5 myapp
 # CPU shares (relative weight, default 1024)
 docker run --cpu-shares 512 myapp     # Half priority
 docker run --cpu-shares 2048 myapp    # Double priority
-# Only matters when CPU is contested — not a hard limit
+# Only matters when CPU is contested - not a hard limit
 
 # Pin to specific CPU cores
 docker run --cpuset-cpus "0,1" myapp  # Only use cores 0 and 1
@@ -1175,7 +1175,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 ### 3. CI cache strategies
 
 ```yaml
-# GitHub Actions — cache Docker layers
+# GitHub Actions - cache Docker layers
 - name: Set up Docker Buildx
   uses: docker/setup-buildx-action@v3
 
@@ -1247,7 +1247,7 @@ With optimization:
 **Follow-up:** *What is `docker buildx` and when would you use it?*
 
 `buildx` is Docker's extended builder based on BuildKit. Key features:
-- **Multi-platform builds**: `docker buildx build --platform linux/amd64,linux/arm64` — builds for both Intel and ARM from one machine
+- **Multi-platform builds**: `docker buildx build --platform linux/amd64,linux/arm64` - builds for both Intel and ARM from one machine
 - **Remote builders**: build on remote machines (faster CI)
 - **Advanced cache backends**: registry cache, S3 cache, GitHub Actions cache
 
@@ -1278,7 +1278,7 @@ dmesg | tail -20
 # Exec into the container
 docker exec -it api-1 sh
 
-# For Node.js — check heap usage
+# For Node.js - check heap usage
 node -e "console.log(process.memoryUsage())"
 # { rss: 485MB, heapTotal: 380MB, heapUsed: 350MB, external: 50MB }
 
@@ -1306,7 +1306,7 @@ Cause 3: No memory limit set at all
   Fix: Set explicit limits
 
 Cause 4: Runtime-specific issues
-  Node.js: Default heap limit is 1.5GB — set --max-old-space-size
+  Node.js: Default heap limit is 1.5GB - set --max-old-space-size
   Java: JVM doesn't respect container limits by default (older versions)
          Use: -XX:MaxRAMPercentage=75 -XX:+UseContainerSupport
   Python: Memory fragmentation in long-running processes
@@ -1346,4 +1346,4 @@ Use the healthcheck approach above combined with restart policy, or use a sideca
 
 ---
 
-*Next: [05 — CI/CD Pipelines & Automation →](./05-cicd-pipelines.md)*
+*Next: [05 - CI/CD Pipelines & Automation →](./05-cicd-pipelines.md)*

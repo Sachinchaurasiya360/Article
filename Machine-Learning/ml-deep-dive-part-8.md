@@ -1,8 +1,8 @@
-# Machine Learning Deep Dive — Part 8: Neural Networks from Scratch — Building Your First Deep Learning Model
+# Machine Learning Deep Dive - Part 8: Neural Networks from Scratch - Building Your First Deep Learning Model
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
 **Part:** 8 of 19 (Deep Learning)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~60 minutes
@@ -11,9 +11,9 @@
 
 ## Recap: Where We've Been
 
-In Part 7 we mastered **feature engineering** — the craft of transforming raw data into representations that classical machine learning algorithms can exploit. We explored polynomial features, interaction terms, binning, target encoding, and automated feature selection. We built pipelines that turned messy real-world data into clean, informative feature matrices.
+In Part 7 we mastered **feature engineering** - the craft of transforming raw data into representations that classical machine learning algorithms can exploit. We explored polynomial features, interaction terms, binning, target encoding, and automated feature selection. We built pipelines that turned messy real-world data into clean, informative feature matrices.
 
-Everything we've built so far — linear models, decision trees, SVMs — relies on hand-crafted features. Neural networks are different: they learn their own features directly from raw data. Today we build a neural network from absolute scratch using only NumPy, so you understand every single multiplication and addition that happens inside a deep learning model.
+Everything we've built so far - linear models, decision trees, SVMs - relies on hand-crafted features. Neural networks are different: they learn their own features directly from raw data. Today we build a neural network from absolute scratch using only NumPy, so you understand every single multiplication and addition that happens inside a deep learning model.
 
 ---
 
@@ -38,7 +38,7 @@ Everything we've built so far — linear models, decision trees, SVMs — relies
 
 ### Real Biology vs. Artificial Math
 
-The story of neural networks begins with biology — but it is important to understand from the start that the artificial neuron is an **analogy**, not a simulation. Real neurons are electrochemical systems of staggering complexity. Artificial neurons are simple mathematical functions.
+The story of neural networks begins with biology - but it is important to understand from the start that the artificial neuron is an **analogy**, not a simulation. Real neurons are electrochemical systems of staggering complexity. Artificial neurons are simple mathematical functions.
 
 A real biological neuron has three main parts:
 
@@ -46,7 +46,7 @@ A real biological neuron has three main parts:
 - **Soma (cell body)**: integrates incoming signals and performs a threshold computation
 - **Axon**: a long fiber that transmits the output signal to other neurons via synapses
 
-When the integrated signal at the soma exceeds a threshold, the neuron **fires** — it sends an action potential down its axon. This all-or-nothing firing behavior inspired the earliest artificial neuron models.
+When the integrated signal at the soma exceeds a threshold, the neuron **fires** - it sends an action potential down its axon. This all-or-nothing firing behavior inspired the earliest artificial neuron models.
 
 The **artificial neuron** simplifies this drastically:
 
@@ -77,7 +77,7 @@ Key differences between biological and artificial neurons:
 | Recurrence | Heavily recurrent | Usually feedforward |
 | Timing | Temporal dynamics matter | Usually stateless |
 
-Modern deep learning researchers largely avoid the biological metaphor. What we are really building is a **universal function approximator** — a mathematical system that can learn to represent nearly any mapping from inputs to outputs given enough data and capacity.
+Modern deep learning researchers largely avoid the biological metaphor. What we are really building is a **universal function approximator** - a mathematical system that can learn to represent nearly any mapping from inputs to outputs given enough data and capacity.
 
 ```mermaid
 graph LR
@@ -98,7 +98,7 @@ graph LR
 
 ### Historical Context
 
-In 1958, Frank Rosenblatt introduced the **perceptron** — the first learning algorithm for artificial neurons. It was a landmark achievement: a machine that could learn a decision boundary from examples. The algorithm is elegant and surprisingly powerful for linearly separable problems.
+In 1958, Frank Rosenblatt introduced the **perceptron** - the first learning algorithm for artificial neurons. It was a landmark achievement: a machine that could learn a decision boundary from examples. The algorithm is elegant and surprisingly powerful for linearly separable problems.
 
 ### Perceptron Implementation from Scratch
 
@@ -122,7 +122,7 @@ class Perceptron:
     def fit(self, X, y):
         """
         X: (n_samples, n_features)
-        y: (n_samples,) — binary labels {0, 1}
+        y: (n_samples,) - binary labels {0, 1}
         """
         n_samples, n_features = X.shape
         # Initialize weights and bias to zero
@@ -177,7 +177,7 @@ Converged at epoch 3
 OR predictions: [0 1 1 1]
 ```
 
-The perceptron learns AND and OR perfectly because these functions are **linearly separable** — you can draw a single straight line (in 2D) that separates the classes.
+The perceptron learns AND and OR perfectly because these functions are **linearly separable** - you can draw a single straight line (in 2D) that separates the classes.
 
 ### Visualizing the Decision Boundary
 
@@ -209,8 +209,8 @@ def plot_decision_boundary(model, X, y, title):
     plt.savefig(f"{title.lower().replace(' ', '_')}.png", dpi=150)
     plt.show()
 
-plot_decision_boundary(p_and, X_and, y_and, "AND Gate — Perceptron")
-plot_decision_boundary(p_or,  X_or,  y_or,  "OR Gate — Perceptron")
+plot_decision_boundary(p_and, X_and, y_and, "AND Gate - Perceptron")
+plot_decision_boundary(p_or,  X_or,  y_or,  "OR Gate - Perceptron")
 ```
 
 ### The XOR Problem: Why One Neuron Is Not Enough
@@ -224,7 +224,7 @@ The XOR function is the canonical example that broke the first wave of AI enthus
 |  1 |  0 |   1 |
 |  1 |  1 |   0 |
 
-XOR is **not linearly separable** — no single straight line can separate the 0s from the 1s. A single perceptron cannot learn XOR, no matter how long you train it.
+XOR is **not linearly separable** - no single straight line can separate the 0s from the 1s. A single perceptron cannot learn XOR, no matter how long you train it.
 
 ```python
 # file: xor_failure.py
@@ -247,7 +247,7 @@ XOR ground truth: [0 1 1 0]
 Errors per last 5 epochs: [2, 2, 2, 2, 2]  # Never converges
 ```
 
-The perceptron oscillates forever. This was the "AI winter" insight from Minsky and Papert's 1969 book — though their critique was misread as applying to all neural networks, when the real solution was simply to stack multiple layers.
+The perceptron oscillates forever. This was the "AI winter" insight from Minsky and Papert's 1969 book - though their critique was misread as applying to all neural networks, when the real solution was simply to stack multiple layers.
 
 ---
 
@@ -255,7 +255,7 @@ The perceptron oscillates forever. This was the "AI winter" insight from Minsky 
 
 ### Architecture Overview
 
-The solution to XOR — and to any non-linear problem — is to add **hidden layers**. A multi-layer network transforms the input space through a sequence of learned nonlinear transformations until the problem becomes linearly separable in the final layer.
+The solution to XOR - and to any non-linear problem - is to add **hidden layers**. A multi-layer network transforms the input space through a sequence of learned nonlinear transformations until the problem becomes linearly separable in the final layer.
 
 ```mermaid
 graph LR
@@ -291,7 +291,7 @@ graph LR
 
 **Key terminology:**
 - **Input layer**: passes raw features into the network (no computation)
-- **Hidden layers**: intermediate transformation layers — the "learned representations"
+- **Hidden layers**: intermediate transformation layers - the "learned representations"
 - **Output layer**: produces final predictions (class probabilities, regression values, etc.)
 - **Fully connected (dense) layer**: every neuron connects to every neuron in the next layer
 - **Depth**: number of layers (not counting input)
@@ -309,9 +309,9 @@ A = activation(Z)
 Where:
 - `X` has shape `(batch_size, n_input_features)`
 - `W` has shape `(n_input_features, n_output_neurons)`
-- `b` has shape `(n_output_neurons,)` — broadcasts over batch
-- `Z` has shape `(batch_size, n_output_neurons)` — pre-activation
-- `A` has shape `(batch_size, n_output_neurons)` — post-activation
+- `b` has shape `(n_output_neurons,)` - broadcasts over batch
+- `Z` has shape `(batch_size, n_output_neurons)` - pre-activation
+- `A` has shape `(batch_size, n_output_neurons)` - post-activation
 
 Getting shapes right is the single most important debugging skill in deep learning.
 
@@ -353,7 +353,7 @@ A1 = relu(Z1)              # (8, 5)
 
 # Layer 2
 Z2 = A1 @ W2 + b2          # (8, 5) @ (5, 3) + (1, 3)  →  (8, 3)
-A2 = softmax(Z2)           # (8, 3)  — probabilities summing to 1
+A2 = softmax(Z2)           # (8, 3)  - probabilities summing to 1
 
 print("Shape verification:")
 print(f"  X  : {X.shape}")
@@ -403,7 +403,7 @@ print(__doc__)
 
 ## 4. Activation Functions
 
-Activation functions are what give neural networks their power. Without them, stacking layers is equivalent to a single linear transformation — no matter how many layers you add, the composition of linear functions is still linear.
+Activation functions are what give neural networks their power. Without them, stacking layers is equivalent to a single linear transformation - no matter how many layers you add, the composition of linear functions is still linear.
 
 > **Insight:** The activation function is the nonlinearity that makes deep learning possible. It breaks the linearity so that each layer can learn genuinely new representations.
 
@@ -551,7 +551,7 @@ layers = 10
 
 gradient_magnitude = max_sigmoid_grad ** layers
 print(f"Gradient after {layers} sigmoid layers: {gradient_magnitude:.2e}")
-# Output: 9.54e-07 — essentially zero!
+# Output: 9.54e-07 - essentially zero!
 
 # ReLU doesn't have this problem (derivative is 1 or 0)
 # But it has the "dying ReLU" problem:
@@ -576,7 +576,7 @@ ReLU derivative for negative inputs: [0. 0. 0.]
 
 Backpropagation is the algorithm that makes neural networks trainable. It is nothing more than the **chain rule of calculus** applied systematically through the computation graph.
 
-> **Backpropagation is just the chain rule applied repeatedly — nothing more, nothing less.**
+> **Backpropagation is just the chain rule applied repeatedly - nothing more, nothing less.**
 
 ### The Chain Rule Refresher
 
@@ -598,7 +598,7 @@ We want `∂L/∂W1` and `∂L/∂W2`. By the chain rule:
 ∂L/∂W1 = ∂L/∂Z2 · ∂Z2/∂A1 · ∂A1/∂Z1 · ∂Z1/∂W1
 ```
 
-Each factor is computed locally and multiplied together — this is the essence of backprop.
+Each factor is computed locally and multiplied together - this is the essence of backprop.
 
 ```mermaid
 graph LR
@@ -695,7 +695,7 @@ class TwoLayerNet:
         self.cache = {}
 
     def forward(self, X):
-        """Forward pass — store all intermediate values."""
+        """Forward pass - store all intermediate values."""
         Z1 = X @ self.W1 + self.b1      # (batch, hidden)
         A1 = relu(Z1)                    # (batch, hidden)
         Z2 = A1 @ self.W2 + self.b2     # (batch, classes)
@@ -705,7 +705,7 @@ class TwoLayerNet:
         return A2
 
     def backward(self, y_true_onehot):
-        """Backward pass — compute gradients for all parameters."""
+        """Backward pass - compute gradients for all parameters."""
         m = y_true_onehot.shape[0]
         X  = self.cache['X']
         Z1 = self.cache['Z1']
@@ -720,7 +720,7 @@ class TwoLayerNet:
 
         # ── Hidden layer gradients ──────────────────────────────────
         dA1 = dZ2 @ self.W2.T            # (batch, hidden)
-        dZ1 = dA1 * relu_derivative(Z1)  # (batch, hidden) — element-wise
+        dZ1 = dA1 * relu_derivative(Z1)  # (batch, hidden) - element-wise
         dW1 = X.T @ dZ1                  # (input, hidden)
         db1 = np.sum(dZ1, axis=0, keepdims=True)  # (1, hidden)
 
@@ -953,7 +953,7 @@ CCE: 0.356675
 
 ## 7. Mini-Batch Gradient Descent
 
-**Stochastic Gradient Descent (SGD)** updates weights after every single sample — noisy but fast per step. **Full-batch gradient descent** uses all data per update — smooth but slow and memory-intensive. **Mini-batch gradient descent** is the practical compromise.
+**Stochastic Gradient Descent (SGD)** updates weights after every single sample - noisy but fast per step. **Full-batch gradient descent** uses all data per update - smooth but slow and memory-intensive. **Mini-batch gradient descent** is the practical compromise.
 
 > **Insight:** Mini-batches give you two things at once: the computational efficiency of matrix operations across a batch, and the regularizing noise of stochasticity that helps escape sharp local minima.
 
@@ -972,7 +972,7 @@ graph TD
     I --> J[Update Weights]
     J --> K{More Batches?}
     K -->|Yes| C
-    K -->|No — Epoch Done| L[Evaluate on Validation Set]
+    K -->|No - Epoch Done| L[Evaluate on Validation Set]
     L --> M{More Epochs?}
     M -->|Yes| B
     M -->|No| N[Final Model]
@@ -1085,12 +1085,12 @@ Batch size  800 → Final Val Accuracy: 0.8800
 
 ## 8. Building a Complete Neural Network Framework
 
-Now we build a proper, reusable, modular neural network library in pure NumPy — approximately 200 lines that implements the same core abstractions used by PyTorch and TensorFlow.
+Now we build a proper, reusable, modular neural network library in pure NumPy - approximately 200 lines that implements the same core abstractions used by PyTorch and TensorFlow.
 
 ```python
 # file: nn_framework.py
 """
-MinimalNet — A 200-line NumPy neural network framework.
+MinimalNet - A 200-line NumPy neural network framework.
 Supports: Dense layers, activation layers, multiple losses,
           SGD with momentum, training loop, weight save/load.
 """
@@ -1492,7 +1492,7 @@ The **Universal Approximation Theorem** (Cybenko, 1989; Hornik, 1991) states:
 
 > A feedforward neural network with a single hidden layer containing a finite number of neurons can approximate any continuous function on a compact subset of ℝⁿ to arbitrary precision, given a suitable activation function.
 
-This is a theoretical existence result — it tells us that the right weights *exist*, not how to find them. Modern deep learning extends this to deep networks with multiple layers, which can achieve the same approximation with exponentially fewer neurons than a single wide layer.
+This is a theoretical existence result - it tells us that the right weights *exist*, not how to find them. Modern deep learning extends this to deep networks with multiple layers, which can achieve the same approximation with exponentially fewer neurons than a single wide layer.
 
 **What it means practically:**
 - Neural networks are universal function approximators
@@ -1593,7 +1593,7 @@ sin(x) approximation MSE: 0.000423
 
 ## 10. Project: MNIST Digit Recognizer from Scratch
 
-Now we apply everything we've built to recognize handwritten digits — the "Hello World" of deep learning.
+Now we apply everything we've built to recognize handwritten digits - the "Hello World" of deep learning.
 
 ### Step 1: Load and Explore MNIST
 
@@ -2277,10 +2277,10 @@ Final Test Accuracy: 0.9803 (98.03%)
 | **Forward pass** | Computing predictions from input to output through all layers |
 | **Backward pass** | Computing gradients from loss back through all layers via chain rule |
 | **Backpropagation** | The algorithm that efficiently computes gradients using the chain rule |
-| **Chain rule** | Calculus rule: d/dx[f(g(x))] = f'(g(x)) · g'(x) — foundation of backprop |
+| **Chain rule** | Calculus rule: d/dx[f(g(x))] = f'(g(x)) · g'(x) - foundation of backprop |
 | **Vanishing gradient** | Problem where gradients shrink exponentially in deep networks with sigmoid/tanh |
 | **Exploding gradient** | Problem where gradients grow exponentially, destabilizing training |
-| **ReLU** | Rectified Linear Unit: max(0,x) — most common hidden-layer activation |
+| **ReLU** | Rectified Linear Unit: max(0,x) - most common hidden-layer activation |
 | **Dying ReLU** | When a ReLU neuron always outputs 0 because its inputs are always negative |
 | **Softmax** | Converts a vector of logits into a probability distribution |
 | **Cross-entropy loss** | Measures dissimilarity between predicted probability distribution and true labels |
@@ -2327,7 +2327,7 @@ print("=== Mistake 2: Shape Mismatches ===")
 X = np.random.randn(32, 10)   # batch=32, features=10
 W = np.random.randn(10, 5)    # in=10, out=5
 try:
-    Z_wrong = W @ X            # WRONG: (10,5) @ (32,10) — incompatible
+    Z_wrong = W @ X            # WRONG: (10,5) @ (32,10) - incompatible
 except ValueError as e:
     print(f"Wrong order: {e}")
 Z_correct = X @ W             # CORRECT: (32,10) @ (10,5) → (32,5)
@@ -2343,7 +2343,7 @@ print(" but will be suboptimal)\n")
 
 # ─── Mistake 4: Not clipping gradient or using log(0) ────────────────
 print("=== Mistake 4: Numerical Instability ===")
-y_pred_bad = np.array([0.0, 1.0, 0.5])  # contains 0 — log(0) = -inf!
+y_pred_bad = np.array([0.0, 1.0, 0.5])  # contains 0 - log(0) = -inf!
 y_true     = np.array([0.0, 1.0, 1.0])
 loss_bad   = -np.sum(y_true * np.log(y_pred_bad))
 print(f"Loss with 0.0 probability: {loss_bad}")  # -inf!
@@ -2418,22 +2418,22 @@ The key insights from this article:
 
 3. **Shape management is the most common source of bugs**. Always track dimensions explicitly: `(batch, features)` in, `(batch, outputs)` out.
 
-4. **Mini-batches balance efficiency and stochasticity** — the default batch size of 32-128 works well for most problems.
+4. **Mini-batches balance efficiency and stochasticity** - the default batch size of 32-128 works well for most problems.
 
 5. **He/Xavier initialization** prevents vanishing and exploding gradients from the very first forward pass.
 
-6. **The Universal Approximation Theorem** guarantees that neural networks have the capacity to approximate any function — the challenge is training them to do so efficiently.
+6. **The Universal Approximation Theorem** guarantees that neural networks have the capacity to approximate any function - the challenge is training them to do so efficiently.
 
 ---
 
 ## What's Next
 
-**Part 9: PyTorch Fundamentals** — Now that you understand every gradient and matrix multiplication that happens inside a neural network, we switch to PyTorch — the framework that every serious deep learning practitioner uses.
+**Part 9: PyTorch Fundamentals** - Now that you understand every gradient and matrix multiplication that happens inside a neural network, we switch to PyTorch - the framework that every serious deep learning practitioner uses.
 
 In Part 9 you will learn:
 
-- **Tensors**: PyTorch's ndarray — with GPU acceleration built in
-- **Autograd**: automatic differentiation — never compute gradients by hand again
+- **Tensors**: PyTorch's ndarray - with GPU acceleration built in
+- **Autograd**: automatic differentiation - never compute gradients by hand again
 - **torch.nn**: building networks with `nn.Module`, `nn.Linear`, `nn.Sequential`
 - **DataLoader**: efficient batching, shuffling, parallel data loading
 - **GPU training**: moving tensors to CUDA with `.to(device)`
@@ -2441,7 +2441,7 @@ In Part 9 you will learn:
 - **Saving and loading**: `torch.save()` and `torch.load()`
 - **MNIST in PyTorch**: reproduce our scratch results in 50 lines of clean code
 
-The transition from our NumPy framework to PyTorch will be smooth — you already understand what PyTorch is doing under the hood.
+The transition from our NumPy framework to PyTorch will be smooth - you already understand what PyTorch is doing under the hood.
 
 ---
 
@@ -2449,5 +2449,5 @@ The transition from our NumPy framework to PyTorch will be smooth — you alread
 
 ---
 
-*Machine Learning — A Developer's Deep Dive from Fundamentals to Production*
+*Machine Learning - A Developer's Deep Dive from Fundamentals to Production*
 *Part 8 of 19 | Published March 2026*

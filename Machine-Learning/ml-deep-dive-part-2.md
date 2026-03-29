@@ -1,8 +1,8 @@
-# Machine Learning Deep Dive — Part 2: Your First ML Model — Linear Regression from Scratch
+# Machine Learning Deep Dive - Part 2: Your First ML Model - Linear Regression from Scratch
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
 **Part:** 2 of 19 (Foundations)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~45 minutes
@@ -13,13 +13,13 @@
 
 1. [Quick Recap of Part 1](#quick-recap-of-part-1)
 2. [The Regression Problem](#1-the-regression-problem)
-3. [Simple Linear Regression — Math First](#2-simple-linear-regression--math-first)
+3. [Simple Linear Regression - Math First](#2-simple-linear-regression--math-first)
 4. [The Cost Function (MSE)](#3-the-cost-function-mse)
-5. [Gradient Descent — Implemented from Scratch](#4-gradient-descent--implemented-from-scratch)
+5. [Gradient Descent - Implemented from Scratch](#4-gradient-descent--implemented-from-scratch)
 6. [Multiple Linear Regression](#5-multiple-linear-regression)
 7. [The Normal Equation](#6-the-normal-equation)
 8. [Polynomial Regression](#7-polynomial-regression)
-9. [Regularization — Ridge and Lasso](#8-regularization--ridge-and-lasso)
+9. [Regularization - Ridge and Lasso](#8-regularization--ridge-and-lasso)
 10. [Evaluation Metrics](#9-evaluation-metrics)
 11. [scikit-learn Comparison](#10-scikit-learn-comparison)
 12. [Project: House Price Predictor](#11-project-house-price-predictor)
@@ -30,9 +30,9 @@
 
 ## Quick Recap of Part 1
 
-In Part 1 we laid the mathematical bedrock that underpins every machine learning algorithm: vectors and matrices as the language of data, probability and statistics as the language of uncertainty, and gradient descent as the universal optimization engine. We worked through dot products, matrix multiplication, partial derivatives, and the chain rule — all of which resurface today in concrete, running code.
+In Part 1 we laid the mathematical bedrock that underpins every machine learning algorithm: vectors and matrices as the language of data, probability and statistics as the language of uncertainty, and gradient descent as the universal optimization engine. We worked through dot products, matrix multiplication, partial derivatives, and the chain rule - all of which resurface today in concrete, running code.
 
-Today we build our first real ML model. We will predict house prices — and by the end you will understand not just HOW linear regression works, but WHY every equation exists, where each formula comes from, and when the math breaks down. This is the article I wish I had read when I first started with machine learning.
+Today we build our first real ML model. We will predict house prices - and by the end you will understand not just HOW linear regression works, but WHY every equation exists, where each formula comes from, and when the math breaks down. This is the article I wish I had read when I first started with machine learning.
 
 ---
 
@@ -47,13 +47,13 @@ Today we build our first real ML model. We will predict house prices — and by 
 - How many units will we sell next quarter?
 - What return will this stock generate?
 
-The output is always a number on a continuous scale — not a label, not a bucket.
+The output is always a number on a continuous scale - not a label, not a bucket.
 
 ### Our Running Example
 
 Throughout this article we predict **house prices** from physical features. This is the canonical regression problem because:
 
-1. Everyone has intuition about it — bigger houses cost more.
+1. Everyone has intuition about it - bigger houses cost more.
 2. The relationships are imperfect enough to be interesting.
 3. The California Housing dataset (built into scikit-learn) gives us real data to finish with.
 
@@ -132,7 +132,7 @@ where `ε` (epsilon) is random noise with zero mean. Everything we build in this
 
 ---
 
-## 2. Simple Linear Regression — Math First
+## 2. Simple Linear Regression - Math First
 
 ### The Equation
 
@@ -142,17 +142,17 @@ The simplest regression model has one input feature and predicts with a straight
 ŷ = wx + b
 ```
 
-- `x` — the input feature (square footage)
-- `ŷ` — the predicted output (predicted price; pronounced "y-hat")
-- `w` — the **weight** (also called slope or coefficient)
-- `b` — the **bias** (also called intercept)
-- `y` — the true output (actual sale price)
+- `x` - the input feature (square footage)
+- `ŷ` - the predicted output (predicted price; pronounced "y-hat")
+- `w` - the **weight** (also called slope or coefficient)
+- `b` - the **bias** (also called intercept)
+- `y` - the true output (actual sale price)
 
 ### Intuition for w and b
 
 **Weight `w`** controls how steeply the line rises. In our housing example, `w ≈ 150` means: every additional square foot adds $150 to the predicted price. It captures the *strength and direction* of the relationship between input and output.
 
-**Bias `b`** controls where the line crosses the y-axis. In our example, `b ≈ 80,000` represents the baseline price of a house with zero square footage — a theoretical anchor. In practice it absorbs all the fixed costs (land value, market premium) that do not scale with square footage.
+**Bias `b`** controls where the line crosses the y-axis. In our example, `b ≈ 80,000` represents the baseline price of a house with zero square footage - a theoretical anchor. In practice it absorbs all the fixed costs (land value, market premium) that do not scale with square footage.
 
 > The weight is the slope of your beliefs, and the bias is your prior expectation before seeing any data.
 
@@ -168,7 +168,7 @@ eᵢ = yᵢ - ŷᵢ = yᵢ - (wxᵢ + b)
 - A negative residual means the model over-predicted.
 - A residual of zero means the model was perfect for that point.
 
-Our goal: find the `w` and `b` that make the residuals as small as possible — *collectively* across all training examples.
+Our goal: find the `w` and `b` that make the residuals as small as possible - *collectively* across all training examples.
 
 ```python
 # file: 02_simple_linear_regression_concepts.py
@@ -203,7 +203,7 @@ x_line = np.linspace(sqft.min(), sqft.max(), 100)
 ax.plot(x_line, w_guess * x_line + b_guess, 'r-', lw=2, label=f'ŷ = {w_guess:.3f}x + {b_guess:.0f} (bad)')
 for xi, yi, yp in zip(sqft, price, y_pred_guess):
     ax.plot([xi, xi], [yi, yp], 'r--', alpha=0.4, lw=1)
-ax.set_title('Bad Parameter Guess — Large Residuals', fontweight='bold')
+ax.set_title('Bad Parameter Guess - Large Residuals', fontweight='bold')
 ax.set_xlabel('Square Footage')
 ax.set_ylabel('Price ($k)')
 ax.legend()
@@ -215,7 +215,7 @@ ax.scatter(sqft, price, color='steelblue', s=50, zorder=5, label='Actual price')
 ax.plot(x_line, w_true * x_line + b_true, 'g-', lw=2, label=f'ŷ = {w_true:.3f}x + {b_true:.0f} (good)')
 for xi, yi, yp in zip(sqft, price, y_pred_true):
     ax.plot([xi, xi], [yi, yp], 'g--', alpha=0.4, lw=1)
-ax.set_title('Good Parameter Fit — Small Residuals', fontweight='bold')
+ax.set_title('Good Parameter Fit - Small Residuals', fontweight='bold')
 ax.set_xlabel('Square Footage')
 ax.set_ylabel('Price ($k)')
 ax.legend()
@@ -228,14 +228,14 @@ plt.show()
 # Show residual statistics
 residuals_bad  = price - y_pred_guess
 residuals_good = price - y_pred_true
-print(f"Bad guess  — Mean residual: {residuals_bad.mean():+.2f}k,  Std: {residuals_bad.std():.2f}k")
-print(f"Good fit   — Mean residual: {residuals_good.mean():+.2f}k,  Std: {residuals_good.std():.2f}k")
+print(f"Bad guess  - Mean residual: {residuals_bad.mean():+.2f}k,  Std: {residuals_bad.std():.2f}k")
+print(f"Good fit   - Mean residual: {residuals_good.mean():+.2f}k,  Std: {residuals_good.std():.2f}k")
 ```
 
 **Expected output:**
 ```
-Bad guess  — Mean residual: -48.23k,  Std: 35.17k
-Good fit   — Mean residual: -0.87k,   Std: 24.63k
+Bad guess  - Mean residual: -48.23k,  Std: 35.17k
+Good fit   - Mean residual: -0.87k,   Std: 24.63k
 ```
 
 ---
@@ -246,7 +246,7 @@ Good fit   — Mean residual: -0.87k,   Std: 24.63k
 
 We have a model `ŷ = wx + b` and we need to find the best `w` and `b`. But "best" has to be defined mathematically. The **cost function** (also called **loss function**) takes the current parameters and returns a single number measuring how wrong the model is.
 
-> The cost function is the compass — it tells gradient descent which direction leads downhill toward better parameters.
+> The cost function is the compass - it tells gradient descent which direction leads downhill toward better parameters.
 
 ### Mean Squared Error
 
@@ -258,10 +258,10 @@ MSE(w, b) = (1/n) Σᵢ (yᵢ - ŷᵢ)²
 ```
 
 Breaking this down:
-1. `(yᵢ - ŷᵢ)` — residual for sample `i`
-2. `(yᵢ - ŷᵢ)²` — squared residual (always non-negative)
-3. `Σ` — sum over all training examples
-4. `(1/n)` — average (makes cost independent of dataset size)
+1. `(yᵢ - ŷᵢ)` - residual for sample `i`
+2. `(yᵢ - ŷᵢ)²` - squared residual (always non-negative)
+3. `Σ` - sum over all training examples
+4. `(1/n)` - average (makes cost independent of dataset size)
 
 ### Why Square the Errors?
 
@@ -292,7 +292,7 @@ def predict(x, w, b):
     return w * x + b
 
 def mse(y_true, y_pred):
-    """Mean Squared Error — the heart of linear regression."""
+    """Mean Squared Error - the heart of linear regression."""
     n = len(y_true)
     residuals = y_true - y_pred
     return (1 / n) * np.sum(residuals ** 2)
@@ -368,13 +368,13 @@ Grid search minimum:
 
 ### The Convexity Insight
 
-The MSE loss landscape for linear regression is a **bowl-shaped (convex) surface** — it has exactly one global minimum. There are no local minima to get stuck in. This is a remarkable mathematical property that makes linear regression the most reliably trainable model in all of machine learning.
+The MSE loss landscape for linear regression is a **bowl-shaped (convex) surface** - it has exactly one global minimum. There are no local minima to get stuck in. This is a remarkable mathematical property that makes linear regression the most reliably trainable model in all of machine learning.
 
 > A convex loss function is like a smooth valley: no matter where you start walking downhill, you always end up at the same lowest point.
 
 ---
 
-## 4. Gradient Descent — Implemented from Scratch
+## 4. Gradient Descent - Implemented from Scratch
 
 ### Deriving the Gradients
 
@@ -405,7 +405,7 @@ w ← w - α · (∂J/∂w) = w - α · (-2/n) Σᵢ eᵢxᵢ
 b ← b - α · (∂J/∂b) = b - α · (-2/n) Σᵢ eᵢ
 ```
 
-where `α` (**alpha**) is the **learning rate** — how large a step to take.
+where `α` (**alpha**) is the **learning rate** - how large a step to take.
 
 ### Full Implementation
 
@@ -670,10 +670,10 @@ In matrix form (the real power):
 ```
 
 where:
-- `X` — design matrix of shape `(n_samples, n_features)`
-- `w` — weight vector of shape `(n_features,)`
-- `b` — scalar bias
-- `ŷ` — predictions of shape `(n_samples,)`
+- `X` - design matrix of shape `(n_samples, n_features)`
+- `w` - weight vector of shape `(n_features,)`
+- `b` - scalar bias
+- `ŷ` - predictions of shape `(n_samples,)`
 
 ### Matrix Implementation
 
@@ -775,8 +775,8 @@ class StandardScaler:
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-print(f"\nBefore scaling — sqft: mean={X[:,0].mean():.1f}, std={X[:,0].std():.1f}")
-print(f"After scaling  — sqft: mean={X_scaled[:,0].mean():.4f}, std={X_scaled[:,0].std():.4f}")
+print(f"\nBefore scaling - sqft: mean={X[:,0].mean():.1f}, std={X[:,0].std():.1f}")
+print(f"After scaling  - sqft: mean={X_scaled[:,0].mean():.4f}, std={X_scaled[:,0].std():.4f}")
 
 # Train
 mlr = MultipleLinearRegression(learning_rate=0.05, n_epochs=1000)
@@ -793,8 +793,8 @@ print(f"  {'bias':15s}: {mlr.b:+.4f}")
 X shape: (200, 5)
 y shape: (200,)
 
-Before scaling — sqft: mean=2027.3, std=844.6
-After scaling  — sqft: mean=0.0000, std=1.0000
+Before scaling - sqft: mean=2027.3, std=844.6
+After scaling  - sqft: mean=0.0000, std=1.0000
 
 Epoch     0 | MSE:  14324.8912
 Epoch   500 | MSE:    521.7034
@@ -811,7 +811,7 @@ Learned weights:
 
 ### Why Feature Scaling Matters
 
-Without scaling, features like `sqft` (range: 600–3500) dwarf features like `bedrooms` (range: 1–5). Gradient descent takes enormous steps along the `sqft` axis and tiny steps along `bedrooms`, making the loss landscape an elongated ellipse that is very slow to traverse. Scaling makes it a circle — gradient descent converges orders of magnitude faster.
+Without scaling, features like `sqft` (range: 600–3500) dwarf features like `bedrooms` (range: 1–5). Gradient descent takes enormous steps along the `sqft` axis and tiny steps along `bedrooms`, making the loss landscape an elongated ellipse that is very slow to traverse. Scaling makes it a circle - gradient descent converges orders of magnitude faster.
 
 ```python
 # file: 08_scaling_importance.py
@@ -995,8 +995,8 @@ Gradient Descent (5000 epochs) vs Normal Equation:
 
 | Criterion | Normal Equation | Gradient Descent |
 |---|---|---|
-| **Speed (small data, n < 10k)** | Fast — one matrix inversion | Slower — many iterations |
-| **Speed (large data, n > 100k)** | Very slow — O(p³) inversion | Fast — scales linearly |
+| **Speed (small data, n < 10k)** | Fast - one matrix inversion | Slower - many iterations |
+| **Speed (large data, n > 100k)** | Very slow - O(p³) inversion | Fast - scales linearly |
 | **Memory** | Needs to store full XᵀX | Needs only one mini-batch |
 | **Feature scaling** | Not required | Required for stable convergence |
 | **Hyperparameters** | None | Learning rate, epochs |
@@ -1108,7 +1108,7 @@ Model Complexity vs MSE:
       10       0.0823            11
 ```
 
-The degree-10 model has near-zero training error — but it has memorized the noise, not learned the signal. This is **overfitting**.
+The degree-10 model has near-zero training error - but it has memorized the noise, not learned the signal. This is **overfitting**.
 
 ### Bias-Variance Tradeoff
 
@@ -1133,15 +1133,15 @@ graph LR
     style F fill:#9B59B6,color:#fff
 ```
 
-**Bias** — error from wrong assumptions (model is too simple to fit the data).
-**Variance** — error from sensitivity to small fluctuations in training data (model memorizes noise).
+**Bias** - error from wrong assumptions (model is too simple to fit the data).
+**Variance** - error from sensitivity to small fluctuations in training data (model memorizes noise).
 **Total Error = Bias² + Variance + Irreducible Noise**
 
 The sweet spot minimizes total error on *unseen* data, not training data.
 
 ---
 
-## 8. Regularization — Ridge and Lasso
+## 8. Regularization - Ridge and Lasso
 
 ### The Overfitting Problem
 
@@ -1152,8 +1152,8 @@ Regularized Cost = Data Fit Term + λ · Complexity Penalty
 ```
 
 The hyperparameter `λ` (lambda) controls the tradeoff:
-- `λ = 0` — no regularization (pure MSE)
-- `λ → ∞` — all weights shrink to zero (model predicts mean)
+- `λ = 0` - no regularization (pure MSE)
+- `λ → ∞` - all weights shrink to zero (model predicts mean)
 
 ### L2 Regularization (Ridge Regression)
 
@@ -1276,7 +1276,7 @@ for lam in lambdas:
 J_lasso(w) = MSE + λ · ||w||₁ = (1/n)Σ(yᵢ - ŷᵢ)² + λ·Σ|wⱼ|
 ```
 
-The crucial difference: the L1 penalty creates **sparse solutions** — it drives some weights exactly to zero. This is built-in feature selection.
+The crucial difference: the L1 penalty creates **sparse solutions** - it drives some weights exactly to zero. This is built-in feature selection.
 
 The gradient:
 ```
@@ -1414,7 +1414,7 @@ Correct feature selection: 19/20
 |---|---|---|---|---|
 | **Penalty** | None | λΣwⱼ² | λΣ\|wⱼ\| | λ₁Σ\|wⱼ\| + λ₂Σwⱼ² |
 | **Weight shrinkage** | None | Toward zero (never exactly) | Toward zero (can be exact) | Combination |
-| **Sparsity** | No | No | Yes — automatic feature selection | Yes (with L1 component) |
+| **Sparsity** | No | No | Yes - automatic feature selection | Yes (with L1 component) |
 | **Correlated features** | Unstable | Handles well (keeps all) | Picks one (drops others) | Keeps groups |
 | **Solution** | Normal Equation | Normal Equation variant | Coordinate descent | Coordinate descent |
 | **Best when** | Low noise, clean data | Many small effects | Few large effects, feature selection | Both scenarios |
@@ -1475,7 +1475,7 @@ def r_squared(y_true, y_pred):
 
 def mean_absolute_percentage_error(y_true, y_pred):
     """
-    MAPE: percentage error — useful when relative error matters.
+    MAPE: percentage error - useful when relative error matters.
     Warning: blows up if any y_true is near zero!
     """
     return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
@@ -1554,7 +1554,7 @@ Notice how MAE (15.47 vs 17.12) is much less sensitive to the three outliers tha
 
 ### Verifying Our Work
 
-After building everything from scratch, let us verify our implementations match scikit-learn — the gold-standard library for classical machine learning.
+After building everything from scratch, let us verify our implementations match scikit-learn - the gold-standard library for classical machine learning.
 
 ```python
 # file: 14_sklearn_comparison.py
@@ -1586,8 +1586,8 @@ X_bias = np.hstack([X, np.ones((len(X), 1))])
 w_ours = np.linalg.lstsq(X_bias, y, rcond=None)[0]
 y_pred_ours = X_bias @ w_ours
 
-print(f"\nsklearn  — MSE: {mean_squared_error(y, y_pred_sk):.4f}  R²: {r2_score(y, y_pred_sk):.6f}")
-print(f"From scratch — MSE: {mean_squared_error(y, y_pred_ours):.4f}  R²: {r2_score(y, y_pred_ours):.6f}")
+print(f"\nsklearn  - MSE: {mean_squared_error(y, y_pred_sk):.4f}  R²: {r2_score(y, y_pred_sk):.6f}")
+print(f"From scratch - MSE: {mean_squared_error(y, y_pred_ours):.4f}  R²: {r2_score(y, y_pred_ours):.6f}")
 print(f"Predictions match: {np.allclose(y_pred_sk, y_pred_ours, atol=1e-6)}")
 
 # ---- Ridge Regression ----
@@ -1610,7 +1610,7 @@ ridge_sklearn2 = Ridge(alpha=alpha, fit_intercept=True)
 ridge_sklearn2.fit(X, y)
 y_pred_r2 = ridge_sklearn2.predict(X)
 
-print(f"\nsklearn  — MSE: {mean_squared_error(y, y_pred_r2):.4f}  R²: {r2_score(y, y_pred_r2):.6f}")
+print(f"\nsklearn  - MSE: {mean_squared_error(y, y_pred_r2):.4f}  R²: {r2_score(y, y_pred_r2):.6f}")
 
 # ---- Lasso Regression ----
 print("\n" + "=" * 55)
@@ -1622,7 +1622,7 @@ lasso_sklearn.fit(X, y)
 y_pred_lasso = lasso_sklearn.predict(X)
 n_nonzero = np.sum(lasso_sklearn.coef_ != 0)
 
-print(f"\nsklearn  — MSE: {mean_squared_error(y, y_pred_lasso):.4f}  "
+print(f"\nsklearn  - MSE: {mean_squared_error(y, y_pred_lasso):.4f}  "
       f"R²: {r2_score(y, y_pred_lasso):.6f}  Non-zero: {n_nonzero}/5")
 print(f"Lasso coefficients: {lasso_sklearn.coef_}")
 
@@ -1641,7 +1641,7 @@ lr_poly = LinearRegression()
 lr_poly.fit(X_poly_scaled, y)
 y_pred_poly = lr_poly.predict(X_poly_scaled)
 
-print(f"\nsklearn poly — MSE: {mean_squared_error(y, y_pred_poly):.4f}  R²: {r2_score(y, y_pred_poly):.6f}")
+print(f"\nsklearn poly - MSE: {mean_squared_error(y, y_pred_poly):.4f}  R²: {r2_score(y, y_pred_poly):.6f}")
 ```
 
 **Expected output:**
@@ -1650,28 +1650,28 @@ print(f"\nsklearn poly — MSE: {mean_squared_error(y, y_pred_poly):.4f}  R²: {
 LINEAR REGRESSION: From-Scratch vs scikit-learn
 =======================================================
 
-sklearn  — MSE: 896.8423  R²: 0.993841
-From scratch — MSE: 896.8423  R²: 0.993841
+sklearn  - MSE: 896.8423  R²: 0.993841
+From scratch - MSE: 896.8423  R²: 0.993841
 Predictions match: True
 
 =======================================================
 RIDGE REGRESSION
 =======================================================
 
-sklearn  — MSE: 899.1237  R²: 0.993824
+sklearn  - MSE: 899.1237  R²: 0.993824
 
 =======================================================
 LASSO REGRESSION
 =======================================================
 
-sklearn  — MSE: 1024.4821  R²: 0.992921  Non-zero: 5/5
+sklearn  - MSE: 1024.4821  R²: 0.992921  Non-zero: 5/5
 Lasso coefficients: [42.31  0.00  17.82  0.00  53.41]
 
 =======================================================
 POLYNOMIAL REGRESSION (degree=3)
 =======================================================
 
-sklearn poly — MSE: 3421.8124  R²: 0.975841
+sklearn poly - MSE: 3421.8124  R²: 0.975841
 ```
 
 ### scikit-learn API Quick Reference
@@ -1692,7 +1692,7 @@ sklearn poly — MSE: 3421.8124  R²: 0.975841
 
 ### The California Housing Dataset
 
-Let us put everything together in a real-world project using the California Housing dataset — 20,640 census block groups with 8 features predicting median house value.
+Let us put everything together in a real-world project using the California Housing dataset - 20,640 census block groups with 8 features predicting median house value.
 
 ```python
 # file: 15_california_housing_project.py
@@ -1718,7 +1718,7 @@ X = pd.DataFrame(housing.data, columns=housing.feature_names)
 y = pd.Series(housing.target, name='MedHouseVal')   # in $100k
 
 print(f"\nDataset shape: {X.shape}")
-print(f"Target range: ${y.min()*100:.0f}k — ${y.max()*100:.0f}k")
+print(f"Target range: ${y.min()*100:.0f}k - ${y.max()*100:.0f}k")
 print(f"\nFeature descriptions:")
 feature_desc = {
     'MedInc':    'Median income in block group ($10k)',
@@ -1959,23 +1959,23 @@ ax.plot(train_sizes, val_mse, '#E74C3C', lw=2.5, label='Validation MSE')
 ax.fill_between(train_sizes, val_mse - val_std, val_mse + val_std, alpha=0.15, color='#E74C3C')
 ax.set_xlabel('Training Set Size', fontsize=13)
 ax.set_ylabel('MSE', fontsize=13)
-ax.set_title('Learning Curve — Ridge Regression\n(California Housing)', fontsize=14, fontweight='bold')
+ax.set_title('Learning Curve - Ridge Regression\n(California Housing)', fontsize=14, fontweight='bold')
 ax.legend(fontsize=12)
 ax.grid(True, alpha=0.3)
 plt.tight_layout()
 plt.savefig('learning_curve.png', dpi=150)
 plt.show()
 
-print(f"\nWith 200 samples  — Train MSE: {train_mse[2]:.4f}, Val MSE: {val_mse[2]:.4f}")
-print(f"With 5000 samples — Train MSE: {train_mse[9]:.4f}, Val MSE: {val_mse[9]:.4f}")
-print(f"With full data    — Train MSE: {train_mse[-1]:.4f}, Val MSE: {val_mse[-1]:.4f}")
+print(f"\nWith 200 samples  - Train MSE: {train_mse[2]:.4f}, Val MSE: {val_mse[2]:.4f}")
+print(f"With 5000 samples - Train MSE: {train_mse[9]:.4f}, Val MSE: {val_mse[9]:.4f}")
+print(f"With full data    - Train MSE: {train_mse[-1]:.4f}, Val MSE: {val_mse[-1]:.4f}")
 ```
 
 **Expected output:**
 ```
-With 200 samples  — Train MSE: 0.1823, Val MSE: 0.8934
-With 5000 samples — Train MSE: 0.4712, Val MSE: 0.5831
-With full data    — Train MSE: 0.5183, Val MSE: 0.5241
+With 200 samples  - Train MSE: 0.1823, Val MSE: 0.8934
+With 5000 samples - Train MSE: 0.4712, Val MSE: 0.5831
+With full data    - Train MSE: 0.5183, Val MSE: 0.5241
 ```
 
 ### Full From-Scratch vs sklearn Head-to-Head
@@ -2065,11 +2065,11 @@ sklearn is faster because it uses optimized LAPACK routines.
 
 ### Key Findings from the Project
 
-1. **Linear regression explains ~60% of variance** in California housing prices — not bad for a linear model on 8 features.
-2. **Regularization (Ridge α=1) slightly outperforms plain linear regression** — shows some mild collinearity in features.
-3. **RMSE ≈ $72k** means our best prediction is off by $72,000 on average — not production-ready, but a solid linear baseline.
-4. **Learning curves show the model benefits from more data** — the gap between train and validation MSE shrinks as data grows, suggesting we are not dramatically overfitting.
-5. **The biggest signal is median income** (correlation ≈ 0.69 with price) — income is the dominant predictor.
+1. **Linear regression explains ~60% of variance** in California housing prices - not bad for a linear model on 8 features.
+2. **Regularization (Ridge α=1) slightly outperforms plain linear regression** - shows some mild collinearity in features.
+3. **RMSE ≈ $72k** means our best prediction is off by $72,000 on average - not production-ready, but a solid linear baseline.
+4. **Learning curves show the model benefits from more data** - the gap between train and validation MSE shrinks as data grows, suggesting we are not dramatically overfitting.
+5. **The biggest signal is median income** (correlation ≈ 0.69 with price) - income is the dominant predictor.
 
 ---
 
@@ -2129,7 +2129,7 @@ Let us take stock of the ground we covered. Starting from a scatter plot and end
 
 ```python
 # BAD: training without scaling
-model.fit(X_raw, y)   # sqft (600-3500) vs bedrooms (1-5) — disaster
+model.fit(X_raw, y)   # sqft (600-3500) vs bedrooms (1-5) - disaster
 
 # GOOD: always scale before gradient-based models
 scaler = StandardScaler()
@@ -2184,7 +2184,7 @@ for degree in [1, 2, 3, 5, 7, 10]:
 
 ## Supplementary: Mini-Batch Gradient Descent
 
-The gradient descent we implemented is **batch gradient descent** — it uses all training examples every iteration. For large datasets, **mini-batch gradient descent** is preferred:
+The gradient descent we implemented is **batch gradient descent** - it uses all training examples every iteration. For large datasets, **mini-batch gradient descent** is preferred:
 
 ```python
 # file: 21_mini_batch_gd.py
@@ -2276,13 +2276,13 @@ REGRESSION DECISION FRAMEWORK
 ==============================
 
 1. How many samples?
-   < 1,000:    Normal Equation — fast and exact
+   < 1,000:    Normal Equation - fast and exact
    1k–100k:    Gradient Descent with StandardScaler
    > 100k:     Mini-batch or SGDRegressor from sklearn
 
 2. How many features?
    < 50:       No urgent need for feature selection
-   50–1000:    Lasso — automatic feature selection
+   50–1000:    Lasso - automatic feature selection
    > 1000:     Elastic Net + aggressive regularization
 
 3. Is the relationship linear?
@@ -2317,7 +2317,7 @@ search.fit(X_train, y_train)
 best_model = search.best_estimator_
 """
 
-print("Decision framework printed above — save as reference!")
+print("Decision framework printed above - save as reference!")
 ```
 
 ---
@@ -2340,20 +2340,20 @@ In Part 2, we predicted *numbers*. In **Part 3**, we predict *categories*.
 
 We will build a spam classifier from scratch, then compare with sklearn's `LogisticRegression`.
 
-> If linear regression taught us to predict a value, logistic regression teaches us to predict a probability — a fundamentally different and richer kind of prediction.
+> If linear regression taught us to predict a value, logistic regression teaches us to predict a probability - a fundamentally different and richer kind of prediction.
 
 ---
 
 ## References and Further Reading
 
-- **Bishop, C.M. (2006).** *Pattern Recognition and Machine Learning.* Springer. — Chapter 3 covers linear models for regression in full mathematical detail.
-- **Hastie, T., Tibshirani, R., Friedman, J. (2009).** *The Elements of Statistical Learning.* Springer. — Free PDF at https://web.stanford.edu/~hastie/ElemStatLearn/ — Chapters 3–5 for linear methods.
-- **Géron, A. (2022).** *Hands-On Machine Learning with Scikit-Learn, Keras & TensorFlow (3rd ed.).* O'Reilly. — The best practical companion to this series.
-- **Tibshirani, R. (1996).** Regression shrinkage and selection via the lasso. *Journal of the Royal Statistical Society.* — The original Lasso paper.
-- **scikit-learn documentation.** https://scikit-learn.org/stable/modules/linear_model.html — Exhaustive reference for all linear models.
+- **Bishop, C.M. (2006).** *Pattern Recognition and Machine Learning.* Springer. - Chapter 3 covers linear models for regression in full mathematical detail.
+- **Hastie, T., Tibshirani, R., Friedman, J. (2009).** *The Elements of Statistical Learning.* Springer. - Free PDF at https://web.stanford.edu/~hastie/ElemStatLearn/ - Chapters 3–5 for linear methods.
+- **Géron, A. (2022).** *Hands-On Machine Learning with Scikit-Learn, Keras & TensorFlow (3rd ed.).* O'Reilly. - The best practical companion to this series.
+- **Tibshirani, R. (1996).** Regression shrinkage and selection via the lasso. *Journal of the Royal Statistical Society.* - The original Lasso paper.
+- **scikit-learn documentation.** https://scikit-learn.org/stable/modules/linear_model.html - Exhaustive reference for all linear models.
 
 ---
 
-*Part 2 of 19 | Machine Learning — A Developer's Deep Dive from Fundamentals to Production*
-*Previous: [Part 1 — Mathematics for Machine Learning](/Machine-Learning/ml-deep-dive-part-1.md)*
-*Next: [Part 3 — Classification with Logistic Regression](/Machine-Learning/ml-deep-dive-part-3.md)*
+*Part 2 of 19 | Machine Learning - A Developer's Deep Dive from Fundamentals to Production*
+*Previous: [Part 1 - Mathematics for Machine Learning](/Machine-Learning/ml-deep-dive-part-1.md)*
+*Next: [Part 3 - Classification with Logistic Regression](/Machine-Learning/ml-deep-dive-part-3.md)*

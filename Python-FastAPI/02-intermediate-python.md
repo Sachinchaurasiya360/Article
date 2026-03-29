@@ -1,9 +1,9 @@
-# Intermediate Python — Interview Preparation (Part 2/7)
+# Intermediate Python - Interview Preparation (Part 2/7)
 
 > **Series**: Python + FastAPI Interview Prep
 > **Level**: Intermediate
-> **Prerequisites**: [Part 1 — Python Fundamentals](./01-python-fundamentals.md)
-> **Next**: [Part 3 — Advanced Python](./03-advanced-python.md)
+> **Prerequisites**: [Part 1 - Python Fundamentals](./01-python-fundamentals.md)
+> **Next**: [Part 3 - Advanced Python](./03-advanced-python.md)
 
 ---
 
@@ -34,7 +34,7 @@ squares = []
 for n in range(10):
     squares.append(n ** 2)
 
-# List comprehension — same result
+# List comprehension - same result
 squares = [n ** 2 for n in range(10)]
 ```
 
@@ -53,7 +53,7 @@ squares = [n ** 2 for n in range(10)]
 - Memory: a list comprehension builds the entire list in memory. For large datasets, prefer a **generator expression** `(x for x in iterable)`.
 - Side-effect-only operations (e.g., calling `print`) should **never** use comprehensions; use a loop instead.
 
-> **Why the interviewer asks this:** They want to verify you understand *when* to use comprehensions and *when not to* — not just the syntax.
+> **Why the interviewer asks this:** They want to verify you understand *when* to use comprehensions and *when not to* - not just the syntax.
 
 > **Follow-up:** *"What is the difference between a list comprehension and a generator expression in terms of memory usage?"*
 
@@ -132,7 +132,7 @@ A common mistake is to read `for num in row` first, which would be a `NameError`
 
 **Rule of thumb:** In a comprehension with multiple `for` clauses, the **leftmost** `for` is the outermost loop.
 
-> **Why the interviewer asks this:** It tests whether you understand the evaluation order of nested comprehensions — a frequent source of bugs.
+> **Why the interviewer asks this:** It tests whether you understand the evaluation order of nested comprehensions - a frequent source of bugs.
 
 > **Follow-up:** *"How would you transpose this matrix using a list comprehension?"*
 
@@ -152,7 +152,7 @@ unique = {word.lower() for word in words}
 # {'hello', 'world', 'python'}
 ```
 
-**Practical use case — finding duplicate emails in a dataset:**
+**Practical use case - finding duplicate emails in a dataset:**
 
 ```python
 raw_emails = [
@@ -196,7 +196,7 @@ print(freq)
 
 **Answer:**
 
-The code actually **works correctly** in terms of output — it produces:
+The code actually **works correctly** in terms of output - it produces:
 
 ```python
 {'m': 1, 'i': 4, 's': 4, 'p': 2}
@@ -204,13 +204,13 @@ The code actually **works correctly** in terms of output — it produces:
 
 However, the **bug is performance**, not correctness. `text.count(char)` is called for **every character in the string**, including duplicates. For `"mississippi"` (11 characters), `.count()` is called 11 times (each O(n)), giving O(n^2) time complexity.
 
-**Fix — iterate over unique characters only:**
+**Fix - iterate over unique characters only:**
 
 ```python
 freq = {char: text.count(char) for char in set(text)}
 ```
 
-**Better fix — use `Counter`:**
+**Better fix - use `Counter`:**
 
 ```python
 from collections import Counter
@@ -253,7 +253,7 @@ active_admins = {
 # {1: 'Alice', 3: 'Charlie'}
 ```
 
-**Production hardening — handle missing keys gracefully:**
+**Production hardening - handle missing keys gracefully:**
 
 ```python
 active_admins = {
@@ -292,7 +292,7 @@ def divide(a: float, b: float) -> float | None:
         print(f"Division successful: {result}")
         return result
     finally:
-        # Runs ALWAYS — whether an exception occurred or not,
+        # Runs ALWAYS - whether an exception occurred or not,
         # even if a return statement was hit above
         print("Cleanup complete")
 ```
@@ -305,7 +305,7 @@ def divide(a: float, b: float) -> float | None:
 | Exception matches an `except` | Runs until error | **Runs** | Skipped | **Runs** |
 | Exception does NOT match any `except` | Runs until error | Skipped | Skipped | **Runs**, then exception propagates |
 
-**Critical edge case — `finally` overrides `return`:**
+**Critical edge case - `finally` overrides `return`:**
 
 ```python
 def tricky():
@@ -317,13 +317,13 @@ def tricky():
 print(tricky())  # "from finally"
 ```
 
-This is almost always a bug. **Never put `return` in a `finally` block** — it silently swallows exceptions and overrides the intended return value.
+This is almost always a bug. **Never put `return` in a `finally` block** - it silently swallows exceptions and overrides the intended return value.
 
 **Why `else` exists:**
 
-The `else` clause keeps the `try` block minimal. Code in `else` is only code that should run on success — placing it inside `try` would risk catching exceptions from that code unintentionally.
+The `else` clause keeps the `try` block minimal. Code in `else` is only code that should run on success - placing it inside `try` would risk catching exceptions from that code unintentionally.
 
-> **Why the interviewer asks this:** Understanding the full flow — especially `else` and `finally` edge cases — separates intermediate developers from beginners.
+> **Why the interviewer asks this:** Understanding the full flow - especially `else` and `finally` edge cases - separates intermediate developers from beginners.
 
 > **Follow-up:** *"What happens if both the `except` block and the `finally` block raise exceptions?"*
 
@@ -371,7 +371,7 @@ def get_user(user_id: int) -> dict:
 
 1. **Always inherit from `Exception`**, not `BaseException` (which includes `KeyboardInterrupt`, `SystemExit`).
 2. **Create a base exception** for your app/library (`AppError`) so callers can catch all your errors with a single `except AppError`.
-3. **Store structured data** on the exception (`field`, `resource`, etc.) — this lets error handlers produce useful responses (e.g., HTTP 422 with field-level errors in FastAPI).
+3. **Store structured data** on the exception (`field`, `resource`, etc.) - this lets error handlers produce useful responses (e.g., HTTP 422 with field-level errors in FastAPI).
 4. **Always call `super().__init__()`** with a human-readable message.
 
 **When to use custom exceptions:**
@@ -423,13 +423,13 @@ D
 1. `int("abc")` raises `ValueError`.
 2. The `except ValueError` block runs and prints `"A"`.
 3. Inside that block, `raise TypeError("converted error")` is executed.
-4. The `except TypeError` in the **same** `try` block does **not** catch it — an exception raised inside an `except` clause is not re-matched against sibling `except` clauses.
+4. The `except TypeError` in the **same** `try` block does **not** catch it - an exception raised inside an `except` clause is not re-matched against sibling `except` clauses.
 5. `finally` runs and prints `"C"`.
 6. The `TypeError` propagates to the **outer** `try/except`, which catches it and prints `"D"`.
 
 **Key insight:** `except` clauses in the same `try` block do not chain. A new exception raised inside one `except` block propagates outward.
 
-> **Why the interviewer asks this:** It validates understanding of exception propagation across nested `try` blocks — a common source of subtle bugs.
+> **Why the interviewer asks this:** It validates understanding of exception propagation across nested `try` blocks - a common source of subtle bugs.
 
 > **Follow-up:** *"How would you use `raise ... from ...` to chain the original `ValueError` with the new `TypeError`?"*
 
@@ -504,7 +504,7 @@ def fetch_data(url: str) -> dict:
 - **Re-raises on final attempt** so the caller sees the real exception with the original traceback.
 - **Configurable exception tuple** prevents accidentally catching `KeyboardInterrupt` or `SystemExit`.
 
-> **Why the interviewer asks this:** This combines exception handling, decorators, and real-world resilience patterns — all core to backend development.
+> **Why the interviewer asks this:** This combines exception handling, decorators, and real-world resilience patterns - all core to backend development.
 
 > **Follow-up:** *"How would you make this decorator async-compatible for use with `httpx` or `aiohttp`?"*
 
@@ -531,7 +531,7 @@ def process_data(data):
 
 The problem is that `raise ValueError("Data processing error")` creates a **brand-new exception** and discards the original traceback. When a developer reads the logs or traceback, they lose information about *where* in `transform()` the error actually occurred.
 
-**Fix 1 — Use bare `raise` to preserve the original exception:**
+**Fix 1 - Use bare `raise` to preserve the original exception:**
 
 ```python
 def process_data(data):
@@ -542,7 +542,7 @@ def process_data(data):
         raise  # re-raises the original ValueError with full traceback
 ```
 
-**Fix 2 — Use exception chaining with `raise ... from`:**
+**Fix 2 - Use exception chaining with `raise ... from`:**
 
 ```python
 def process_data(data):
@@ -555,7 +555,7 @@ def process_data(data):
 
 This produces a traceback with both the original `ValueError` and the new `RuntimeError`, connected by `"The above exception was the direct cause of the following exception"`.
 
-**Fix 3 — Use `logger.exception()` to capture the traceback in the log:**
+**Fix 3 - Use `logger.exception()` to capture the traceback in the log:**
 
 ```python
 def process_data(data):
@@ -578,10 +578,10 @@ def process_data(data):
 
 | Principle | Full Name | Style |
 |-----------|-----------|-------|
-| **EAFP** | Easier to Ask Forgiveness than Permission | Use `try/except` — assume the operation will succeed |
+| **EAFP** | Easier to Ask Forgiveness than Permission | Use `try/except` - assume the operation will succeed |
 | **LBYL** | Look Before You Leap | Check preconditions with `if` statements before acting |
 
-**Example — accessing a dict key:**
+**Example - accessing a dict key:**
 
 ```python
 config = {"debug": True}
@@ -598,13 +598,13 @@ try:
 except KeyError:
     url = "sqlite:///default.db"
 
-# Best in practice — use .get()
+# Best in practice - use .get()
 url = config.get("database_url", "sqlite:///default.db")
 ```
 
 **When EAFP is better:**
 
-- **Race conditions:** In concurrent code, checking first and then acting creates a window where the state can change between the check and the action (TOCTOU — time-of-check-to-time-of-use). `try/except` is atomic with respect to the operation.
+- **Race conditions:** In concurrent code, checking first and then acting creates a window where the state can change between the check and the action (TOCTOU - time-of-check-to-time-of-use). `try/except` is atomic with respect to the operation.
 - **Duck typing:** Python's philosophy is to try the operation and handle failure, rather than checking `isinstance()` beforehand.
 
 **When LBYL is better:**
@@ -625,7 +625,7 @@ url = config.get("database_url", "sqlite:///default.db")
 **Answer:**
 
 ```python
-# Reading a file — always use a context manager
+# Reading a file - always use a context manager
 with open("config.json", "r", encoding="utf-8") as f:
     content = f.read()
 ```
@@ -634,8 +634,8 @@ with open("config.json", "r", encoding="utf-8") as f:
 
 | Mode | Description | Creates file? | Truncates? |
 |------|-------------|---------------|------------|
-| `"r"` | Read (text, default) | No — raises `FileNotFoundError` | No |
-| `"w"` | Write (text) | Yes | **Yes** — destroys existing content |
+| `"r"` | Read (text, default) | No - raises `FileNotFoundError` | No |
+| `"w"` | Write (text) | Yes | **Yes** - destroys existing content |
 | `"a"` | Append (text) | Yes | No |
 | `"x"` | Exclusive create | **Only** if file does not exist | N/A |
 | `"rb"` / `"wb"` | Read/write binary | Same as `r`/`w` | Same as `r`/`w` |
@@ -644,12 +644,12 @@ with open("config.json", "r", encoding="utf-8") as f:
 **Why `with` (context manager) is mandatory:**
 
 ```python
-# BAD — resource leak if an exception occurs between open() and close()
+# BAD - resource leak if an exception occurs between open() and close()
 f = open("data.txt", "r")
 data = f.read()
 f.close()  # never reached if f.read() raises an exception
 
-# GOOD — guaranteed cleanup
+# GOOD - guaranteed cleanup
 with open("data.txt", "r", encoding="utf-8") as f:
     data = f.read()
 # f.close() is called automatically, even if an exception occurs
@@ -657,7 +657,7 @@ with open("data.txt", "r", encoding="utf-8") as f:
 
 The `with` statement calls `f.__enter__()` on entry and `f.__exit__()` on exit. The `__exit__` method calls `f.close()` regardless of whether an exception was raised.
 
-**Critical best practice — always specify `encoding`:**
+**Critical best practice - always specify `encoding`:**
 
 ```python
 # Without encoding, Python uses the platform default (cp1252 on Windows, utf-8 on Linux)
@@ -722,8 +722,8 @@ if __name__ == "__main__":
 
 **Design decisions:**
 
-1. **Line-by-line iteration** (`for line in f`) uses a buffer — memory is O(1), not O(file_size).
-2. **`errors="replace"`** prevents `UnicodeDecodeError` on malformed bytes — replaces them with the replacement character instead of crashing.
+1. **Line-by-line iteration** (`for line in f`) uses a buffer - memory is O(1), not O(file_size).
+2. **`errors="replace"`** prevents `UnicodeDecodeError` on malformed bytes - replaces them with the replacement character instead of crashing.
 3. **`Counter.update()`** accepts an iterable and efficiently merges counts.
 4. **`pathlib.Path`** for cross-platform path handling.
 
@@ -749,9 +749,9 @@ def log_event(message: str, logfile: str = "app.log") -> None:
 
 **Answer:**
 
-The bug is the file mode `"w"` — it **truncates** the file to zero length before writing. Every call to `log_event` destroys all previous log entries.
+The bug is the file mode `"w"` - it **truncates** the file to zero length before writing. Every call to `log_event` destroys all previous log entries.
 
-**Fix — use append mode `"a"`:**
+**Fix - use append mode `"a"`:**
 
 ```python
 from datetime import datetime
@@ -763,7 +763,7 @@ def log_event(message: str, logfile: str = "app.log") -> None:
         f.write(f"[{timestamp}] {message}\n")
 ```
 
-**Additional improvement — flush for reliability:**
+**Additional improvement - flush for reliability:**
 
 ```python
 import os
@@ -778,7 +778,7 @@ def log_event(message: str, logfile: str = "app.log") -> None:
         os.fsync(f.fileno())  # force write to disk
 ```
 
-Calling `f.flush()` followed by `os.fsync()` ensures the data is physically written to disk — important for crash-resistant logging.
+Calling `f.flush()` followed by `os.fsync()` ensures the data is physically written to disk - important for crash-resistant logging.
 
 > **Why the interviewer asks this:** The `"w"` vs `"a"` mistake is one of the most common file-handling bugs. It can cause silent data loss.
 
@@ -790,7 +790,7 @@ Calling `f.flush()` followed by `os.fsync()` ensures the data is physically writ
 
 **Answer:**
 
-**Approach 1 — Class-based (`__enter__` / `__exit__`):**
+**Approach 1 - Class-based (`__enter__` / `__exit__`):**
 
 ```python
 import time
@@ -816,7 +816,7 @@ with Timer() as t:
 print(f"Recorded: {t.elapsed:.4f}s")
 ```
 
-**Approach 2 — Generator-based (`contextlib.contextmanager`):**
+**Approach 2 - Generator-based (`contextlib.contextmanager`):**
 
 ```python
 import time
@@ -928,7 +928,7 @@ On Windows, `NamedTemporaryFile` keeps the file open with an exclusive lock, so 
 
 ---
 
-### Q18 (Real-World Case Study): You need to write an atomic file writer — either the entire file is written successfully, or the original file remains unchanged.
+### Q18 (Real-World Case Study): You need to write an atomic file writer - either the entire file is written successfully, or the original file remains unchanged.
 
 **Answer:**
 
@@ -965,10 +965,10 @@ def atomic_write(
     try:
         with os.fdopen(fd, mode, encoding=encoding) as f:
             yield f
-        # If we reach here, writing succeeded — atomically replace
+        # If we reach here, writing succeeded - atomically replace
         os.replace(tmp_path, target)
     except BaseException:
-        # Writing failed — clean up the temp file, leave original intact
+        # Writing failed - clean up the temp file, leave original intact
         try:
             os.unlink(tmp_path)
         except OSError:
@@ -987,7 +987,7 @@ with atomic_write("config.json") as f:
 **Why this matters in production:**
 
 - A naive `open("config.json", "w")` truncates the file immediately. If the process crashes mid-write, you get a corrupted, half-written file.
-- `os.replace()` is an atomic filesystem operation (on POSIX). The old file is replaced in a single operation — readers never see a partial file.
+- `os.replace()` is an atomic filesystem operation (on POSIX). The old file is replaced in a single operation - readers never see a partial file.
 - The temp file must be on the **same filesystem** as the target for `os.replace()` to be atomic; that is why we use `dir=target.parent`.
 
 > **Why the interviewer asks this:** Atomic writes are essential for configuration files, databases, and any system where data integrity matters.
@@ -1061,7 +1061,7 @@ project/
             user.py
 ```
 
-**Absolute imports — full path from the project root:**
+**Absolute imports - full path from the project root:**
 
 ```python
 # In myapp/services/auth.py
@@ -1069,7 +1069,7 @@ from myapp.models.user import User
 from myapp.services.email import send_verification
 ```
 
-**Relative imports — path relative to the current module:**
+**Relative imports - path relative to the current module:**
 
 ```python
 # In myapp/services/auth.py
@@ -1081,12 +1081,12 @@ from .email import send_verification  # same package (services)
 
 | Aspect | Absolute | Relative |
 |--------|----------|----------|
-| Readability | Clear — full path visible | Shorter but requires understanding directory structure |
+| Readability | Clear - full path visible | Shorter but requires understanding directory structure |
 | Refactoring | Breaks if package is renamed | Survives package renames; breaks if internal structure changes |
 | PEP 8 recommendation | **Preferred** for most code | Acceptable within a package |
-| Runability | Works when module is run directly (`python myapp/services/auth.py`) | **Fails** when run directly — requires package context |
+| Runability | Works when module is run directly (`python myapp/services/auth.py`) | **Fails** when run directly - requires package context |
 
-**Common pitfall — running a module with relative imports directly:**
+**Common pitfall - running a module with relative imports directly:**
 
 ```bash
 $ python myapp/services/auth.py
@@ -1338,10 +1338,10 @@ async def create_user(
 
 **Key design decisions:**
 
-1. **Absolute imports everywhere** — clear and IDE-friendly.
-2. **`__init__.py` re-exports** — simplify external imports: `from myapi.models import User` instead of `from myapi.models.user import User`.
-3. **Layered architecture** — routers (HTTP) -> services (business logic) -> repositories (DB). Each layer only imports from the layer below, preventing circular imports.
-4. **Schemas separate from models** — Pydantic schemas (API contracts) are decoupled from SQLAlchemy models (database schema).
+1. **Absolute imports everywhere** - clear and IDE-friendly.
+2. **`__init__.py` re-exports** - simplify external imports: `from myapi.models import User` instead of `from myapi.models.user import User`.
+3. **Layered architecture** - routers (HTTP) -> services (business logic) -> repositories (DB). Each layer only imports from the layer below, preventing circular imports.
+4. **Schemas separate from models** - Pydantic schemas (API contracts) are decoupled from SQLAlchemy models (database schema).
 
 > **Why the interviewer asks this:** Project structure reveals engineering maturity. Interviewers want to see layered architecture and understanding of import hygiene.
 
@@ -1395,7 +1395,7 @@ deactivate
 ```bash
 # A venv is a directory with:
 .venv/
-    bin/             # (Scripts/ on Windows) — python, pip, activate
+    bin/             # (Scripts/ on Windows) - python, pip, activate
     lib/
         python3.12/
             site-packages/   # installed packages go here
@@ -1414,21 +1414,21 @@ When activated, the shell's `PATH` is modified so that `.venv/bin/python` is fou
 
 **Answer:**
 
-**`requirements.txt` — the traditional approach:**
+**`requirements.txt` - the traditional approach:**
 
 ```txt
-# Pinned (exact versions) — for reproducible deployments
+# Pinned (exact versions) - for reproducible deployments
 fastapi==0.104.1
 uvicorn==0.24.0
 sqlalchemy==2.0.23
 pydantic==2.5.2
 
-# Unpinned (version ranges) — for libraries
+# Unpinned (version ranges) - for libraries
 fastapi>=0.100,<1.0
 uvicorn>=0.20
 ```
 
-**`pyproject.toml` — the modern standard (PEP 621):**
+**`pyproject.toml` - the modern standard (PEP 621):**
 
 ```toml
 [project]
@@ -1453,10 +1453,10 @@ dev = [
 
 | Strategy | When to use | Example |
 |----------|------------|---------|
-| **Pinned** (`==`) | Application deployments — you want exact reproducibility | `fastapi==0.104.1` |
-| **Unpinned** / range | Libraries — let the consumer resolve compatible versions | `fastapi>=0.100,<1.0` |
+| **Pinned** (`==`) | Application deployments - you want exact reproducibility | `fastapi==0.104.1` |
+| **Unpinned** / range | Libraries - let the consumer resolve compatible versions | `fastapi>=0.100,<1.0` |
 
-**Best practice for applications — use a lock file:**
+**Best practice for applications - use a lock file:**
 
 ```bash
 # Install and pin with pip-tools
@@ -1467,7 +1467,7 @@ pip-sync requirements.txt                         # installs exactly what is lis
 
 Or use modern tools: `poetry lock`, `pdm lock`, `uv pip compile`.
 
-**Common mistake — not pinning transitive dependencies:**
+**Common mistake - not pinning transitive dependencies:**
 
 ```txt
 # requirements.txt
@@ -1512,7 +1512,7 @@ The pinned version `numpy==1.24.0` is no longer available for the new team membe
 python --version
 
 # Check what numpy versions are available for this Python
-pip install numpy==  # intentional error — pip will list available versions
+pip install numpy==  # intentional error - pip will list available versions
 
 # Check the platform
 python -c "import platform; print(platform.platform())"
@@ -1553,10 +1553,10 @@ pip-compile --python-version 3.12 requirements.in
 **Answer:**
 
 ```bash
-# Regular install — copies the package into site-packages
+# Regular install - copies the package into site-packages
 pip install mypackage
 
-# Editable install — creates a link so changes are reflected immediately
+# Editable install - creates a link so changes are reflected immediately
 pip install -e .
 # Or with extras:
 pip install -e ".[dev,test]"
@@ -1648,9 +1648,9 @@ After @log_calls:
 
 **The key concepts:**
 
-1. **Functions are first-class objects** — they can be passed as arguments and returned from other functions.
-2. **Closures** — `wrapper` has access to `func` because of Python's closure mechanism.
-3. **`*args, **kwargs`** — the wrapper accepts any arguments and forwards them, making it generic.
+1. **Functions are first-class objects** - they can be passed as arguments and returned from other functions.
+2. **Closures** - `wrapper` has access to `func` because of Python's closure mechanism.
+3. **`*args, **kwargs`** - the wrapper accepts any arguments and forwards them, making it generic.
 
 > **Why the interviewer asks this:** Decorators are used extensively in FastAPI (`@app.get`), Flask, Django, pytest, and standard library. Understanding them is non-negotiable for Python developers.
 
@@ -1708,13 +1708,13 @@ print(greet.__wrapped__)    # <original greet function>   <-- Bonus: access to o
 
 **What `functools.wraps` copies:**
 
-- `__name__` — function name
-- `__doc__` — docstring
-- `__module__` — module where the function was defined
-- `__qualname__` — qualified name (includes class name for methods)
-- `__annotations__` — type hints
-- `__dict__` — any custom attributes
-- `__wrapped__` — reference to the original function (for introspection/testing)
+- `__name__` - function name
+- `__doc__` - docstring
+- `__module__` - module where the function was defined
+- `__qualname__` - qualified name (includes class name for methods)
+- `__annotations__` - type hints
+- `__dict__` - any custom attributes
+- `__wrapped__` - reference to the original function (for introspection/testing)
 
 **Why it matters in practice:**
 
@@ -1794,7 +1794,7 @@ def compute_report(data: list[dict]) -> dict:
 
 - **`time.perf_counter()`** is used instead of `time.time()` because it has the highest available resolution and is not affected by system clock adjustments.
 - **`try/finally`** ensures the time is logged even if the function raises an exception.
-- **Conditional log level** — slow functions trigger a `WARNING`, making them easy to spot in log aggregation tools.
+- **Conditional log level** - slow functions trigger a `WARNING`, making them easy to spot in log aggregation tools.
 - **`func.__qualname__`** includes the class name for methods (e.g., `UserService.create`).
 
 > **Why the interviewer asks this:** Performance monitoring via decorators is a standard pattern. It tests practical decorator implementation.
@@ -1871,7 +1871,7 @@ def send_email(...):                    # `decorator(send_email)` -> returns `wr
     ...                                 # `send_email` is now bound to `wrapper`
 ```
 
-**Alternative — using a class as a decorator:**
+**Alternative - using a class as a decorator:**
 
 ```python
 class RateLimit:
@@ -1967,7 +1967,7 @@ say_hello = decorator_a(decorator_b(say_hello))
 6. `wrapper_b` finishes → prints `"B after"`.
 7. `wrapper_a` finishes → prints `"A after"`.
 
-**Key insight:** Decorators are applied **bottom-up** but execute **top-down**. Think of it like layers of an onion — the outermost decorator (`@decorator_a`) is the first to run and the last to finish.
+**Key insight:** Decorators are applied **bottom-up** but execute **top-down**. Think of it like layers of an onion - the outermost decorator (`@decorator_a`) is the first to run and the last to finish.
 
 **Issue:** Neither decorator uses `@functools.wraps(func)`, so `say_hello.__name__` would be `"wrapper"` instead of `"say_hello"`.
 
@@ -2027,7 +2027,7 @@ def cache(ttl: float = 300.0, maxsize: int = 128):
                 else:
                     del _cache[key]  # expired
 
-            # Cache miss — call the function
+            # Cache miss - call the function
             result = func(*args, **kwargs)
 
             # Evict oldest entries if at capacity
@@ -2070,10 +2070,10 @@ def get_user_profile(user_id: int) -> dict:
     return {"id": user_id, "name": "Alice", "email": "alice@example.com"}
 
 
-# First call — cache miss, hits DB
+# First call - cache miss, hits DB
 profile = get_user_profile(42)
 
-# Second call — cache hit, no DB query
+# Second call - cache hit, no DB query
 profile = get_user_profile(42)
 
 # Cache management
@@ -2086,8 +2086,8 @@ get_user_profile.cache_clear()
 | Feature | `functools.lru_cache` | Custom `cache` above |
 |---------|----------------------|---------------------|
 | TTL expiration | No | Yes |
-| Hashable args only | Yes (args must be hashable) | No — uses `repr()` and hashing |
-| Thread safety | Yes (built-in lock) | No — would need `threading.Lock` |
+| Hashable args only | Yes (args must be hashable) | No - uses `repr()` and hashing |
+| Thread safety | Yes (built-in lock) | No - would need `threading.Lock` |
 | Cache stats | `cache_info()` | Custom `cache_info()` |
 | Suitable for web apps | Limited (no TTL = stale data) | Better (TTL prevents serving stale data) |
 

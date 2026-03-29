@@ -1,14 +1,14 @@
 # Section 7: Tool Use, Function Calling & APIs
 
-> How LLMs interact with the external world — function calling protocols, API integration patterns, tool selection, error handling, and production-grade tool systems.
+> How LLMs interact with the external world - function calling protocols, API integration patterns, tool selection, error handling, and production-grade tool systems.
 
 ---
 
 ## 📚 Pre-requisite Reading
 
 > **Tool use within the LangChain framework is covered in:**
-> - [LangChain Part 1: Agents, Tools, Memory](../LangChain/langchain-deep-dive-part-1.md) — Custom tools, ReAct agents, structured tools
-> - [LangChain Part 2: Production Deployment](../LangChain/langchain-deep-dive-part-2.md) — Callbacks, LangSmith, error handling
+> - [LangChain Part 1: Agents, Tools, Memory](../LangChain/langchain-deep-dive-part-1.md) - Custom tools, ReAct agents, structured tools
+> - [LangChain Part 2: Production Deployment](../LangChain/langchain-deep-dive-part-2.md) - Callbacks, LangSmith, error handling
 
 ---
 
@@ -28,7 +28,7 @@
 
 **Answer:**
 
-Function calling is the mechanism by which an LLM decides to invoke an external function/API instead of (or in addition to) generating text. The model doesn't actually execute the function — it outputs a structured request that your code executes.
+Function calling is the mechanism by which an LLM decides to invoke an external function/API instead of (or in addition to) generating text. The model doesn't actually execute the function - it outputs a structured request that your code executes.
 
 **The flow:**
 
@@ -129,7 +129,7 @@ Tool selection is influenced by:
 # BAD: Vague description
 {
     "name": "search",
-    "description": "Search for stuff"  # Too vague — what kind of stuff?
+    "description": "Search for stuff"  # Too vague - what kind of stuff?
 }
 
 # GOOD: Specific with when-to-use guidance
@@ -137,7 +137,7 @@ Tool selection is influenced by:
     "name": "search_products",
     "description": "Search the product catalog by name, category, or features. "
     "Use this when the user asks about product availability, specifications, "
-    "or comparisons. Do NOT use for order-related queries — use lookup_order instead.",
+    "or comparisons. Do NOT use for order-related queries - use lookup_order instead.",
     "parameters": {
         "type": "object",
         "properties": {
@@ -398,7 +398,7 @@ async def delete_record(record_id: str, _confirmed: bool = False) -> dict:
     return {"status": "deleted", "id": record_id}
 ```
 
-**Why interviewer asks this:** Tool security is critical — an LLM with tools has real-world side effects. Tests security mindset.
+**Why interviewer asks this:** Tool security is critical - an LLM with tools has real-world side effects. Tests security mindset.
 
 **Follow-up:** How do you prevent the LLM from leaking sensitive tool results (PII, credentials) in its response?
 
@@ -812,7 +812,7 @@ class ResilientToolExecutor:
         # Check circuit breaker
         cb = self.circuit_breakers.get(tool_name, {})
         if cb.get("state") == "open":
-            # Circuit is open — try fallback immediately
+            # Circuit is open - try fallback immediately
             return await self._try_fallbacks(tool_name, args, timeout_seconds)
 
         # Try primary tool with retry
@@ -996,7 +996,7 @@ system = """When comparing multiple items, ALWAYS use batch tools instead of
 making individual calls. For example, use search_products_batch(["item1", "item2"])
 instead of making separate search_product() calls."""
 
-# Fix 3: Agent-level guard — detect excessive tool calls
+# Fix 3: Agent-level guard - detect excessive tool calls
 class ToolCallGuard:
     def __init__(self, max_calls_per_turn: int = 5):
         self.max_calls = max_calls_per_turn
@@ -1047,7 +1047,7 @@ Step 3: calculate_total(amounts=[29.99, 49.99])
 Final answer: "User #123 (John) has spent a total of $79.98 across 2 orders."
 ```
 
-**Note:** A smart model might skip `get_user` if it determines user details aren't needed for the total calculation and go straight to `get_orders`. The model might also skip `calculate_total` and just add 29.99 + 49.99 itself — LLMs can do simple arithmetic.
+**Note:** A smart model might skip `get_user` if it determines user details aren't needed for the total calculation and go straight to `get_orders`. The model might also skip `calculate_total` and just add 29.99 + 49.99 itself - LLMs can do simple arithmetic.
 
 ---
 

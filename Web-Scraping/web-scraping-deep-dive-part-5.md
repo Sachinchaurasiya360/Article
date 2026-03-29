@@ -1,8 +1,8 @@
-# Web Scraping Deep Dive — Part 5: Production Scraping — Async, Scheduling, and Monitoring
+# Web Scraping Deep Dive - Part 5: Production Scraping - Async, Scheduling, and Monitoring
 
 ---
 
-**Series:** Web Scraping — A Developer's Deep Dive
+**Series:** Web Scraping - A Developer's Deep Dive
 **Part:** 5 of 5 (Production)
 **Audience:** Developers ready to deploy and operate scrapers in production
 **Reading time:** ~45 minutes
@@ -14,11 +14,11 @@
 1. [From Script to Service](#1-from-script-to-service)
 2. [Async Scraping with asyncio + aiohttp](#2-async-scraping-with-asyncio--aiohttp)
 3. [Async Scraping with httpx](#3-async-scraping-with-httpx)
-4. [Job Scheduling — Cron, APScheduler, Celery](#4-job-scheduling--cron-apscheduler-celery)
-5. [Data Pipelines — Clean, Deduplicate, Store](#5-data-pipelines--clean-deduplicate-store)
+4. [Job Scheduling - Cron, APScheduler, Celery](#4-job-scheduling--cron-apscheduler-celery)
+5. [Data Pipelines - Clean, Deduplicate, Store](#5-data-pipelines--clean-deduplicate-store)
 6. [Monitoring and Alerting](#6-monitoring-and-alerting)
 7. [Error Recovery and Idempotent Scraping](#7-error-recovery-and-idempotent-scraping)
-8. [Deployment — Docker and Cloud](#8-deployment--docker-and-cloud)
+8. [Deployment - Docker and Cloud](#8-deployment--docker-and-cloud)
 9. [Scraping API with FastAPI](#9-scraping-api-with-fastapi)
 10. [Production Checklist](#10-production-checklist)
 11. [Series Conclusion](#11-series-conclusion)
@@ -64,7 +64,7 @@ flowchart TD
 
 ## 2. Async Scraping with asyncio + aiohttp
 
-Synchronous scraping fetches one page at a time. Async scraping fetches many pages concurrently — 5-20x faster for I/O-bound workloads.
+Synchronous scraping fetches one page at a time. Async scraping fetches many pages concurrently - 5-20x faster for I/O-bound workloads.
 
 ### 2.1 Why Async?
 
@@ -93,7 +93,7 @@ sequenceDiagram
     Note over A: Total: ~200ms
 ```
 
-### 2.2 aiohttp — Async HTTP Client
+### 2.2 aiohttp - Async HTTP Client
 
 ```python
 # filename: async_scraper.py
@@ -314,7 +314,7 @@ async def scrape_with_httpx(urls: list[str], max_concurrent: int = 10) -> list[d
 
 # Async pagination pattern
 async def scrape_paginated(base_url: str, max_pages: int = 50) -> list[dict]:
-    """Scrape paginated content — sequential pagination, parallel detail fetching."""
+    """Scrape paginated content - sequential pagination, parallel detail fetching."""
     all_items = []
 
     async with httpx.AsyncClient(
@@ -363,7 +363,7 @@ async def scrape_paginated(base_url: str, max_pages: int = 50) -> list[dict]:
 
 ---
 
-## 4. Job Scheduling — Cron, APScheduler, Celery
+## 4. Job Scheduling - Cron, APScheduler, Celery
 
 ### 4.1 Cron (Simplest)
 
@@ -493,7 +493,7 @@ def scrape_products(self, max_pages: int = 50):
 
 @app.task(bind=True, max_retries=3)
 def scrape_single_url(self, url: str) -> dict:
-    """Scrape a single URL — used for distributed crawling."""
+    """Scrape a single URL - used for distributed crawling."""
     try:
         # Scrape the URL
         return {"url": url, "status": "success"}
@@ -520,7 +520,7 @@ celery -A tasks beat --loglevel=info
 
 ---
 
-## 5. Data Pipelines — Clean, Deduplicate, Store
+## 5. Data Pipelines - Clean, Deduplicate, Store
 
 ### 5.1 ETL Pipeline for Scraped Data
 
@@ -681,14 +681,14 @@ class DataPipeline:
                     if existing:
                         old_hash, times_seen = existing
                         if old_hash == content_hash:
-                            # Same content — just update last_seen
+                            # Same content - just update last_seen
                             conn.execute(
                                 "UPDATE items SET last_seen = ?, times_seen = ? WHERE id = ?",
                                 (now, times_seen + 1, item_id)
                             )
                             self.stats.duplicates += 1
                         else:
-                            # Content changed — update everything
+                            # Content changed - update everything
                             conn.execute("""
                                 UPDATE items SET
                                     title = ?, price = ?, data = ?, content_hash = ?,
@@ -1045,10 +1045,10 @@ class ResumableScraper:
                     "completed_urls": list(completed_urls),
                     "items": items,
                 })
-                logger.info("Interrupted — checkpoint saved")
+                logger.info("Interrupted - checkpoint saved")
                 raise
 
-        # Success — clear checkpoint
+        # Success - clear checkpoint
         self.checkpoint.clear(self.job_id)
         return items
 
@@ -1059,7 +1059,7 @@ class ResumableScraper:
 
 ---
 
-## 8. Deployment — Docker and Cloud
+## 8. Deployment - Docker and Cloud
 
 ### 8.1 Dockerfile
 
@@ -1152,7 +1152,7 @@ volumes:
 | **GitHub Actions** | Scheduled light scrapers | Free tier available |
 
 ```yaml
-# .github/workflows/scraper.yml — GitHub Actions scheduled scraper
+# .github/workflows/scraper.yml - GitHub Actions scheduled scraper
 name: Daily Scrape
 on:
   schedule:
@@ -1188,7 +1188,7 @@ jobs:
 
 ## 9. Scraping API with FastAPI
 
-Expose your scrapers as an API service — trigger scrapes on-demand, check status, and retrieve results.
+Expose your scrapers as an API service - trigger scrapes on-demand, check status, and retrieve results.
 
 ```python
 # filename: scraper_api.py
@@ -1378,12 +1378,12 @@ Over this 6-part series, you have built a complete web scraping skill set:
 
 | Part | What You Learned |
 |------|-----------------|
-| **0 — Foundations** | HTTP protocol, robots.txt, ethics, tools landscape |
-| **1 — BeautifulSoup** | HTML parsing, CSS selectors, session handling, data extraction |
-| **2 — Browser Automation** | Playwright, Selenium, JS-rendered pages, network interception |
-| **3 — Scrapy** | Spiders, items, pipelines, middleware, large-scale crawling |
-| **4 — Anti-Scraping** | Authentication, cookie injection, stealth, CAPTCHAs, proxies |
-| **5 — Production** | Async scraping, scheduling, monitoring, deployment |
+| **0 - Foundations** | HTTP protocol, robots.txt, ethics, tools landscape |
+| **1 - BeautifulSoup** | HTML parsing, CSS selectors, session handling, data extraction |
+| **2 - Browser Automation** | Playwright, Selenium, JS-rendered pages, network interception |
+| **3 - Scrapy** | Spiders, items, pipelines, middleware, large-scale crawling |
+| **4 - Anti-Scraping** | Authentication, cookie injection, stealth, CAPTCHAs, proxies |
+| **5 - Production** | Async scraping, scheduling, monitoring, deployment |
 
 ### Where to Go Next
 
@@ -1395,5 +1395,5 @@ Over this 6-part series, you have built a complete web scraping skill set:
 
 ---
 
-**Series:** [Web Scraping Deep Dive — Index](index.md)
-**Previous:** [Part 4 — Anti-Scraping & Advanced Techniques](web-scraping-deep-dive-part-4.md)
+**Series:** [Web Scraping Deep Dive - Index](index.md)
+**Previous:** [Part 4 - Anti-Scraping & Advanced Techniques](web-scraping-deep-dive-part-4.md)

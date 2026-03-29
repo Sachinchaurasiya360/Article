@@ -8,16 +8,16 @@
 
 > **We have a comprehensive 10-part RAG deep-dive series. This section provides interview-focused questions. For full coverage, refer to:**
 >
-> - [RAG Part 0: What Is RAG? Foundations](../RAG/rag-deep-dive-part-0.md) — RAG vs fine-tuning vs prompt engineering, architecture overview
-> - [RAG Part 1: Text Preprocessing & Chunking](../RAG/rag-deep-dive-part-1.md) — Document loading, chunking strategies (fixed, recursive, semantic, agentic)
-> - [RAG Part 2: Embeddings](../RAG/rag-deep-dive-part-2.md) — Embedding models, similarity metrics, fine-tuning
-> - [RAG Part 3: Vector Databases & Indexing](../RAG/rag-deep-dive-part-3.md) — FAISS, HNSW, IVF, database comparisons
-> - [RAG Part 4: Retrieval Strategies](../RAG/rag-deep-dive-part-4.md) — BM25, dense search, hybrid, HyDE, query transformation
-> - [RAG Part 5: Building First RAG Pipeline](../RAG/rag-deep-dive-part-5.md) — End-to-end implementation
-> - [RAG Part 6: Advanced RAG Patterns](../RAG/rag-deep-dive-part-6.md) — Re-ranking, MMR, Self-RAG, Graph RAG, RAPTOR
-> - [RAG Part 7: Evaluation & Debugging](../RAG/rag-deep-dive-part-7.md) — Precision@K, Recall@K, NDCG, MRR, hallucination detection
-> - [RAG Part 8: Production RAG](../RAG/rag-deep-dive-part-8.md) — Scaling, monitoring, caching, latency/cost optimization
-> - [RAG Part 9: Multi-Modal & Agentic RAG](../RAG/rag-deep-dive-part-9.md) — Multi-modal retrieval, agentic RAG
+> - [RAG Part 0: What Is RAG? Foundations](../RAG/rag-deep-dive-part-0.md) - RAG vs fine-tuning vs prompt engineering, architecture overview
+> - [RAG Part 1: Text Preprocessing & Chunking](../RAG/rag-deep-dive-part-1.md) - Document loading, chunking strategies (fixed, recursive, semantic, agentic)
+> - [RAG Part 2: Embeddings](../RAG/rag-deep-dive-part-2.md) - Embedding models, similarity metrics, fine-tuning
+> - [RAG Part 3: Vector Databases & Indexing](../RAG/rag-deep-dive-part-3.md) - FAISS, HNSW, IVF, database comparisons
+> - [RAG Part 4: Retrieval Strategies](../RAG/rag-deep-dive-part-4.md) - BM25, dense search, hybrid, HyDE, query transformation
+> - [RAG Part 5: Building First RAG Pipeline](../RAG/rag-deep-dive-part-5.md) - End-to-end implementation
+> - [RAG Part 6: Advanced RAG Patterns](../RAG/rag-deep-dive-part-6.md) - Re-ranking, MMR, Self-RAG, Graph RAG, RAPTOR
+> - [RAG Part 7: Evaluation & Debugging](../RAG/rag-deep-dive-part-7.md) - Precision@K, Recall@K, NDCG, MRR, hallucination detection
+> - [RAG Part 8: Production RAG](../RAG/rag-deep-dive-part-8.md) - Scaling, monitoring, caching, latency/cost optimization
+> - [RAG Part 9: Multi-Modal & Agentic RAG](../RAG/rag-deep-dive-part-9.md) - Multi-modal retrieval, agentic RAG
 >
 > Also see [AI Memory Part 9: Retrieval-Augmented Generation](../AI-Memory/ai-memory-deep-dive-part-9.md) for the memory-systems perspective on RAG.
 
@@ -127,7 +127,7 @@ def semantic_chunk(text: str, embedding_fn, threshold: float = 0.5) -> list[str]
         )
 
         if sim < threshold:
-            # Topic change detected — start new chunk
+            # Topic change detected - start new chunk
             chunks.append(". ".join(current_chunk) + ".")
             current_chunk = [sentences[i]]
         else:
@@ -138,7 +138,7 @@ def semantic_chunk(text: str, embedding_fn, threshold: float = 0.5) -> list[str]
 ```
 
 **Production recommendations:**
-- **Start with recursive chunking** (chunk_size=512, overlap=50) — works well for 80% of use cases
+- **Start with recursive chunking** (chunk_size=512, overlap=50) - works well for 80% of use cases
 - **Switch to semantic chunking** if retrieval quality is poor for topic-diverse documents
 - **Use document-aware chunking** for structured formats (Markdown headers, HTML sections, PDF layouts)
 - **Chunk size tuning**: Smaller chunks (256-512) for precise Q&A; larger chunks (1024-2048) for summarization
@@ -244,7 +244,7 @@ Step 6: [IS_USEFUL] → Yes, this answers the question
 
 **Graph RAG:**
 
-Builds a knowledge graph from documents, then uses graph traversal for retrieval — capturing relationships that vector search misses.
+Builds a knowledge graph from documents, then uses graph traversal for retrieval - capturing relationships that vector search misses.
 
 ```python
 # Graph RAG concept
@@ -307,7 +307,7 @@ Root: "This is a comprehensive guide to machine learning..."
 
 **Answer:**
 
-LLMs pay more attention to information at the **beginning** and **end** of their context window, while information in the **middle** gets less attention — even when it's the most relevant.
+LLMs pay more attention to information at the **beginning** and **end** of their context window, while information in the **middle** gets less attention - even when it's the most relevant.
 
 ```
 Attention distribution over context window:
@@ -790,7 +790,7 @@ complete answer based on available information: the company was founded in 2015 
 John Smith, with Jane Doe potentially as a co-founder [Source 2]."
 ```
 
-**Without explicit instructions to handle contradictions**, the model will typically pick whichever source it processes first or last (recency/primacy bias), and present it as fact — which is dangerous.
+**Without explicit instructions to handle contradictions**, the model will typically pick whichever source it processes first or last (recency/primacy bias), and present it as fact - which is dangerous.
 
 **Production fix**: Always include contradiction handling in your system prompt:
 ```
@@ -804,7 +804,7 @@ sources support each claim. Do not silently pick one version."
 
 ### Q11. 🔴 Case Study: Building a RAG system for a legal document platform.
 
-**Scenario:** A law firm needs an AI assistant that can answer questions about 500,000+ legal documents (contracts, case law, regulations). Accuracy is paramount — wrong answers have legal liability.
+**Scenario:** A law firm needs an AI assistant that can answer questions about 500,000+ legal documents (contracts, case law, regulations). Accuracy is paramount - wrong answers have legal liability.
 
 **Unique challenges:**
 1. **Zero tolerance for hallucination**: Wrong legal advice = malpractice risk
@@ -850,7 +850,7 @@ class LegalRAGSystem:
         # Step 4: Generate with strict grounding
         answer = await self._generate_with_citations(question, reranked[:5])
 
-        # Step 5: Hallucination check — verify every claim against sources
+        # Step 5: Hallucination check - verify every claim against sources
         verification = await self._verify_claims(answer, reranked[:5])
 
         return {

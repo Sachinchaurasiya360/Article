@@ -8,9 +8,9 @@
 
 > **Agents with memory are covered in our AI Memory series. For the memory-focused perspective, refer to:**
 >
-> - [AI Memory Part 16: Autonomous Agents With Memory](../AI-Memory/ai-memory-deep-dive-part-16.md) — Agent architecture, working memory, episodic memory, ReAct framework, tool memory
-> - [LangChain Part 1: Agents, Tools, Memory, Advanced RAG](../LangChain/langchain-deep-dive-part-1.md) — ReAct agents, LangGraph state machines, custom tools
-> - [RAG Part 9: Multi-Modal & Agentic RAG](../RAG/rag-deep-dive-part-9.md) — Agents with retrieval capabilities
+> - [AI Memory Part 16: Autonomous Agents With Memory](../AI-Memory/ai-memory-deep-dive-part-16.md) - Agent architecture, working memory, episodic memory, ReAct framework, tool memory
+> - [LangChain Part 1: Agents, Tools, Memory, Advanced RAG](../LangChain/langchain-deep-dive-part-1.md) - ReAct agents, LangGraph state machines, custom tools
+> - [RAG Part 9: Multi-Modal & Agentic RAG](../RAG/rag-deep-dive-part-9.md) - Agents with retrieval capabilities
 
 ---
 
@@ -30,7 +30,7 @@
 
 **Answer:**
 
-An AI agent is an LLM-powered system that can **perceive its environment, reason about goals, plan actions, execute those actions using tools, and iterate based on observations** — autonomously, over multiple steps.
+An AI agent is an LLM-powered system that can **perceive its environment, reason about goals, plan actions, execute those actions using tools, and iterate based on observations** - autonomously, over multiple steps.
 
 **Simple LLM call vs Agent:**
 
@@ -81,7 +81,7 @@ def agent_loop(goal: str, tools: dict, llm, max_steps: int = 10) -> str:
                 # Observe: Add result to context
                 messages.append({"role": "tool", "content": str(result)})
         else:
-            # Agent decided it's done — return final answer
+            # Agent decided it's done - return final answer
             return response.content
 
     return "Max steps reached without completing the task."
@@ -143,7 +143,7 @@ class ReActAgent:
 For each step, follow this exact format:
 Thought: [your reasoning about what to do next]
 Action: [tool_name(arg1, arg2)]
-Observation: [result of the action — this will be filled in by the system]
+Observation: [result of the action - this will be filled in by the system]
 
 When you have the final answer:
 Thought: [your reasoning]
@@ -211,23 +211,23 @@ Available tools:
 Agent autonomy exists on a spectrum from "human-in-the-loop" to "fully autonomous":
 
 ```
-Level 0: Chat         — LLM responds to questions, no actions
-Level 1: Suggested    — Agent suggests actions, human approves
-Level 2: Supervised   — Agent acts, human can intervene
-Level 3: Semi-auto    — Agent acts autonomously for routine tasks, escalates edge cases
-Level 4: Autonomous   — Agent acts independently with predefined guardrails
-Level 5: Self-directed — Agent sets its own goals and executes (research stage)
+Level 0: Chat         - LLM responds to questions, no actions
+Level 1: Suggested    - Agent suggests actions, human approves
+Level 2: Supervised   - Agent acts, human can intervene
+Level 3: Semi-auto    - Agent acts autonomously for routine tasks, escalates edge cases
+Level 4: Autonomous   - Agent acts independently with predefined guardrails
+Level 5: Self-directed - Agent sets its own goals and executes (research stage)
 ```
 
 **Risk analysis:**
 
 | Level | Example | Risk | Mitigation |
 |-------|---------|------|------------|
-| Level 1 | "Shall I send this email?" | Low — human approves everything | Slow for routine tasks |
-| Level 2 | Auto-reply to simple support tickets | Medium — bad replies may go out | Confidence thresholds, sampling checks |
-| Level 3 | Process refunds under $50 automatically | High — financial impact | Dollar limits, audit logs, anomaly detection |
-| Level 4 | Manage cloud infrastructure scaling | Very high — outage risk | Blast radius limits, rollback capability, canary deployments |
-| Level 5 | Research agent that designs experiments | Extreme — unknown unknowns | Not recommended for production |
+| Level 1 | "Shall I send this email?" | Low - human approves everything | Slow for routine tasks |
+| Level 2 | Auto-reply to simple support tickets | Medium - bad replies may go out | Confidence thresholds, sampling checks |
+| Level 3 | Process refunds under $50 automatically | High - financial impact | Dollar limits, audit logs, anomaly detection |
+| Level 4 | Manage cloud infrastructure scaling | Very high - outage risk | Blast radius limits, rollback capability, canary deployments |
+| Level 5 | Research agent that designs experiments | Extreme - unknown unknowns | Not recommended for production |
 
 **Implementation pattern:**
 
@@ -302,8 +302,8 @@ class AutonomyGatedAgent:
 |--------|-------|-----------------|
 | **Approach** | Interleave thinking and acting step-by-step | Create a full plan first, then execute steps |
 | **Planning horizon** | One step at a time (local decisions) | Full task decomposition upfront (global plan) |
-| **Adaptability** | High — adjusts immediately based on observations | Lower — plan may need replanning if assumptions fail |
-| **Token efficiency** | Lower — carries full trajectory in context | Higher — planner and executor can use separate contexts |
+| **Adaptability** | High - adjusts immediately based on observations | Lower - plan may need replanning if assumptions fail |
+| **Token efficiency** | Lower - carries full trajectory in context | Higher - planner and executor can use separate contexts |
 | **Best for** | Exploratory tasks, research, information gathering | Well-defined tasks with clear sub-steps |
 | **Failure mode** | Can get stuck in loops | Plan may be wrong; sunk cost in bad plans |
 
@@ -700,7 +700,7 @@ class ResearchAgent:
             print(f"Researching: {sq}")
             findings[sq] = await self._investigate(sq)
 
-        # Step 3: Identify gaps — are there follow-up questions?
+        # Step 3: Identify gaps - are there follow-up questions?
         gaps = await self._identify_gaps(question, findings)
         for gap in gaps:
             print(f"Following up: {gap}")
@@ -847,7 +847,7 @@ tools = [
         "name": "search_web",
         "description": "Search the internet for general information. Use this for "
         "questions about facts, news, people, events, or topics. Do NOT use "
-        "this for weather — use get_weather instead.",
+        "this for weather - use get_weather instead.",
     },
 ]
 ```
@@ -1029,10 +1029,10 @@ class CustomerSupportAgent:
 ```
 
 **Key design decisions:**
-- **Lookup is fully autonomous** — reading data has no side effects
-- **Refunds are semi-autonomous** — automated under $100, escalated over $100
-- **Address updates are supervised** — logged for review (shipping is hard to undo)
-- **Escalation is always available** — agent should know when to hand off
+- **Lookup is fully autonomous** - reading data has no side effects
+- **Refunds are semi-autonomous** - automated under $100, escalated over $100
+- **Address updates are supervised** - logged for review (shipping is hard to undo)
+- **Escalation is always available** - agent should know when to hand off
 
 **Why interviewer asks this:** Tests ability to design agents with real-world consequences. Safety, autonomy levels, and guardrails are the hard parts.
 

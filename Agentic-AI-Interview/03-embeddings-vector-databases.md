@@ -8,10 +8,10 @@
 
 > **We have covered Embeddings and Vector Databases extensively in existing deep-dive series. This section provides interview-focused questions and answers. For comprehensive learning, refer to:**
 >
-> - [RAG Deep Dive — Part 2: Embeddings — The Heart of RAG](../RAG/rag-deep-dive-part-2.md) — Embedding fundamentals, contrastive learning, similarity metrics, model comparisons, fine-tuning
-> - [RAG Deep Dive — Part 3: Vector Databases & Indexing](../RAG/rag-deep-dive-part-3.md) — FAISS, HNSW, IVF, product quantization, database comparisons (Pinecone, Weaviate, Qdrant, ChromaDB, pgvector)
-> - [AI Memory Deep Dive — Part 7: Embeddings — Teaching Meaning](../AI-Memory/ai-memory-deep-dive-part-7.md) — Sentence Transformers, multilingual embeddings, embedding optimization
-> - [AI Memory Deep Dive — Part 8: Vector Databases](../AI-Memory/ai-memory-deep-dive-part-8.md) — Architecture deep dive, distributed indexing, scaling vector stores
+> - [RAG Deep Dive - Part 2: Embeddings - The Heart of RAG](../RAG/rag-deep-dive-part-2.md) - Embedding fundamentals, contrastive learning, similarity metrics, model comparisons, fine-tuning
+> - [RAG Deep Dive - Part 3: Vector Databases & Indexing](../RAG/rag-deep-dive-part-3.md) - FAISS, HNSW, IVF, product quantization, database comparisons (Pinecone, Weaviate, Qdrant, ChromaDB, pgvector)
+> - [AI Memory Deep Dive - Part 7: Embeddings - Teaching Meaning](../AI-Memory/ai-memory-deep-dive-part-7.md) - Sentence Transformers, multilingual embeddings, embedding optimization
+> - [AI Memory Deep Dive - Part 8: Vector Databases](../AI-Memory/ai-memory-deep-dive-part-8.md) - Architecture deep dive, distributed indexing, scaling vector stores
 
 ---
 
@@ -136,7 +136,7 @@ Layer 0 (dense):      A-B-C-D-E-F-G-H-I-J             (short-range connections)
 **Search algorithm:**
 1. Enter at the top layer (sparse, few nodes)
 2. Greedily navigate to the nearest node at this layer
-3. Drop to the next layer (same position) — more nodes visible
+3. Drop to the next layer (same position) - more nodes visible
 4. Repeat: greedily navigate → drop down
 5. At Layer 0 (all nodes), do a refined local search
 6. Return top-K nearest neighbors
@@ -279,7 +279,7 @@ Do you already use Postgres?
 
 **Answer:**
 
-Embedding model migration is one of the most painful operations in production AI systems because **embeddings from different models are not compatible** — you cannot compare vectors from model A with vectors from model B.
+Embedding model migration is one of the most painful operations in production AI systems because **embeddings from different models are not compatible** - you cannot compare vectors from model A with vectors from model B.
 
 **Migration strategies:**
 
@@ -374,7 +374,7 @@ class DualEmbeddingService:
 - Re-embedding cost: 1M documents × $0.0001/embedding = $100 (cheap for small datasets, expensive at billions)
 - Downtime: Plan for zero-downtime migration using blue-green
 - Validation: Always compare retrieval quality before switching
-- Dimension changes: New model may have different dimension (e.g., 1536 → 3072) — need new index
+- Dimension changes: New model may have different dimension (e.g., 1536 → 3072) - need new index
 
 **Why interviewer asks this:** Real-world operational challenge. Models improve frequently, and migration is non-trivial.
 
@@ -641,7 +641,7 @@ documents = [
 
 hybrid.index(documents)
 
-# "python API" — keyword "python" + semantic "API development"
+# "python API" - keyword "python" + semantic "API development"
 results = hybrid.search("python API development", top_k=3)
 for idx, score, text in results:
     print(f"[{score:.4f}] {text}")
@@ -807,24 +807,24 @@ Short queries have **ambiguous semantic representation**. The word "pricing" alo
 **Fixes:**
 
 ```python
-# Fix 1: Query expansion — enrich short queries with context
+# Fix 1: Query expansion - enrich short queries with context
 def expand_query(query: str, domain: str = "product") -> str:
     """Expand short queries with domain context."""
     if len(query.split()) <= 2:
         return f"{query} {domain} information page"
     return query
 
-# Fix 2: Hybrid search — BM25 finds exact keyword matches
+# Fix 2: Hybrid search - BM25 finds exact keyword matches
 results = hybrid_search("pricing", alpha=0.3)  # Weight toward keyword for short queries
 
-# Fix 3: Metadata boosting — prefer certain document types
+# Fix 3: Metadata boosting - prefer certain document types
 results = vector_store.search(
     "pricing",
     filter={"document_type": "product_page"},  # Boost product pages
     top_k=5,
 )
 
-# Fix 4: Adaptive alpha — use more keyword weight for short queries
+# Fix 4: Adaptive alpha - use more keyword weight for short queries
 def adaptive_search(query: str) -> list:
     word_count = len(query.split())
     if word_count <= 2:
@@ -934,9 +934,9 @@ print(f"bank(river) vs mortgage:      {cosine_sim(e2, e3):.3f}")
 
 **Expected Output:**
 ```
-bank(finance) vs bank(river): ~0.45-0.55  (moderate — share word "bank" but different meaning)
-bank(finance) vs mortgage:    ~0.80-0.90  (high — same semantic meaning, different words)
-bank(river) vs mortgage:      ~0.20-0.35  (low — completely different topics)
+bank(finance) vs bank(river): ~0.45-0.55  (moderate - share word "bank" but different meaning)
+bank(finance) vs mortgage:    ~0.80-0.90  (high - same semantic meaning, different words)
+bank(river) vs mortgage:      ~0.20-0.35  (low - completely different topics)
 ```
 
 **Key insight:** Modern embedding models handle **polysemy** (same word, different meanings) correctly. "bank" in a financial context is embedded closer to "financial institution" than to "bank" in a nature context. This is because models embed the full sentence context, not individual words.

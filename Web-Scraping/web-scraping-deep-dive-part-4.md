@@ -1,8 +1,8 @@
-# Web Scraping Deep Dive — Part 4: Anti-Scraping & Advanced Techniques
+# Web Scraping Deep Dive - Part 4: Anti-Scraping & Advanced Techniques
 
 ---
 
-**Series:** Web Scraping — A Developer's Deep Dive
+**Series:** Web Scraping - A Developer's Deep Dive
 **Part:** 4 of 5 (Advanced)
 **Audience:** Developers who need to scrape protected, authenticated, or heavily defended websites
 **Reading time:** ~50 minutes
@@ -12,13 +12,13 @@
 ## Table of Contents
 
 1. [The Anti-Scraping Arms Race](#1-the-anti-scraping-arms-race)
-2. [Scraping Authenticated Websites — Login Flows](#2-scraping-authenticated-websites--login-flows)
-3. [Cookie Injection — Using Real Browser Sessions](#3-cookie-injection--using-real-browser-sessions)
+2. [Scraping Authenticated Websites - Login Flows](#2-scraping-authenticated-websites--login-flows)
+3. [Cookie Injection - Using Real Browser Sessions](#3-cookie-injection--using-real-browser-sessions)
 4. [Browser Fingerprinting and Stealth](#4-browser-fingerprinting-and-stealth)
-5. [CAPTCHAs — Types, Avoidance, and Solving](#5-captchas--types-avoidance-and-solving)
-6. [Proxy Strategies — Rotation, Residential, and SOCKS](#6-proxy-strategies--rotation-residential-and-socks)
+5. [CAPTCHAs - Types, Avoidance, and Solving](#5-captchas--types-avoidance-and-solving)
+6. [Proxy Strategies - Rotation, Residential, and SOCKS](#6-proxy-strategies--rotation-residential-and-socks)
 7. [Cloudflare, PerimeterX, and WAF Bypass](#7-cloudflare-perimeterx-and-waf-bypass)
-8. [Rate Limiting — Staying Under the Radar](#8-rate-limiting--staying-under-the-radar)
+8. [Rate Limiting - Staying Under the Radar](#8-rate-limiting--staying-under-the-radar)
 9. [Advanced Data Extraction Techniques](#9-advanced-data-extraction-techniques)
 10. [Real-World Project: Protected Site Scraper](#10-real-world-project-protected-site-scraper)
 11. [What's Next](#11-whats-next)
@@ -54,25 +54,25 @@ flowchart TD
 
 | Defense Layer | What It Checks | Difficulty to Bypass |
 |---------------|---------------|---------------------|
-| **IP rate limiting** | Too many requests from one IP | Easy — use proxies |
-| **Header validation** | Missing/wrong User-Agent, Referer | Easy — set proper headers |
-| **Cookie/session** | No session cookie, expired token | Medium — login or inject cookies |
-| **JavaScript challenge** | Browser must execute JS | Medium — use Playwright |
-| **Browser fingerprinting** | WebGL, canvas, plugins, fonts | Hard — use stealth plugins |
-| **CAPTCHA** | Human verification required | Hard — solving services or avoidance |
-| **Behavioral analysis** | Mouse movements, scroll patterns, timing | Very Hard — human-like automation |
+| **IP rate limiting** | Too many requests from one IP | Easy - use proxies |
+| **Header validation** | Missing/wrong User-Agent, Referer | Easy - set proper headers |
+| **Cookie/session** | No session cookie, expired token | Medium - login or inject cookies |
+| **JavaScript challenge** | Browser must execute JS | Medium - use Playwright |
+| **Browser fingerprinting** | WebGL, canvas, plugins, fonts | Hard - use stealth plugins |
+| **CAPTCHA** | Human verification required | Hard - solving services or avoidance |
+| **Behavioral analysis** | Mouse movements, scroll patterns, timing | Very Hard - human-like automation |
 
 ---
 
-## 2. Scraping Authenticated Websites — Login Flows
+## 2. Scraping Authenticated Websites - Login Flows
 
-Many valuable data sources require authentication — job boards, social networks, marketplaces, internal tools. Here are the main patterns for scraping behind a login.
+Many valuable data sources require authentication - job boards, social networks, marketplaces, internal tools. Here are the main patterns for scraping behind a login.
 
 ### 2.1 Form-Based Login (Most Common)
 
 ```python
 # filename: auth_scraper.py
-# Login via HTML form submission — works for most traditional websites
+# Login via HTML form submission - works for most traditional websites
 
 import requests
 from bs4 import BeautifulSoup
@@ -140,7 +140,7 @@ def login_form_based(base_url: str, username: str, password: str) -> requests.Se
 
 ```python
 def login_api_based(base_url: str, username: str, password: str) -> requests.Session:
-    """Authenticate via REST API — common for React/Vue/Angular apps."""
+    """Authenticate via REST API - common for React/Vue/Angular apps."""
     session = requests.Session()
     session.headers.update({
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -285,7 +285,7 @@ def use_exported_cookies(cookies: dict, target_url: str):
 
 ---
 
-## 3. Cookie Injection — Using Real Browser Sessions
+## 3. Cookie Injection - Using Real Browser Sessions
 
 This is the most practical technique for scraping platforms like LinkedIn, Twitter, Instagram, and other sites with complex authentication. Instead of automating the login flow, you use cookies from your real, already-authenticated browser session.
 
@@ -382,7 +382,7 @@ def extract_cookies_with_browser_cookie3(domain: str) -> dict:
     return {cookie.name: cookie.value for cookie in cj}
 ```
 
-### 3.3 LinkedIn Cookie Injection — Complete Example
+### 3.3 LinkedIn Cookie Injection - Complete Example
 
 LinkedIn is one of the most commonly scraped authenticated platforms. Here is a practical, authorized approach using your own account cookies for personal data collection.
 
@@ -454,7 +454,7 @@ class LinkedInScraper:
             logger.info("Session is valid")
             return True
         elif response.status_code in (302, 303):
-            logger.error("Session expired — cookies are no longer valid")
+            logger.error("Session expired - cookies are no longer valid")
             return False
         else:
             logger.warning(f"Unexpected status: {response.status_code}")
@@ -558,7 +558,7 @@ if __name__ == "__main__":
         results = scraper.search_people("python developer", max_pages=2)
         print(f"Found {len(results)} profiles")
         for r in results[:5]:
-            print(f"  {r['name']} — {r['headline']}")
+            print(f"  {r['name']} - {r['headline']}")
     else:
         print("Please refresh your LinkedIn cookies")
 ```
@@ -603,7 +603,7 @@ def scrape_with_injected_cookies(url: str, cookies_file: str):
         page.goto(url)
         page.wait_for_load_state("networkidle")
 
-        # Now you are authenticated — scrape away
+        # Now you are authenticated - scrape away
         content = page.content()
         browser.close()
         return content
@@ -612,13 +612,13 @@ def scrape_with_injected_cookies(url: str, cookies_file: str):
 def save_browser_cookies(login_url: str, output_file: str):
     """Manually log in and save cookies for later reuse."""
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)  # Visible — you log in manually
+        browser = p.chromium.launch(headless=False)  # Visible - you log in manually
         context = browser.new_context()
         page = context.new_page()
 
         page.goto(login_url)
 
-        # Pause execution — log in manually in the browser
+        # Pause execution - log in manually in the browser
         print("Please log in manually in the browser window...")
         print("Press Enter in the terminal when you're logged in.")
         input()
@@ -698,7 +698,7 @@ class CookieManager:
 
 ## 4. Browser Fingerprinting and Stealth
 
-Anti-bot systems identify automated browsers through "fingerprinting" — collecting dozens of browser properties that differ between real browsers and automated ones.
+Anti-bot systems identify automated browsers through "fingerprinting" - collecting dozens of browser properties that differ between real browsers and automated ones.
 
 ### 4.1 What Gets Fingerprinted
 
@@ -737,7 +737,7 @@ with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
     page = browser.new_page()
 
-    # Apply stealth patches — hides automation signals
+    # Apply stealth patches - hides automation signals
     stealth_sync(page)
 
     page.goto("https://bot.sannysoft.com/")  # Bot detection test site
@@ -839,7 +839,7 @@ import random
 import time
 
 def human_like_scroll(page, scrolls: int = 5):
-    """Scroll like a human — variable speed, pauses, small movements."""
+    """Scroll like a human - variable speed, pauses, small movements."""
     for _ in range(scrolls):
         # Random scroll distance (200-800 pixels)
         distance = random.randint(200, 800)
@@ -879,7 +879,7 @@ def human_like_type(page, selector: str, text: str):
     page.click(selector)
     for char in text:
         page.keyboard.type(char)
-        # Variable delay — faster for common characters, slower for unusual ones
+        # Variable delay - faster for common characters, slower for unusual ones
         delay = random.uniform(0.05, 0.15)
         if char in " .,!?":
             delay += random.uniform(0.1, 0.3)  # Longer pause after punctuation
@@ -888,14 +888,14 @@ def human_like_type(page, selector: str, text: str):
 
 ---
 
-## 5. CAPTCHAs — Types, Avoidance, and Solving
+## 5. CAPTCHAs - Types, Avoidance, and Solving
 
 ### 5.1 CAPTCHA Types
 
 | Type | Example | Difficulty |
 |------|---------|------------|
 | **reCAPTCHA v2** | "I'm not a robot" checkbox + image selection | Medium |
-| **reCAPTCHA v3** | Invisible — scores user behavior 0.0-1.0 | Hard (behavioral) |
+| **reCAPTCHA v3** | Invisible - scores user behavior 0.0-1.0 | Hard (behavioral) |
 | **hCaptcha** | Image selection (like reCAPTCHA v2) | Medium |
 | **Cloudflare Turnstile** | Usually invisible challenge | Hard |
 | **Text CAPTCHA** | Distorted text to type | Easy (OCR) |
@@ -1046,7 +1046,7 @@ class CaptchaSolver:
 
 ---
 
-## 6. Proxy Strategies — Rotation, Residential, and SOCKS
+## 6. Proxy Strategies - Rotation, Residential, and SOCKS
 
 ### 6.1 Proxy Types
 
@@ -1074,9 +1074,9 @@ flowchart LR
 
 | Proxy Type | Cost | Detection Risk | Speed | Best For |
 |-----------|------|---------------|-------|----------|
-| **Datacenter** | $0.50-2/GB | High — easily detected | Fast | APIs, non-protected sites |
-| **Residential** | $3-15/GB | Low — looks like real users | Medium | Protected sites, LinkedIn, Amazon |
-| **Mobile** | $20-50/GB | Very Low — hardest to detect | Slow | Strictest anti-bot sites |
+| **Datacenter** | $0.50-2/GB | High - easily detected | Fast | APIs, non-protected sites |
+| **Residential** | $3-15/GB | Low - looks like real users | Medium | Protected sites, LinkedIn, Amazon |
+| **Mobile** | $20-50/GB | Very Low - hardest to detect | Slow | Strictest anti-bot sites |
 | **ISP/Static** | $2-5/IP/month | Low | Fast | Long-running scraping sessions |
 
 ### 6.2 Proxy Rotation Implementation
@@ -1286,7 +1286,7 @@ print(response.status_code)  # 200 (if the JS challenge is solved)
 
 ---
 
-## 8. Rate Limiting — Staying Under the Radar
+## 8. Rate Limiting - Staying Under the Radar
 
 ### 8.1 Rate Limiting Strategies
 
@@ -1356,7 +1356,7 @@ class AdaptiveRateLimiter:
         )
 
     def report_block(self, domain: str):
-        """Handle IP block — maximum backoff."""
+        """Handle IP block - maximum backoff."""
         self.consecutive_errors[domain] += 1
         self.domain_delays[domain] = self.max_delay
         logger.error(f"Blocked on {domain}! Backing off to {self.max_delay}s")
@@ -1389,9 +1389,9 @@ for url in urls:
 # Pattern 3: Time-of-day awareness
 from datetime import datetime
 hour = datetime.now().hour
-if 9 <= hour <= 17:  # Business hours — more traffic = blend in easier
+if 9 <= hour <= 17:  # Business hours - more traffic = blend in easier
     base_delay = 1.5
-else:  # Off-hours — less traffic = stand out more
+else:  # Off-hours - less traffic = stand out more
     base_delay = 4.0
 ```
 
@@ -1485,7 +1485,7 @@ def extract_structured_data(html: str) -> dict:
     return result
 
 
-# Usage — many e-commerce sites include product data in JSON-LD
+# Usage - many e-commerce sites include product data in JSON-LD
 structured = extract_structured_data(html)
 for item in structured["json_ld"]:
     if item.get("@type") == "Product":
@@ -1543,7 +1543,7 @@ shadow_content = page.evaluate("""
 
 ## 10. Real-World Project: Protected Site Scraper
 
-A complete scraper that combines multiple techniques — cookie injection, stealth, proxy rotation, and adaptive rate limiting.
+A complete scraper that combines multiple techniques - cookie injection, stealth, proxy rotation, and adaptive rate limiting.
 
 ```python
 # filename: protected_scraper.py
@@ -1651,10 +1651,10 @@ class ProtectedScraper:
                     return response
                 elif response.status_code == 429:
                     retry_after = int(response.headers.get("Retry-After", 30))
-                    logger.warning(f"429 — sleeping {retry_after}s")
+                    logger.warning(f"429 - sleeping {retry_after}s")
                     time.sleep(retry_after)
                 elif response.status_code == 403:
-                    logger.warning(f"403 Forbidden — rotating proxy")
+                    logger.warning(f"403 Forbidden - rotating proxy")
                     proxy = self._get_proxy()
                     time.sleep(5)
                 else:
@@ -1743,7 +1743,7 @@ if __name__ == "__main__":
     if response and response.status_code == 200:
         print("Session is valid!")
     else:
-        print("Session expired — refresh your cookies")
+        print("Session expired - refresh your cookies")
 ```
 
 ---
@@ -1752,15 +1752,15 @@ if __name__ == "__main__":
 
 In **Part 5**, we take everything to **production**. You will learn:
 
-- Async scraping with `asyncio` + `aiohttp` — 10x throughput
-- Job scheduling — APScheduler, Celery, cron
-- Data pipelines — cleaning, deduplication, incremental updates
-- Monitoring and alerting — tracking success rates, latency, data quality
-- Deployment — Docker, cloud functions, managed scrapers
+- Async scraping with `asyncio` + `aiohttp` - 10x throughput
+- Job scheduling - APScheduler, Celery, cron
+- Data pipelines - cleaning, deduplication, incremental updates
+- Monitoring and alerting - tracking success rates, latency, data quality
+- Deployment - Docker, cloud functions, managed scrapers
 - Error recovery and idempotent scraping
 
 ---
 
-**Series:** [Web Scraping Deep Dive — Index](index.md)
-**Previous:** [Part 3 — Scrapy Framework](web-scraping-deep-dive-part-3.md)
-**Next:** [Part 5 — Production Scraping](web-scraping-deep-dive-part-5.md)
+**Series:** [Web Scraping Deep Dive - Index](index.md)
+**Previous:** [Part 3 - Scrapy Framework](web-scraping-deep-dive-part-3.md)
+**Next:** [Part 5 - Production Scraping](web-scraping-deep-dive-part-5.md)

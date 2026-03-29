@@ -1,8 +1,8 @@
-# Web Scraping Deep Dive — Part 0: Foundations — HTTP, Ethics, and the Scraping Landscape
+# Web Scraping Deep Dive - Part 0: Foundations - HTTP, Ethics, and the Scraping Landscape
 
 ---
 
-**Series:** Web Scraping — A Developer's Deep Dive
+**Series:** Web Scraping - A Developer's Deep Dive
 **Part:** 0 of 5 (Foundation)
 **Audience:** Developers with Python experience who want to learn web scraping from the ground up
 **Reading time:** ~40 minutes
@@ -12,13 +12,13 @@
 ## Table of Contents
 
 1. [Why Web Scraping Matters](#1-why-web-scraping-matters)
-2. [The HTTP Protocol — Your Scraper's Language](#2-the-http-protocol--your-scrapers-language)
+2. [The HTTP Protocol - Your Scraper's Language](#2-the-http-protocol--your-scrapers-language)
 3. [Anatomy of an HTTP Request](#3-anatomy-of-an-http-request)
 4. [Anatomy of an HTTP Response](#4-anatomy-of-an-http-response)
-5. [HTML — The Document You Are Parsing](#5-html--the-document-you-are-parsing)
+5. [HTML - The Document You Are Parsing](#5-html--the-document-you-are-parsing)
 6. [Ethics, Legality, and robots.txt](#6-ethics-legality-and-robotstxt)
 7. [The Web Scraping Tools Landscape](#7-the-web-scraping-tools-landscape)
-8. [Your First Scraper — Putting It All Together](#8-your-first-scraper--putting-it-all-together)
+8. [Your First Scraper - Putting It All Together](#8-your-first-scraper--putting-it-all-together)
 9. [Common Pitfalls and How to Avoid Them](#9-common-pitfalls-and-how-to-avoid-them)
 10. [Vocabulary](#10-vocabulary)
 11. [What's Next](#11-whats-next)
@@ -42,11 +42,11 @@ Web scraping is the practice of programmatically extracting data from websites. 
 | **Recruiting** | Job posting aggregation, salary analysis | LinkedIn, Indeed |
 | **Machine Learning** | Training data collection for NLP models | Wikipedia, Common Crawl |
 
-> **Key insight:** Web scraping is not "hacking." It is reading publicly available web pages programmatically — the same thing a browser does, minus the rendering. The legality and ethics depend on *what* you scrape, *how* you scrape it, and *what you do with the data*.
+> **Key insight:** Web scraping is not "hacking." It is reading publicly available web pages programmatically - the same thing a browser does, minus the rendering. The legality and ethics depend on *what* you scrape, *how* you scrape it, and *what you do with the data*.
 
 ---
 
-## 2. The HTTP Protocol — Your Scraper's Language
+## 2. The HTTP Protocol - Your Scraper's Language
 
 Every web page you visit in a browser is delivered via HTTP (HyperText Transfer Protocol). Your scraper must speak this language fluently.
 
@@ -68,20 +68,20 @@ sequenceDiagram
 
 **Step by step:**
 
-1. **DNS Resolution** — Your scraper resolves the domain name to an IP address.
-2. **TCP Connection** — A TCP connection (often TLS-encrypted for HTTPS) is established.
-3. **HTTP Request** — Your scraper sends a request with a method, path, headers, and optionally a body.
-4. **HTTP Response** — The server returns a status code, headers, and a body (usually HTML, JSON, or binary data).
-5. **Parsing** — Your scraper extracts the data it needs from the response body.
+1. **DNS Resolution** - Your scraper resolves the domain name to an IP address.
+2. **TCP Connection** - A TCP connection (often TLS-encrypted for HTTPS) is established.
+3. **HTTP Request** - Your scraper sends a request with a method, path, headers, and optionally a body.
+4. **HTTP Response** - The server returns a status code, headers, and a body (usually HTML, JSON, or binary data).
+5. **Parsing** - Your scraper extracts the data it needs from the response body.
 
 ### 2.2 HTTP Methods Relevant to Scraping
 
 | Method | Purpose | When You Use It |
 |--------|---------|-----------------|
-| **GET** | Retrieve a resource | 95% of scraping — fetching pages, images, files |
+| **GET** | Retrieve a resource | 95% of scraping - fetching pages, images, files |
 | **POST** | Submit data to the server | Login forms, search forms, paginated APIs |
 | **HEAD** | Retrieve headers only (no body) | Checking if a page exists, getting content-type before full download |
-| **OPTIONS** | Check allowed methods | Rarely needed — useful for debugging CORS issues |
+| **OPTIONS** | Check allowed methods | Rarely needed - useful for debugging CORS issues |
 
 Most scraping is just GET requests. POST becomes important when you need to log in, submit forms, or interact with APIs that require a request body.
 
@@ -159,7 +159,7 @@ X-RateLimit-Reset: 1640000000
 
 <!DOCTYPE html>
 <html>
-<head><title>Products — Electronics</title></head>
+<head><title>Products - Electronics</title></head>
 <body>
   <div class="product-grid">
     <div class="product-card" data-id="12345">
@@ -176,7 +176,7 @@ X-RateLimit-Reset: 1640000000
 
 | Code | Meaning | Scraper Action |
 |------|---------|----------------|
-| **200** | OK — success | Parse the body |
+| **200** | OK - success | Parse the body |
 | **301/302** | Redirect | Follow the `Location` header (requests does this automatically) |
 | **403** | Forbidden | You are blocked. Rotate User-Agent, use proxy, check robots.txt |
 | **404** | Not Found | Skip this URL, log it |
@@ -212,7 +212,7 @@ print(response.encoding)  # 'utf-8'
 
 ---
 
-## 5. HTML — The Document You Are Parsing
+## 5. HTML - The Document You Are Parsing
 
 HTML is a tree structure. Understanding this tree is essential for extracting data accurately.
 
@@ -257,7 +257,7 @@ flowchart TD
 </div>
 ```
 
-### 5.3 CSS Selectors — The Query Language for HTML
+### 5.3 CSS Selectors - The Query Language for HTML
 
 CSS selectors are how you tell your parser *which* elements to extract. Master these and you can extract anything.
 
@@ -301,18 +301,18 @@ for card in cards:
     name = card.select_one("h2").text
     price = card.select_one(".price").text
     data_id = card["data-id"]
-    print(f"ID={data_id}: {name} — {price}")
+    print(f"ID={data_id}: {name} - {price}")
 
 # Output:
-# ID=1: Mouse — $29.99
-# ID=2: Keyboard — $49.99
+# ID=1: Mouse - $29.99
+# ID=2: Keyboard - $49.99
 ```
 
 ---
 
 ## 6. Ethics, Legality, and robots.txt
 
-Before you scrape a single page, you must understand the rules — both legal and ethical.
+Before you scrape a single page, you must understand the rules - both legal and ethical.
 
 ### 6.1 The Legal Landscape
 
@@ -344,7 +344,7 @@ flowchart TD
 | **Meta vs. Bright Data (2024)** | Scraping logged-in content can violate TOS | Authenticated scraping is risky |
 | **Ryanair vs. PR Aviation** | Database rights can restrict systematic extraction (EU) | EU has stronger data protections |
 
-### 6.2 robots.txt — The Gentleman's Agreement
+### 6.2 robots.txt - The Gentleman's Agreement
 
 Every well-behaved scraper checks `robots.txt` first. It is a file at the root of every website that tells crawlers which paths they may or may not access.
 
@@ -388,19 +388,19 @@ url = "https://example.com/products/electronics"
 if can_scrape(url):
     print("Safe to scrape")
 else:
-    print("Blocked by robots.txt — do not scrape")
+    print("Blocked by robots.txt - do not scrape")
 ```
 
 ### 6.3 Ethical Scraping Checklist
 
 1. **Check robots.txt** before scraping any domain
-2. **Respect rate limits** — never hammer a server with rapid-fire requests
-3. **Identify yourself** — use a descriptive User-Agent with contact info for large crawls
-4. **Cache aggressively** — do not re-download pages you already have
-5. **Scrape during off-peak hours** — minimize impact on the server
-6. **Do not scrape personal data** — emails, phone numbers, private profiles (GDPR, CCPA)
-7. **Do not bypass authentication** — scraping behind a login wall is legally riskier
-8. **Store only what you need** — do not hoard entire websites
+2. **Respect rate limits** - never hammer a server with rapid-fire requests
+3. **Identify yourself** - use a descriptive User-Agent with contact info for large crawls
+4. **Cache aggressively** - do not re-download pages you already have
+5. **Scrape during off-peak hours** - minimize impact on the server
+6. **Do not scrape personal data** - emails, phone numbers, private profiles (GDPR, CCPA)
+7. **Do not bypass authentication** - scraping behind a login wall is legally riskier
+8. **Store only what you need** - do not hoard entire websites
 
 > **Key insight:** robots.txt is not legally binding in most jurisdictions, but ignoring it signals bad faith. If a company sues you for scraping, the first thing their lawyers will check is whether you respected their robots.txt.
 
@@ -476,7 +476,7 @@ flowchart TD
 
 ---
 
-## 8. Your First Scraper — Putting It All Together
+## 8. Your First Scraper - Putting It All Together
 
 Let's build a complete scraper that respects robots.txt, handles errors gracefully, and extracts structured data.
 
@@ -625,7 +625,7 @@ def scrape_books(max_pages: int = 3) -> list[Book]:
         all_books.extend(books)
         logger.info(f"  Found {len(books)} books (total: {len(all_books)})")
 
-        # Step 4: Rate limiting — be polite
+        # Step 4: Rate limiting - be polite
         current_url = next_url
         page += 1
         if current_url:
@@ -681,10 +681,10 @@ if __name__ == "__main__":
 ### Pitfall 1: Not Handling Encoding
 
 ```python
-# BAD — assumes UTF-8
+# BAD - assumes UTF-8
 text = response.content.decode("utf-8")
 
-# GOOD — let requests detect encoding, with fallback
+# GOOD - let requests detect encoding, with fallback
 response.encoding = response.apparent_encoding  # Uses chardet
 text = response.text
 ```
@@ -692,20 +692,20 @@ text = response.text
 ### Pitfall 2: Brittle Selectors
 
 ```python
-# BAD — breaks if the HTML structure changes even slightly
+# BAD - breaks if the HTML structure changes even slightly
 price = soup.find_all("div")[3].find_all("span")[1].text
 
-# GOOD — semantic selector that survives minor layout changes
+# GOOD - semantic selector that survives minor layout changes
 price = soup.select_one(".product-card .price").text
 ```
 
 ### Pitfall 3: Ignoring Relative URLs
 
 ```python
-# BAD — breaks for relative links
-link = a_tag["href"]  # "/products/123" — not a full URL!
+# BAD - breaks for relative links
+link = a_tag["href"]  # "/products/123" - not a full URL!
 
-# GOOD — always resolve relative URLs
+# GOOD - always resolve relative URLs
 from urllib.parse import urljoin
 link = urljoin(base_url, a_tag["href"])  # "https://example.com/products/123"
 ```
@@ -713,17 +713,17 @@ link = urljoin(base_url, a_tag["href"])  # "https://example.com/products/123"
 ### Pitfall 4: No Timeouts
 
 ```python
-# BAD — hangs forever if server doesn't respond
+# BAD - hangs forever if server doesn't respond
 response = requests.get(url)
 
-# GOOD — always set a timeout
+# GOOD - always set a timeout
 response = requests.get(url, timeout=(5, 15))  # (connect_timeout, read_timeout)
 ```
 
 ### Pitfall 5: Fetching the Same Page Twice
 
 ```python
-# GOOD — track visited URLs
+# GOOD - track visited URLs
 visited = set()
 
 def fetch_if_new(url: str) -> requests.Response | None:
@@ -740,7 +740,7 @@ def fetch_if_new(url: str) -> requests.Response | None:
 
 | Term | Definition |
 |------|-----------|
-| **DOM** | Document Object Model — the tree structure of an HTML document |
+| **DOM** | Document Object Model - the tree structure of an HTML document |
 | **CSS Selector** | A pattern that matches HTML elements (e.g., `.class`, `#id`, `tag`) |
 | **User-Agent** | A header identifying the client software making the request |
 | **robots.txt** | A file at the root of a website specifying crawling rules |
@@ -758,12 +758,12 @@ def fetch_if_new(url: str) -> requests.Response | None:
 In **Part 1**, we go deep into BeautifulSoup and the `requests` library. You will learn:
 
 - Every BeautifulSoup method you will actually use
-- Navigating the DOM tree — parent, sibling, and descendant traversal
+- Navigating the DOM tree - parent, sibling, and descendant traversal
 - Extracting data from tables, lists, nested structures
-- Session handling — cookies, login flows, CSRF tokens
+- Session handling - cookies, login flows, CSRF tokens
 - Building a structured data extraction pipeline
 
 ---
 
-**Series:** [Web Scraping Deep Dive — Index](index.md)
-**Next:** [Part 1 — BeautifulSoup & Requests](web-scraping-deep-dive-part-1.md)
+**Series:** [Web Scraping Deep Dive - Index](index.md)
+**Next:** [Part 1 - BeautifulSoup & Requests](web-scraping-deep-dive-part-1.md)

@@ -1,8 +1,8 @@
-# FastAPI Fundamentals — Interview Preparation (Part 4/7)
+# FastAPI Fundamentals - Interview Preparation (Part 4/7)
 
 ---
 
-**Series:** Python + FastAPI — Complete Interview Preparation from Basics to System Design
+**Series:** Python + FastAPI - Complete Interview Preparation from Basics to System Design
 **Part:** 4 of 7 (FastAPI Basics)
 **Audience:** Backend developers preparing for Python/FastAPI interviews at mid-to-senior level
 **Prerequisites:** Parts 1-3 (Python Core, OOP, Async/Concurrency)
@@ -12,7 +12,7 @@
 
 ## Recap: Where We Left Off
 
-Parts 1-3 established the Python foundation: core language mechanics, object-oriented patterns, and asynchronous programming with `asyncio`. That async foundation is critical here — FastAPI is built entirely on top of Python's async ecosystem, and interviewers will expect you to connect these concepts seamlessly.
+Parts 1-3 established the Python foundation: core language mechanics, object-oriented patterns, and asynchronous programming with `asyncio`. That async foundation is critical here - FastAPI is built entirely on top of Python's async ecosystem, and interviewers will expect you to connect these concepts seamlessly.
 
 Now we enter FastAPI itself. This part covers the framework's fundamentals: what it is, how routing works, how Pydantic powers validation and serialization, how dependency injection structures real applications, and how middleware intercepts and processes requests. These are the topics that appear in nearly every FastAPI interview, from startups to FAANG.
 
@@ -78,7 +78,7 @@ async def get_user(user_id: int):
     return {"user_id": user_id, "name": "Alice"}
 ```
 
-FastAPI gives you automatic request validation, automatic API documentation, editor autocompletion, and async performance — all from standard Python type hints.
+FastAPI gives you automatic request validation, automatic API documentation, editor autocompletion, and async performance - all from standard Python type hints.
 
 **Why interviewer asks this:** They want to know if you understand the framework's architecture and can articulate *why* you'd choose it over alternatives, not just that you've used it.
 
@@ -144,7 +144,7 @@ FastAPI is an ASGI framework. It requires an ASGI server like Uvicorn or Hyperco
 3. **Background tasks:** ASGI supports background tasks and server-sent events.
 4. **Performance:** For I/O-bound APIs (the majority of web APIs), ASGI dramatically outperforms WSGI.
 
-**Important caveat:** FastAPI can also run synchronous `def` endpoints. When it encounters a sync function, it runs it in a threadpool to avoid blocking the event loop. This is why FastAPI works even if you forget `async def` — but it's less efficient.
+**Important caveat:** FastAPI can also run synchronous `def` endpoints. When it encounters a sync function, it runs it in a threadpool to avoid blocking the event loop. This is why FastAPI works even if you forget `async def` - but it's less efficient.
 
 ```python
 # FastAPI handles both:
@@ -188,7 +188,7 @@ Key insights:
 
 1. **FastAPI is 3-5x faster than Flask/Django** for I/O-bound workloads.
 2. **FastAPI approaches Node.js performance** and sometimes exceeds it for async I/O patterns.
-3. **Go and Rust still dominate** raw throughput — FastAPI is not a replacement for systems programming.
+3. **Go and Rust still dominate** raw throughput - FastAPI is not a replacement for systems programming.
 4. **These benchmarks measure the framework overhead**, not your application logic. In real applications, database queries, external API calls, and business logic dominate latency.
 
 The performance comes from three layers:
@@ -229,7 +229,7 @@ This is a real-world migration scenario. The approach should be incremental, not
 **Phase 1: Run both frameworks simultaneously**
 
 ```python
-# main.py — Mount Flask inside FastAPI
+# main.py - Mount Flask inside FastAPI
 from fastapi import FastAPI
 from fastapi.middleware.wsgi import WSGIMiddleware
 from flask_app import flask_app  # existing Flask app
@@ -315,13 +315,13 @@ from fastapi import FastAPI, Query, Path
 
 app = FastAPI()
 
-# PATH parameter — declared in the URL path template
+# PATH parameter - declared in the URL path template
 @app.get("/users/{user_id}")
 async def get_user(user_id: int):
     # user_id comes from the URL path: /users/42
     return {"user_id": user_id}
 
-# QUERY parameter — not in the path, so it becomes a query param
+# QUERY parameter - not in the path, so it becomes a query param
 @app.get("/users")
 async def list_users(skip: int = 0, limit: int = 10):
     # Accessed via: /users?skip=20&limit=10
@@ -386,8 +386,8 @@ app = FastAPI()
 # Method 1: Default value of None
 @app.get("/items")
 async def list_items(
-    category: str | None = None,  # Optional — Python 3.10+ syntax
-    min_price: Optional[float] = None,  # Optional — older syntax (both work)
+    category: str | None = None,  # Optional - Python 3.10+ syntax
+    min_price: Optional[float] = None,  # Optional - older syntax (both work)
     sort_by: str = "created_at",  # Has default, not optional (always has a value)
 ):
     filters = {}
@@ -433,10 +433,10 @@ async def list_products(
     # GET /products?category=food  → 422 error (not a valid enum value)
     return {"category": category.value, "sort": sort.value}
 
-# The Swagger UI will render these as dropdown selects — excellent UX
+# The Swagger UI will render these as dropdown selects - excellent UX
 ```
 
-**Edge case — Enum with integer values:**
+**Edge case - Enum with integer values:**
 
 ```python
 class Priority(int, Enum):
@@ -480,7 +480,7 @@ async def get_current_user():
 # The /users/me endpoint is UNREACHABLE!
 ```
 
-**The fix — declare specific routes before parameterized routes:**
+**The fix - declare specific routes before parameterized routes:**
 
 ```python
 # CORRECT order
@@ -498,7 +498,7 @@ async def get_user(user_id: str):
 
 **Why this happens:** FastAPI (via Starlette) iterates through registered routes top-to-bottom. `{user_id}` is a wildcard that matches any string, including "me". Once a match is found, it stops searching.
 
-**Another subtle case — path parameter types act as filters:**
+**Another subtle case - path parameter types act as filters:**
 
 ```python
 @app.get("/items/{item_id}")
@@ -641,7 +641,7 @@ async def get_genre_bestsellers(
 - Enum parameters restrict input to valid genres at the API layer.
 - The 404 handling is explicit and returns a clear error message.
 
-**Why interviewer asks this:** They want to see if you can design a clean, RESTful API with proper parameter handling — not just know the syntax.
+**Why interviewer asks this:** They want to see if you can design a clean, RESTful API with proper parameter handling - not just know the syntax.
 
 **Follow-up:** "How would you add sorting to the list endpoint, supporting multiple sort fields like `?sort_by=price&order=desc`?"
 
@@ -654,9 +654,9 @@ async def get_genre_bestsellers(
 **Answer:**
 
 Pydantic is the data validation library that FastAPI uses for:
-1. **Request body parsing and validation** — deserializing JSON into Python objects with type checking
-2. **Response serialization** — converting Python objects to JSON with field filtering
-3. **API documentation** — generating JSON Schema for Swagger/ReDoc
+1. **Request body parsing and validation** - deserializing JSON into Python objects with type checking
+2. **Response serialization** - converting Python objects to JSON with field filtering
+3. **API documentation** - generating JSON Schema for Swagger/ReDoc
 
 ```python
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
@@ -665,14 +665,14 @@ from typing import Optional
 
 
 class UserCreate(BaseModel):
-    """Request model — what the client sends."""
+    """Request model - what the client sends."""
     username: str = Field(min_length=3, max_length=50)
     email: EmailStr
     password: str = Field(min_length=8)
     bio: Optional[str] = None
 
 class UserResponse(BaseModel):
-    """Response model — what the client receives.
+    """Response model - what the client receives.
     Note: password is deliberately excluded."""
     id: int
     username: str
@@ -683,7 +683,7 @@ class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class UserInDB(UserResponse):
-    """Internal model — includes hashed password, never sent to client."""
+    """Internal model - includes hashed password, never sent to client."""
     hashed_password: str
 ```
 
@@ -709,7 +709,7 @@ async def create_user(user: UserCreate):
         hashed_password=hashed_pw,
         bio=user.bio,
     )
-    return db_user  # ORM object — from_attributes=True handles conversion
+    return db_user  # ORM object - from_attributes=True handles conversion
 ```
 
 **The `model_config = ConfigDict(from_attributes=True)` setting** (formerly `orm_mode` in Pydantic v1) tells Pydantic to read data from object attributes, not just dict keys. This is essential when returning SQLAlchemy/Tortoise ORM objects.
@@ -918,7 +918,7 @@ If `billing_address` is omitted, the validator copies `shipping_address` automat
 
 **Why interviewer asks this:** Real-world APIs have complex, nested payloads. This tests whether you can model them cleanly.
 
-**Follow-up:** "How would you handle polymorphic models — for example, an order that can have either `ShippingAddress` or `PickupLocation` as the delivery method?"
+**Follow-up:** "How would you handle polymorphic models - for example, an order that can have either `ShippingAddress` or `PickupLocation` as the delivery method?"
 
 ---
 
@@ -1001,15 +1001,15 @@ async def get_user_summary(user_id: int):
 
 **Best practices:**
 
-1. **Always use `response_model`** — never rely on "I'll just not include that field in the dict."
-2. **Prefer separate response models** over `exclude`/`include` — they're explicit and documented.
+1. **Always use `response_model`** - never rely on "I'll just not include that field in the dict."
+2. **Prefer separate response models** over `exclude`/`include` - they're explicit and documented.
 3. **Use `response_model_exclude_unset=True`** to omit fields that weren't explicitly set (useful for PATCH endpoints).
 
 ```python
 @app.patch("/users/{user_id}", response_model=UserPublic)
 async def update_user(user_id: int, updates: UserUpdate):
     # response_model_exclude_unset=True would skip fields the user
-    # didn't include in the PATCH body — but using separate models
+    # didn't include in the PATCH body - but using separate models
     # is cleaner for this pattern.
     pass
 ```
@@ -1128,7 +1128,7 @@ class UserResponse(UserBase, TimestampMixin):
     model_config = ConfigDict(from_attributes=True)
 
 class UserUpdate(BaseModel):
-    """Partial update — all fields optional."""
+    """Partial update - all fields optional."""
     full_name: Optional[str] = Field(default=None, min_length=1, max_length=200)
     role: Optional[UserRole] = None
 
@@ -1252,15 +1252,15 @@ get_profile(current_user)
 
 FastAPI:
 1. Sees `Depends(get_current_user)` in `get_profile`.
-2. Inspects `get_current_user`'s signature — finds it needs `authorization` (from header) and `db` (from `Depends(get_db)`).
+2. Inspects `get_current_user`'s signature - finds it needs `authorization` (from header) and `db` (from `Depends(get_db)`).
 3. Recursively resolves `get_db()` first.
 4. Calls `get_current_user` with resolved values.
 5. Passes the result to `get_profile`.
 6. After the response is sent, runs cleanup for yield dependencies (`db.close()`).
 
 **Key behaviors:**
-- Dependencies are resolved **per request** — each request gets its own database session.
-- Dependencies are **cached within a request** — if two dependencies both `Depends(get_db)`, they get the same session instance.
+- Dependencies are resolved **per request** - each request gets its own database session.
+- Dependencies are **cached within a request** - if two dependencies both `Depends(get_db)`, they get the same session instance.
 - Dependencies can be **nested** to arbitrary depth.
 
 **Why interviewer asks this:** DI is how production FastAPI apps are structured. Without understanding it, you can't write testable code.
@@ -1321,7 +1321,7 @@ async def list_users(db=Depends(get_db_session)):
 # 4. Closing session
 ```
 
-**Critical behavior — yield dependencies and exceptions:**
+**Critical behavior - yield dependencies and exceptions:**
 
 ```python
 async def file_handler():
@@ -1343,7 +1343,7 @@ async def transactional_db():
         await session.close()  # Always runs
 ```
 
-**Important edge case:** Code after `yield` runs **after the response is formed but before it's sent**. If you raise an exception in the teardown, the client gets a 500 error — even if the endpoint was successful.
+**Important edge case:** Code after `yield` runs **after the response is formed but before it's sent**. If you raise an exception in the teardown, the client gets a 500 error - even if the endpoint was successful.
 
 ```python
 async def risky_dependency():
@@ -1489,7 +1489,7 @@ async def public_data():
 
 **Note the `dependencies` parameter:** When you don't need the dependency's return value (like rate limiting), use `dependencies=[Depends(...)]` on the endpoint decorator instead of a function parameter.
 
-**Why interviewer asks this:** Class-based and parameterized dependencies show you can build reusable, configurable components — a sign of production experience.
+**Why interviewer asks this:** Class-based and parameterized dependencies show you can build reusable, configurable components - a sign of production experience.
 
 **Follow-up:** "How would you implement a dependency that caches its result across multiple requests (not just within a single request)?"
 
@@ -1595,7 +1595,7 @@ async def test_get_profile_custom_user(client):
 - `app.dependency_overrides` is a dict mapping original dependency functions to replacement functions.
 - The override function must have a compatible return type.
 - Always clear overrides after tests to prevent test pollution.
-- This works for the entire dependency chain — overriding `get_db` affects all dependencies that use it.
+- This works for the entire dependency chain - overriding `get_db` affects all dependencies that use it.
 
 **Why interviewer asks this:** Testability is a primary reason to use DI. If you can't explain the override pattern, interviewers will doubt your testing practices.
 
@@ -1693,12 +1693,12 @@ class UserRegistration(BaseModel):
 **Validation order:**
 
 ```
-1. model_validator(mode="before") — raw input preprocessing
-2. field_validator(mode="before") — per-field, before type coercion
+1. model_validator(mode="before") - raw input preprocessing
+2. field_validator(mode="before") - per-field, before type coercion
 3. Pydantic type coercion (str → int, etc.)
 4. Field constraints (min_length, ge, pattern, etc.)
-5. field_validator(mode="after") — per-field, after type coercion (default mode)
-6. model_validator(mode="after") — cross-field validation on the fully constructed model
+5. field_validator(mode="after") - per-field, after type coercion (default mode)
+6. model_validator(mode="after") - cross-field validation on the fully constructed model
 ```
 
 This ordering matters. If `mode="before"`, the validator sees raw input. If `mode="after"` (default), it sees the already-coerced, constraint-checked value.
@@ -1813,7 +1813,7 @@ async def update_item_with_user(
     return {"item": item, "user": user, "importance": importance}
 ```
 
-**Edge case — forcing a single body param to be nested:**
+**Edge case - forcing a single body param to be nested:**
 
 ```python
 @app.post("/items")
@@ -1852,7 +1852,7 @@ There are two bugs:
 
 **Bug 1: Mutable default argument `[]`**
 
-Using `[]` as a default for `tags` is the classic Python mutable default argument bug. All requests share the same list object. However, in FastAPI/Pydantic, this may not cause the traditional mutation issue because Pydantic creates new objects — but it's still bad practice and triggers linting warnings.
+Using `[]` as a default for `tags` is the classic Python mutable default argument bug. All requests share the same list object. However, in FastAPI/Pydantic, this may not cause the traditional mutation issue because Pydantic creates new objects - but it's still bad practice and triggers linting warnings.
 
 **Bug 2: Query parameter list syntax**
 
@@ -1920,19 +1920,19 @@ async def check_temperature(temp: Temperature):
 # Output: {"valid": true, "temp": {"value": 100.0, "unit": "celsius"}}
 
 # Input 2: {"value": -300, "unit": "celsius"}
-# Output: 422 — "Below absolute zero"
+# Output: 422 - "Below absolute zero"
 
 # Input 3: {"value": -5, "unit": "kelvin"}
-# Output: 422 — "Kelvin cannot be negative"
+# Output: 422 - "Kelvin cannot be negative"
 
 # Input 4: {"value": 100, "unit": "rankine"}
-# Output: 422 — String should match pattern '^(celsius|fahrenheit|kelvin)$'
+# Output: 422 - String should match pattern '^(celsius|fahrenheit|kelvin)$'
 
 # Input 5: {"value": "hot", "unit": "celsius"}
-# Output: 422 — Input should be a valid number
+# Output: 422 - Input should be a valid number
 
 # Input 6: {"unit": "celsius"}
-# Output: 422 — Field required (value is required, no default)
+# Output: 422 - Field required (value is required, no default)
 ```
 
 **Key insight:** The `field_validator` for `value` runs before `unit` is validated (fields are validated in declaration order). So `info.data` inside that validator would NOT contain `unit` yet. Cross-field checks must go in `model_validator(mode="after")`.
@@ -2028,7 +2028,7 @@ from starlette.responses import StreamingResponse
 async def log_response_body(request: Request, call_next):
     response = await call_next(request)
 
-    # Reading the body consumes it — must reconstruct
+    # Reading the body consumes it - must reconstruct
     body_bytes = b""
     async for chunk in response.body_iterator:
         body_bytes += chunk
@@ -2222,11 +2222,11 @@ app.add_middleware(TimingMiddleware)     # 1st to process request
 ```
 
 **Recommended ordering (outermost to innermost):**
-1. **CORS** — must be outermost to handle preflight OPTIONS
-2. **Request timing / logging** — captures total request time including auth
-3. **Authentication** — rejects unauthorized requests early
-4. **Rate limiting** — prevents abuse
-5. **Request ID / tracing** — adds context for downstream logging
+1. **CORS** - must be outermost to handle preflight OPTIONS
+2. **Request timing / logging** - captures total request time including auth
+3. **Authentication** - rejects unauthorized requests early
+4. **Rate limiting** - prevents abuse
+5. **Request ID / tracing** - adds context for downstream logging
 6. Route handler
 
 Since `add_middleware` makes things outermost, you add them in **reverse** order:
@@ -2452,7 +2452,7 @@ app = FastAPI()
 async def get_db():
     db = DatabaseSession()
     yield db
-    # Missing db.close() — but that's not the hang
+    # Missing db.close() - but that's not the hang
 
 async def get_user(db=Depends(get_db)):
     return await db.query_user()
@@ -2470,7 +2470,7 @@ async def dashboard(
 
 **Answer:**
 
-The bug is in `get_permissions`. It references `db` — but `db` is not a parameter of `get_permissions`. It would either:
+The bug is in `get_permissions`. It references `db` - but `db` is not a parameter of `get_permissions`. It would either:
 
 1. Raise a `NameError` if `db` is not defined in the module scope.
 2. Use a module-level `db` variable if one exists (wrong session, potential issues).
@@ -2524,35 +2524,35 @@ async def update_user(
 
 ```python
 # Scenario 1: PUT /users/1  body: {"name": "Alice Updated", "age": 31}
-# Status: 200 — valid path param, valid body, user exists
+# Status: 200 - valid path param, valid body, user exists
 # Response: {"name": "Alice Updated", "age": 31}
 
 # Scenario 2: PUT /users/99  body: {"name": "Charlie", "age": 28}
-# Status: 404 — valid input but user_id 99 not in database
+# Status: 404 - valid input but user_id 99 not in database
 # Response: {"detail": "User not found"}
 
 # Scenario 3: PUT /users/0  body: {"name": "Test", "age": 25}
-# Status: 422 — Path(gt=0) constraint fails (0 is not > 0)
+# Status: 422 - Path(gt=0) constraint fails (0 is not > 0)
 # Response: {"detail": [{"type": "greater_than", "loc": ["path", "user_id"], ...}]}
 
 # Scenario 4: PUT /users/abc  body: {"name": "Test", "age": 25}
-# Status: 422 — "abc" cannot be parsed as int
+# Status: 422 - "abc" cannot be parsed as int
 # Response: {"detail": [{"type": "int_parsing", "loc": ["path", "user_id"], ...}]}
 
 # Scenario 5: PUT /users/1  body: {"name": "", "age": 25}
-# Status: 422 — name min_length=1 fails for empty string
+# Status: 422 - name min_length=1 fails for empty string
 # Response: {"detail": [{"type": "string_too_short", "loc": ["body", "name"], ...}]}
 
 # Scenario 6: PUT /users/1  body: {"name": "Alice", "age": -5}
-# Status: 422 — age ge=0 fails for -5
+# Status: 422 - age ge=0 fails for -5
 # Response: {"detail": [{"type": "greater_than_equal", "loc": ["body", "age"], ...}]}
 
 # Scenario 7: PUT /users/1  (no body)
-# Status: 422 — request body is required
+# Status: 422 - request body is required
 # Response: {"detail": [{"type": "missing", "loc": ["body"], ...}]}
 
 # Scenario 8: PUT /users/1  body: {"name": "Alice"}
-# Status: 422 — "age" field is required (no default)
+# Status: 422 - "age" field is required (no default)
 # Response: {"detail": [{"type": "missing", "loc": ["body", "age"], ...}]}
 ```
 
@@ -2943,11 +2943,11 @@ async def admin_list_appointments(
 
 **Design decisions explained:**
 - **TimeSlot validation** prevents past dates, weekends, and 90+ day bookings at the model layer.
-- **model_validator** enforces that urgent appointments must be same-day — a cross-field rule.
+- **model_validator** enforces that urgent appointments must be same-day - a cross-field rule.
 - **Rate limiting** via dependency prevents patients from booking excessive appointments.
 - **Audit middleware** logs all access to patient data (HIPAA compliance).
 - **Role-based access** via parameterized dependencies (`require_role`).
-- **409 Conflict** for double-bookings instead of 400 — semantically correct.
+- **409 Conflict** for double-bookings instead of 400 - semantically correct.
 - **24-hour cancellation policy** enforced in the endpoint logic.
 
 **Why interviewer asks this:** Healthcare is a domain with strict requirements (HIPAA, business rules, audit logging). This tests your ability to design a complete, production-quality API.
@@ -3002,13 +3002,13 @@ async def get_db(request: Request):
 
 ```python
 # PROBLEM 1: Sync function blocking the event loop
-# BAD — blocks the entire event loop
+# BAD - blocks the entire event loop
 @app.get("/report")
 async def get_report():
     data = requests.get("https://api.external.com/data")  # SYNC HTTP!
     return data.json()
 
-# FIX — use async HTTP client
+# FIX - use async HTTP client
 import httpx
 
 @app.get("/report")
@@ -3019,7 +3019,7 @@ async def get_report():
 
 
 # PROBLEM 2: N+1 query in a loop
-# BAD — 1 query for users + N queries for profiles
+# BAD - 1 query for users + N queries for profiles
 @app.get("/users")
 async def list_users(db=Depends(get_db)):
     users = await db.execute(select(User))
@@ -3031,7 +3031,7 @@ async def list_users(db=Depends(get_db)):
         result.append({**user.__dict__, "profile": profile.scalar()})
     return result
 
-# FIX — eager loading with joinedload
+# FIX - eager loading with joinedload
 from sqlalchemy.orm import joinedload
 
 @app.get("/users")
@@ -3043,10 +3043,10 @@ async def list_users(db=Depends(get_db)):
 
 
 # PROBLEM 3: Missing connection pooling
-# BAD — new connection per request
+# BAD - new connection per request
 engine = create_async_engine("postgresql+asyncpg://...", pool_size=5)
 
-# FIX — properly sized pool
+# FIX - properly sized pool
 engine = create_async_engine(
     "postgresql+asyncpg://...",
     pool_size=20,          # Match expected concurrent requests
@@ -3058,13 +3058,13 @@ engine = create_async_engine(
 
 
 # PROBLEM 4: Pydantic serialization of large objects
-# BAD — serializing 10,000 ORM objects through Pydantic
+# BAD - serializing 10,000 ORM objects through Pydantic
 @app.get("/data", response_model=list[DataItem])
 async def get_data():
     items = await db.execute(select(DataItem))
     return items.scalars().all()  # Pydantic validates each of 10,000 items
 
-# FIX — paginate + use response_model_exclude_unset
+# FIX - paginate + use response_model_exclude_unset
 @app.get("/data", response_model=list[DataItem])
 async def get_data(skip: int = 0, limit: int = Query(default=50, le=100)):
     items = await db.execute(select(DataItem).offset(skip).limit(limit))
@@ -3162,7 +3162,7 @@ async def test_endpoint(
 **Key observations:**
 
 1. **`dep_a` is called only ONCE** even though both `dep_b` and `dep_c` depend on it. FastAPI caches dependency results within a request.
-2. **Teardown runs in reverse order** — `dep_c` (last setup) cleans up first, then `dep_b`, then `dep_a`.
+2. **Teardown runs in reverse order** - `dep_c` (last setup) cleans up first, then `dep_b`, then `dep_a`.
 3. **The response body is formed before teardown runs**, so the client sees `call_log` without the "end" entries.
 4. If you need `dep_a` to be called twice (separate instances), use `Depends(dep_a, use_cache=False)`.
 

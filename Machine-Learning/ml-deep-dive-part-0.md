@@ -1,8 +1,8 @@
-# Machine Learning Deep Dive — Part 0: The Machine Learning Landscape — What ML Actually Is (And Isn't)
+# Machine Learning Deep Dive - Part 0: The Machine Learning Landscape - What ML Actually Is (And Isn't)
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
 **Part:** 0 of 19 (Foundations)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~35 minutes
@@ -30,11 +30,11 @@
 
 There are thousands of machine learning tutorials online. Most of them fall into one of two traps: they either hand you a scikit-learn one-liner and call it a day, or they dump a wall of mathematical notation that sends you running back to web development.
 
-This series is different. It is built for developers — people who understand loops, data structures, functions, and the satisfaction of seeing code run correctly. You already know how to think like a computer. This series will teach you how to think like a machine learning engineer: someone who understands not just what to call, but why it works, when it breaks, and how to fix it.
+This series is different. It is built for developers - people who understand loops, data structures, functions, and the satisfaction of seeing code run correctly. You already know how to think like a computer. This series will teach you how to think like a machine learning engineer: someone who understands not just what to call, but why it works, when it breaks, and how to fix it.
 
 **Part 0** is the orientation. Before we touch a gradient or a matrix, we need to build a mental map of the entire territory. By the end of this article you will know:
 
-- Exactly what ML is — and what it is not
+- Exactly what ML is - and what it is not
 - The three paradigms that cover 95% of all ML work
 - The end-to-end workflow from raw data to deployed model
 - Which problems ML solves well and which it handles poorly
@@ -122,7 +122,7 @@ for email in test_emails:
 # Spam: False | The meeting notes from yesterday are attached.
 ```
 
-This works for obvious cases. But now imagine a spammer who learns your rules. They write: "You have been selected for a complimentary financial opportunity." No keywords match. No excessive punctuation. Suddenly your rule-based filter fails — and to fix it, you need to write more rules. More rules create more edge cases. The maintenance cycle never ends.
+This works for obvious cases. But now imagine a spammer who learns your rules. They write: "You have been selected for a complimentary financial opportunity." No keywords match. No excessive punctuation. Suddenly your rule-based filter fails - and to fix it, you need to write more rules. More rules create more edge cases. The maintenance cycle never ends.
 
 Machine learning takes a fundamentally different approach.
 
@@ -134,7 +134,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 
-# Step 1: You collect labeled data — thousands of examples
+# Step 1: You collect labeled data - thousands of examples
 # humans have already decided are spam or not spam
 labeled_emails = [
     ("FREE!!! You won a prize! Click here now!", 1),          # 1 = spam
@@ -158,7 +158,7 @@ model = Pipeline([
     ("classifier", MultinomialNB()),     # learn patterns from numbers
 ])
 
-# Step 3: Train — the model PROGRAMS ITSELF from the data
+# Step 3: Train - the model PROGRAMS ITSELF from the data
 model.fit(emails, labels)
 
 # Step 4: Predict on new, unseen emails
@@ -176,9 +176,9 @@ for email, pred in zip(new_emails, predictions):
 # Spam: False | Here are the slides from today's presentation.
 ```
 
-Notice what changed. You did not write a single rule about "complimentary financial opportunity." The model learned — from patterns in 50,000 labeled examples — that certain combinations of words, certain structures, certain statistical fingerprints correlate with spam. It generalized beyond any rule you could have written explicitly.
+Notice what changed. You did not write a single rule about "complimentary financial opportunity." The model learned - from patterns in 50,000 labeled examples - that certain combinations of words, certain structures, certain statistical fingerprints correlate with spam. It generalized beyond any rule you could have written explicitly.
 
-> **Key Insight #1:** In traditional programming, the developer encodes logic. In machine learning, the data encodes logic — the developer's job is to curate the data, design the learning process, and evaluate the result.
+> **Key Insight #1:** In traditional programming, the developer encodes logic. In machine learning, the data encodes logic - the developer's job is to curate the data, design the learning process, and evaluate the result.
 
 ### The Formal Definition
 
@@ -231,7 +231,7 @@ graph TD
 
 **Supervised learning** trains a model on labeled data: every training example has both an input (features) and a correct output (label). The model learns to map inputs to outputs by minimizing prediction errors on the training set.
 
-The word "supervised" refers to the labels — a human supervisor has already decided the correct answer for every training example. The model's job is to learn the mapping.
+The word "supervised" refers to the labels - a human supervisor has already decided the correct answer for every training example. The model's job is to learn the mapping.
 
 ```python
 # filename: supervised_learning_example.py
@@ -305,7 +305,7 @@ Supervised learning powers most ML applications you encounter in the real world:
 
 **Unsupervised learning** trains a model on data without labels. There is no "correct answer" provided. Instead, the algorithm discovers structure, patterns, or groupings that exist naturally in the data.
 
-The word "unsupervised" means there is no human supervisor providing ground truth — the algorithm must find meaningful organization on its own.
+The word "unsupervised" means there is no human supervisor providing ground truth - the algorithm must find meaningful organization on its own.
 
 ```python
 # filename: unsupervised_learning_example.py
@@ -316,7 +316,7 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
-# Raw customer data — NO LABELS
+# Raw customer data - NO LABELS
 # Each row: [annual_spend, purchase_frequency, avg_order_value]
 np.random.seed(42)
 
@@ -334,7 +334,7 @@ group3 = np.random.multivariate_normal(
     [600, 2, 300], [[50000, 0, 0], [0, 1, 0], [0, 0, 500]], 100
 )
 
-# We combine all data with NO LABELS — the algorithm doesn't know the groups
+# We combine all data with NO LABELS - the algorithm doesn't know the groups
 X = np.vstack([group1, group2, group3])
 X = np.abs(X)  # ensure positive values
 
@@ -382,14 +382,14 @@ Unsupervised learning is used for customer segmentation, anomaly detection, topi
 
 **Reinforcement learning** (RL) is the third paradigm. Instead of learning from labeled examples, an **agent** learns by interacting with an **environment**, receiving **rewards** for good actions and **penalties** for bad ones.
 
-The agent's goal is to learn a **policy** — a strategy for choosing actions — that maximizes cumulative reward over time.
+The agent's goal is to learn a **policy** - a strategy for choosing actions - that maximizes cumulative reward over time.
 
 ```python
 # filename: reinforcement_learning_pseudocode.py
 # Reinforcement learning: conceptual structure
 # (Actual implementation uses libraries like Gymnasium + Stable-Baselines3)
 
-# The RL Loop — pseudocode illustration
+# The RL Loop - pseudocode illustration
 
 class Agent:
     """An RL agent that learns from environment interaction."""
@@ -440,7 +440,7 @@ def train_agent(env, agent, n_episodes=10000):
 # - ChatGPT uses RLHF (RL from Human Feedback) for alignment
 ```
 
-RL is computationally expensive and requires careful reward engineering. It excels at sequential decision problems where the optimal strategy is discovered through trial and error — games, robotics, trading strategies, and training large language models.
+RL is computationally expensive and requires careful reward engineering. It excels at sequential decision problems where the optimal strategy is discovered through trial and error - games, robotics, trading strategies, and training large language models.
 
 ### 2.4 Semi-Supervised and Self-Supervised Learning
 
@@ -450,7 +450,7 @@ Two additional paradigms deserve brief mention:
 
 **Self-supervised learning** is how modern large language models (LLMs) like GPT-4 and BERT are trained. The model creates its own labels from the structure of the data itself. For example: "Predict the next word in this sentence" uses the sentence itself as both input and label. No human labeling required. This enables training on internet-scale datasets, which is why LLMs are so capable.
 
-> **Key Insight #2:** The distinction between supervised, unsupervised, and reinforcement learning is not about algorithm complexity — it is about what information is available during training. This distinction fundamentally changes which algorithms are applicable.
+> **Key Insight #2:** The distinction between supervised, unsupervised, and reinforcement learning is not about algorithm complexity - it is about what information is available during training. This distinction fundamentally changes which algorithms are applicable.
 
 ---
 
@@ -523,7 +523,7 @@ print(combined.head())
 
 ### Stage 2: Data Cleaning
 
-Real data is messy. Missing values, duplicates, outliers, wrong data types, inconsistent formatting — data cleaning typically consumes 60-80% of a project's time.
+Real data is messy. Missing values, duplicates, outliers, wrong data types, inconsistent formatting - data cleaning typically consumes 60-80% of a project's time.
 
 ```python
 # filename: data_cleaning_example.py
@@ -775,7 +775,7 @@ One of the most important skills of a machine learning engineer is knowing when 
 
 - **Tax calculation logic**: Exact rules, defined by law, must be reproduced exactly. A bug in tax calculations has legal consequences. Use code, not ML.
 - **Sorting and searching**: Algorithms like quicksort and binary search are provably optimal and fully deterministic. No training data needed.
-- **Protocol parsers**: TCP/IP, HTTP, JSON parsing — these follow exact specifications. An ML model that "usually" parses JSON correctly is not useful.
+- **Protocol parsers**: TCP/IP, HTTP, JSON parsing - these follow exact specifications. An ML model that "usually" parses JSON correctly is not useful.
 - **Arithmetic operations**: Adding two numbers has exactly one correct answer. ML would be absurd here.
 
 ### When ML Wins
@@ -799,7 +799,7 @@ Imagine throwing darts at a dartboard, where the bullseye represents the true co
 
 ```
 LOW BIAS, LOW VARIANCE     HIGH BIAS, LOW VARIANCE
-(Ideal — hard to achieve)  (Underfitting — consistently wrong)
+(Ideal - hard to achieve)  (Underfitting - consistently wrong)
 
     . . .                        .
    .  .  .                       .
@@ -811,7 +811,7 @@ LOW BIAS, LOW VARIANCE     HIGH BIAS, LOW VARIANCE
   around bullseye              away from bullseye
 
 HIGH BIAS, HIGH VARIANCE   LOW BIAS, HIGH VARIANCE
-(Worst — random and wrong)  (Overfitting — correct on average,
+(Worst - random and wrong)  (Overfitting - correct on average,
                               all over the place on new data)
 
   .        .                    .
@@ -822,7 +822,7 @@ HIGH BIAS, HIGH VARIANCE   LOW BIAS, HIGH VARIANCE
   Scattered everywhere      Scattered around bullseye
 ```
 
-- **Bias**: How far off the model's average prediction is from the true answer. A high-bias model has learned the wrong thing — it is systematically wrong. This is **underfitting**.
+- **Bias**: How far off the model's average prediction is from the true answer. A high-bias model has learned the wrong thing - it is systematically wrong. This is **underfitting**.
 - **Variance**: How much the model's predictions vary when trained on different datasets. A high-variance model is extremely sensitive to the specific training data it saw. This is **overfitting**.
 
 ### Visualizing with Polynomial Regression
@@ -857,9 +857,9 @@ fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 fig.suptitle("Bias-Variance Tradeoff", fontsize=14, fontweight="bold")
 
 model_configs = [
-    (1,  "Degree 1 — Underfitting\n(High Bias, Low Variance)"),
-    (4,  "Degree 4 — Good Fit\n(Balanced Bias and Variance)"),
-    (20, "Degree 20 — Overfitting\n(Low Bias, High Variance)"),
+    (1,  "Degree 1 - Underfitting\n(High Bias, Low Variance)"),
+    (4,  "Degree 4 - Good Fit\n(Balanced Bias and Variance)"),
+    (20, "Degree 20 - Overfitting\n(Low Bias, High Variance)"),
 ]
 
 for ax, (degree, title) in zip(axes, model_configs):
@@ -1062,7 +1062,7 @@ pip install numpy pandas matplotlib seaborn plotly
 # Machine learning
 pip install scikit-learn xgboost lightgbm
 
-# Deep learning (CPU only — change index-url for GPU/CUDA)
+# Deep learning (CPU only - change index-url for GPU/CUDA)
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 
 # NLP / LLMs
@@ -1131,12 +1131,12 @@ pip freeze > requirements.txt
 VS Code with the right extensions provides an excellent ML development experience, including inline notebook support without a browser.
 
 **Recommended Extensions:**
-- **Python** (Microsoft) — language support, IntelliSense
-- **Pylance** — fast type checking and autocomplete
-- **Jupyter** (Microsoft) — run .ipynb notebooks inside VS Code
-- **Python Indent** — smart indentation
-- **GitLens** — git blame inline and history
-- **Ruff** — fast Python linter
+- **Python** (Microsoft) - language support, IntelliSense
+- **Pylance** - fast type checking and autocomplete
+- **Jupyter** (Microsoft) - run .ipynb notebooks inside VS Code
+- **Python Indent** - smart indentation
+- **GitLens** - git blame inline and history
+- **Ruff** - fast Python linter
 
 ```json
 // filename: .vscode/settings.json
@@ -1161,11 +1161,11 @@ VS Code with the right extensions provides an excellent ML development experienc
 
 ## 9. Hello World ML Model
 
-Theory is useful. Running code is better. Let's build two versions of the same model — first from scratch with NumPy, then with scikit-learn — so you can see exactly what is happening under the hood.
+Theory is useful. Running code is better. Let's build two versions of the same model - first from scratch with NumPy, then with scikit-learn - so you can see exactly what is happening under the hood.
 
 **The problem**: Fit a line to noisy data. Given x values, predict y values based on a linear relationship with noise.
 
-This is **linear regression** — the simplest, most interpretable ML model. Understanding it deeply gives you the foundation for everything more complex.
+This is **linear regression** - the simplest, most interpretable ML model. Understanding it deeply gives you the foundation for everything more complex.
 
 ### 9.1 From Scratch with NumPy
 
@@ -1273,7 +1273,7 @@ print(f"\nPrediction: x={new_x} → y={new_y_pred:.4f}")
 
 Notice what "learning" actually was here: pure algebra. We minimized a loss function (MSE) using its closed-form solution. The model "learned" two numbers: slope and intercept. That's it.
 
-For more complex models (neural networks), there is no closed-form solution, so we use **gradient descent** instead — an iterative numerical method. But the goal is identical: find the parameters that minimize the loss.
+For more complex models (neural networks), there is no closed-form solution, so we use **gradient descent** instead - an iterative numerical method. But the goal is identical: find the parameters that minimize the loss.
 
 ### 9.2 With scikit-learn
 
@@ -1392,9 +1392,9 @@ print(f"{'Intercept (b)':<15} {b_scratch:>15.8f} {b_sklearn:>15.8f} {abs(b_scrat
 # Intercept (b)     0.94232487      0.94232487     0.00e+00
 ```
 
-Identical results — as expected. scikit-learn's `LinearRegression` uses the same ordinary least squares mathematics under the hood. The API just wraps it in a clean, consistent interface.
+Identical results - as expected. scikit-learn's `LinearRegression` uses the same ordinary least squares mathematics under the hood. The API just wraps it in a clean, consistent interface.
 
-> **Key Insight #6:** Every ML algorithm — from linear regression to a billion-parameter transformer — is fundamentally a process of finding parameter values that minimize a loss function. The algorithms differ in their architecture (how parameters are combined) and their optimization method (how parameters are updated). The core loop is always: forward pass → compute loss → update parameters.
+> **Key Insight #6:** Every ML algorithm - from linear regression to a billion-parameter transformer - is fundamentally a process of finding parameter values that minimize a loss function. The algorithms differ in their architecture (how parameters are combined) and their optimization method (how parameters are updated). The core loop is always: forward pass → compute loss → update parameters.
 
 ---
 
@@ -1477,7 +1477,7 @@ for alg_name, alg in algorithms.items():
 
 No single algorithm wins on all datasets. Logistic Regression excels on linearly separable data but fails catastrophically on circular data. SVM with RBF kernel wins on moons and circles but requires careful hyperparameter tuning. The lesson: **understand your data structure before selecting your algorithm.**
 
-This is why this series covers many algorithms — linear models, trees, ensembles, neural networks, and more. Each has a regime where it shines.
+This is why this series covers many algorithms - linear models, trees, ensembles, neural networks, and more. Each has a regime where it shines.
 
 ---
 
@@ -1513,15 +1513,15 @@ This is why this series covers many algorithms — linear models, trees, ensembl
 | **No Free Lunch Theorem** | No algorithm is universally best; performance always depends on the problem |
 | **Pipeline** | A sequence of data transformations and model steps combined into a single object |
 | **Feature Engineering** | Transforming raw data into representations that improve model performance |
-| **EDA** | Exploratory Data Analysis — understanding data through statistics and visualization |
-| **MSE** | Mean Squared Error — average of squared prediction errors |
-| **RMSE** | Root Mean Squared Error — square root of MSE, in same units as target |
-| **MAE** | Mean Absolute Error — average of absolute prediction errors |
-| **R² Score** | Coefficient of determination — proportion of variance explained by the model |
+| **EDA** | Exploratory Data Analysis - understanding data through statistics and visualization |
+| **MSE** | Mean Squared Error - average of squared prediction errors |
+| **RMSE** | Root Mean Squared Error - square root of MSE, in same units as target |
+| **MAE** | Mean Absolute Error - average of absolute prediction errors |
+| **R² Score** | Coefficient of determination - proportion of variance explained by the model |
 | **Precision** | Of all predicted positives, what fraction were actually positive |
 | **Recall** | Of all actual positives, what fraction did the model correctly identify |
 | **F1 Score** | Harmonic mean of Precision and Recall |
-| **AUC-ROC** | Area Under the ROC Curve — overall classifier performance across all thresholds |
+| **AUC-ROC** | Area Under the ROC Curve - overall classifier performance across all thresholds |
 | **Data Drift** | When the distribution of real-world data changes after model deployment |
 
 ---
@@ -1532,10 +1532,10 @@ You now have the mental map. You understand what machine learning is, how its th
 
 This is the foundation. Everything that follows is built on these concepts.
 
-**Part 1: Mathematics for Machine Learning** dives into the mathematical substrate that makes all ML algorithms work. You do not need a PhD in mathematics — but you do need a working understanding of:
+**Part 1: Mathematics for Machine Learning** dives into the mathematical substrate that makes all ML algorithms work. You do not need a PhD in mathematics - but you do need a working understanding of:
 
 - **Linear Algebra**: vectors, matrices, matrix multiplication, eigenvalues, and SVD. These are the language of ML: every dataset is a matrix, every model is a function on vectors.
-- **Calculus / Differential Calculus**: derivatives and partial derivatives. Gradient descent — the engine that trains virtually every modern ML model — is applied calculus.
+- **Calculus / Differential Calculus**: derivatives and partial derivatives. Gradient descent - the engine that trains virtually every modern ML model - is applied calculus.
 - **Probability and Statistics**: distributions, Bayes' theorem, maximum likelihood estimation, and hypothesis testing. These are the logical foundation of what it means for a model to "learn" from data.
 
 Part 1 will be code-first: every mathematical concept will be implemented in NumPy so you can see and manipulate it directly, not just read it as abstract notation.
@@ -1550,7 +1550,7 @@ import numpy as np
 
 # --- Linear Algebra: Matrix multiplication from scratch ---
 def matmul(A, B):
-    """Matrix multiplication — the core of neural network forward passes."""
+    """Matrix multiplication - the core of neural network forward passes."""
     m, k = A.shape
     k2, n = B.shape
     assert k == k2, "Incompatible shapes"
@@ -1631,15 +1631,15 @@ Here is where Part 0 fits in the full 20-part journey:
 
 ---
 
-## 13. Common ML Misconceptions — Debunked
+## 13. Common ML Misconceptions - Debunked
 
 Before you invest weeks learning ML, it is worth clearing up the most persistent misconceptions that lead developers astray.
 
 ### Misconception 1: "More data always makes a better model"
 
-More data helps — but only up to a point, and only if the data is relevant and clean. One million noisy, mislabeled, or biased examples can train a worse model than ten thousand clean, representative ones.
+More data helps - but only up to a point, and only if the data is relevant and clean. One million noisy, mislabeled, or biased examples can train a worse model than ten thousand clean, representative ones.
 
-The quality of data matters more than the quantity. A dataset with systematic bias — for example, a facial recognition dataset trained only on one demographic group — will produce a biased model regardless of how large it grows.
+The quality of data matters more than the quantity. A dataset with systematic bias - for example, a facial recognition dataset trained only on one demographic group - will produce a biased model regardless of how large it grows.
 
 > **Rule of thumb:** Fix your data quality issues before adding more data. A cleaner dataset almost always outperforms a larger dirty one.
 
@@ -1706,11 +1706,11 @@ print(f"\nWinner on this dataset: {'XGBoost' if xgb_scores.mean() > mlp_scores.m
 ### Misconception 3: "You need a PhD in math to do ML"
 
 You do not. But you do need a working understanding of:
-- **Linear algebra** (vectors, matrices, dot products) — Parts 1 and 8
-- **Derivatives** (chain rule, partial derivatives) — Part 1
-- **Basic probability** (distributions, Bayes' theorem) — Part 1
+- **Linear algebra** (vectors, matrices, dot products) - Parts 1 and 8
+- **Derivatives** (chain rule, partial derivatives) - Part 1
+- **Basic probability** (distributions, Bayes' theorem) - Part 1
 
-The goal is not to derive theorems from first principles. The goal is to understand what your code is doing mathematically, so you can debug it, modify it, and reason about its behavior. A developer who can implement gradient descent from scratch — even slowly — understands ML far more deeply than one who just calls a library.
+The goal is not to derive theorems from first principles. The goal is to understand what your code is doing mathematically, so you can debug it, modify it, and reason about its behavior. A developer who can implement gradient descent from scratch - even slowly - understands ML far more deeply than one who just calls a library.
 
 ### Misconception 4: "If my model accuracy is 99%, I'm done"
 
@@ -1785,11 +1785,11 @@ print(f"\nPositive class count in test set: {y_test.sum()} / {len(y_test)}")
 # Positive class count in test set: 20 / 2000
 ```
 
-The naive model achieves 99% accuracy while being completely useless. The logistic regression model gets 96.8% accuracy — seemingly worse — but actually detects 75% of the rare positive cases. Always use task-appropriate metrics.
+The naive model achieves 99% accuracy while being completely useless. The logistic regression model gets 96.8% accuracy - seemingly worse - but actually detects 75% of the rare positive cases. Always use task-appropriate metrics.
 
 ### Misconception 5: "ML models explain themselves"
 
-Most ML models are **black boxes** — they produce predictions but do not inherently explain why. A random forest with 500 trees producing a fraud score of 0.87 does not tell you which transaction features drove that score.
+Most ML models are **black boxes** - they produce predictions but do not inherently explain why. A random forest with 500 trees producing a fraud score of 0.87 does not tell you which transaction features drove that score.
 
 This matters enormously in regulated industries. The European Union's GDPR grants citizens the "right to explanation" for automated decisions. Healthcare and finance have similar requirements.
 
@@ -1860,7 +1860,7 @@ The Google paper "Hidden Technical Debt in Machine Learning Systems" (2015) iden
 └─────────────────────────────────────────────────────────────┘
 ```
 
-This is why senior ML engineers spend so much time on data pipelines, feature stores, and monitoring systems — those components often determine whether an ML system succeeds or fails in production far more than model architecture choices.
+This is why senior ML engineers spend so much time on data pipelines, feature stores, and monitoring systems - those components often determine whether an ML system succeeds or fails in production far more than model architecture choices.
 
 ### Timeline Reality Check
 
@@ -1886,7 +1886,7 @@ Machine learning is not ethically neutral. The algorithms, data, and deployment 
 
 ### Bias and Fairness
 
-ML models learn from historical data. If historical data reflects human biases — and it almost always does — models will encode and amplify those biases.
+ML models learn from historical data. If historical data reflects human biases - and it almost always does - models will encode and amplify those biases.
 
 Real documented cases:
 - **COMPAS** recidivism prediction tool was found to incorrectly flag Black defendants as future criminals at twice the rate of white defendants
@@ -1903,7 +1903,7 @@ These are not bugs in the software. They are direct consequences of training dat
 
 ### Privacy
 
-ML models can memorize training data. Membership inference attacks can determine whether a specific individual was in a training dataset. Model inversion attacks can reconstruct features of training examples. Differential privacy and federated learning are technical mitigations — but first requires recognizing the risk.
+ML models can memorize training data. Membership inference attacks can determine whether a specific individual was in a training dataset. Model inversion attacks can reconstruct features of training examples. Differential privacy and federated learning are technical mitigations - but first requires recognizing the risk.
 
 Never train models on personally identifiable information (PII) without appropriate anonymization, legal basis, and data governance.
 
@@ -1919,13 +1919,13 @@ ML systems that automate decisions at scale can dehumanize consequential process
 
 Build systems with humans in the loop for high-stakes decisions. Design for explainability from the start, not as an afterthought.
 
-> **Key Insight #7:** Technical excellence in ML includes ethical reasoning. A model that is accurate on your test set but systematically disadvantages protected groups is not a good model — it is a liability. Treat fairness, privacy, and explainability as engineering requirements, not philosophical luxuries.
+> **Key Insight #7:** Technical excellence in ML includes ethical reasoning. A model that is accurate on your test set but systematically disadvantages protected groups is not a good model - it is a liability. Treat fairness, privacy, and explainability as engineering requirements, not philosophical luxuries.
 
 ---
 
 ## Final Thoughts
 
-Machine learning is not magic, and it is not inaccessible. It is a systematic engineering discipline with solid mathematical foundations, principled workflows, and well-understood failure modes. The mystique comes from opacity — from people using it without understanding it.
+Machine learning is not magic, and it is not inaccessible. It is a systematic engineering discipline with solid mathematical foundations, principled workflows, and well-understood failure modes. The mystique comes from opacity - from people using it without understanding it.
 
 After this series, you will not be one of those people.
 
@@ -1937,14 +1937,14 @@ Let's build it together, one part at a time.
 
 ---
 
-*Part 1: Mathematics for Machine Learning — Linear Algebra, Calculus, and Probability from a Developer's Perspective is available now.*
+*Part 1: Mathematics for Machine Learning - Linear Algebra, Calculus, and Probability from a Developer's Perspective is available now.*
 
 ---
 
 **Series Navigation:**
-- Previous: (This is Part 0 — the beginning)
-- Next: [Part 1: Mathematics for Machine Learning](#) — Linear algebra, calculus, and probability implemented in NumPy
+- Previous: (This is Part 0 - the beginning)
+- Next: [Part 1: Mathematics for Machine Learning](#) - Linear algebra, calculus, and probability implemented in NumPy
 
 ---
 
-*Last updated: March 2026 | Series: Machine Learning — A Developer's Deep Dive*
+*Last updated: March 2026 | Series: Machine Learning - A Developer's Deep Dive*

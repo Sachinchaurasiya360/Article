@@ -1,8 +1,8 @@
-# Interview & Communication Mastery — The Brutal Truth Guide
+# Interview & Communication Mastery - The Brutal Truth Guide
 
-> You know the technical concepts. You've studied the questions. But when the interviewer asks you something, your mind goes blank, your heart races, your words come out scrambled, and you give a shallow answer that you KNOW could have been better. This guide fixes that — permanently.
+> You know the technical concepts. You've studied the questions. But when the interviewer asks you something, your mind goes blank, your heart races, your words come out scrambled, and you give a shallow answer that you KNOW could have been better. This guide fixes that - permanently.
 
-**This is not a feel-good motivational guide.** This is a systematic, no-nonsense training manual that treats interview communication like a skill — because it is one. And like any skill, it can be trained, drilled, and mastered.
+**This is not a feel-good motivational guide.** This is a systematic, no-nonsense training manual that treats interview communication like a skill - because it is one. And like any skill, it can be trained, drilled, and mastered.
 
 ---
 
@@ -10,10 +10,10 @@
 
 ### Part 1: Interview Performance
 1. [Why You Freeze in Interviews (The Psychology)](#1-why-you-freeze-in-interviews)
-2. [Controlling Nervousness — Before and During](#2-controlling-nervousness)
+2. [Controlling Nervousness - Before and During](#2-controlling-nervousness)
 3. [How to Think Clearly Under Pressure](#3-thinking-clearly-under-pressure)
 4. [The Answer Architecture Framework](#4-the-answer-architecture-framework)
-5. [Going Deep — Not Shallow](#5-going-deep-not-shallow)
+5. [Going Deep - Not Shallow](#5-going-deep-not-shallow)
 6. [Handling "I Don't Know"](#6-handling-i-dont-know)
 7. [Recovering When You're Stuck](#7-recovering-when-youre-stuck)
 8. [Sounding Confident When You're Not](#8-sounding-confident-when-youre-not)
@@ -21,13 +21,13 @@
 ### Part 2: English & Communication
 9. [Why Your English Breaks in Interviews](#9-why-your-english-breaks-in-interviews)
 10. [Killing Filler Words and Fast Speaking](#10-killing-filler-words-and-fast-speaking)
-11. [Pronunciation — The Step-by-Step Fix](#11-pronunciation-the-step-by-step-fix)
+11. [Pronunciation - The Step-by-Step Fix](#11-pronunciation-the-step-by-step-fix)
 12. [Building Technical Vocabulary That Impresses](#12-building-technical-vocabulary)
 13. [Articulating Complex Ideas Simply](#13-articulating-complex-ideas-simply)
-14. [Sounding Natural — Not Robotic, Not Confused](#14-sounding-natural)
+14. [Sounding Natural - Not Robotic, Not Confused](#14-sounding-natural)
 
 ### Part 3: Real-Life Scenarios
-15. [BAD vs GOOD — Real Interview Situations](#15-bad-vs-good-real-interview-situations)
+15. [BAD vs GOOD - Real Interview Situations](#15-bad-vs-good-real-interview-situations)
 
 ### Part 4: Practical Training
 16. [The Daily 25-Minute Practice Routine](#16-the-daily-25-minute-practice-routine)
@@ -35,7 +35,7 @@
 18. [The Shadowing Technique](#18-the-shadowing-technique)
 19. [Recording & Self-Review Method](#19-recording-and-self-review)
 20. [The Interview Communication Framework (Complete)](#20-the-interview-communication-framework)
-21. [Checklists — Before, During, After](#21-checklists)
+21. [Checklists - Before, During, After](#21-checklists)
 
 ---
 
@@ -47,7 +47,7 @@
 
 ### The Biology of Interview Panic
 
-When the interviewer asks a question you didn't expect, your body triggers a **fight-or-flight response**. This isn't weakness — it's your nervous system doing what it evolved to do. Here's what's actually happening:
+When the interviewer asks a question you didn't expect, your body triggers a **fight-or-flight response**. This isn't weakness - it's your nervous system doing what it evolved to do. Here's what's actually happening:
 
 ```
 Interviewer asks question
@@ -71,7 +71,7 @@ Amygdala (fear center) activates
               - You blank out
 ```
 
-**This is why you "know the answer but can't explain it."** Your thinking brain is literally offline. The information is in your head — you just can't reach it because your survival brain has hijacked the controls.
+**This is why you "know the answer but can't explain it."** Your thinking brain is literally offline. The information is in your head - you just can't reach it because your survival brain has hijacked the controls.
 
 ### The Three Lies Your Brain Tells You
 
@@ -79,7 +79,7 @@ Amygdala (fear center) activates
 Reality: No single interview determines your career. You will have hundreds of interviews in your life. This one is practice for the next one.
 
 **Lie 2: "The interviewer is judging everything about me."**
-Reality: The interviewer is trying to fill a position. They WANT you to succeed — it makes their job easier. They're not your enemy. They're tired of bad candidates and hoping you're the good one.
+Reality: The interviewer is trying to fill a position. They WANT you to succeed - it makes their job easier. They're not your enemy. They're tired of bad candidates and hoping you're the good one.
 
 **Lie 3: "Other candidates are way better than me."**
 Reality: Most candidates give mediocre answers, speak too fast, and don't go deep. The bar is lower than you think. A candidate who speaks clearly and thinks out loud is already in the top 20%.
@@ -105,7 +105,7 @@ GOAL: Close these gaps so all three bars are roughly equal.
 
 #### The 4-4-8 Breathing Protocol
 
-Do this for 3 minutes before the interview starts. This is not meditation woo-woo — this directly activates your parasympathetic nervous system and lowers cortisol.
+Do this for 3 minutes before the interview starts. This is not meditation woo-woo - this directly activates your parasympathetic nervous system and lowers cortisol.
 
 ```
 1. Inhale through nose:  4 seconds (count: one-thousand, two-thousand...)
@@ -121,7 +121,7 @@ Your heart rate WILL drop. Your thinking brain WILL come back online.
 
 #### Power Posture (2 Minutes)
 
-Before the interview, stand in a private space. Feet apart, hands on hips, chest up. Hold for 2 minutes. This isn't magic — it physically opens your lungs (better breathing) and signals to your brain that you're in control, not under threat.
+Before the interview, stand in a private space. Feet apart, hands on hips, chest up. Hold for 2 minutes. This isn't magic - it physically opens your lungs (better breathing) and signals to your brain that you're in control, not under threat.
 
 Don't do this on camera. Do it in the bathroom, a hallway, anywhere private.
 
@@ -143,17 +143,17 @@ You should be able to deliver this intro perfectly while walking, cooking, or ha
 When you feel panic rising mid-interview:
 
 ```
-1. Stop talking (silence is OK — it's not as long as it feels)
+1. Stop talking (silence is OK - it's not as long as it feels)
 2. Take one slow breath
 3. Say: "Let me think about this for a moment."
-4. Organize one thought (just ONE — not the full answer)
+4. Organize one thought (just ONE - not the full answer)
 5. Start speaking about that one thought
 
 The interviewer hears: thoughtful, deliberate, confident
 Your brain hears: "We're OK, no rush, we have control"
 ```
 
-**Critical rule:** NEVER speed up when nervous. Your instinct is to talk faster to "get through it." This makes everything worse — you stumble, use filler words, and lose your train of thought. **Slow down deliberately.** A slower pace sounds more confident and gives your brain time to think.
+**Critical rule:** NEVER speed up when nervous. Your instinct is to talk faster to "get through it." This makes everything worse - you stumble, use filler words, and lose your train of thought. **Slow down deliberately.** A slower pace sounds more confident and gives your brain time to think.
 
 #### Reframe the Situation
 
@@ -176,7 +176,7 @@ If your heart is pounding:
 
 ### Why Your Mind Goes Blank
 
-Your working memory (the mental workspace where you think) has limited capacity — roughly 4-7 items. Under stress, this drops to 2-3 items. That's why you can explain something perfectly to a friend but blank out in an interview — the stress is consuming your mental bandwidth.
+Your working memory (the mental workspace where you think) has limited capacity - roughly 4-7 items. Under stress, this drops to 2-3 items. That's why you can explain something perfectly to a friend but blank out in an interview - the stress is consuming your mental bandwidth.
 
 ### The "Think Out Loud" Protocol
 
@@ -194,13 +194,13 @@ THINKING OUT LOUD (good):
   Interviewer: "How would you design a rate limiter?"
   You: "OK, let me think about this systematically.
         First, I need to consider what a rate limiter
-        is actually doing — it's tracking request counts
+        is actually doing - it's tracking request counts
         per user or IP within a time window.
         There are a few approaches here...
         The simplest would be a fixed window counter.
         But that has edge cases at window boundaries.
         A sliding window would be more accurate.
-        For the data store, I need something fast —
+        For the data store, I need something fast -
         Redis would work well because..."
 ```
 
@@ -224,7 +224,7 @@ Question: "What is a database index?"
 WHAT: "A database index is a data structure that improves
        the speed of data retrieval operations."
 WHY:  "Without indexes, the database has to scan every row
-       in a table — which becomes unacceptable as data grows."
+       in a table - which becomes unacceptable as data grows."
 HOW:  "Most databases use B-tree indexes, which work like a
        sorted tree structure. When you query, the database
        walks the tree instead of scanning every row."
@@ -239,15 +239,15 @@ This automatically gives you a deep, structured answer.
 
 ## 4. The Answer Architecture Framework
 
-Most candidates give **blob answers** — an unstructured dump of everything they know. This is hard to follow and sounds disorganized. Instead, use this framework:
+Most candidates give **blob answers** - an unstructured dump of everything they know. This is hard to follow and sounds disorganized. Instead, use this framework:
 
 ### The SEED Framework
 
 ```
-S — STATE your answer upfront (1 sentence)
-E — EXPLAIN the mechanism (2-3 sentences)
-E — EXAMPLE from real experience (1-2 sentences)
-D — DEPTH: trade-offs, edge cases, alternatives (2-3 sentences)
+S - STATE your answer upfront (1 sentence)
+E - EXPLAIN the mechanism (2-3 sentences)
+E - EXAMPLE from real experience (1-2 sentences)
+D - DEPTH: trade-offs, edge cases, alternatives (2-3 sentences)
 ```
 
 ### Real Application
@@ -259,13 +259,13 @@ D — DEPTH: trade-offs, edge cases, alternatives (2-3 sentences)
 
 **SEED answer (good):**
 
-> **S (State):** "The fundamental difference is in how they model data — SQL databases use structured tables with predefined schemas and relationships between them, while NoSQL databases use flexible data models like documents, key-value pairs, or graphs."
+> **S (State):** "The fundamental difference is in how they model data - SQL databases use structured tables with predefined schemas and relationships between them, while NoSQL databases use flexible data models like documents, key-value pairs, or graphs."
 >
-> **E (Explain):** "SQL databases enforce a strict schema — every row in a table has the same columns. This makes them excellent for data with clear relationships, like users and their orders. NoSQL databases, on the other hand, let you store data without a fixed structure, which is useful when your data shape varies or evolves rapidly."
+> **E (Explain):** "SQL databases enforce a strict schema - every row in a table has the same columns. This makes them excellent for data with clear relationships, like users and their orders. NoSQL databases, on the other hand, let you store data without a fixed structure, which is useful when your data shape varies or evolves rapidly."
 >
-> **E (Example):** "In a project I worked on, we used PostgreSQL for our user account system where relationships were critical — users, roles, and permissions had clear relational structure. But for our logging system, we used MongoDB because each log event had different fields depending on the source, and the schema changed frequently."
+> **E (Example):** "In a project I worked on, we used PostgreSQL for our user account system where relationships were critical - users, roles, and permissions had clear relational structure. But for our logging system, we used MongoDB because each log event had different fields depending on the source, and the schema changed frequently."
 >
-> **D (Depth):** "The trade-off is consistency versus flexibility. SQL gives you ACID transactions — critical for financial data where you can't afford inconsistency. Most NoSQL databases trade strict consistency for availability and partition tolerance, following the CAP theorem. That said, the lines are blurring — PostgreSQL now has excellent JSON support, and MongoDB has added multi-document transactions."
+> **D (Depth):** "The trade-off is consistency versus flexibility. SQL gives you ACID transactions - critical for financial data where you can't afford inconsistency. Most NoSQL databases trade strict consistency for availability and partition tolerance, following the CAP theorem. That said, the lines are blurring - PostgreSQL now has excellent JSON support, and MongoDB has added multi-document transactions."
 
 **Why this works:**
 - The interviewer knows your answer immediately (S)
@@ -275,15 +275,15 @@ D — DEPTH: trade-offs, edge cases, alternatives (2-3 sentences)
 
 ---
 
-## 5. Going Deep — Not Shallow
+## 5. Going Deep - Not Shallow
 
 ### Why Your Answers Are Shallow
 
-Most candidates give the **Wikipedia first paragraph** answer — the definition, maybe an example, and stop. This is what interviewers call a "surface-level answer." It tells them you've read about something but haven't truly understood it.
+Most candidates give the **Wikipedia first paragraph** answer - the definition, maybe an example, and stop. This is what interviewers call a "surface-level answer." It tells them you've read about something but haven't truly understood it.
 
 ### The "Why Behind the Why" Technique
 
-When you finish an explanation, ask yourself: **"But why?"** — and answer that question too. Keep going until you hit the fundamental reason.
+When you finish an explanation, ask yourself: **"But why?"** - and answer that question too. Keep going until you hit the fundamental reason.
 
 ```
 Question: "Why do we use Docker?"
@@ -293,7 +293,7 @@ Shallow:
 (This is the definition. Everyone knows this.)
 
 One level deeper:
-"It solves the 'works on my machine' problem — the container includes
+"It solves the 'works on my machine' problem - the container includes
 all dependencies, so it runs identically everywhere."
 (Better. But still surface-level.)
 
@@ -308,7 +308,7 @@ Three levels deeper:
 "At the Linux level, Docker uses namespaces for isolation and cgroups
 for resource management. The container shares the host kernel but has
 its own filesystem, network stack, and process tree. This is why
-containers start in milliseconds while VMs take 30+ seconds — there's
+containers start in milliseconds while VMs take 30+ seconds - there's
 no separate kernel to boot."
 (This is the answer that gets you hired.)
 ```
@@ -364,32 +364,32 @@ You: "I don't know."
 
 This is the worst possible response. You've given the interviewer nothing to work with and demonstrated no thinking ability.
 
-### The Right Way — The Honest Bridge
+### The Right Way - The Honest Bridge
 
 ```
 Interviewer: "How does garbage collection work in Go?"
 
-OPTION 1 — Relate to what you know:
+OPTION 1 - Relate to what you know:
 "I haven't worked deeply with Go's garbage collector specifically,
 but I can share what I know about garbage collection in general and
 reason about how Go might approach it.
 
-In Java, the GC uses generational collection — short-lived objects
+In Java, the GC uses generational collection - short-lived objects
 in the young generation, long-lived objects in the old generation.
 Go, being focused on low latency, probably uses a concurrent
 collector that minimizes pause times. If I recall correctly, it
-uses a tri-color mark-and-sweep algorithm — but I'd want to verify
+uses a tri-color mark-and-sweep algorithm - but I'd want to verify
 that specific detail."
 
-OPTION 2 — Think out loud:
+OPTION 2 - Think out loud:
 "I'm not sure of the exact implementation, but let me think about
 what Go would need. Go is designed for concurrent systems where
 low latency matters, so the garbage collector would need to run
-concurrently with the application — you can't afford stop-the-world
+concurrently with the application - you can't afford stop-the-world
 pauses. So it's likely a concurrent mark-and-sweep approach.
 I'd need to look up the specifics, but that's my reasoning."
 
-OPTION 3 — Be honest and pivot:
+OPTION 3 - Be honest and pivot:
 "I don't have direct experience with Go's GC. What I'm deeply
 familiar with is Node.js V8's garbage collector, which uses
 generational collection with a Scavenger for the young generation
@@ -421,7 +421,7 @@ Step 1: Don't panic. Don't say "sorry" or "um" repeatedly.
 Step 2: Use a BRIDGE PHRASE:
   - "Let me take a step back and organize this."
   - "Actually, let me approach this from a different angle."
-  - "So to summarize where I am — [restate what you've said] —
+  - "So to summarize where I am - [restate what you've said] -
      and the next piece is..."
 
 Step 3: Return to your framework. If you were using SEED,
@@ -441,7 +441,7 @@ DON'T: Keep going and hope they don't notice (they will)
 DON'T: Stop abruptly and say "actually, never mind"
 
 DO: Self-correct clearly:
-"Actually, wait — I need to correct myself. I said [wrong thing],
+"Actually, wait - I need to correct myself. I said [wrong thing],
 but that's not quite right. The correct behavior is [right thing].
 The reason I initially confused it is [brief explanation]."
 
@@ -457,7 +457,7 @@ This actually HELPS you. It shows:
 DON'T: Guess what they mean and answer the wrong question
 
 DO: Clarify before answering:
-"That's a great question — before I answer, I want to make sure
+"That's a great question - before I answer, I want to make sure
 I'm addressing the right thing. When you say 'how would you scale
 this,' are you asking about horizontal scaling of the application
 servers, or are you asking about the database scaling strategy?"
@@ -471,7 +471,7 @@ This is what senior engineers do. It shows you think before you code.
 
 ### Confidence Is a Performance Skill
 
-Confidence is not a feeling you either have or don't. It's a set of **behaviors** you can learn and practice. The interviewer can't read your mind — they can only observe your behavior. If you exhibit confident behaviors, you will be perceived as confident.
+Confidence is not a feeling you either have or don't. It's a set of **behaviors** you can learn and practice. The interviewer can't read your mind - they can only observe your behavior. If you exhibit confident behaviors, you will be perceived as confident.
 
 ### Confident Behaviors
 
@@ -507,7 +507,7 @@ LANGUAGE:
 
 Here's a secret most candidates don't know: **the interviewer also doesn't know everything.** They're often asking questions from a prepared list. They may not even understand the topic as deeply as you do. They're evaluating your communication and thinking as much as your knowledge.
 
-If you speak clearly, structure your thoughts, and reason out loud — you will be perceived as more competent than a candidate who knows more but communicates poorly. **This is not fair, but it is reality.**
+If you speak clearly, structure your thoughts, and reason out loud - you will be perceived as more competent than a candidate who knows more but communicates poorly. **This is not fair, but it is reality.**
 
 ### Confident Phrase Bank
 
@@ -522,7 +522,7 @@ Replace weak phrases with strong alternatives:
 | "I guess you could say..." | "The way I see it..." |
 | "Hopefully that makes sense" | "Let me know if you'd like me to go deeper" |
 | "Does that answer your question?" | "I can elaborate on any part of this." |
-| "I just used..." | "I implemented..." (drop "just" — it minimizes your work) |
+| "I just used..." | "I implemented..." (drop "just" - it minimizes your work) |
 | "We basically did..." | "We designed a system that..." (drop "basically") |
 
 ---
@@ -599,7 +599,7 @@ The second sounds clear and confident.
 "sort of", "kind of", "right?", "I mean", "so yeah"
 ```
 
-### How to Kill Fillers — The Pause Replacement
+### How to Kill Fillers - The Pause Replacement
 
 Every time you would say "um" or "uh," **say nothing instead**. Just pause. A 1-second silence is far more powerful than "ummm."
 
@@ -610,8 +610,8 @@ and uh, basically when state changes, it, you know, diffs the
 virtual DOM with the real DOM..."
 
 WITH PAUSES (same rhythm):
-"The way React works is — [pause] — it uses a virtual DOM.
-When state changes — [pause] — it diffs the virtual DOM
+"The way React works is - [pause] - it uses a virtual DOM.
+When state changes - [pause] - it diffs the virtual DOM
 against the real DOM..."
 
 The second version sounds authoritative. The pauses signal thought
@@ -647,7 +647,7 @@ That feeling means you're doing it right.
 
 ---
 
-## 11. Pronunciation — The Step-by-Step Fix
+## 11. Pronunciation - The Step-by-Step Fix
 
 ### The 80/20 of Pronunciation
 
@@ -797,13 +797,13 @@ Week 5+: Internalize
 When explaining something complex, go **top-down**, not bottom-up:
 
 ```
-BOTTOM-UP (confusing — the listener doesn't know where you're going):
+BOTTOM-UP (confusing - the listener doesn't know where you're going):
 "So there's this thing called TCP, and it uses a handshake,
 and then there's HTTP which sits on top of it, and when you
 type a URL the browser does DNS resolution first, and then..."
-(The listener is lost — what's the point?)
+(The listener is lost - what's the point?)
 
-TOP-DOWN (clear — the listener has context from the start):
+TOP-DOWN (clear - the listener has context from the start):
 "When you type a URL and press Enter, there are four main steps.
 First, DNS resolves the domain to an IP address.
 Second, your browser opens a TCP connection to that IP.
@@ -811,7 +811,7 @@ Third, it sends an HTTP request over that connection.
 Fourth, the server processes the request and sends back a response.
 
 Let me go deeper on each step..."
-(The listener has the roadmap — now details make sense)
+(The listener has the roadmap - now details make sense)
 ```
 
 ### The Rule of Three
@@ -840,14 +840,14 @@ the database looks up the location in the index."
 
 "A load balancer is like a restaurant host.
 When customers arrive, the host doesn't send everyone
-to the same waiter — they distribute customers across
+to the same waiter - they distribute customers across
 all available waiters based on who's least busy."
 
 "Docker containers are like shipping containers.
 Before shipping containers, every port had different
-loading procedures. Containers standardized the format —
+loading procedures. Containers standardized the format -
 the same container works on any ship, truck, or crane.
-Docker does the same for software — the same container
+Docker does the same for software - the same container
 runs on any machine."
 ```
 
@@ -930,7 +930,7 @@ Instead of abruptly jumping between topics, use natural bridges:
 
 ---
 
-## 15. BAD vs GOOD — Real Interview Situations
+## 15. BAD vs GOOD - Real Interview Situations
 
 ### Scenario 1: Candidate Panics Mid-Answer
 
@@ -946,9 +946,9 @@ Instead of abruptly jumping between topics, use natural bridges:
 >
 > A URL shortener needs to do three core things: generate a unique short code from a long URL, store the mapping, and redirect when the short code is accessed.
 >
-> For generating codes, I'd use base62 encoding — that gives us alphanumeric characters, and a 7-character code gives us over 3.5 trillion unique URLs.
+> For generating codes, I'd use base62 encoding - that gives us alphanumeric characters, and a 7-character code gives us over 3.5 trillion unique URLs.
 >
-> For storage, this is a read-heavy system — reads massively outnumber writes — so I'd use a key-value store like Redis for fast lookups, with a relational database like PostgreSQL as the persistent backend.
+> For storage, this is a read-heavy system - reads massively outnumber writes - so I'd use a key-value store like Redis for fast lookups, with a relational database like PostgreSQL as the persistent backend.
 >
 > For the redirect, when someone hits the short URL, we look up the code in Redis, and if found, return a 301 redirect. If not in cache, we check the database, cache it, then redirect.
 >
@@ -968,13 +968,13 @@ Instead of abruptly jumping between topics, use natural bridges:
 **Why this is shallow:** This is the first paragraph of every React tutorial. The interviewer already knows this. You've told them nothing that differentiates you from someone who watched a 10-minute YouTube video.
 
 **GOOD (deep):**
-> "The Virtual DOM is an in-memory JavaScript object tree that mirrors the structure of the actual DOM. When component state changes, React creates a new Virtual DOM tree and runs a diffing algorithm — called reconciliation — against the previous tree.
+> "The Virtual DOM is an in-memory JavaScript object tree that mirrors the structure of the actual DOM. When component state changes, React creates a new Virtual DOM tree and runs a diffing algorithm - called reconciliation - against the previous tree.
 >
-> What makes this interesting is the reconciliation algorithm itself. A naive tree diff is O(n³), which is impractical. React uses two heuristics to bring this down to O(n): first, elements of different types produce different subtrees — so if a div changes to a span, React tears down the entire subtree. Second, the `key` prop helps React identify which elements moved, were added, or were removed in a list — this is why using array index as key causes bugs when items are reordered.
+> What makes this interesting is the reconciliation algorithm itself. A naive tree diff is O(n³), which is impractical. React uses two heuristics to bring this down to O(n): first, elements of different types produce different subtrees - so if a div changes to a span, React tears down the entire subtree. Second, the `key` prop helps React identify which elements moved, were added, or were removed in a list - this is why using array index as key causes bugs when items are reordered.
 >
 > The Virtual DOM also enables React's batching mechanism. Multiple state updates within the same event handler are batched into a single re-render, which avoids unnecessary DOM manipulation.
 >
-> The trade-off is memory — you're maintaining an entire copy of the DOM tree in JavaScript. For simple pages, this overhead might not be worth it. That's one of the arguments behind frameworks like Svelte, which compile components to direct DOM updates and skip the virtual DOM entirely."
+> The trade-off is memory - you're maintaining an entire copy of the DOM tree in JavaScript. For simple pages, this overhead might not be worth it. That's one of the arguments behind frameworks like Svelte, which compile components to direct DOM updates and skip the virtual DOM entirely."
 
 **What went right:** Explained HOW (the diffing algorithm), WHY it's efficient (the O(n) heuristics), a practical implication (keys in lists), and trade-offs (memory overhead, Svelte comparison).
 
@@ -994,15 +994,15 @@ Instead of abruptly jumping between topics, use natural bridges:
 >
 > First, the TLS handshake. The browser sends a ClientHello message listing the cipher suites it supports. The server responds with its chosen cipher suite and its digital certificate.
 >
-> Second, certificate verification. The browser checks the certificate against its list of trusted Certificate Authorities. It verifies the domain matches, the certificate hasn't expired, and the chain of trust is valid — from the server certificate up through intermediates to a trusted root CA.
+> Second, certificate verification. The browser checks the certificate against its list of trusted Certificate Authorities. It verifies the domain matches, the certificate hasn't expired, and the chain of trust is valid - from the server certificate up through intermediates to a trusted root CA.
 >
-> Third, key exchange. This is the clever part — they use asymmetric encryption just for this step to securely agree on a shared symmetric key. In modern TLS 1.3, this uses Diffie-Hellman key exchange, which means the session key is never actually transmitted over the wire.
+> Third, key exchange. This is the clever part - they use asymmetric encryption just for this step to securely agree on a shared symmetric key. In modern TLS 1.3, this uses Diffie-Hellman key exchange, which means the session key is never actually transmitted over the wire.
 >
 > Finally, once both sides have the symmetric key, all subsequent communication is encrypted with it. Symmetric encryption is used for the bulk data because it's orders of magnitude faster than asymmetric.
 >
 > The entire handshake takes about 1-2 round trips in TLS 1.3, which is why the performance overhead is minimal in practice."
 
-**What went right:** Used "First, Second, Third, Finally" — the listener can follow along. Each step builds on the previous one. Technical precision without being confusing.
+**What went right:** Used "First, Second, Third, Finally" - the listener can follow along. Each step builds on the previous one. Technical precision without being confusing.
 
 ---
 
@@ -1017,27 +1017,27 @@ Instead of abruptly jumping between topics, use natural bridges:
 **GOOD:**
 > "I haven't worked with Rust directly, but this is an interesting question because Rust takes a fundamentally different approach to memory management compared to languages I've used.
 >
-> From what I understand, Rust doesn't actually have a traditional garbage collector. Instead, it uses an ownership system with borrowing rules that are enforced at compile time. Each value has exactly one owner, and when the owner goes out of scope, the memory is freed deterministically — kind of like C++ RAII but with compiler-enforced safety.
+> From what I understand, Rust doesn't actually have a traditional garbage collector. Instead, it uses an ownership system with borrowing rules that are enforced at compile time. Each value has exactly one owner, and when the owner goes out of scope, the memory is freed deterministically - kind of like C++ RAII but with compiler-enforced safety.
 >
-> This means there are no garbage collection pauses at runtime, which is why Rust is used for performance-critical systems. The trade-off is a steeper learning curve — the borrow checker can be frustrating when you're getting started.
+> This means there are no garbage collection pauses at runtime, which is why Rust is used for performance-critical systems. The trade-off is a steeper learning curve - the borrow checker can be frustrating when you're getting started.
 >
-> Compared to Go, which uses a concurrent garbage collector optimized for low pause times, Rust eliminates the pauses entirely by moving the work to compile time. I'd love to explore Rust more deeply — it's on my learning roadmap."
+> Compared to Go, which uses a concurrent garbage collector optimized for low pause times, Rust eliminates the pauses entirely by moving the work to compile time. I'd love to explore Rust more deeply - it's on my learning roadmap."
 
 **What went right:** Didn't pretend to know. Showed reasoning ability by connecting to related knowledge. Demonstrated intellectual curiosity. Ended positively.
 
 ---
 
-### Scenario 5: Time Pressure — Quick Answer Needed
+### Scenario 5: Time Pressure - Quick Answer Needed
 
 **Question:** "What's the difference between `let`, `const`, and `var`?"
 
 **BAD:**
-> "OK so var is function-scoped and it's hoisted, and let and const are block-scoped. Var was the original way to declare variables in JavaScript, and then ES6 introduced let and const. Const is for constants that don't change, and let is for variables that do change. But actually const doesn't mean the value is immutable, it means the binding is immutable — so if you have a const object, you can still modify its properties, you just can't reassign the variable itself to a different object. And var has issues with closures in loops..."
+> "OK so var is function-scoped and it's hoisted, and let and const are block-scoped. Var was the original way to declare variables in JavaScript, and then ES6 introduced let and const. Const is for constants that don't change, and let is for variables that do change. But actually const doesn't mean the value is immutable, it means the binding is immutable - so if you have a const object, you can still modify its properties, you just can't reassign the variable itself to a different object. And var has issues with closures in loops..."
 
 **The problem:** Too long for a simple question. The interviewer wanted 30 seconds, not 2 minutes.
 
 **GOOD:**
-> "`var` is function-scoped and hoisted — it's the legacy way and can cause unexpected behavior. `let` and `const` are block-scoped, introduced in ES6. `let` allows reassignment, `const` doesn't — but importantly, `const` prevents reassignment of the binding, not mutation of the value. So a `const` array can still be pushed to.
+> "`var` is function-scoped and hoisted - it's the legacy way and can cause unexpected behavior. `let` and `const` are block-scoped, introduced in ES6. `let` allows reassignment, `const` doesn't - but importantly, `const` prevents reassignment of the binding, not mutation of the value. So a `const` array can still be pushed to.
 >
 > In practice, I use `const` by default and only switch to `let` when reassignment is genuinely needed. I never use `var`."
 
@@ -1076,10 +1076,10 @@ MINUTE 5-15: EXPLAIN A CONCEPT (THE CORE DRILL)
 - Pick ONE technical concept (rotate through your interview topics)
 - Set a timer for 2 minutes
 - Explain it out loud using the SEED framework:
-    S — State the answer
-    E — Explain the mechanism
-    E — Give an example
-    D — Discuss trade-offs/depth
+    S - State the answer
+    E - Explain the mechanism
+    E - Give an example
+    D - Discuss trade-offs/depth
 - Record yourself (phone voice memo is fine)
 
 Topics rotation (cycle through these):
@@ -1103,7 +1103,7 @@ MINUTE 15-20: LISTEN-AND-SHADOW
     - Intonation
     - Pronunciation
     - Pauses
-- This is called "shadowing" — it's the fastest way to improve
+- This is called "shadowing" - it's the fastest way to improve
   natural English rhythm
 
 
@@ -1282,7 +1282,7 @@ improvement within 2-3 weeks.
 ├─────────────────────────────────────────────────────┤
 │                                                      │
 │  2. PAUSE (2-5 seconds)                              │
-│     - This is not awkward — it's professional        │
+│     - This is not awkward - it's professional        │
 │     - Use this to run the WHAT-WHY-HOW-TRADE        │
 │       framework in your head                         │
 │     - If you need more time: "Let me think about     │
@@ -1302,10 +1302,10 @@ improvement within 2-3 weeks.
 ├─────────────────────────────────────────────────────┤
 │                                                      │
 │  4. DELIVER WITH SEED                                │
-│     S — State your answer (1 sentence)               │
-│     E — Explain the mechanism                        │
-│     E — Real example / experience                    │
-│     D — Depth (trade-offs, alternatives, edge cases) │
+│     S - State your answer (1 sentence)               │
+│     E - Explain the mechanism                        │
+│     E - Real example / experience                    │
+│     D - Depth (trade-offs, alternatives, edge cases) │
 │                                                      │
 │     Speak at 120 WPM. Pause between sections.        │
 │     Use downward inflection (statements, not          │
@@ -1347,7 +1347,7 @@ RECEIVE → PAUSE → SIGNAL → DELIVER → END STRONG
 ```
 THE NIGHT BEFORE:
 [ ] Research the company (product, tech stack, recent blog posts)
-[ ] Review your resume — know every bullet point deeply
+[ ] Review your resume - know every bullet point deeply
 [ ] Prepare your "Tell me about yourself" intro (60-90 seconds)
 [ ] Prepare 2-3 stories about your work (STAR format: Situation, Task, Action, Result)
 [ ] Test your internet connection, camera, microphone
@@ -1356,8 +1356,8 @@ THE NIGHT BEFORE:
 [ ] Set two alarms for the morning
 
 THE MORNING OF:
-[ ] No heavy meals — eat light (heavy food = sluggish brain)
-[ ] Review your key technical topics (don't learn new things — reinforce known ones)
+[ ] No heavy meals - eat light (heavy food = sluggish brain)
+[ ] Review your key technical topics (don't learn new things - reinforce known ones)
 [ ] Practice your intro once out loud
 [ ] Warm up your voice (read something out loud for 2 minutes)
 
@@ -1376,7 +1376,7 @@ THE MORNING OF:
 THE FIRST 5 MINUTES:
 [ ] Smile, greet warmly, thank them for their time
 [ ] Deliver your prepared intro smoothly
-[ ] Make note of the interviewer's name — use it once naturally
+[ ] Make note of the interviewer's name - use it once naturally
 
 FOR EVERY QUESTION:
 [ ] Listen to the FULL question before thinking
@@ -1385,9 +1385,9 @@ FOR EVERY QUESTION:
 [ ] Follow SEED: State → Explain → Example → Depth
 [ ] Speak at 120 WPM (slower than you think)
 [ ] Replace fillers with pauses
-[ ] End strongly — don't trail off
+[ ] End strongly - don't trail off
 [ ] If stuck: "Let me think about this for a moment."
-[ ] If confused: Clarify the question — don't guess
+[ ] If confused: Clarify the question - don't guess
 
 BODY LANGUAGE (VIDEO):
 [ ] Look at the camera when speaking (not the screen)
@@ -1424,7 +1424,7 @@ WITHIN 24 HOURS:
 ONGOING:
 [ ] Add weak topics to your study plan
 [ ] Practice those improved answers in your daily routine
-[ ] Each interview makes the next one better — but only if you review
+[ ] Each interview makes the next one better - but only if you review
 ```
 
 ---
@@ -1440,7 +1440,7 @@ Week 1: FOUNDATION
 
 Week 2: DEPTH
   Daily: 25-minute practice routine
-  Focus: Going deeper — Level 3-4 answers
+  Focus: Going deeper - Level 3-4 answers
   Mock: 2 solo mocks + 1 peer mock
   Study: 5 more concepts with depth
 
@@ -1467,13 +1467,13 @@ By Day 30: You should be able to:
 
 ---
 
-## Final Words — The Harsh Truth
+## Final Words - The Harsh Truth
 
 Here's what nobody tells you:
 
 **You will not improve by reading this guide.** You will improve by **doing the exercises in this guide.** Every single day. For 30 days.
 
-Reading about swimming doesn't teach you to swim. Reading about confidence doesn't make you confident. Only practice — uncomfortable, recorded, reviewed, repeated practice — creates change.
+Reading about swimming doesn't teach you to swim. Reading about confidence doesn't make you confident. Only practice - uncomfortable, recorded, reviewed, repeated practice - creates change.
 
 The candidates who get hired are not always the smartest. They're the ones who practiced explaining their knowledge clearly, structured their answers, and presented themselves with composure. That's a trainable skill. You can learn it.
 
@@ -1485,7 +1485,7 @@ That's how you get from where you are to where you want to be.
 
 ---
 
-> *"The difference between a senior engineer and a junior engineer is often not what they know — it's how they communicate what they know."*
+> *"The difference between a senior engineer and a junior engineer is often not what they know - it's how they communicate what they know."*
 
 ---
 

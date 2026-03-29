@@ -1,4 +1,4 @@
-# Next.js Interview Preparation Guide — Zero to Advanced
+# Next.js Interview Preparation Guide - Zero to Advanced
 
 > A complete, structured interview prep resource covering every critical Next.js topic with deep answers, code examples, debugging scenarios, and system design questions.
 
@@ -19,9 +19,9 @@
 
 **Answer:**
 
-Next.js is a **React meta-framework** built by Vercel that provides production-ready features out of the box — server-side rendering (SSR), static site generation (SSG), file-based routing, API routes, image optimization, and more.
+Next.js is a **React meta-framework** built by Vercel that provides production-ready features out of the box - server-side rendering (SSR), static site generation (SSG), file-based routing, API routes, image optimization, and more.
 
-**Plain React** is a UI library. It gives you components and a virtual DOM, but everything else — routing, data fetching strategy, build optimization, SEO — you wire yourself.
+**Plain React** is a UI library. It gives you components and a virtual DOM, but everything else - routing, data fetching strategy, build optimization, SEO - you wire yourself.
 
 **Next.js solves these specific problems:**
 
@@ -34,13 +34,13 @@ Next.js is a **React meta-framework** built by Vercel that provides production-r
 | Image optimization | Manual | `next/image` built-in |
 | Deployment | Custom config | Vercel zero-config |
 
-**Key distinction:** Next.js gives you a **rendering strategy per page**. One page can be statically generated, another server-rendered, another client-rendered — all in the same app.
+**Key distinction:** Next.js gives you a **rendering strategy per page**. One page can be statically generated, another server-rendered, another client-rendered - all in the same app.
 
 **Why interviewer asks this:** To gauge whether you understand the *problems* Next.js solves, not just that it exists. Candidates who say "it's a React framework for SSR" are giving a shallow answer.
 
 **Follow-up:** *Can you use Next.js for a fully client-side app with no SSR at all? How?*
 
-Yes — by using `'use client'` directives on all components (App Router) or by disabling SSR via `dynamic()` with `{ ssr: false }`. You lose SEO benefits but retain the DX advantages (routing, API routes, image optimization).
+Yes - by using `'use client'` directives on all components (App Router) or by disabling SSR via `dynamic()` with `{ ssr: false }`. You lose SEO benefits but retain the DX advantages (routing, API routes, image optimization).
 
 ---
 
@@ -50,7 +50,7 @@ Yes — by using `'use client'` directives on all components (App Router) or by 
 
 These are **four rendering strategies** that determine *when* and *where* your HTML is generated.
 
-### CSR — Client-Side Rendering
+### CSR - Client-Side Rendering
 ```
 Browser downloads empty HTML → JS bundle loads → React renders in browser
 ```
@@ -58,7 +58,7 @@ Browser downloads empty HTML → JS bundle loads → React renders in browser
 - Bad for SEO, slow First Contentful Paint (FCP)
 - Good for dashboards, authenticated-only pages
 
-### SSR — Server-Side Rendering
+### SSR - Server-Side Rendering
 ```
 Request hits server → Server runs React → Sends full HTML → Browser hydrates
 ```
@@ -67,17 +67,17 @@ Request hits server → Server runs React → Sends full HTML → Browser hydrat
 - Trade-off: server compute on every request
 
 ```tsx
-// App Router — SSR by default for server components
+// App Router - SSR by default for server components
 // This component fetches fresh data on every request
 async function ProductPage({ params }: { params: { id: string } }) {
   const product = await fetch(`https://api.example.com/products/${params.id}`, {
-    cache: 'no-store' // Forces SSR — no caching
+    cache: 'no-store' // Forces SSR - no caching
   });
   return <div>{product.name}</div>;
 }
 ```
 
-### SSG — Static Site Generation
+### SSG - Static Site Generation
 ```
 Build time → Next.js pre-renders HTML → Serves static files from CDN
 ```
@@ -86,7 +86,7 @@ Build time → Next.js pre-renders HTML → Serves static files from CDN
 - Good for blogs, docs, marketing pages
 
 ```tsx
-// App Router — SSG (default behavior when no dynamic data)
+// App Router - SSG (default behavior when no dynamic data)
 async function AboutPage() {
   // This fetch is cached by default = SSG behavior
   const team = await fetch('https://api.example.com/team');
@@ -94,7 +94,7 @@ async function AboutPage() {
 }
 ```
 
-### ISR — Incremental Static Regeneration
+### ISR - Incremental Static Regeneration
 ```
 Build time → Serve static → After revalidation period → Regenerate in background
 ```
@@ -131,7 +131,7 @@ ISR with on-demand revalidation. You can't SSG 50k pages at build time (too slow
 
 **Answer:**
 
-Next.js uses the **file system** as the router. Creating a file at a specific path automatically creates a route — no manual route configuration needed.
+Next.js uses the **file system** as the router. Creating a file at a specific path automatically creates a route - no manual route configuration needed.
 
 ### Pages Router (`pages/` directory)
 
@@ -148,7 +148,7 @@ pages/
 
 Every file exports a **React component** as default.
 
-### App Router (`app/` directory) — Next.js 13+
+### App Router (`app/` directory) - Next.js 13+
 
 ```
 app/
@@ -181,7 +181,7 @@ app/
 
 **Follow-up:** *Can you use both Pages Router and App Router in the same project?*
 
-Yes — during migration. Routes in `app/` take precedence over `pages/` if they conflict. But you shouldn't have the same route in both.
+Yes - during migration. Routes in `app/` take precedence over `pages/` if they conflict. But you shouldn't have the same route in both.
 
 ---
 
@@ -192,7 +192,7 @@ Yes — during migration. Routes in `app/` take precedence over `pages/` if they
 A `layout.tsx` defines **shared UI that wraps child routes**. Unlike the old `_app.tsx`, layouts are **nested** and **don't re-render** when navigating between child routes.
 
 ```tsx
-// app/layout.tsx — Root layout (required)
+// app/layout.tsx - Root layout (required)
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -207,7 +207,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 ```
 
 ```tsx
-// app/dashboard/layout.tsx — Nested layout for /dashboard/*
+// app/dashboard/layout.tsx - Nested layout for /dashboard/*
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex">
@@ -228,7 +228,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
 **Follow-up:** *What's the difference between `layout.tsx` and `template.tsx`?*
 
-`template.tsx` has the same API as `layout.tsx` but **creates a new instance on every navigation** — it remounts. Use it when you need:
+`template.tsx` has the same API as `layout.tsx` but **creates a new instance on every navigation** - it remounts. Use it when you need:
 - Enter/exit animations per page
 - A `useEffect` that should fire on every navigation
 - Resetting form state per route
@@ -241,7 +241,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
 Dynamic routes let you create pages where part of the URL is a **variable**.
 
-### `[slug]` — Single dynamic segment
+### `[slug]` - Single dynamic segment
 
 ```
 app/blog/[slug]/page.tsx → matches /blog/hello-world, /blog/nextjs-guide
@@ -253,7 +253,7 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
 }
 ```
 
-### `[...slug]` — Catch-all segments
+### `[...slug]` - Catch-all segments
 
 ```
 app/docs/[...slug]/page.tsx → matches /docs/a, /docs/a/b, /docs/a/b/c
@@ -267,7 +267,7 @@ export default function Docs({ params }: { params: { slug: string[] } }) {
 }
 ```
 
-### `[[...slug]]` — Optional catch-all segments
+### `[[...slug]]` - Optional catch-all segments
 
 ```
 app/docs/[[...slug]]/page.tsx → matches /docs, /docs/a, /docs/a/b
@@ -331,7 +331,7 @@ import Link from 'next/link';
 
 **Follow-up:** *When would you use `router.push()` instead of `<Link>`?*
 
-For **programmatic navigation** — after form submissions, authentication redirects, or conditional routing:
+For **programmatic navigation** - after form submissions, authentication redirects, or conditional routing:
 
 ```tsx
 'use client';
@@ -377,11 +377,11 @@ import heroImage from './hero.jpg';
 
 **What it does automatically:**
 
-1. **Lazy loading** — images load only when entering viewport
-2. **Responsive sizing** — serves correctly sized images per device
-3. **Modern formats** — converts to WebP/AVIF automatically
-4. **Prevents CLS** — reserves space before image loads (no layout shift)
-5. **On-demand optimization** — images are optimized at request time, not build time
+1. **Lazy loading** - images load only when entering viewport
+2. **Responsive sizing** - serves correctly sized images per device
+3. **Modern formats** - converts to WebP/AVIF automatically
+4. **Prevents CLS** - reserves space before image loads (no layout shift)
+5. **On-demand optimization** - images are optimized at request time, not build time
 
 **Configuration for remote images:**
 
@@ -462,7 +462,7 @@ Next.js wraps your `page.tsx` in a `<Suspense>` boundary with `loading.tsx` as t
 
 **Follow-up:** *Can you have more granular loading states within a single page?*
 
-Yes — use `<Suspense>` directly inside your page for component-level loading:
+Yes - use `<Suspense>` directly inside your page for component-level loading:
 
 ```tsx
 import { Suspense } from 'react';
@@ -482,7 +482,7 @@ export default function Dashboard() {
 }
 ```
 
-This way, `RevenueChart` and `RecentOrders` load independently — whichever resolves first shows first.
+This way, `RevenueChart` and `RecentOrders` load independently - whichever resolves first shows first.
 
 ---
 
@@ -527,7 +527,7 @@ app/
 
 **Important:** `error.tsx` catches errors from `page.tsx` in the **same segment**, but NOT from `layout.tsx` in the same segment. To catch layout errors, place `error.tsx` in the **parent** segment.
 
-**`global-error.tsx`** — catches errors in the root layout:
+**`global-error.tsx`** - catches errors in the root layout:
 
 ```tsx
 // app/global-error.tsx
@@ -549,7 +549,7 @@ export default function GlobalError({ error, reset }: { error: Error; reset: () 
 
 **Follow-up:** *What's the `digest` property on the error object?*
 
-`digest` is a hash of the error generated on the server. It prevents leaking sensitive server error details to the client. In production, the client only sees the digest — you match it in server logs for debugging.
+`digest` is a hash of the error generated on the server. It prevents leaking sensitive server error details to the client. In production, the client only sees the digest - you match it in server logs for debugging.
 
 ---
 
@@ -560,7 +560,7 @@ export default function GlobalError({ error, reset }: { error: Error; reset: () 
 `not-found.tsx` renders custom UI when `notFound()` is called or when a route doesn't match.
 
 ```tsx
-// app/not-found.tsx — Global 404 page
+// app/not-found.tsx - Global 404 page
 import Link from 'next/link';
 
 export default function NotFound() {
@@ -596,7 +596,7 @@ You can place `not-found.tsx` at different levels for segment-specific 404 pages
 
 **Follow-up:** *Does `notFound()` return a 404 status code?*
 
-Yes — Next.js automatically sends a `404` HTTP status code when `notFound()` is called or when the `not-found.tsx` page renders.
+Yes - Next.js automatically sends a `404` HTTP status code when `notFound()` is called or when the `not-found.tsx` page renders.
 
 ---
 
@@ -615,7 +615,7 @@ This is the **most important architectural concept** in the modern App Router.
 - Cannot use `useState`, `useEffect`, `onClick`, or any browser API
 
 ```tsx
-// app/users/page.tsx — Server Component (default, no directive needed)
+// app/users/page.tsx - Server Component (default, no directive needed)
 import { db } from '@/lib/database';
 
 export default async function UsersPage() {
@@ -708,7 +708,7 @@ The App Router **eliminated** `getServerSideProps`, `getStaticProps`, and `getIn
 ### Direct `async/await` in Server Components
 
 ```tsx
-// This IS the data fetching — no special function needed
+// This IS the data fetching - no special function needed
 async function ProductPage({ params }: { params: { id: string } }) {
   const product = await fetch(`https://api.example.com/products/${params.id}`);
   const data = await product.json();
@@ -720,13 +720,13 @@ async function ProductPage({ params }: { params: { id: string } }) {
 ### Controlling caching behavior with `fetch` options
 
 ```tsx
-// SSG behavior (default) — cached indefinitely
+// SSG behavior (default) - cached indefinitely
 fetch('https://api.example.com/data');
 
-// SSR behavior — fresh on every request
+// SSR behavior - fresh on every request
 fetch('https://api.example.com/data', { cache: 'no-store' });
 
-// ISR behavior — revalidate every 60 seconds
+// ISR behavior - revalidate every 60 seconds
 fetch('https://api.example.com/data', { next: { revalidate: 60 } });
 
 // Tag-based revalidation
@@ -757,11 +757,11 @@ export default async function ProductsPage() {
 
 ```tsx
 async function Dashboard() {
-  // BAD — sequential (waterfall)
+  // BAD - sequential (waterfall)
   const revenue = await getRevenue();
   const orders = await getOrders();
 
-  // GOOD — parallel
+  // GOOD - parallel
   const [revenue, orders] = await Promise.all([
     getRevenue(),
     getOrders()
@@ -775,17 +775,17 @@ async function Dashboard() {
 
 **Follow-up:** *How does fetch deduplication work in Next.js?*
 
-If the **same URL with the same options** is called multiple times during a single server render, Next.js deduplicates it — only one actual network request is made. This means you can call `fetch` in multiple components without worrying about duplicate requests.
+If the **same URL with the same options** is called multiple times during a single server render, Next.js deduplicates it - only one actual network request is made. This means you can call `fetch` in multiple components without worrying about duplicate requests.
 
 ```tsx
-// Both components fetch the same URL — only ONE request is made
+// Both components fetch the same URL - only ONE request is made
 async function Header() {
-  const user = await fetch('/api/user'); // Request #1 — actually fires
+  const user = await fetch('/api/user'); // Request #1 - actually fires
   return <nav>{user.name}</nav>;
 }
 
 async function Sidebar() {
-  const user = await fetch('/api/user'); // Request #2 — deduped, uses #1's result
+  const user = await fetch('/api/user'); // Request #2 - deduped, uses #1's result
   return <aside>{user.avatar}</aside>;
 }
 ```
@@ -866,7 +866,7 @@ export async function GET(
 
 **Follow-up:** *Should you use Route Handlers or Server Actions for form submissions?*
 
-**Server Actions** are better for mutations (POST/PUT/DELETE) from React components — they're type-safe, handle revalidation automatically, and work with progressive enhancement. Use Route Handlers when you need a traditional REST API for external consumers or webhooks.
+**Server Actions** are better for mutations (POST/PUT/DELETE) from React components - they're type-safe, handle revalidation automatically, and work with progressive enhancement. Use Route Handlers when you need a traditional REST API for external consumers or webhooks.
 
 ---
 
@@ -956,7 +956,7 @@ export default function DeleteButton({ postId }: { postId: string }) {
 
 **Follow-up:** *How do Server Actions handle validation?*
 
-Always validate on the server — never trust client input:
+Always validate on the server - never trust client input:
 
 ```tsx
 'use server';
@@ -991,7 +991,7 @@ export async function createPost(formData: FormData) {
 Middleware runs **before every request** reaches your route. It executes at the **Edge** (not Node.js) and can modify requests, redirect, rewrite, or add headers.
 
 ```tsx
-// middleware.ts (root of project — NOT inside app/)
+// middleware.ts (root of project - NOT inside app/)
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -1048,7 +1048,7 @@ if (request.nextUrl.pathname.startsWith('/blog')) {
 
 **Follow-up:** *What's the difference between middleware redirects and `next.config.js` redirects?*
 
-`next.config.js` redirects are **static** — defined at build time, evaluated at CDN level (fastest). Middleware redirects are **dynamic** — can use runtime data (cookies, headers, geo) but are slightly slower since they execute code.
+`next.config.js` redirects are **static** - defined at build time, evaluated at CDN level (fastest). Middleware redirects are **dynamic** - can use runtime data (cookies, headers, geo) but are slightly slower since they execute code.
 
 ---
 
@@ -1201,7 +1201,7 @@ export default function Layout({
 }
 ```
 
-Each slot loads independently — `@analytics` can show a loading state while `@team` has already loaded.
+Each slot loads independently - `@analytics` can show a loading state while `@team` has already loaded.
 
 ### Intercepting Routes (`(.)`, `(..)`, `(...)`)
 
@@ -1224,10 +1224,10 @@ app/
 - Refresh the modal page → renders the full page version
 
 **Convention:**
-- `(.)` — intercept same level
-- `(..)` — intercept one level up
-- `(..)(..)` — intercept two levels up
-- `(...)` — intercept from root
+- `(.)` - intercept same level
+- `(..)` - intercept one level up
+- `(..)(..)` - intercept two levels up
+- `(...)` - intercept from root
 
 **Why interviewer asks this:** These are advanced App Router features. Knowing them shows deep understanding.
 
@@ -1251,7 +1251,7 @@ These are client-side navigation hooks in the App Router (from `next/navigation`
 import { useRouter, usePathname, useSearchParams, useParams } from 'next/navigation';
 
 function Component() {
-  // 1. useRouter — programmatic navigation
+  // 1. useRouter - programmatic navigation
   const router = useRouter();
   router.push('/about');         // Navigate
   router.replace('/login');      // Replace (no back button entry)
@@ -1259,22 +1259,22 @@ function Component() {
   router.refresh();              // Re-fetch server components without full reload
   router.prefetch('/dashboard'); // Preload a route
 
-  // 2. usePathname — current path without query string
+  // 2. usePathname - current path without query string
   const pathname = usePathname(); // '/blog/hello-world'
 
-  // 3. useSearchParams — query parameters (read-only)
+  // 3. useSearchParams - query parameters (read-only)
   const searchParams = useSearchParams();
   const query = searchParams.get('q');      // ?q=nextjs → 'nextjs'
   const page = searchParams.get('page');    // ?page=2 → '2'
 
-  // 4. useParams — dynamic route parameters
+  // 4. useParams - dynamic route parameters
   const params = useParams();
   // In /blog/[slug] → params.slug = 'hello-world'
   // In /shop/[...categories] → params.categories = ['shoes', 'running']
 }
 ```
 
-**Common pattern — updating search params:**
+**Common pattern - updating search params:**
 
 ```tsx
 'use client';
@@ -1360,7 +1360,7 @@ export async function generateStaticParams() {
 
 **Follow-up:** *Can `generateStaticParams` run at runtime for ISR?*
 
-When combined with `revalidate`, yes — initially generated pages are cached and revalidated. For new paths (not in `generateStaticParams`), they're generated on first request and then cached.
+When combined with `revalidate`, yes - initially generated pages are cached and revalidated. For new paths (not in `generateStaticParams`), they're generated on first request and then cached.
 
 ---
 
@@ -1371,7 +1371,7 @@ When combined with `revalidate`, yes — initially generated pages are cached an
 Next.js has a specific convention for environment variables:
 
 ```bash
-# .env.local (gitignored — local secrets)
+# .env.local (gitignored - local secrets)
 DATABASE_URL=postgresql://localhost:5432/mydb
 SECRET_KEY=super-secret-value
 
@@ -1388,13 +1388,13 @@ NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 | `NEXT_PUBLIC_API_URL` | Yes | Yes | Yes |
 
 ```tsx
-// Server Component — works
+// Server Component - works
 async function ServerPage() {
   const dbUrl = process.env.DATABASE_URL; // Available
   const apiUrl = process.env.NEXT_PUBLIC_API_URL; // Also available
 }
 
-// Client Component — only NEXT_PUBLIC_ works
+// Client Component - only NEXT_PUBLIC_ works
 'use client';
 function ClientComp() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL; // Works (inlined at build time)
@@ -1437,7 +1437,7 @@ async function Header() {
   const user = await fetch('/api/user'); // Actual request
 }
 async function Sidebar() {
-  const user = await fetch('/api/user'); // Deduped — uses memoized result
+  const user = await fetch('/api/user'); // Deduped - uses memoized result
 }
 ```
 
@@ -1451,7 +1451,7 @@ async function Sidebar() {
 // Cached indefinitely (default)
 fetch('https://api.example.com/data');
 
-// Opt out — fresh every request
+// Opt out - fresh every request
 fetch('https://api.example.com/data', { cache: 'no-store' });
 
 // Time-based revalidation
@@ -1516,10 +1516,10 @@ Request → Router Cache (browser)
 
 **Follow-up:** *You updated a product's price in the database, but the product page still shows the old price. Walk through the debugging steps.*
 
-1. Check if `fetch` is using default caching (it is by default) — add `cache: 'no-store'` or `revalidate`
+1. Check if `fetch` is using default caching (it is by default) - add `cache: 'no-store'` or `revalidate`
 2. Check if you're using `unstable_cache` without proper revalidation tags
-3. Check the Full Route Cache — run `next build` and see if the route is marked `Static` or `Dynamic`
-4. Check the Router Cache — `router.refresh()` or hard reload
+3. Check the Full Route Cache - run `next build` and see if the route is marked `Static` or `Dynamic`
+4. Check the Router Cache - `router.refresh()` or hard reload
 5. For ISR, call `revalidatePath('/products/[id]')` or `revalidateTag('product-123')` after updating the DB
 
 ---
@@ -1558,7 +1558,7 @@ export const fetchCache = 'default-cache'; // or 'only-cache', 'force-cache', et
 
 | Value | Behavior |
 |---|---|
-| `'auto'` | Default — Next.js decides based on usage |
+| `'auto'` | Default - Next.js decides based on usage |
 | `'force-dynamic'` | Always SSR, no caching (like `getServerSideProps`) |
 | `'force-static'` | Forces SSG, errors if you use dynamic functions |
 | `'error'` | Forces SSG, throws an error if dynamic functions are detected |
@@ -1611,7 +1611,7 @@ export default function Dashboard() {
   );
 }
 
-// This component is async — it triggers streaming
+// This component is async - it triggers streaming
 async function Revenue() {
   const data = await fetch('https://api.example.com/revenue'); // Slow API
   return <div>Revenue: ${data.total}</div>;
@@ -1748,7 +1748,7 @@ export default async function Page() {
 
 **Follow-up:** *How do you protect both pages AND API routes?*
 
-Middleware protects both — it runs before any route. For API routes specifically, add an extra check:
+Middleware protects both - it runs before any route. For API routes specifically, add an extra check:
 
 ```tsx
 // app/api/admin/route.ts
@@ -1911,7 +1911,7 @@ Mutation happens →
 
 **Follow-up:** *What's the difference between `revalidatePath` and `revalidateTag`?*
 
-`revalidatePath('/products')` invalidates everything on that specific path. `revalidateTag('products')` invalidates all `fetch` calls tagged with `'products'` — which could span multiple routes. Tags are more surgical and scalable.
+`revalidatePath('/products')` invalidates everything on that specific path. `revalidateTag('products')` invalidates all `fetch` calls tagged with `'products'` - which could span multiple routes. Tags are more surgical and scalable.
 
 ---
 
@@ -1960,13 +1960,13 @@ export default function ClientCounter() {
 **Answer:**
 
 **First visit:**
-- `Server count: 1` — Server Component executes on the server. `serverCount` increments.
-- `Client module count: 1` — ClientCounter renders initially.
-- `State count: 0` — useState initializes to 0.
+- `Server count: 1` - Server Component executes on the server. `serverCount` increments.
+- `Client module count: 1` - ClientCounter renders initially.
+- `State count: 0` - useState initializes to 0.
 
 **Click button once:**
 - Server count stays `1` (no server re-render)
-- `Client module count: 2` — component re-renders, module-level `clientCount` increments
+- `Client module count: 2` - component re-renders, module-level `clientCount` increments
 - `State count: 1`
 
 **Navigate away and back (client-side):**
@@ -1975,7 +1975,7 @@ export default function ClientCounter() {
 - `State count: 0` (fresh mount, useState resets)
 
 **Hard refresh:**
-- `Server count: 2` on server (or 1 if serverless function cold starts — module-level state is unreliable in serverless)
+- `Server count: 2` on server (or 1 if serverless function cold starts - module-level state is unreliable in serverless)
 - `Client module count: 1` (fresh module load)
 - `State count: 0`
 
@@ -2032,12 +2032,12 @@ export default function Dashboard() {
 ### 3. Keep Client Components minimal
 
 ```tsx
-// BAD — entire page is a client component
+// BAD - entire page is a client component
 'use client';
 import HugeLibrary from 'huge-library';
 export default function Page() { ... }
 
-// GOOD — only the interactive part is client
+// GOOD - only the interactive part is client
 // page.tsx (Server Component)
 import InteractiveWidget from './InteractiveWidget';
 export default function Page() {
@@ -2053,11 +2053,11 @@ export default function Page() {
 ### 4. Tree-shake imports
 
 ```tsx
-// BAD — imports entire library
+// BAD - imports entire library
 import _ from 'lodash';
 _.debounce(fn, 300);
 
-// GOOD — imports only the function
+// GOOD - imports only the function
 import debounce from 'lodash/debounce';
 debounce(fn, 300);
 ```
@@ -2079,7 +2079,7 @@ function Page({ user }) {
 
 ### 6. Leverage Server Components
 
-Anything that doesn't need interactivity should be a Server Component — its code is **never sent to the browser**.
+Anything that doesn't need interactivity should be a Server Component - its code is **never sent to the browser**.
 
 **Why interviewer asks this:** Performance optimization is a senior-level concern.
 
@@ -2097,7 +2097,7 @@ PPR is an **experimental rendering strategy** (Next.js 14+) that combines **stat
 
 ### The problem PPR solves
 
-Before PPR, a route was either fully static or fully dynamic. If even one tiny part (like a user avatar) was dynamic, the **entire page** became dynamic — losing SSG benefits.
+Before PPR, a route was either fully static or fully dynamic. If even one tiny part (like a user avatar) was dynamic, the **entire page** became dynamic - losing SSG benefits.
 
 ### How PPR works
 
@@ -2113,11 +2113,11 @@ import { Suspense } from 'react';
 export default function ProductPage({ params }) {
   return (
     <div>
-      {/* Static — pre-rendered at build time */}
+      {/* Static - pre-rendered at build time */}
       <ProductDetails id={params.id} />
       <ProductImages id={params.id} />
 
-      {/* Dynamic — streamed at request time */}
+      {/* Dynamic - streamed at request time */}
       <Suspense fallback={<PriceSkeleton />}>
         <DynamicPrice id={params.id} />
       </Suspense>
@@ -2132,8 +2132,8 @@ export default function ProductPage({ params }) {
 
 ### What happens at request time
 
-1. **Instant:** The static shell (product details, images) is served from CDN cache — like SSG
-2. **Streamed:** The Suspense boundaries (price, reviews) are filled in as they resolve — like SSR streaming
+1. **Instant:** The static shell (product details, images) is served from CDN cache - like SSG
+2. **Streamed:** The Suspense boundaries (price, reviews) are filled in as they resolve - like SSR streaming
 
 ### Enabling PPR
 
@@ -2158,7 +2158,7 @@ module.exports = {
 
 **Follow-up:** *How does PPR differ from ISR?*
 
-ISR regenerates the **entire page** after a time interval. PPR renders the **static parts once** and **streams only the dynamic parts** on every request. PPR is more granular — parts of the page are static, others are dynamic, within the same render.
+ISR regenerates the **entire page** after a time interval. PPR renders the **static parts once** and **streams only the dynamic parts** on every request. PPR is more granular - parts of the page are static, others are dynamic, within the same render.
 
 ---
 
@@ -2247,7 +2247,7 @@ module.exports = nextConfig;
 
 **Follow-up:** *What does `output: 'standalone'` do?*
 
-It creates a self-contained build in `.next/standalone` that includes only the files needed to run the app — no `node_modules`. This is critical for Docker deployments where image size matters:
+It creates a self-contained build in `.next/standalone` that includes only the files needed to run the app - no `node_modules`. This is critical for Docker deployments where image size matters:
 
 ```dockerfile
 FROM node:20-alpine AS builder
@@ -2634,7 +2634,7 @@ function Notifications() {
 
 ```tsx
 // Custom server approach (pages/_app or standalone WS server)
-// next.config.js is NOT involved — WS runs alongside Next.js
+// next.config.js is NOT involved - WS runs alongside Next.js
 
 // In production: use a dedicated WebSocket service (Pusher, Ably, Socket.io)
 // and connect from Client Components
@@ -2862,7 +2862,7 @@ pages/
 ```
 
 ```tsx
-// app/layout.tsx — migrate from _app.tsx + _document.tsx
+// app/layout.tsx - migrate from _app.tsx + _document.tsx
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -3060,7 +3060,7 @@ export default function SearchInput({
 ```
 
 ```tsx
-// app/search/SearchResults.tsx (Server Component — async)
+// app/search/SearchResults.tsx (Server Component - async)
 import Link from 'next/link';
 
 export default async function SearchResults({
@@ -3119,11 +3119,11 @@ export default async function SearchResults({
 ```
 
 **Key patterns demonstrated:**
-1. **URL-synced state** — filters are in `searchParams`, shareable and bookmarkable
-2. **Debounced input** — 300ms delay prevents API spam while typing
-3. **Streaming** — `<Suspense>` shows skeleton while `SearchResults` fetches data
-4. **`key` on Suspense** — forces re-trigger when search params change
-5. **Server/Client split** — input is client (interactive), results are server (no JS sent)
+1. **URL-synced state** - filters are in `searchParams`, shareable and bookmarkable
+2. **Debounced input** - 300ms delay prevents API spam while typing
+3. **Streaming** - `<Suspense>` shows skeleton while `SearchResults` fetches data
+4. **`key` on Suspense** - forces re-trigger when search params change
+5. **Server/Client split** - input is client (interactive), results are server (no JS sent)
 
 **Why interviewer asks this:** Combines multiple concepts: streaming, server/client split, URL state, debouncing.
 
@@ -3367,7 +3367,7 @@ CMD ["node", "server.js"]
 
 **Follow-up:** *How do you handle preview deployments for pull requests?*
 
-Vercel does this automatically — every PR gets a unique preview URL. For self-hosted, configure the CI to deploy to a dynamic URL like `pr-123.staging.example.com` and post the link as a PR comment.
+Vercel does this automatically - every PR gets a unique preview URL. For self-hosted, configure the CI to deploy to a dynamic URL like `pr-123.staging.example.com` and post the link as a PR comment.
 
 ---
 
@@ -3457,9 +3457,9 @@ const getExpensiveData = cache(async (id: string) => {
 ```bash
 npm run build
 # Look for:
-# ○ (Static)  — good, served from CDN
-# λ (Dynamic) — check if it should be static
-# Route size  — large pages indicate bundle issues
+# ○ (Static)  - good, served from CDN
+# λ (Dynamic) - check if it should be static
+# Route size  - large pages indicate bundle issues
 ```
 
 **Why interviewer asks this:** Performance debugging is a senior-level skill that distinguishes experienced developers.
@@ -3565,8 +3565,8 @@ Use **AWS Amplify** (managed, supports Next.js features) or **AWS Lambda + Cloud
 
 | Concept | One-line explanation |
 |---|---|
-| Server Components | Components that run only on the server — zero JS shipped to client |
-| Client Components | Components that hydrate in the browser — needed for interactivity |
+| Server Components | Components that run only on the server - zero JS shipped to client |
+| Client Components | Components that hydrate in the browser - needed for interactivity |
 | `'use client'` | Directive that marks the server/client boundary |
 | `'use server'` | Directive that marks a function as a Server Action |
 | ISR | Serve static pages, regenerate in background after interval |
@@ -3585,4 +3585,4 @@ Use **AWS Amplify** (managed, supports Next.js features) or **AWS Lambda + Cloud
 
 ---
 
-*This guide covers 40 questions across all difficulty levels. Master these and you'll be prepared for any Next.js interview — from startup to FAANG.*
+*This guide covers 40 questions across all difficulty levels. Master these and you'll be prepared for any Next.js interview - from startup to FAANG.*

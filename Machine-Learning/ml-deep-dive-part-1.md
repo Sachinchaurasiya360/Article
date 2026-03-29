@@ -1,8 +1,8 @@
-# Machine Learning Deep Dive — Part 1: The Math You Actually Need — Linear Algebra, Stats, and Probability for ML
+# Machine Learning Deep Dive - Part 1: The Math You Actually Need - Linear Algebra, Stats, and Probability for ML
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
 **Part:** 1 of 19 (Foundations)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~40 minutes
@@ -11,9 +11,9 @@
 
 ## Recap: Where We Left Off
 
-In Part 0, we surveyed the entire machine learning landscape — understanding the difference between supervised, unsupervised, and reinforcement learning, mapping out the types of problems ML solves (classification, regression, clustering, generation), and walking through the standard ML workflow from data collection to production deployment. We also established the mental model that will carry us through this series: ML is just pattern-finding with math.
+In Part 0, we surveyed the entire machine learning landscape - understanding the difference between supervised, unsupervised, and reinforcement learning, mapping out the types of problems ML solves (classification, regression, clustering, generation), and walking through the standard ML workflow from data collection to production deployment. We also established the mental model that will carry us through this series: ML is just pattern-finding with math.
 
-Before we write our first real model, we need to speak the language of ML: math. Don't panic — we only need about 20% of mathematics to cover 80% of what ML actually uses. This part is that 20%.
+Before we write our first real model, we need to speak the language of ML: math. Don't panic - we only need about 20% of mathematics to cover 80% of what ML actually uses. This part is that 20%.
 
 ---
 
@@ -37,7 +37,7 @@ Before we write our first real model, we need to speak the language of ML: math.
 
 ### What Is a Vector?
 
-A **vector** is simply an ordered list of numbers. In ML terms, a vector represents a single data point — one row from your database. If you have a housing dataset with four features (square footage, bedrooms, bathrooms, age), a single house is represented as a vector:
+A **vector** is simply an ordered list of numbers. In ML terms, a vector represents a single data point - one row from your database. If you have a housing dataset with four features (square footage, bedrooms, bathrooms, age), a single house is represented as a vector:
 
 ```
 house = [1500, 3, 2, 15]
@@ -58,7 +58,7 @@ The **dimension** of a vector is the number of elements. This vector is a 4-dime
 
 ### What Is a Matrix?
 
-A **matrix** is a 2D array of numbers — essentially a collection of vectors. Your entire dataset is a matrix, where each row is one data point (one vector) and each column is one feature.
+A **matrix** is a 2D array of numbers - essentially a collection of vectors. Your entire dataset is a matrix, where each row is one data point (one vector) and each column is one feature.
 
 ```
         sq_ft   beds   baths   age
@@ -84,7 +84,7 @@ b = [4, 5, 6]
 a · b = (1×4) + (2×5) + (3×6) = 4 + 10 + 18 = 32
 ```
 
-> The dot product measures similarity — this is literally what neural networks compute. When a neuron "fires", it computes a dot product between its input vector and its weight vector.
+> The dot product measures similarity - this is literally what neural networks compute. When a neuron "fires", it computes a dot product between its input vector and its weight vector.
 
 The dot product also relates to the **angle** between vectors:
 
@@ -139,7 +139,7 @@ print(C)
 
 ### The Transpose
 
-The **transpose** of a matrix flips it along its diagonal — rows become columns and columns become rows. If A has shape (m×n), then Aᵀ has shape (n×m).
+The **transpose** of a matrix flips it along its diagonal - rows become columns and columns become rows. If A has shape (m×n), then Aᵀ has shape (n×m).
 
 ```python
 # filename: transpose_demo.py
@@ -196,7 +196,7 @@ In ML, almost everything is expressed as matrix operations:
 | Covariance matrix | **C = (1/n) XᵀX** |
 | PCA decomposition | **SVD of X** |
 
-The reason GPUs excel at ML is that they are optimized for massive parallel matrix multiplication. A modern GPU can perform trillions of multiply-add operations per second — exactly the operation in a dot product.
+The reason GPUs excel at ML is that they are optimized for massive parallel matrix multiplication. A modern GPU can perform trillions of multiply-add operations per second - exactly the operation in a dot product.
 
 ### Broadcasting in NumPy
 
@@ -219,7 +219,7 @@ print("Vector + scalar:", result)
 M = np.array([[1, 2, 3],
               [4, 5, 6],
               [7, 8, 9]])  # shape (3, 3)
-row = np.array([10, 20, 30])  # shape (3,) — broadcast across rows
+row = np.array([10, 20, 30])  # shape (3,) - broadcast across rows
 result = M + row
 print("\nMatrix + row vector:")
 print(result)
@@ -230,7 +230,7 @@ print(result)
 # Example 3: column broadcast (common in ML normalization)
 col = np.array([[100],
                 [200],
-                [300]])  # shape (3, 1) — broadcast across columns
+                [300]])  # shape (3, 1) - broadcast across columns
 result = M + col
 print("\nMatrix + column vector:")
 print(result)
@@ -281,8 +281,8 @@ print("\nZeros:\n", zeros)
 print("\nIdentity (4x4):\n", eye)
 
 # Range-based
-r1 = np.arange(0, 10, 2)          # [0, 2, 4, 6, 8] — step size 2
-r2 = np.linspace(0, 1, 5)         # [0.0, 0.25, 0.5, 0.75, 1.0] — 5 evenly spaced
+r1 = np.arange(0, 10, 2)          # [0, 2, 4, 6, 8] - step size 2
+r2 = np.linspace(0, 1, 5)         # [0.0, 0.25, 0.5, 0.75, 1.0] - 5 evenly spaced
 print("\narange(0,10,2):", r1)
 print("linspace(0,1,5):", r2)
 
@@ -470,7 +470,7 @@ print("\nA @ B:\n", A @ B)
 
 ## 3. Descriptive Statistics from Scratch
 
-Before applying ML algorithms, you need to understand your data. Descriptive statistics are the X-rays of your dataset — they reveal its structure, shape, and anomalies.
+Before applying ML algorithms, you need to understand your data. Descriptive statistics are the X-rays of your dataset - they reveal its structure, shape, and anomalies.
 
 ### Mean, Median, Mode
 
@@ -531,7 +531,7 @@ Notice how the mean ($520,625) is heavily skewed by the outlier ($1,200,000 hous
 
 ### Variance and Standard Deviation
 
-**Variance** measures how spread out data is from the mean. **Standard deviation** is the square root of variance — same units as the data, easier to interpret.
+**Variance** measures how spread out data is from the mean. **Standard deviation** is the square root of variance - same units as the data, easier to interpret.
 
 ```python
 # filename: variance_std_scratch.py
@@ -633,7 +633,7 @@ print(f"Bounds: [{lower_fence:.1f}, {upper_fence:.1f}]")
 
 ### Covariance and Correlation
 
-**Covariance** measures how two variables move together. **Correlation** is normalized covariance — always between -1 and +1.
+**Covariance** measures how two variables move together. **Correlation** is normalized covariance - always between -1 and +1.
 
 ```python
 # filename: covariance_correlation.py
@@ -688,13 +688,13 @@ print(f"np.corrcoef(sqft, crime)[0,1]: {np.corrcoef(sq_footage, crime_rate)[0,1]
 #   Correlation: -0.9943  (strong negative)
 ```
 
-> Correlation is not causation — but it IS a feature selection signal. Features highly correlated with the target variable are often useful predictors. Features correlated with each other (multicollinearity) can cause instability in linear models.
+> Correlation is not causation - but it IS a feature selection signal. Features highly correlated with the target variable are often useful predictors. Features correlated with each other (multicollinearity) can cause instability in linear models.
 
 ---
 
 ## 4. Probability Fundamentals
 
-**Probability** is the mathematical language of uncertainty. ML models don't output definitive answers — they output probabilities. Understanding probability is understanding ML output.
+**Probability** is the mathematical language of uncertainty. ML models don't output definitive answers - they output probabilities. Understanding probability is understanding ML output.
 
 ### Probability as Frequency and Belief
 
@@ -735,7 +735,7 @@ total_with_free = spam_with_free + not_spam_with_free
 p_spam = spam / total
 print(f"P(spam) = {p_spam:.2f}")
 
-# P(free | spam) — probability of "free" given spam
+# P(free | spam) - probability of "free" given spam
 p_free_given_spam = spam_with_free / spam
 print(f"P(free | spam) = {p_free_given_spam:.2f}")
 
@@ -743,11 +743,11 @@ print(f"P(free | spam) = {p_free_given_spam:.2f}")
 p_free_given_not_spam = not_spam_with_free / not_spam
 print(f"P(free | not spam) = {p_free_given_not_spam:.2f}")
 
-# P(free) — marginal probability
+# P(free) - marginal probability
 p_free = total_with_free / total
 print(f"P(free) = {p_free:.2f}")
 
-# P(spam | free) — what we actually want!
+# P(spam | free) - what we actually want!
 p_spam_given_free = spam_with_free / total_with_free
 print(f"\nP(spam | free) = {spam_with_free}/{total_with_free} = {p_spam_given_free:.2f}")
 
@@ -793,7 +793,7 @@ def bayes(p_a, p_b_given_a, p_b):
 
     Args:
         p_a: prior probability of A
-        p_b_given_a: likelihood — P(B|A)
+        p_b_given_a: likelihood - P(B|A)
         p_b: marginal probability of B (evidence)
     Returns:
         posterior probability P(A|B)
@@ -872,8 +872,8 @@ A **probability distribution** describes how probable different outcomes are. In
 The **normal distribution** is the most important distribution in all of statistics. It appears naturally when many independent random effects add together (Central Limit Theorem).
 
 Parameters:
-- **μ (mu)**: mean — center of the bell curve
-- **σ (sigma)**: standard deviation — width of the bell curve
+- **μ (mu)**: mean - center of the bell curve
+- **σ (sigma)**: standard deviation - width of the bell curve
 - **σ² (sigma squared)**: variance
 
 The **68-95-99.7 rule**:
@@ -891,7 +891,7 @@ import matplotlib.pyplot as plt
 def normal_pdf(x, mu=0, sigma=1):
     """
     Probability Density Function (PDF) of the normal distribution.
-    Implemented from scratch — no scipy!
+    Implemented from scratch - no scipy!
     """
     coefficient = 1 / (sigma * math.sqrt(2 * math.pi))
     exponent = -0.5 * ((x - mu) / sigma) ** 2
@@ -1134,7 +1134,7 @@ correlation = np.corrcoef(cheese, bedsheets)[0, 1]
 print(f"Correlation between cheese consumption and bedsheet deaths: r = {correlation:.3f}")
 print(f"If r > 0.9, does eating cheese cause bedsheet deaths? Of course not!")
 print("\nThe real cause: both variables are driven by population growth/time trend")
-print("This is a CONFOUNDING variable — an unseen variable that causes both")
+print("This is a CONFOUNDING variable - an unseen variable that causes both")
 
 # How to handle in ML:
 print("\n--- How to defend against spurious correlations in ML ---")
@@ -1142,12 +1142,12 @@ print("1. Include time/trend variables explicitly as features")
 print("2. Use domain knowledge to filter obviously non-causal features")
 print("3. Test on different time periods / geographies")
 print("4. Use A/B testing for causal claims")
-print("5. Examine feature importance — if implausible features rank high, investigate")
+print("5. Examine feature importance - if implausible features rank high, investigate")
 ```
 
 ### How to Avoid Confounding in ML
 
-The key principle: **correlation is for prediction; causation is for intervention**. Your ML model can achieve high accuracy by exploiting correlations — but if you want to know *why* something happens, or predict what happens when you *change* something, you need causal reasoning.
+The key principle: **correlation is for prediction; causation is for intervention**. Your ML model can achieve high accuracy by exploiting correlations - but if you want to know *why* something happens, or predict what happens when you *change* something, you need causal reasoning.
 
 Rules of thumb:
 1. Features correlated with the label can be used for prediction but not necessarily causal inference
@@ -1163,7 +1163,7 @@ You don't need to solve differential equations to do ML. You need three calculus
 
 ### The Derivative
 
-The **derivative** of a function f(x) at a point x measures the instantaneous rate of change — the slope of the tangent line.
+The **derivative** of a function f(x) at a point x measures the instantaneous rate of change - the slope of the tangent line.
 
 ```
 f'(x) = lim[h→0] (f(x+h) - f(x)) / h
@@ -1177,7 +1177,7 @@ For ML, derivatives tell us: *if I nudge this parameter by a tiny amount, how mu
 def numerical_derivative(f, x, h=1e-5):
     """
     Numerical approximation of derivative using finite differences.
-    (f(x+h) - f(x-h)) / (2h)  — central difference is more accurate
+    (f(x+h) - f(x-h)) / (2h)  - central difference is more accurate
     """
     return (f(x + h) - f(x - h)) / (2 * h)
 
@@ -1274,7 +1274,7 @@ The **chain rule** is the most important rule for ML. It tells us how to differe
 d/dx[f(g(x))] = f'(g(x)) × g'(x)
 ```
 
-In ML, neural networks are composed functions: output = f₄(f₃(f₂(f₁(x)))). The chain rule lets us compute how the loss changes with respect to the first layer's weights — this is **backpropagation**.
+In ML, neural networks are composed functions: output = f₄(f₃(f₂(f₁(x)))). The chain rule lets us compute how the loss changes with respect to the first layer's weights - this is **backpropagation**.
 
 ```python
 # filename: chain_rule.py
@@ -1363,7 +1363,7 @@ For minimization (which is what all ML training is), we move in the **negative g
 θ_new = θ_old - α × ∇f(θ_old)
 ```
 
-Where α (alpha) is the **learning rate** — how big a step to take.
+Where α (alpha) is the **learning rate** - how big a step to take.
 
 ### 1D Gradient Descent
 
@@ -1527,7 +1527,7 @@ for start in starts:
 
 # More complex: Rosenbrock function (a challenging optimization landscape)
 def rosenbrock(x, y, a=1, b=100):
-    """f(x,y) = (a-x)² + b(y-x²)²  — minimum at (a, a²)"""
+    """f(x,y) = (a-x)² + b(y-x²)²  - minimum at (a, a²)"""
     return (a - x)**2 + b * (y - x**2)**2
 
 def grad_rosenbrock(x, y, a=1, b=100):
@@ -1617,7 +1617,7 @@ w_mini, _ = mini_batch_gradient_descent(X, y, lr=0.01, epochs=200, batch_size=32
 print(f"Mini-Batch GD recovered weights:  {w_mini.round(3)}")
 ```
 
-> Mini-batch gradient descent is the default in modern deep learning. The noise from small batches acts as a regularizer, helping escape local minima. It also enables training on datasets too large to fit in memory — a single GPU can train on billions of examples by cycling through mini-batches.
+> Mini-batch gradient descent is the default in modern deep learning. The noise from small batches acts as a regularizer, helping escape local minima. It also enables training on datasets too large to fit in memory - a single GPU can train on billions of examples by cycling through mini-batches.
 
 ---
 
@@ -1695,7 +1695,7 @@ def std(data: List[float], ddof: int = 1) -> float:
     return math.sqrt(variance(data, ddof))
 
 def mad(data: List[float]) -> float:
-    """Mean Absolute Deviation — robust alternative to std."""
+    """Mean Absolute Deviation - robust alternative to std."""
     mu = mean(data)
     return mean([abs(x - mu) for x in data])
 
@@ -1951,7 +1951,7 @@ home_values = [
 ]
 
 print("=" * 60)
-print("BOSTON HOUSING — Feature Analysis")
+print("BOSTON HOUSING - Feature Analysis")
 print("=" * 60)
 
 # Five number summary for crime rate
@@ -2016,11 +2016,11 @@ print(f"{'Min-Max [0,1]':<20} {min(mm):>8.4f} {max(mm):>8.4f} {mean(mm):>8.4f} {
 | **Matrix** | **M** ∈ ℝ^(m×n) | 2D array of m rows, n columns | Dataset, weight matrix |
 | **Dot Product** | **a · b** | Sum of element-wise products | Similarity, neural net computation |
 | **Transpose** | **Aᵀ** | Flip matrix along diagonal | Dimension alignment |
-| **Broadcasting** | — | Auto-expanding shapes for operations | Efficient batch operations |
+| **Broadcasting** | - | Auto-expanding shapes for operations | Efficient batch operations |
 | **Mean** | μ, x̄ | Sum / count | Feature centering |
 | **Variance** | σ², s² | Average squared deviation from mean | Feature dispersion |
 | **Standard Deviation** | σ, s | Square root of variance | Feature scaling, normalization |
-| **Percentile** | — | Value below which p% of data falls | Outlier detection |
+| **Percentile** | - | Value below which p% of data falls | Outlier detection |
 | **IQR** | Q3 - Q1 | Middle 50% range | Robust outlier bounds |
 | **Covariance** | Cov(X,Y) | How two variables co-vary | Feature correlation matrix |
 | **Correlation** | r, ρ | Normalized covariance ∈ [-1,1] | Feature selection |
@@ -2036,12 +2036,12 @@ print(f"{'Min-Max [0,1]':<20} {min(mm):>8.4f} {max(mm):>8.4f} {mean(mm):>8.4f} {
 | **Chain Rule** | d/dx[f(g(x))] = f'(g(x))g'(x) | Derivative of composed functions | Backpropagation |
 | **Gradient Descent** | θ = θ - α∇f | Iterative minimization | All ML model training |
 | **Learning Rate** | α | Step size in gradient descent | Training hyperparameter |
-| **Converge** | — | When updates stop improving loss | Training termination |
+| **Converge** | - | When updates stop improving loss | Training termination |
 | **Z-Score** | z = (x-μ)/σ | Standardized value | Feature normalization |
-| **Standardization** | — | Scale to mean=0, std=1 | Preprocessing |
-| **Min-Max Normalization** | — | Scale to [0,1] | Preprocessing |
-| **Simpson's Paradox** | — | Trend reversal when data aggregated | Confounding variable warning |
-| **Confounding Variable** | — | Hidden variable causing spurious correlation | Causal reasoning |
+| **Standardization** | - | Scale to mean=0, std=1 | Preprocessing |
+| **Min-Max Normalization** | - | Scale to [0,1] | Preprocessing |
+| **Simpson's Paradox** | - | Trend reversal when data aggregated | Confounding variable warning |
+| **Confounding Variable** | - | Hidden variable causing spurious correlation | Causal reasoning |
 
 ---
 
@@ -2093,7 +2093,7 @@ X = np.array([
 
 y = np.array([300, 400, 220, 360, 180, 500, 310, 430, 210, 380], dtype=float)
 
-# Normalize features (z-score) — STATISTICS
+# Normalize features (z-score) - STATISTICS
 X_mean = X.mean(axis=0)
 X_std  = X.std(axis=0)
 X_norm = (X - X_mean) / X_std   # BROADCASTING
@@ -2115,18 +2115,18 @@ lr = 0.01
 history = []
 
 for epoch in range(200):
-    # FORWARD PASS — LINEAR ALGEBRA
+    # FORWARD PASS - LINEAR ALGEBRA
     y_pred = X_aug @ w   # dot product: shape (10,)
 
-    # LOSS — MSE — STATISTICS
+    # LOSS - MSE - STATISTICS
     error  = y_pred - y_norm
     loss   = np.mean(error ** 2)
 
-    # GRADIENT — CALCULUS
+    # GRADIENT - CALCULUS
     # dL/dw = (2/n) * Xᵀ * error  (MSE gradient)
     gradient = (2 / n) * X_aug.T @ error   # shape (3,)
 
-    # UPDATE — GRADIENT DESCENT
+    # UPDATE - GRADIENT DESCENT
     w -= lr * gradient
 
     if epoch % 40 == 0:
@@ -2156,15 +2156,15 @@ for actual, pred in zip(y, y_pred_original):
 
 ## Key Insights Recap
 
-> Vectors and matrices are not abstract math — they are your data, your model parameters, and your predictions. Every ML computation is matrix multiplication at its core.
+> Vectors and matrices are not abstract math - they are your data, your model parameters, and your predictions. Every ML computation is matrix multiplication at its core.
 
 > The dot product is the universal similarity metric. When you hear "attention score", "cosine similarity", or "neuron activation", you are hearing different names for the same operation.
 
-> The mean is sensitive to outliers; the median is robust. In ML, always check both — a large gap between them signals skewness or outliers that may need special handling.
+> The mean is sensitive to outliers; the median is robust. In ML, always check both - a large gap between them signals skewness or outliers that may need special handling.
 
 > Bayes' Theorem is the mathematical formula for updating your beliefs with evidence. It is the basis for understanding why high-accuracy tests can be mostly wrong when applied to rare events, and why ML models on imbalanced datasets need special treatment.
 
-> The gradient is not just "the derivative" — it is the vector pointing in the direction of steepest increase of the loss function. Gradient descent follows this vector in reverse to find the minimum.
+> The gradient is not just "the derivative" - it is the vector pointing in the direction of steepest increase of the loss function. Gradient descent follows this vector in reverse to find the minimum.
 
 > Learning rate is the most important hyperparameter in gradient descent. Too small: too slow. Too large: diverges. The entire field of learning rate scheduling, adaptive optimizers (Adam, RMSProp), and warmup strategies exists to solve this one challenge.
 
@@ -2174,10 +2174,10 @@ for actual, pred in zip(y, y_pred_original):
 
 In **Part 2**, we build our first real ML model: **Linear Regression from scratch**. Everything in this part feeds directly into it:
 
-- **Vectors and matrices** — the model is just `y = Xw + b`
-- **Gradient descent** — we'll train it by minimizing Mean Squared Error
-- **Statistics** — we'll evaluate with R², MSE, MAE, and residual analysis
-- **Probability** — we'll interpret the output probabilistically with confidence intervals
+- **Vectors and matrices** - the model is just `y = Xw + b`
+- **Gradient descent** - we'll train it by minimizing Mean Squared Error
+- **Statistics** - we'll evaluate with R², MSE, MAE, and residual analysis
+- **Probability** - we'll interpret the output probabilistically with confidence intervals
 
 We'll implement linear regression three ways:
 1. The **closed-form solution** (Normal Equation): `w = (XᵀX)⁻¹Xᵀy`
@@ -2187,11 +2187,11 @@ We'll implement linear regression three ways:
 And we'll apply all three to real housing data, learning when each approach is appropriate.
 
 **Preview of what Part 2 covers:**
-- Cost functions: MSE, MAE, Huber loss — when to use which
+- Cost functions: MSE, MAE, Huber loss - when to use which
 - The Normal Equation: elegant math, poor scalability
 - Gradient descent for linear regression: full derivation
 - Evaluating models: R², adjusted R², residual plots
-- Regularization: Ridge (L2) and Lasso (L1) — overfitting prevention
+- Regularization: Ridge (L2) and Lasso (L1) - overfitting prevention
 - Feature engineering for linear models
 - Project: Predict California housing prices end-to-end
 
@@ -2215,4 +2215,4 @@ Work through these before moving to Part 2:
 
 *This is Part 1 of the Machine Learning Deep Dive series. Each part builds directly on the previous one.*
 
-*Part 2: Linear Regression — From Equations to Production →*
+*Part 2: Linear Regression - From Equations to Production →*

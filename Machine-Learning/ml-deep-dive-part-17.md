@@ -1,8 +1,8 @@
-# Machine Learning Deep Dive — Part 17: ML System Design — Architecture for Real-World ML
+# Machine Learning Deep Dive - Part 17: ML System Design - Architecture for Real-World ML
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
 **Part:** 17 of 19 (Production ML)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~60 minutes
@@ -11,9 +11,9 @@
 
 ## Recap: Where We've Been
 
-In Part 16 we went deep on model evaluation — precision, recall, ROC-AUC, calibration curves — and then layered on SHAP for explainability and Optuna for hyperparameter optimisation. You learned how to measure whether a model is actually good, explain why it makes particular predictions, and systematically search for the best configuration.
+In Part 16 we went deep on model evaluation - precision, recall, ROC-AUC, calibration curves - and then layered on SHAP for explainability and Optuna for hyperparameter optimisation. You learned how to measure whether a model is actually good, explain why it makes particular predictions, and systematically search for the best configuration.
 
-You can now build and evaluate excellent models. But building a model in a notebook and deploying an ML system that serves millions of predictions per day are completely different problems. ML system design is about architecture — the decisions you make before writing a line of code that determine whether your system will scale, be maintainable, and actually deliver business value.
+You can now build and evaluate excellent models. But building a model in a notebook and deploying an ML system that serves millions of predictions per day are completely different problems. ML system design is about architecture - the decisions you make before writing a line of code that determine whether your system will scale, be maintainable, and actually deliver business value.
 
 ---
 
@@ -38,12 +38,12 @@ You can now build and evaluate excellent models. But building a model in a noteb
 
 ### The Hidden Technical Debt in ML Systems
 
-In 2015, a team of engineers at Google published a paper titled *"Hidden Technical Debt in Machine Learning Systems"* (Sculley et al., 2015). It became one of the most cited papers in the field — not because it introduced a novel algorithm, but because it named a problem every ML practitioner knew but nobody had formally described.
+In 2015, a team of engineers at Google published a paper titled *"Hidden Technical Debt in Machine Learning Systems"* (Sculley et al., 2015). It became one of the most cited papers in the field - not because it introduced a novel algorithm, but because it named a problem every ML practitioner knew but nobody had formally described.
 
-The central insight: **machine learning code itself is often a tiny fraction of a production ML system**. The model training loop might be 500 lines of Python. The surrounding system — data ingestion, validation, feature pipelines, serving infrastructure, monitoring, retraining triggers — can be orders of magnitude larger and more brittle.
+The central insight: **machine learning code itself is often a tiny fraction of a production ML system**. The model training loop might be 500 lines of Python. The surrounding system - data ingestion, validation, feature pipelines, serving infrastructure, monitoring, retraining triggers - can be orders of magnitude larger and more brittle.
 
 ```
-# The "notebook illusion" — what feels like 80% of the work
+# The "notebook illusion" - what feels like 80% of the work
 # filename: notebook_model.py
 
 import pandas as pd
@@ -120,29 +120,29 @@ graph TD
 
 When designing a production ML system you must specify requirements across five dimensions before choosing any technology:
 
-**1. Latency** — How quickly must a single prediction be returned?
+**1. Latency** - How quickly must a single prediction be returned?
 - Trading systems: < 1 millisecond
 - Fraud detection: < 100 milliseconds
 - Search ranking: < 200 milliseconds
 - Recommendation emails: seconds to minutes acceptable
 
-**2. Throughput** — How many predictions per second must the system handle?
+**2. Throughput** - How many predictions per second must the system handle?
 - A small SaaS might need 10 RPS
 - A major search engine needs millions of QPS
 
-**3. Availability** — What is the acceptable downtime?
+**3. Availability** - What is the acceptable downtime?
 - 99.9% ("three nines") = 8.7 hours downtime/year
 - 99.99% ("four nines") = 52 minutes downtime/year
 
-**4. Accuracy** — What is the minimum acceptable model performance?
+**4. Accuracy** - What is the minimum acceptable model performance?
 - Measured by business metrics (conversion rate, revenue) not just AUC
 
-**5. Cost** — What is the infrastructure budget?
+**5. Cost** - What is the infrastructure budget?
 - GPU inference costs 10-100x CPU inference
 
 ### Why Most ML Projects Fail
 
-> "The #1 reason ML projects fail is not the algorithm — it's the data. Garbage in, garbage out is not a cliche; it's the dominant failure mode." — Chip Huyen, *Designing Machine Learning Systems*
+> "The #1 reason ML projects fail is not the algorithm - it's the data. Garbage in, garbage out is not a cliche; it's the dominant failure mode." - Chip Huyen, *Designing Machine Learning Systems*
 
 Research consistently shows:
 
@@ -182,7 +182,7 @@ The most fundamental architectural decision in ML system design is whether predi
 
 ### Batch Prediction (Offline)
 
-**Batch prediction** systems run a prediction job on a schedule — hourly, daily, weekly — and store results in a database. When a user or application needs a prediction, it reads from the precomputed store.
+**Batch prediction** systems run a prediction job on a schedule - hourly, daily, weekly - and store results in a database. When a user or application needs a prediction, it reads from the precomputed store.
 
 ```mermaid
 graph LR
@@ -208,7 +208,7 @@ graph LR
 ```python
 # filename: batch_prediction_job.py
 """
-Batch prediction job — runs nightly via Airflow.
+Batch prediction job - runs nightly via Airflow.
 Scores all active users for churn probability and writes to DynamoDB.
 """
 
@@ -260,13 +260,13 @@ def run_batch_predictions(model_path: str, features_query: str) -> None:
 
 ### Online Prediction (Real-Time)
 
-**Online prediction** systems generate predictions at request time. When a request arrives, the system fetches features, runs the model, and returns the prediction — all within the latency budget.
+**Online prediction** systems generate predictions at request time. When a request arrives, the system fetches features, runs the model, and returns the prediction - all within the latency budget.
 
 ```mermaid
 graph LR
     A[User Request] --> B[API Gateway]
     B --> C[Prediction Service\nFastAPI / gRPC]
-    C --> D[Feature Store\nOnline — Redis]
+    C --> D[Feature Store\nOnline - Redis]
     C --> E[Model\nIn-memory loaded]
     D --> C
     E --> C
@@ -302,7 +302,7 @@ from pydantic import BaseModel
 
 app = FastAPI(title="Fraud Detection Service")
 
-# Load model once at startup — NOT on every request
+# Load model once at startup - NOT on every request
 model = joblib.load("/models/fraud/v2.1/model.pkl")
 feature_client = redis.Redis(host="feature-store-redis", port=6379)
 
@@ -418,7 +418,7 @@ def get_recommendations(user_id: str, page_context: dict) -> list:
 
 ### Latency Budgets by Domain
 
-> "Every millisecond of latency costs money. Amazon found that every 100ms increase in page load time reduced sales by 1%. Google found that a 500ms delay reduced searches by 20%." — from Chip Huyen's *Designing Machine Learning Systems*
+> "Every millisecond of latency costs money. Amazon found that every 100ms increase in page load time reduced sales by 1%. Google found that a 500ms delay reduced searches by 20%." - from Chip Huyen's *Designing Machine Learning Systems*
 
 | Domain | Latency Budget | Serving Pattern | Notes |
 |--------|---------------|-----------------|-------|
@@ -434,13 +434,13 @@ def get_recommendations(user_id: str, page_context: dict) -> list:
 
 ## 3. Data Pipelines for ML
 
-> "The ML system is the easy part. The data pipeline, feature engineering, and monitoring are where 80% of the work actually lives." — Eugene Yan
+> "The ML system is the easy part. The data pipeline, feature engineering, and monitoring are where 80% of the work actually lives." - Eugene Yan
 
 ### Data Ingestion: Streaming vs Batch
 
 **Batch ingestion** collects data at intervals and processes it in bulk. Tools like **Apache Spark**, **Airflow**, and cloud-native ETL services (Fivetran, dbt) handle this well.
 
-**Streaming ingestion** processes data continuously as events arrive. **Apache Kafka** is the dominant technology — a distributed, durable, high-throughput event streaming platform.
+**Streaming ingestion** processes data continuously as events arrive. **Apache Kafka** is the dominant technology - a distributed, durable, high-throughput event streaming platform.
 
 ```python
 # filename: kafka_feature_consumer.py
@@ -555,7 +555,7 @@ def validate_training_data(df: pd.DataFrame) -> Tuple[bool, List[ValidationResul
     """
     results = []
 
-    # 1. Schema check — required columns present
+    # 1. Schema check - required columns present
     required_cols = ["user_id", "amount", "timestamp", "merchant_category", "is_fraud"]
     missing = [c for c in required_cols if c not in df.columns]
     results.append(ValidationResult(
@@ -746,14 +746,14 @@ graph TD
 
 ### Point-in-Time Correct Joins (Preventing Data Leakage)
 
-**Point-in-time correct joins** ensure that when building a training dataset, you only use features that were available at the time of each label event. This prevents **data leakage** — using future information to predict the past.
+**Point-in-time correct joins** ensure that when building a training dataset, you only use features that were available at the time of each label event. This prevents **data leakage** - using future information to predict the past.
 
 ```python
 # filename: point_in_time_join.py
 """
 Point-in-time correct feature join.
 For each labeled event, fetch the feature values as they existed
-at the timestamp of that event — not the current values.
+at the timestamp of that event - not the current values.
 """
 
 import pandas as pd
@@ -791,7 +791,7 @@ def point_in_time_join(
         ]
 
         if valid_features.empty:
-            # No features available yet — use defaults or skip
+            # No features available yet - use defaults or skip
             feature_vals = {col: None for col in features.columns
                            if col not in [entity_col, feature_ts_col]}
         else:
@@ -826,7 +826,7 @@ print(result[["user_id", "event_timestamp", "label", "avg_spend_30d", "txn_count
 # 0      u1      2024-01-10      0          120.0           3.0
 # 1      u1      2024-02-15      1          145.0           5.0
 # 2      u2      2024-01-20      0           88.0           2.0
-# Note: u1's Jan 10 event uses Jan 1 features (not Feb 1 — that's in the future!)
+# Note: u1's Jan 10 event uses Jan 1 features (not Feb 1 - that's in the future!)
 ```
 
 ### Feast: Open-Source Feature Store
@@ -836,7 +836,7 @@ print(result[["user_id", "event_timestamp", "label", "avg_spend_30d", "txn_count
 ```python
 # filename: feast_feature_store_sketch.py
 """
-Feast feature store — conceptual implementation sketch.
+Feast feature store - conceptual implementation sketch.
 Shows the key abstractions: Entity, FeatureView, FeatureStore.
 """
 
@@ -886,7 +886,7 @@ def get_training_features(entity_df: "pd.DataFrame") -> "pd.DataFrame":
 def get_online_features(user_ids: list) -> dict:
     """
     Fetch latest feature values for serving.
-    Reads from Redis online store — sub-millisecond latency.
+    Reads from Redis online store - sub-millisecond latency.
     """
     # store = FeatureStore(repo_path="feature_repo/")
     # return store.get_online_features(
@@ -948,7 +948,7 @@ MODEL_REGISTRY = {
 }
 ACTIVE_MODEL = "churn_v3"
 
-# Global model store — loaded once on startup
+# Global model store - loaded once on startup
 models = {}
 
 @asynccontextmanager
@@ -1347,9 +1347,9 @@ import time
 
 class CascadeRanker:
     def __init__(self):
-        # Stage 1: Ultra-fast — dot product retrieval (ANN)
-        # Stage 2: Moderate — pre-computed GBDT
-        # Stage 3: Expensive — neural model
+        # Stage 1: Ultra-fast - dot product retrieval (ANN)
+        # Stage 2: Moderate - pre-computed GBDT
+        # Stage 3: Expensive - neural model
         self.stages = [
             {"name": "ANN Retrieval",    "input_k": 10_000_000, "output_k": 1000, "latency_ms": 5},
             {"name": "GBDT Scorer",      "input_k": 1000,       "output_k": 50,   "latency_ms": 8},
@@ -1391,14 +1391,14 @@ results = ranker.rank(user_emb, context={"page": "home"})
 
 ### Shadow Mode and Canary Deployments
 
-**Shadow mode** deploys a new model alongside the production model. The new model receives all traffic but its predictions are discarded — only logged for comparison. This lets you validate the new model on real traffic with zero risk.
+**Shadow mode** deploys a new model alongside the production model. The new model receives all traffic but its predictions are discarded - only logged for comparison. This lets you validate the new model on real traffic with zero risk.
 
 **Canary deployment** routes a small percentage of live traffic to the new model. If metrics look good, traffic is gradually increased to 100%.
 
 ```python
 # filename: shadow_mode_serving.py
 """
-Shadow mode deployment — new model runs silently alongside production model.
+Shadow mode deployment - new model runs silently alongside production model.
 Useful for: validating a new model on real traffic before promoting it.
 """
 
@@ -1815,7 +1815,7 @@ def make_cache_key(features: dict) -> str:
 @functools.lru_cache(maxsize=1000)
 def _l1_cache_lookup(cache_key: str) -> Optional[str]:
     """L1: In-process LRU cache."""
-    return None  # LRU cache handles this — this is just the structure
+    return None  # LRU cache handles this - this is just the structure
 
 class CachedPredictor:
     def __init__(self, model, cache_ttl_seconds: int = 300):
@@ -1861,7 +1861,7 @@ class CachedPredictor:
         return self._l1_store.cache_info() and None  # simplified
 
     def _l1_store(self, key: str, value: dict):
-        pass  # simplified — in practice use cachetools.LRUCache
+        pass  # simplified - in practice use cachetools.LRUCache
 
     def get_cache_stats(self):
         total = sum(self.stats.values())
@@ -2125,7 +2125,7 @@ print("Item embedding update frequency:", ITEM_FEATURES["update_frequency"])
 **Problem:** Payment processor needs to score each transaction for fraud within 100ms of submission. 50,000 transactions per second at peak.
 
 **Key constraints:**
-- Latency SLA: < 100ms (hard limit — payment gateway timeout)
+- Latency SLA: < 100ms (hard limit - payment gateway timeout)
 - Throughput: 50K TPS sustained, 150K TPS peak
 - False positive cost: VERY HIGH (blocking legitimate transactions destroys trust)
 - False negative cost: HIGH (fraudulent transactions cause financial loss)
@@ -2139,14 +2139,14 @@ Multi-stage pipeline to meet 100ms SLA at 50K TPS.
 
 FRAUD_DETECTION_PIPELINE = {
     "stage_1_rules": {
-        "description": "Hard rules — deterministic, instant",
+        "description": "Hard rules - deterministic, instant",
         "examples": ["amount > $10,000", "IP country != card country",
                      "card reported stolen", "velocity: >5 txn/min"],
         "latency_ms": 1,
         "action": "BLOCK immediately on rule match",
     },
     "stage_2_ml_model": {
-        "description": "ML model — gradient boosted tree",
+        "description": "ML model - gradient boosted tree",
         "model_type": "LightGBM",
         "features": [
             "transaction_amount", "merchant_category_risk_score",
@@ -2513,7 +2513,7 @@ def fetch_user_features(user_id: str) -> np.ndarray:
     raw = redis_client.hgetall(f"user_features:{user_id}") if redis_client else {}
 
     if not raw:
-        # New user — use global average embedding
+        # New user - use global average embedding
         return np.zeros(64, dtype=np.float32)
 
     embedding = np.array(
@@ -2827,7 +2827,7 @@ for metric in [PREDICTION_REQUESTS, PREDICTION_LATENCY, CACHE_HIT_RATE,
 
 ## What's Next
 
-In **Part 18: MLOps — Continuous Training, Monitoring, and Model Lifecycle Management**, we go deep on operating ML systems over time:
+In **Part 18: MLOps - Continuous Training, Monitoring, and Model Lifecycle Management**, we go deep on operating ML systems over time:
 
 - **Continuous Training (CT)**: triggering automated retraining when data drift is detected
 - **Data drift detection**: statistical tests (KS test, PSI) on feature distributions
@@ -2838,7 +2838,7 @@ In **Part 18: MLOps — Continuous Training, Monitoring, and Model Lifecycle Man
 - **Model rollback**: automated rollback when production model performance drops below threshold
 - **The ML Platform**: building internal tooling that makes ML teams 10x more productive
 
-> "You don't just train a model and deploy it. You build a system that trains models, validates them, deploys them, monitors them, and retrains them — continuously and automatically." — Chip Huyen
+> "You don't just train a model and deploy it. You build a system that trains models, validates them, deploys them, monitors them, and retrains them - continuously and automatically." - Chip Huyen
 
 Part 18 is where production ML gets rigorous. Everything in this article was the architecture; Part 18 is the operations layer that keeps it healthy.
 
@@ -2846,17 +2846,17 @@ Part 18 is where production ML gets rigorous. Everything in this article was the
 
 ## Further Reading
 
-- **Designing Machine Learning Systems** — Chip Huyen (O'Reilly, 2022) — the definitive guide to production ML
-- **Hidden Technical Debt in Machine Learning Systems** — Sculley et al. (Google, NeurIPS 2015) — the original paper
-- **Machine Learning Engineering** — Andriy Burkov (2020) — practical guide from data to production
-- **Feast documentation** — [feast.dev](https://feast.dev) — open-source feature store
-- **The ML Systems Design Interview** — Chip Huyen — [huyenchip.com/machine-learning-systems-design](https://huyenchip.com/machine-learning-systems-design)
-- **Eugene Yan's blog** — [eugeneyan.com](https://eugeneyan.com) — excellent case studies on production ML systems
-- **Rules of Machine Learning: Best Practices for ML Engineering** — Martin Zinkevich (Google) — 43 rules for building production ML
+- **Designing Machine Learning Systems** - Chip Huyen (O'Reilly, 2022) - the definitive guide to production ML
+- **Hidden Technical Debt in Machine Learning Systems** - Sculley et al. (Google, NeurIPS 2015) - the original paper
+- **Machine Learning Engineering** - Andriy Burkov (2020) - practical guide from data to production
+- **Feast documentation** - [feast.dev](https://feast.dev) - open-source feature store
+- **The ML Systems Design Interview** - Chip Huyen - [huyenchip.com/machine-learning-systems-design](https://huyenchip.com/machine-learning-systems-design)
+- **Eugene Yan's blog** - [eugeneyan.com](https://eugeneyan.com) - excellent case studies on production ML systems
+- **Rules of Machine Learning: Best Practices for ML Engineering** - Martin Zinkevich (Google) - 43 rules for building production ML
 
 ---
 
-*Part 17 of 19 — Machine Learning: A Developer's Deep Dive from Fundamentals to Production*
+*Part 17 of 19 - Machine Learning: A Developer's Deep Dive from Fundamentals to Production*
 
-*Previous: [Part 16 — Model Evaluation, SHAP Explainability, and Hyperparameter Optimisation with Optuna](ml-deep-dive-part-16.md)*
-*Next: [Part 18 — MLOps: Continuous Training, Monitoring, and Model Lifecycle Management](ml-deep-dive-part-18.md)*
+*Previous: [Part 16 - Model Evaluation, SHAP Explainability, and Hyperparameter Optimisation with Optuna](ml-deep-dive-part-16.md)*
+*Next: [Part 18 - MLOps: Continuous Training, Monitoring, and Model Lifecycle Management](ml-deep-dive-part-18.md)*

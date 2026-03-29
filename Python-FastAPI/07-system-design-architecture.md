@@ -1,4 +1,4 @@
-# System Design & Real-world Backend Architecture — Interview Preparation (Part 7/7)
+# System Design & Real-world Backend Architecture - Interview Preparation (Part 7/7)
 
 > **Series:** Python + FastAPI Interview Prep
 > **Level:** System Design & Architecture
@@ -56,10 +56,10 @@
 ```
 
 **Key rules for horizontal readiness:**
-- **No local file storage** — use S3/GCS for uploads
-- **No in-process sessions** — use Redis for session/cache
-- **No in-memory job queues** — use Celery + RabbitMQ/Redis
-- **Database connection pooling** — use pgBouncer or SQLAlchemy pool limits
+- **No local file storage** - use S3/GCS for uploads
+- **No in-process sessions** - use Redis for session/cache
+- **No in-memory job queues** - use Celery + RabbitMQ/Redis
+- **Database connection pooling** - use pgBouncer or SQLAlchemy pool limits
 
 ```python
 # Horizontally-scalable FastAPI setup
@@ -69,10 +69,10 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 app = FastAPI()
 
-# Externalized cache — shared across all instances
+# Externalized cache - shared across all instances
 redis = Redis(host="redis-cluster", port=6379, decode_responses=True)
 
-# Connection-pooled DB — bounded per instance
+# Connection-pooled DB - bounded per instance
 engine = create_async_engine(
     "postgresql+asyncpg://user:pass@pgbouncer:6432/mydb",
     pool_size=5,         # per instance
@@ -116,10 +116,10 @@ async def get_item(item_id: int):
 | Config | Hardcoded / local file | Env vars / config service |
 
 ```python
-# BAD — stateful: in-memory rate limiter breaks with multiple instances
+# BAD - stateful: in-memory rate limiter breaks with multiple instances
 request_counts = {}  # dies when process restarts, not shared
 
-# GOOD — stateless: Redis-backed rate limiter
+# GOOD - stateless: Redis-backed rate limiter
 from redis.asyncio import Redis
 
 redis = Redis(host="redis")
@@ -144,7 +144,7 @@ async def check_rate_limit(client_ip: str) -> bool:
 
 **How async helps:**
 - A single process handles thousands of concurrent I/O-bound requests (DB queries, HTTP calls, file reads)
-- No thread-per-request overhead — uses Python's event loop with `uvicorn` (uvloop)
+- No thread-per-request overhead - uses Python's event loop with `uvicorn` (uvloop)
 - Perfect for high-concurrency, I/O-heavy workloads (APIs, proxies, chat servers)
 
 **When async hurts:**
@@ -158,25 +158,25 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
-# BAD — blocks the event loop for ALL requests
+# BAD - blocks the event loop for ALL requests
 @app.get("/bad-cpu")
 async def bad_cpu_task():
     time.sleep(5)  # Blocks entire worker!
     return {"result": "done"}
 
-# GOOD — offload CPU work to thread pool
+# GOOD - offload CPU work to thread pool
 @app.get("/good-cpu")
 async def good_cpu_task():
     result = await asyncio.to_thread(cpu_heavy_function, data)
     return {"result": result}
 
-# ALSO GOOD — use sync def (FastAPI auto-runs in threadpool)
+# ALSO GOOD - use sync def (FastAPI auto-runs in threadpool)
 @app.get("/also-good")
 def sync_cpu_task():  # no async = auto-threadpool
     time.sleep(5)
     return {"result": "done"}
 
-# BEST for heavy CPU — dedicated worker process
+# BEST for heavy CPU - dedicated worker process
 # Use Celery or a process pool
 from concurrent.futures import ProcessPoolExecutor
 
@@ -236,7 +236,7 @@ PostgreSQL default max_connections = 100  ← BOOM
 ```
 
 ```python
-# settings.py — calculate pool size safely
+# settings.py - calculate pool size safely
 import os
 
 TOTAL_INSTANCES = int(os.getenv("TOTAL_INSTANCES", "3"))
@@ -290,7 +290,7 @@ engine = create_async_engine(
 | Latency budget | Tight (no network hops) | Tolerant of inter-service calls |
 | Timeline | MVP / startup | Mature product with known boundaries |
 
-**The Modular Monolith — best of both worlds for many teams:**
+**The Modular Monolith - best of both worlds for many teams:**
 
 ```
 project/
@@ -314,7 +314,7 @@ project/
 ```
 
 ```python
-# main.py — modular monolith
+# main.py - modular monolith
 from fastapi import FastAPI
 from app.modules.users.router import router as users_router
 from app.modules.orders.router import router as orders_router
@@ -355,7 +355,7 @@ app.include_router(payments_router, prefix="/api/v1/payments", tags=["payments"]
 - **Fan-out to multiple consumers** → Message queue (pub/sub)
 
 ```python
-# REST — calling another service
+# REST - calling another service
 import httpx
 
 async def get_user_from_service(user_id: int):
@@ -367,7 +367,7 @@ async def get_user_from_service(user_id: int):
         resp.raise_for_status()
         return resp.json()
 
-# Message Queue — publishing an event (RabbitMQ via aio-pika)
+# Message Queue - publishing an event (RabbitMQ via aio-pika)
 import aio_pika, json
 
 async def publish_order_created(order: dict):
@@ -403,7 +403,7 @@ Async path (Message Queue):
 
 **Answer:**
 
-**The Saga Pattern — choreography vs orchestration:**
+**The Saga Pattern - choreography vs orchestration:**
 
 ```
 Choreography (event-driven):
@@ -639,7 +639,7 @@ L4 (use when):
   - End-to-end encryption (TLS passthrough)
   - Simple port-based routing
 
-L7 (use when — MOST FastAPI apps):
+L7 (use when - MOST FastAPI apps):
   - Route /api/v1/* → service A, /api/v2/* → service B
   - Need header-based routing (A/B testing, canary)
   - Want to add/modify headers (X-Request-ID)
@@ -648,7 +648,7 @@ L7 (use when — MOST FastAPI apps):
 ```
 
 ```nginx
-# L7 load balancer — content-based routing
+# L7 load balancer - content-based routing
 server {
     listen 443 ssl;
 
@@ -748,7 +748,7 @@ upstream fastapi_passive {
 }
 ```
 
-> **Why interviewer asks this:** Improper health checks cause cascading failures — e.g., a readiness check that's too strict removes all instances during a DB blip.
+> **Why interviewer asks this:** Improper health checks cause cascading failures - e.g., a readiness check that's too strict removes all instances during a DB blip.
 
 **Follow-up:** What happens if your readiness check queries the database and the DB is slow? How do you prevent the health check itself from causing problems?
 
@@ -782,7 +782,7 @@ During rolling deployment (app1 replaced):
    ──► Rolling deployment = zero errors
 
 2. GRACEFUL DRAIN (if stickiness required)
-   ──► Mark instance as "draining" — stop new sessions
+   ──► Mark instance as "draining" - stop new sessions
    ──► Existing sessions continue until timeout
    ──► Then remove instance
 
@@ -1096,7 +1096,7 @@ async def pay_order(order_id: str):
     return result
 ```
 
-> **Why interviewer asks this:** Circuit breakers prevent cascading failures — the #1 cause of full-system outages in microservices. This is a must-know pattern.
+> **Why interviewer asks this:** Circuit breakers prevent cascading failures - the #1 cause of full-system outages in microservices. This is a must-know pattern.
 
 **Follow-up:** How would you share circuit breaker state across multiple instances of the same service? (Hint: Redis-backed state or a sidecar proxy like Envoy.)
 
@@ -1361,7 +1361,7 @@ TraceID: abc123
 ```
 
 ```python
-# tracing.py — OpenTelemetry setup for FastAPI
+# tracing.py - OpenTelemetry setup for FastAPI
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -1400,7 +1400,7 @@ async def create_order(order: OrderCreate):
         validated = await validate(order)
 
     with tracer.start_as_current_span("process_payment"):
-        # httpx call to payment service — auto-traced
+        # httpx call to payment service - auto-traced
         # trace context propagated via W3C Trace Context headers
         async with httpx.AsyncClient() as client:
             await client.post("http://payment-service:8000/charge", json={...})
@@ -1708,7 +1708,7 @@ spec:
                   number: 80
 
 ---
-# hpa.yaml — Horizontal Pod Autoscaler
+# hpa.yaml - Horizontal Pod Autoscaler
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -1736,13 +1736,13 @@ spec:
           averageValue: "100"
 ```
 
-> **Why interviewer asks this:** Kubernetes is the de-facto deployment platform. Interviewers want to see you configure probes, resources, and autoscaling correctly — misconfiguration causes outages.
+> **Why interviewer asks this:** Kubernetes is the de-facto deployment platform. Interviewers want to see you configure probes, resources, and autoscaling correctly - misconfiguration causes outages.
 
 **Follow-up:** What happens if you set memory limits too low and the app occasionally exceeds them? How does Kubernetes handle it differently from CPU limits?
 
 ---
 
-### Q23: Explain Kubernetes health probes (startup, liveness, readiness) — when does each fire, and what happens when each fails?
+### Q23: Explain Kubernetes health probes (startup, liveness, readiness) - when does each fire, and what happens when each fails?
 
 **Answer:**
 
@@ -1824,11 +1824,11 @@ readinessProbe:
 ```yaml
 resources:
   requests:
-    cpu: "250m"       # 25% of a core — guaranteed
-    memory: "256Mi"   # 256 MB — guaranteed
+    cpu: "250m"       # 25% of a core - guaranteed
+    memory: "256Mi"   # 256 MB - guaranteed
   limits:
     cpu: "1000m"      # can burst to 1 full core
-    memory: "512Mi"   # hard ceiling — OOM killed above this
+    memory: "512Mi"   # hard ceiling - OOM killed above this
 ```
 
 **What goes wrong:**
@@ -1840,9 +1840,9 @@ resources:
 | No memory limit | One pod's leak takes down the entire node |
 | Memory limit = request | No burst headroom, frequent OOM kills |
 | CPU limit too low | Constant throttling, high latency |
-| No CPU limit | Acceptable — pod bursts freely when node has capacity |
+| No CPU limit | Acceptable - pod bursts freely when node has capacity |
 
-**Quick check — are you being throttled?**
+**Quick check - are you being throttled?**
 
 ```bash
 # Check CPU throttling for a pod
@@ -2099,7 +2099,7 @@ spec:
 
 > **Why interviewer asks this:** Deployment strategy choice directly impacts blast radius during failures. Interviewers want to see risk-aware thinking.
 
-**Follow-up:** How would you automate canary analysis — automatically rolling back if error rate increases?
+**Follow-up:** How would you automate canary analysis - automatically rolling back if error rate increases?
 
 ---
 
@@ -2176,8 +2176,8 @@ kubectl set image deployment/fastapi-app \
 
 | DB Change Type | Rollback Strategy |
 |---------------|-------------------|
-| Add column (nullable) | Safe — old code ignores new column |
-| Remove column | DON'T — deploy in phases: stop using → deploy → drop later |
+| Add column (nullable) | Safe - old code ignores new column |
+| Remove column | DON'T - deploy in phases: stop using → deploy → drop later |
 | Rename column | Create new → copy data → deploy → drop old |
 | Add index | Drop index (if needed) |
 | Data migration | Write reverse migration script |
@@ -2195,29 +2195,29 @@ kubectl set image deployment/fastapi-app \
 **Incident response timeline:**
 
 ```
-T+0:00  DETECT — Alert fires: payment error rate 5% → 12%
+T+0:00  DETECT - Alert fires: payment error rate 5% → 12%
         ┌─────────────────────────────────────────────┐
         │ 1. Acknowledge alert, open incident channel  │
         │ 2. Assign roles: IC (Incident Commander),    │
         │    Comms lead, Engineering lead               │
         └─────────────────────────────────────────────┘
 
-T+0:05  ASSESS — How bad is it?
+T+0:05  ASSESS - How bad is it?
         ──► Which users? (check logs with correlation IDs)
         ──► What changed? (diff recent deployment)
         ──► Is it getting worse? (check real-time metrics)
 
-T+0:10  MITIGATE — Stop the bleeding
+T+0:10  MITIGATE - Stop the bleeding
         Option A: Rollback deployment (if clearly caused by new code)
           $ kubectl rollout undo deployment/payment-service -n production
 
         Option B: Feature flag off (if isolated to specific feature)
           $ curl -X PUT config-service/flags/new-payment-flow -d '{"enabled":false}'
 
-        Option C: Traffic shift (if canary — route to stable)
+        Option C: Traffic shift (if canary - route to stable)
           $ kubectl scale deployment/payment-canary --replicas=0
 
-T+0:20  VERIFY — Is the fix working?
+T+0:20  VERIFY - Is the fix working?
         ──► Error rate dropping?
         ──► Affected users retrying successfully?
 
@@ -2232,11 +2232,11 @@ T+0:30  COMMUNICATE
 ## Incident Report: Payment Failures 2026-03-26
 
 ### Timeline
-- 14:00 — v2.3.1 deployed to production
-- 14:12 — Alert: payment error rate > 10%
-- 14:17 — Rollback initiated
-- 14:19 — Error rate returning to baseline
-- 14:25 — Incident resolved
+- 14:00 - v2.3.1 deployed to production
+- 14:12 - Alert: payment error rate > 10%
+- 14:17 - Rollback initiated
+- 14:19 - Error rate returning to baseline
+- 14:25 - Incident resolved
 
 ### Root Cause
 New payment serializer used `Decimal` precision of 2, but 5% of
@@ -2255,7 +2255,7 @@ products have prices with 3 decimal places → validation error.
 | Seed test DB with real (anonymized) production data | @dev3 | 2026-04-09 |
 ```
 
-> **Why interviewer asks this:** This tests your incident management skills — not just technical ability, but communication, prioritization, and structured thinking under pressure.
+> **Why interviewer asks this:** This tests your incident management skills - not just technical ability, but communication, prioritization, and structured thinking under pressure.
 
 **Follow-up:** How do you prevent similar incidents? (Hint: canary deployments with automated error rate gating, better test data generation, and feature flags.)
 
@@ -2340,7 +2340,7 @@ Code Push → Lint/Type Check → Unit Tests → Integration Tests
 
 ---
 
-> **End of Part 7/7** — System Design & Real-world Backend Architecture
+> **End of Part 7/7** - System Design & Real-world Backend Architecture
 >
 > **Full Series:**
 > 1. Python Fundamentals

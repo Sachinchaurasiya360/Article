@@ -1,6 +1,6 @@
 # Agentic AI + LLM Interview Preparation Guide
 
-> A complete, production-level interview preparation resource for Agentic AI and Large Language Model systems — structured as 10 deep-dive sections covering fundamentals through system design.
+> A complete, production-level interview preparation resource for Agentic AI and Large Language Model systems - structured as 10 deep-dive sections covering fundamentals through system design.
 
 ---
 
@@ -9,11 +9,11 @@
 Each section contains:
 - **Conceptual questions** with detailed, interview-level answers
 - **Coding questions** (Python/FastAPI) with production-grade implementations
-- **Debugging scenarios** — find the bug, explain the failure
-- **Output-based questions** — predict what the code produces
-- **Real-world case studies** — design decisions, trade-offs, scaling
-- **"Why interviewer asks this"** — understand the intent behind each question
-- **Follow-up questions** — prepare for deeper probing
+- **Debugging scenarios** - find the bug, explain the failure
+- **Output-based questions** - predict what the code produces
+- **Real-world case studies** - design decisions, trade-offs, scaling
+- **"Why interviewer asks this"** - understand the intent behind each question
+- **Follow-up questions** - prepare for deeper probing
 
 ---
 
@@ -52,17 +52,17 @@ This interview guide builds on extensive deep-dive series already in this reposi
 ## Target Roles
 
 This guide prepares you for:
-- **AI/ML Engineer** — Building and deploying LLM-powered systems
-- **AI Platform Engineer** — Infrastructure for AI applications at scale
-- **LLM Application Developer** — RAG, agents, and production AI products
-- **AI Solutions Architect** — Designing end-to-end AI systems
-- **Research Engineer** — Understanding and implementing latest architectures
+- **AI/ML Engineer** - Building and deploying LLM-powered systems
+- **AI Platform Engineer** - Infrastructure for AI applications at scale
+- **LLM Application Developer** - RAG, agents, and production AI products
+- **AI Solutions Architect** - Designing end-to-end AI systems
+- **Research Engineer** - Understanding and implementing latest architectures
 
 ---
 
 ## Difficulty Levels
 
 Questions are tagged:
-- 🟢 **Foundation** — Expected knowledge for all AI engineering roles
-- 🟡 **Intermediate** — Expected for mid-level+ positions
-- 🔴 **Advanced** — Senior/Staff level, system design, production expertise
+- 🟢 **Foundation** - Expected knowledge for all AI engineering roles
+- 🟡 **Intermediate** - Expected for mid-level+ positions
+- 🔴 **Advanced** - Senior/Staff level, system design, production expertise

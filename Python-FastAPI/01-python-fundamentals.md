@@ -1,11 +1,11 @@
-# Python Fundamentals — Interview Preparation (Part 1/7)
+# Python Fundamentals - Interview Preparation (Part 1/7)
 
 > **Series:** Python + FastAPI Interview Prep
 > **Level:** Beginner
 > **Estimated Study Time:** 3–4 hours
 > **Questions Covered:** 32
 
-This is **File 1 of 7** in a structured interview preparation series that takes you from core Python all the way to production-grade FastAPI applications. Master these fundamentals first — every advanced topic builds on them.
+This is **File 1 of 7** in a structured interview preparation series that takes you from core Python all the way to production-grade FastAPI applications. Master these fundamentals first - every advanced topic builds on them.
 
 ---
 
@@ -30,11 +30,11 @@ This is **File 1 of 7** in a structured interview preparation series that takes 
   - [Q14: Mutable Default Arguments](#q14-what-happens-when-you-use-a-mutable-default-argument-in-a-function)
   - [Q15: `*args` and `**kwargs`](#q15-explain-args-and-kwargs-when-would-you-use-each)
   - [Q16: First-Class Functions](#q16-what-does-it-mean-that-functions-are-first-class-objects-in-python)
-  - [Q17: Recursion — Flatten Nested List](#q17-coding-write-a-recursive-function-to-flatten-an-arbitrarily-nested-list)
+  - [Q17: Recursion - Flatten Nested List](#q17-coding-write-a-recursive-function-to-flatten-an-arbitrarily-nested-list)
   - [Q18: Recursion Limit and Tail Calls](#q18-what-is-pythons-recursion-limit-and-why-doesnt-python-optimize-tail-recursion)
   - [Q19: Scope and the LEGB Rule](#q19-explain-the-legb-rule-in-python)
   - [Q20: Lambda and Higher-Order Functions](#q20-when-should-you-use-lambda-vs-a-named-function)
-- [Section 4: Collections — List, Tuple, Set, Dict](#section-4-collections--list-tuple-set-dict)
+- [Section 4: Collections - List, Tuple, Set, Dict](#section-4-collections--list-tuple-set-dict)
   - [Q21: List vs Tuple](#q21-when-would-you-choose-a-tuple-over-a-list)
   - [Q22: Dictionary Ordering](#q22-are-python-dictionaries-ordered)
   - [Q23: List Comprehension (Output-Based)](#q23-output-based-what-does-this-list-comprehension-produce)
@@ -42,10 +42,10 @@ This is **File 1 of 7** in a structured interview preparation series that takes 
   - [Q25: Set Operations for Real-World Problems](#q25-real-world-given-two-large-lists-of-user-ids-find-users-who-exist-in-both-lists-efficiently)
   - [Q26: `defaultdict` and `Counter`](#q26-explain-defaultdict-and-counter-when-are-they-better-than-plain-dicts)
   - [Q27: Dictionary Merge Debugging](#q27-debugging-a-junior-developer-is-trying-to-merge-two-config-dicts-but-the-result-is-wrong-find-the-issue)
-- [Section 5: Basic OOP — Classes, Objects, Methods](#section-5-basic-oop--classes-objects-methods)
+- [Section 5: Basic OOP - Classes, Objects, Methods](#section-5-basic-oop--classes-objects-methods)
   - [Q28: `__init__` and `self`](#q28-what-is-__init__-and-why-does-every-method-take-self-as-the-first-parameter)
   - [Q29: Class vs Instance Variables](#q29-what-is-the-difference-between-class-variables-and-instance-variables)
-  - [Q30: OOP Design — Bank Account](#q30-coding-design-a-bankaccount-class-with-deposit-withdraw-and-balance-checking)
+  - [Q30: OOP Design - Bank Account](#q30-coding-design-a-bankaccount-class-with-deposit-withdraw-and-balance-checking)
   - [Q31: `__str__` vs `__repr__`](#q31-what-is-the-difference-between-__str__-and-__repr__)
   - [Q32: Inheritance and Method Resolution Order](#q32-explain-inheritance-and-method-resolution-order-mro-in-python)
 - [Quick Reference Cheat Sheet](#quick-reference-cheat-sheet)
@@ -72,22 +72,22 @@ In Python, every object has a type, and that type determines whether the object'
 x = 10
 print(id(x))   # e.g., 140234866358544
 x += 1
-print(id(x))   # Different id — a new int object was created
+print(id(x))   # Different id - a new int object was created
 
 # Mutable: the SAME object is modified in place
 nums = [1, 2, 3]
 print(id(nums))  # e.g., 140234866123456
 nums.append(4)
-print(id(nums))  # Same id — the list was mutated
+print(id(nums))  # Same id - the list was mutated
 ```
 
-**Edge case — tuples containing mutable elements:**
+**Edge case - tuples containing mutable elements:**
 
 ```python
 t = ([1, 2], [3, 4])
 t[0].append(99)   # This works! The list inside is mutable.
 print(t)           # ([1, 2, 99], [3, 4])
-t[0] = [5, 6]     # TypeError — you cannot reassign the tuple's slot
+t[0] = [5, 6]     # TypeError - you cannot reassign the tuple's slot
 ```
 
 The tuple itself is immutable (its slots cannot point to different objects), but the objects *inside* those slots can still be mutated if they are mutable types.
@@ -103,12 +103,12 @@ Understanding mutability is foundational. It affects how arguments are passed to
 
 **Answer:**
 
-In Python, variables do not have types — *objects* do. A variable is simply a name (reference) bound to an object, and you can rebind it to an object of a completely different type at any time.
+In Python, variables do not have types - *objects* do. A variable is simply a name (reference) bound to an object, and you can rebind it to an object of a completely different type at any time.
 
 ```python
 x = 42          # x references an int
-x = "hello"     # now x references a str — no error
-x = [1, 2, 3]   # now x references a list — still no error
+x = "hello"     # now x references a str - no error
+x = [1, 2, 3]   # now x references a list - still no error
 ```
 
 **Advantages:**
@@ -121,7 +121,7 @@ x = [1, 2, 3]   # now x references a list — still no error
 - **Harder refactoring:** Renaming or changing a type does not produce compiler errors across the codebase.
 - **Performance:** The interpreter must check types at runtime, which adds overhead.
 
-**Mitigation — Type Hints (PEP 484):**
+**Mitigation - Type Hints (PEP 484):**
 
 ```python
 def greet(name: str) -> str:
@@ -150,11 +150,11 @@ This tests whether you understand Python's type system deeply enough to write ro
 a = [1, 2, 3]
 b = [1, 2, 3]
 
-print(a == b)   # True  — same values
-print(a is b)   # False — different objects in memory
+print(a == b)   # True  - same values
+print(a is b)   # False - different objects in memory
 
 c = a
-print(a is c)   # True  — c is just another name for the same object
+print(a is c)   # True  - c is just another name for the same object
 ```
 
 **When to use `is`:**
@@ -162,11 +162,11 @@ print(a is c)   # True  — c is just another name for the same object
 - Never use `==` to compare against `None` because a class could override `__eq__` and produce unexpected results.
 
 ```python
-# Bad — fragile
+# Bad - fragile
 if x == None:
     ...
 
-# Good — always correct
+# Good - always correct
 if x is None:
     ...
 ```
@@ -194,7 +194,7 @@ print(c is d)
 
 ```
 True
-False   # (in the standard CPython REPL; may vary — see below)
+False   # (in the standard CPython REPL; may vary - see below)
 ```
 
 **Explanation:**
@@ -225,9 +225,9 @@ def calculate_average(numbers):
 
 **Answer:**
 
-**Bug 1 — ZeroDivisionError:** If `numbers` is an empty list, `len(numbers)` is `0`.
+**Bug 1 - ZeroDivisionError:** If `numbers` is an empty list, `len(numbers)` is `0`.
 
-**Bug 2 — TypeError:** If the list contains non-numeric values (e.g., `"abc"`), the `+=` will fail.
+**Bug 2 - TypeError:** If the list contains non-numeric values (e.g., `"abc"`), the `+=` will fail.
 
 **Fixed version:**
 
@@ -254,7 +254,7 @@ def calculate_average(numbers: list[int | float]) -> float:
 **Production note:** In real projects you would often use `statistics.mean()` from the standard library, which already handles these edge cases and uses a more numerically stable algorithm (Kahan summation).
 
 **Why interviewer asks this:**
-Debugging questions reveal whether you think about edge cases proactively (empty inputs, wrong types, division by zero) — a critical skill for backend development.
+Debugging questions reveal whether you think about edge cases proactively (empty inputs, wrong types, division by zero) - a critical skill for backend development.
 
 **Follow-up:** *How would you make this function also handle an iterator (not just a list) that can only be consumed once?*
 
@@ -287,7 +287,7 @@ Every Python object can be evaluated in a boolean context. An object is **falsy*
 Everything else is truthy.
 
 ```python
-# Idiomatic Python — use truthiness directly
+# Idiomatic Python - use truthiness directly
 if users:          # Better than: if len(users) > 0
     process(users)
 
@@ -295,7 +295,7 @@ if not name:       # Better than: if name == ""
     name = "Anonymous"
 ```
 
-**Trap — when `0` is a valid value:**
+**Trap - when `0` is a valid value:**
 
 ```python
 def get_discount(discount=None):
@@ -330,7 +330,7 @@ Writing idiomatic Python requires understanding truthiness. This question also e
 
 **Answer:**
 
-Python's `and` and `or` do **not** return `True`/`False` — they return **one of their operands**.
+Python's `and` and `or` do **not** return `True`/`False` - they return **one of their operands**.
 
 | Expression    | Returns                                             |
 |---------------|-----------------------------------------------------|
@@ -345,14 +345,14 @@ print("" or "default")     # "default"  ("" is falsy, so evaluate "default")
 print("value" or "default") # "value"   ("value" is truthy, return immediately)
 ```
 
-**Practical pattern — default values:**
+**Practical pattern - default values:**
 
 ```python
 # Common idiom: use `or` to provide a fallback
 username = input_name or "Guest"
 ```
 
-**Danger — when falsy values are legitimate:**
+**Danger - when falsy values are legitimate:**
 
 ```python
 count = 0
@@ -454,7 +454,7 @@ print(fizzbuzz(15))
 ```
 
 **Why `i % 15` instead of `i % 3 == 0 and i % 5 == 0`?**
-Both are correct. Using `% 15` is slightly more concise and avoids two modulo operations, though the performance difference is negligible. The real advantage is readability — it makes the "divisible by both" case a single, clear check.
+Both are correct. Using `% 15` is slightly more concise and avoids two modulo operations, though the performance difference is negligible. The real advantage is readability - it makes the "divisible by both" case a single, clear check.
 
 **Extensible version (open/closed principle):**
 
@@ -479,7 +479,7 @@ print(fizzbuzz_extensible(105, rules=[(3, "Fizz"), (5, "Buzz"), (7, "Bazz")]))
 ```
 
 **Why interviewer asks this:**
-FizzBuzz is a baseline test. The interviewer is not looking for cleverness — they are checking that you can write clean, correct code under pressure and handle the edge cases (order of checks matters).
+FizzBuzz is a baseline test. The interviewer is not looking for cleverness - they are checking that you can write clean, correct code under pressure and handle the edge cases (order of checks matters).
 
 **Follow-up:** *How would you write this as a single list comprehension?*
 
@@ -489,16 +489,16 @@ FizzBuzz is a baseline test. The interviewer is not looking for cleverness — t
 
 **Answer:**
 
-Introduced in Python 3.8 (PEP 572), the walrus operator (`:=`) is an **assignment expression** — it assigns a value to a variable *and* returns that value, all in a single expression.
+Introduced in Python 3.8 (PEP 572), the walrus operator (`:=`) is an **assignment expression** - it assigns a value to a variable *and* returns that value, all in a single expression.
 
 ```python
-# Without walrus — you must call the function twice or use a temp variable
+# Without walrus - you must call the function twice or use a temp variable
 data = input("Enter something: ")
 while data != "quit":
     process(data)
     data = input("Enter something: ")
 
-# With walrus — cleaner, no duplication
+# With walrus - cleaner, no duplication
 while (data := input("Enter something: ")) != "quit":
     process(data)
 ```
@@ -538,7 +538,7 @@ It tests awareness of modern Python features and, more importantly, the judgment
 
 **Answer:**
 
-Introduced in Python 3.10 (PEP 634), `match`/`case` is not just a switch statement — it is **structural pattern matching** that can destructure objects.
+Introduced in Python 3.10 (PEP 634), `match`/`case` is not just a switch statement - it is **structural pattern matching** that can destructure objects.
 
 ```python
 def handle_command(command: str) -> str:
@@ -602,9 +602,9 @@ print(remove_duplicates([1, 2, 3, 2, 1, 3]))
 1. `i=0`: `1` found later? Yes. `remove(1)` removes first `1`. List: `[2, 3, 2, 1, 3]`. `i` becomes `1`.
 2. `i=1`: `3` found later? Yes. `remove(3)` removes first `3`. List: `[2, 2, 1, 3]`. `i` becomes `2`.
 3. `i=2`: `1` found later? No. `i` becomes `3`.
-4. `i=3`: `3` found later? No. Done. Result: `[2, 2, 1, 3]` — **duplicates remain!**
+4. `i=3`: `3` found later? No. Done. Result: `[2, 2, 1, 3]` - **duplicates remain!**
 
-**Fix — do not increment `i` when an element is removed:**
+**Fix - do not increment `i` when an element is removed:**
 
 ```python
 def remove_duplicates(items):
@@ -612,7 +612,7 @@ def remove_duplicates(items):
     while i < len(items):
         if items[i] in items[i + 1:]:
             items.remove(items[i])
-            # Do NOT increment i — the next element shifted into this position
+            # Do NOT increment i - the next element shifted into this position
         else:
             i += 1
     return items
@@ -621,7 +621,7 @@ print(remove_duplicates([1, 2, 3, 2, 1, 3]))
 # [2, 1, 3]
 ```
 
-**Better approach — use a set to preserve order (Python 3.7+):**
+**Better approach - use a set to preserve order (Python 3.7+):**
 
 ```python
 def remove_duplicates(items: list) -> list:
@@ -689,7 +689,7 @@ def process_sales_csv(filepath: str) -> list[dict]:
 1. **Catch specific exceptions** (`ValueError`, `KeyError`), not bare `except`.
 2. **Log the raw data** so you can investigate failures later.
 3. **Track error count** for summary reporting.
-4. **Continue processing** — one bad row should not kill the entire pipeline.
+4. **Continue processing** - one bad row should not kill the entire pipeline.
 
 **Why interviewer asks this:**
 Real backend work involves messy data. This tests whether you write defensive code and understand production concerns like logging, error isolation, and graceful degradation.
@@ -706,7 +706,7 @@ Real backend work involves messy data. This tests whether you write defensive co
 
 **Answer:**
 
-This is one of Python's most famous gotchas. Default argument values are evaluated **once** — when the function is *defined*, not each time it is *called*.
+This is one of Python's most famous gotchas. Default argument values are evaluated **once** - when the function is *defined*, not each time it is *called*.
 
 ```python
 def append_to(item, target=[]):
@@ -720,7 +720,7 @@ print(append_to(3))   # [1, 2, 3]
 
 The same list object is reused across all calls that do not provide a `target` argument.
 
-**The fix — use `None` as sentinel:**
+**The fix - use `None` as sentinel:**
 
 ```python
 def append_to(item: int, target: list[int] | None = None) -> list[int]:
@@ -819,7 +819,7 @@ def func(positional, /, normal, *args, keyword_only, **kwargs):
 ```
 
 **Why interviewer asks this:**
-This is fundamental to writing flexible APIs, decorators, and class hierarchies — all critical for FastAPI development.
+This is fundamental to writing flexible APIs, decorators, and class hierarchies - all critical for FastAPI development.
 
 **Follow-up:** *What is the purpose of the `/` separator in function parameters (PEP 570)?*
 
@@ -868,14 +868,14 @@ print(double(5))   # 10
 print(triple(5))   # 15
 
 
-# 5. Inspected — they have attributes
+# 5. Inspected - they have attributes
 print(greet.__name__)       # "greet"
 print(greet.__doc__)        # None (no docstring)
 print(greet.__code__.co_varnames)  # ('name',)
 ```
 
 **Why this matters for FastAPI:**
-FastAPI's entire design is built on first-class functions — route handlers, dependency injection, and middleware all rely on passing functions as arguments.
+FastAPI's entire design is built on first-class functions - route handlers, dependency injection, and middleware all rely on passing functions as arguments.
 
 **Why interviewer asks this:**
 It tests whether you understand Python's object model deeply enough to work with decorators, callbacks, and functional patterns that are pervasive in modern Python frameworks.
@@ -988,7 +988,7 @@ print(math.factorial(10000))  # Works instantly
 ```
 
 **Why interviewer asks this:**
-It reveals whether you understand Python's design philosophy ("practicality beats purity") and whether you can choose the right tool — recursion for tree-like structures, iteration for linear ones.
+It reveals whether you understand Python's design philosophy ("practicality beats purity") and whether you can choose the right tool - recursion for tree-like structures, iteration for linear ones.
 
 **Follow-up:** *Can you convert any recursive algorithm to an iterative one? How?*
 
@@ -1015,7 +1015,7 @@ def outer():
 
     def inner():
         x = "local"
-        print(x)  # "local" — found in Local scope
+        print(x)  # "local" - found in Local scope
 
     inner()
 
@@ -1042,7 +1042,7 @@ def outer():
     print(total)  # 1
 ```
 
-**Common pitfall — UnboundLocalError:**
+**Common pitfall - UnboundLocalError:**
 
 ```python
 x = 10
@@ -1083,11 +1083,11 @@ def square(x):
 - It is passed inline as an argument to higher-order functions.
 
 ```python
-# Good use of lambda — simple sort key
+# Good use of lambda - simple sort key
 students = [("Alice", 88), ("Bob", 95), ("Charlie", 82)]
 students.sort(key=lambda s: s[1], reverse=True)
 
-# Good use of lambda — quick filter
+# Good use of lambda - quick filter
 adults = list(filter(lambda user: user.age >= 18, users))
 ```
 
@@ -1097,7 +1097,7 @@ adults = list(filter(lambda user: user.age >= 18, users))
 - You need a clear name for readability.
 
 ```python
-# Bad lambda — too complex, hard to debug
+# Bad lambda - too complex, hard to debug
 transform = lambda x: x.strip().lower().replace(" ", "_") if x else "unknown"
 
 # Better as a named function
@@ -1111,7 +1111,7 @@ def normalize_key(value: str | None) -> str:
 **Technical limitations of lambdas:**
 - Cannot contain statements (`if/else` expressions are fine, but `if:` blocks are not).
 - Cannot have annotations/type hints.
-- Harder to debug — tracebacks show `<lambda>` instead of a meaningful name.
+- Harder to debug - tracebacks show `<lambda>` instead of a meaningful name.
 - PEP 8 explicitly discourages assigning a lambda to a variable (`square = lambda x: ...`).
 
 **Why interviewer asks this:**
@@ -1121,7 +1121,7 @@ This tests judgment. Overusing lambdas is a code smell. The interviewer wants to
 
 ---
 
-## Section 4: Collections — List, Tuple, Set, Dict
+## Section 4: Collections - List, Tuple, Set, Dict
 
 ---
 
@@ -1173,7 +1173,7 @@ print(sys.getsizeof((1, 2, 3)))    # 64 bytes
 Lists over-allocate space to make `append()` amortized O(1). Tuples allocate exactly what they need.
 
 **Why interviewer asks this:**
-This tests understanding of immutability, hashability, and when to use the right data structure — a core skill for writing efficient and correct code.
+This tests understanding of immutability, hashability, and when to use the right data structure - a core skill for writing efficient and correct code.
 
 **Follow-up:** *What is `NamedTuple` and when would you prefer it over a regular tuple or a `dataclass`?*
 
@@ -1187,7 +1187,7 @@ This tests understanding of immutability, hashability, and when to use the right
 
 ```python
 d = {"b": 2, "a": 1, "c": 3}
-print(list(d.keys()))   # ['b', 'a', 'c'] — insertion order preserved
+print(list(d.keys()))   # ['b', 'a', 'c'] - insertion order preserved
 ```
 
 **This does NOT mean dicts are sorted:**
@@ -1214,11 +1214,11 @@ from collections import OrderedDict
 
 d1 = {"a": 1, "b": 2}
 d2 = {"b": 2, "a": 1}
-print(d1 == d2)  # True — dict ignores order for equality
+print(d1 == d2)  # True - dict ignores order for equality
 
 od1 = OrderedDict(a=1, b=2)
 od2 = OrderedDict(b=2, a=1)
-print(od1 == od2)  # False — OrderedDict cares about order
+print(od1 == od2)  # False - OrderedDict cares about order
 ```
 
 **Why interviewer asks this:**
@@ -1298,7 +1298,7 @@ import copy
 
 original = [[1, 2], [3, 4]]
 
-# Shallow copy — three equivalent ways
+# Shallow copy - three equivalent ways
 shallow = original.copy()        # list.copy()
 shallow = list(original)         # constructor
 shallow = original[:]            # slice
@@ -1335,12 +1335,12 @@ deep      -->  [ ptr_C, ptr_D ]   (new list, new inner lists)
 - **Shallow copy:** When the collection contains only immutable elements (ints, strings, tuples).
 - **Deep copy:** When the collection contains mutable elements that you need to modify independently.
 
-**Edge case — `deepcopy` handles circular references:**
+**Edge case - `deepcopy` handles circular references:**
 
 ```python
 a = [1, 2]
 a.append(a)        # Circular reference
-b = copy.deepcopy(a)  # Works correctly — deepcopy tracks seen objects
+b = copy.deepcopy(a)  # Works correctly - deepcopy tracks seen objects
 ```
 
 **Why interviewer asks this:**
@@ -1355,11 +1355,11 @@ This is one of the most common sources of bugs in Python. Modifying a "copy" tha
 **Answer:**
 
 ```python
-# Naive approach — O(n * m) time
+# Naive approach - O(n * m) time
 def common_users_naive(list_a: list[int], list_b: list[int]) -> list[int]:
     return [uid for uid in list_a if uid in list_b]
 
-# Efficient approach — O(n + m) time
+# Efficient approach - O(n + m) time
 def common_users(list_a: list[int], list_b: list[int]) -> set[int]:
     """Return user IDs that appear in both lists.
 
@@ -1405,12 +1405,12 @@ This is a practical data engineering question. The interviewer wants to see if y
 
 Both are in `collections` and solve common patterns more cleanly than manual dictionary code.
 
-**`defaultdict` — auto-initializes missing keys:**
+**`defaultdict` - auto-initializes missing keys:**
 
 ```python
 from collections import defaultdict
 
-# Without defaultdict — verbose and error-prone
+# Without defaultdict - verbose and error-prone
 word_groups = {}
 words = ["apple", "banana", "avocado", "blueberry", "cherry", "apricot"]
 for word in words:
@@ -1419,7 +1419,7 @@ for word in words:
         word_groups[first_letter] = []
     word_groups[first_letter].append(word)
 
-# With defaultdict — clean
+# With defaultdict - clean
 word_groups = defaultdict(list)
 for word in words:
     word_groups[word[0]].append(word)
@@ -1428,7 +1428,7 @@ print(dict(word_groups))
 # {'a': ['apple', 'avocado', 'apricot'], 'b': ['banana', 'blueberry'], 'c': ['cherry']}
 ```
 
-**`Counter` — count occurrences:**
+**`Counter` - count occurrences:**
 
 ```python
 from collections import Counter
@@ -1446,7 +1446,7 @@ store_a = Counter(apple=5, banana=3)
 store_b = Counter(apple=2, cherry=7)
 
 combined = store_a + store_b     # Counter({'cherry': 7, 'apple': 7, 'banana': 3})
-diff = store_a - store_b         # Counter({'banana': 3, 'apple': 3}) — drops zero/negative
+diff = store_a - store_b         # Counter({'banana': 3, 'apple': 3}) - drops zero/negative
 ```
 
 **When to use which:**
@@ -1502,7 +1502,7 @@ print(merged)
 
 **Bug:** The `{**a, **b}` merge is **shallow**. When both dicts have the same key (`"database"`), the value from `user_config` completely **replaces** the value from `default_config` instead of merging the nested dicts.
 
-**Fix — recursive (deep) merge:**
+**Fix - recursive (deep) merge:**
 
 ```python
 def deep_merge(base: dict, override: dict) -> dict:
@@ -1541,7 +1541,7 @@ Shallow vs deep merge is a real production bug that hits every team working with
 
 ---
 
-## Section 5: Basic OOP — Classes, Objects, Methods
+## Section 5: Basic OOP - Classes, Objects, Methods
 
 ---
 
@@ -1603,16 +1603,16 @@ This is the most basic OOP question. Getting the terminology right (`__init__` i
 | Type              | Defined               | Shared across instances? | Accessed via            |
 |-------------------|-----------------------|--------------------------|-------------------------|
 | Class variable    | Inside class body     | Yes                      | `ClassName.var` or `self.var` |
-| Instance variable | Inside `__init__` (via `self`) | No — each instance has its own | `self.var` |
+| Instance variable | Inside `__init__` (via `self`) | No - each instance has its own | `self.var` |
 
 ```python
 class Employee:
-    company = "Acme Corp"          # Class variable — shared by ALL instances
-    employee_count = 0             # Class variable — tracks total count
+    company = "Acme Corp"          # Class variable - shared by ALL instances
+    employee_count = 0             # Class variable - tracks total count
 
     def __init__(self, name: str, salary: float) -> None:
-        self.name = name           # Instance variable — unique per object
-        self.salary = salary       # Instance variable — unique per object
+        self.name = name           # Instance variable - unique per object
+        self.salary = salary       # Instance variable - unique per object
         Employee.employee_count += 1
 
 
@@ -1634,7 +1634,7 @@ print(Employee.company)            # "Acme Corp" (class variable unchanged)
 
 ```python
 class BadTeam:
-    members = []  # Class variable — shared!
+    members = []  # Class variable - shared!
 
     def add_member(self, name: str) -> None:
         self.members.append(name)
@@ -1642,7 +1642,7 @@ class BadTeam:
 team_a = BadTeam()
 team_b = BadTeam()
 team_a.add_member("Alice")
-print(team_b.members)  # ["Alice"] — oops, team_b is affected!
+print(team_b.members)  # ["Alice"] - oops, team_b is affected!
 ```
 
 **Fix:**
@@ -1650,7 +1650,7 @@ print(team_b.members)  # ["Alice"] — oops, team_b is affected!
 ```python
 class GoodTeam:
     def __init__(self) -> None:
-        self.members = []  # Instance variable — each team has its own list
+        self.members = []  # Instance variable - each team has its own list
 ```
 
 **Why interviewer asks this:**
@@ -1686,7 +1686,7 @@ class BankAccount:
 
     @property
     def balance(self) -> float:
-        """Read-only access to balance — prevents direct modification."""
+        """Read-only access to balance - prevents direct modification."""
         return self._balance
 
     def deposit(self, amount: float) -> float:
@@ -1769,7 +1769,7 @@ except InsufficientFundsError as e:
 1. **`_balance` with `@property`**: Prevents direct assignment like `account.balance = 999999`.
 2. **Custom exception**: `InsufficientFundsError` is more meaningful than a generic `ValueError`.
 3. **Input validation**: Every public method validates its inputs.
-4. **Transaction log**: Keeps an audit trail — essential for any financial system.
+4. **Transaction log**: Keeps an audit trail - essential for any financial system.
 5. **Both `__str__` and `__repr__`**: User-friendly display and developer-friendly debugging.
 
 **Why interviewer asks this:**
@@ -1792,8 +1792,8 @@ This is a classic OOP design question. The interviewer evaluates encapsulation, 
 import datetime
 
 d = datetime.date(2026, 3, 26)
-print(repr(d))   # datetime.date(2026, 3, 26)  — can recreate the object
-print(str(d))    # 2026-03-26                   — human-friendly
+print(repr(d))   # datetime.date(2026, 3, 26)  - can recreate the object
+print(str(d))    # 2026-03-26                   - human-friendly
 ```
 
 **Implementation guidelines:**
@@ -1804,7 +1804,7 @@ class Temperature:
         self.celsius = celsius
 
     def __repr__(self) -> str:
-        # Unambiguous — ideally you could copy-paste this to recreate the object
+        # Unambiguous - ideally you could copy-paste this to recreate the object
         return f"Temperature(celsius={self.celsius!r})"
 
     def __str__(self) -> str:
@@ -1864,7 +1864,7 @@ class Cat(Animal):
 
 dog = Dog("Rex")
 print(dog.speak())  # "Rex says Woof!"
-print(repr(dog))    # "Dog(name='Rex')"  — inherited from Animal
+print(repr(dog))    # "Dog(name='Rex')"  - inherited from Animal
 ```
 
 **Method Resolution Order (MRO):**
@@ -1930,7 +1930,7 @@ D()
 
 Without C3 linearization, `A.__init__` could be called multiple times in a diamond hierarchy. The MRO ensures every class is called exactly once.
 
-**Best practice — always use `super()`:**
+**Best practice - always use `super()`:**
 
 ```python
 class Dog(Animal):
@@ -1953,7 +1953,7 @@ MRO is critical for understanding how frameworks (Django, FastAPI, SQLAlchemy) u
 ```python
 # ---- Data Types ----
 type(42)                    # <class 'int'>
-isinstance(42, (int, float)) # True — check against multiple types
+isinstance(42, (int, float)) # True - check against multiple types
 
 # ---- String Formatting (prefer f-strings) ----
 name, age = "Alice", 30
@@ -1967,7 +1967,7 @@ a, *rest, z = [1, 2, 3, 4, 5]   # a=1, rest=[2,3,4], z=5
 
 # ---- Dictionary Patterns ----
 d = {"a": 1, "b": 2}
-d.get("c", 0)              # 0 — no KeyError
+d.get("c", 0)              # 0 - no KeyError
 d.setdefault("c", 0)       # Sets and returns 0
 d | {"c": 3}               # {'a': 1, 'b': 2, 'c': 3}  (Python 3.9+)
 
@@ -2005,7 +2005,7 @@ class MyClass:
 
 ---
 
-> **Next in the series:** [Part 2/7 — Intermediate Python](./02-intermediate-python.md) covering decorators, generators, context managers, error handling, file I/O, and modules/packages.
+> **Next in the series:** [Part 2/7 - Intermediate Python](./02-intermediate-python.md) covering decorators, generators, context managers, error handling, file I/O, and modules/packages.
 
 ---
 

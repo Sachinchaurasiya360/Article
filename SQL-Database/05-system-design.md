@@ -25,7 +25,7 @@
 
 **Answer:**
 
-Database scaling is not a one-time decision — it's a progression. Here's the roadmap:
+Database scaling is not a one-time decision - it's a progression. Here's the roadmap:
 
 #### Stage 1: Single Server (0 – 10K users)
 
@@ -136,7 +136,7 @@ Actions:
 10. ✅ Multi-region (global low latency, highest complexity)
 ```
 
-> **Why the interviewer asks this:** This is the most common database system design question. They want to see progressive thinking — not jumping straight to sharding for a small application.
+> **Why the interviewer asks this:** This is the most common database system design question. They want to see progressive thinking - not jumping straight to sharding for a small application.
 
 **Follow-up:** *At what point would you introduce sharding, and what would be your shard key?*
 
@@ -554,13 +554,13 @@ def get_with_lock(key):
     # Try to acquire lock
     lock_acquired = redis.set(f"lock:{key}", "1", nx=True, ex=10)
     if lock_acquired:
-        # I won the lock — fetch from DB
+        # I won the lock - fetch from DB
         value = db.query(...)
         redis.setex(key, 300, value)
         redis.delete(f"lock:{key}")
         return value
     else:
-        # Someone else is fetching — wait and retry
+        # Someone else is fetching - wait and retry
         time.sleep(0.1)
         return get_with_lock(key)
 ```
@@ -738,7 +738,7 @@ ON CONFLICT (event_id) DO NOTHING;
 | Saga | Eventual | Medium | High | Microservice transactions |
 | CDC | Eventual | Low-Medium | Medium | Keeping derived stores in sync |
 | Outbox | Eventual | Low | Low | Reliable event publishing |
-| Dual Writes | NONE (broken!) | Low | Low | NEVER USE — race conditions |
+| Dual Writes | NONE (broken!) | Low | Low | NEVER USE - race conditions |
 
 > **Why the interviewer asks this:** Distributed consistency is the hardest problem in distributed systems. The Saga and Outbox patterns are expected knowledge for senior backend roles.
 
@@ -862,7 +862,7 @@ Strategy: Tiered data architecture
 └──────────────┘     └──────────────┘     └──────────────┘
 ```
 
-> **Why the interviewer asks this:** Handling large datasets is a daily reality for senior engineers. The interviewer wants to see you know about partitioning, archival, compression, and tiered storage — not just "add more servers."
+> **Why the interviewer asks this:** Handling large datasets is a daily reality for senior engineers. The interviewer wants to see you know about partitioning, archival, compression, and tiered storage - not just "add more servers."
 
 **Follow-up:** *How would you migrate a 10TB table to a partitioned schema with zero downtime?*
 
@@ -1115,7 +1115,7 @@ AS SELECT
 FROM events
 GROUP BY hour, event_type, country;
 
--- Dashboard query (reads from pre-aggregated table — instant):
+-- Dashboard query (reads from pre-aggregated table - instant):
 SELECT hour, SUM(event_count), SUM(unique_users)
 FROM mv_hourly_stats
 WHERE hour >= now() - INTERVAL 7 DAY
@@ -1313,7 +1313,7 @@ CREATE TABLE user_notifications (
   AND default_time_to_live = 7776000;  -- 90 days TTL
 
 -- Get unread notifications
--- (Don't query Cassandra for this — use Redis counter)
+-- (Don't query Cassandra for this - use Redis counter)
 Redis: HGET unread_notifications {user_id}  → "7"
 ```
 
@@ -1417,7 +1417,7 @@ ALTER TABLE users DROP COLUMN avatar_url;
 
 ---
 
-### Problem 5: Debugging — Production Incident
+### Problem 5: Debugging - Production Incident
 
 ```
 Question: Your application is suddenly experiencing 10× slower database queries.
@@ -1503,7 +1503,7 @@ Common root causes:
 | Write optimization | Batch inserts, minimal indexes, BRIN, partitioning, append-only |
 | CQRS | Separate read/write models for systems needing both fast reads and fast writes |
 | Replication | Sync (zero data loss, high latency) vs Async (fast, risk of data loss) |
-| Caching | Cache stampede, penetration, hot key — know the problems and solutions |
+| Caching | Cache stampede, penetration, hot key - know the problems and solutions |
 | Consistency | 2PC for strong, Saga for microservices, Outbox for reliable events |
 | Large datasets | Partition + archive + compress + tiered storage |
 | Production debugging | pg_stat_activity → pg_locks → pg_stat_statements → EXPLAIN ANALYZE |
@@ -1532,5 +1532,5 @@ Common root causes:
 
 ---
 
-**Previous:** [← Part 4 — NoSQL & Modern Databases](./04-nosql.md)
+**Previous:** [← Part 4 - NoSQL & Modern Databases](./04-nosql.md)
 **Back to index:** [README](./README.md)

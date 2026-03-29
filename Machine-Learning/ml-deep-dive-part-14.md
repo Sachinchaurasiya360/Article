@@ -1,19 +1,19 @@
-# Machine Learning Deep Dive — Part 14: NLP with Transformers — From Tokenization to Fine-Tuning BERT
+# Machine Learning Deep Dive - Part 14: NLP with Transformers - From Tokenization to Fine-Tuning BERT
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
 **Part:** 14 of 19 (Applied ML)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~60 minutes
 
 ---
 
-## Recap: Part 13 — Transfer Learning and Knowledge Distillation
+## Recap: Part 13 - Transfer Learning and Knowledge Distillation
 
-In Part 13 we explored how pretrained models like ResNet and EfficientNet can be repurposed for new tasks through **transfer learning**, dramatically reducing the data and compute required to reach state-of-the-art performance. We covered fine-tuning strategies — from feature extraction (freezing most layers) to full fine-tuning — and dived into **knowledge distillation**, where a compact "student" model is trained to mimic the soft-probability outputs of a larger "teacher," enabling deployment on resource-constrained devices without sacrificing much accuracy.
+In Part 13 we explored how pretrained models like ResNet and EfficientNet can be repurposed for new tasks through **transfer learning**, dramatically reducing the data and compute required to reach state-of-the-art performance. We covered fine-tuning strategies - from feature extraction (freezing most layers) to full fine-tuning - and dived into **knowledge distillation**, where a compact "student" model is trained to mimic the soft-probability outputs of a larger "teacher," enabling deployment on resource-constrained devices without sacrificing much accuracy.
 
-Transfer learning transformed computer vision. But NLP had its own revolution — and it was bigger. The Transformer architecture, introduced in 2017, didn't just improve NLP: it replaced virtually every previous approach and then spread to vision, audio, protein folding, and code generation. Understanding transformers is no longer optional for ML engineers.
+Transfer learning transformed computer vision. But NLP had its own revolution - and it was bigger. The Transformer architecture, introduced in 2017, didn't just improve NLP: it replaced virtually every previous approach and then spread to vision, audio, protein folding, and code generation. Understanding transformers is no longer optional for ML engineers.
 
 ---
 
@@ -23,7 +23,7 @@ Transfer learning transformed computer vision. But NLP had its own revolution �
 2. [Tokenization Strategies](#2-tokenization-strategies)
 3. [Word Embeddings: From One-Hot to Word2Vec](#3-word-embeddings)
 4. [The Transformer Architecture](#4-the-transformer-architecture)
-5. [Self-Attention — Deep Dive](#5-self-attention-deep-dive)
+5. [Self-Attention - Deep Dive](#5-self-attention-deep-dive)
 6. [The Full Transformer Block](#6-the-full-transformer-block)
 7. [BERT: Bidirectional Encoder Representations](#7-bert)
 8. [Fine-Tuning BERT with Hugging Face](#8-fine-tuning-bert)
@@ -39,7 +39,7 @@ Transfer learning transformed computer vision. But NLP had its own revolution �
 
 Before we build transformers, we need to understand why text is a uniquely difficult modality for machine learning.
 
-Images have a fixed-size pixel grid. Audio is a 1-D signal sampled at fixed rate. Text is neither: a sentence can be 3 words or 3,000 words. Words are discrete symbols with no inherent numeric meaning. The vocabulary of English alone runs to hundreds of thousands of words — and that's before proper nouns, technical terms, typos, slang, and code.
+Images have a fixed-size pixel grid. Audio is a 1-D signal sampled at fixed rate. Text is neither: a sentence can be 3 words or 3,000 words. Words are discrete symbols with no inherent numeric meaning. The vocabulary of English alone runs to hundreds of thousands of words - and that's before proper nouns, technical terms, typos, slang, and code.
 
 The core challenges are:
 
@@ -49,7 +49,7 @@ The core challenges are:
 - **Morphology**: "run", "runs", "running", "ran" are related but a word-level tokenizer treats them as four unrelated tokens
 - **No natural numeric order**: unlike pixels (0–255), words have no inherent ordering; "apple" is not "less than" "zebra"
 
-These problems drove 30 years of NLP engineering — stemming, stopword removal, TF-IDF, n-grams — before neural methods finally provided a cleaner solution through learned representations.
+These problems drove 30 years of NLP engineering - stemming, stopword removal, TF-IDF, n-grams - before neural methods finally provided a cleaner solution through learned representations.
 
 ---
 
@@ -182,7 +182,7 @@ Learned merges: [('e', 's'), ('es', 't'), ('est', '</w>'), ('l', 'o'), ...]
 
 ### 2.3 Hugging Face Tokenizers in Practice
 
-In production you will rarely implement BPE from scratch — the `transformers` library provides battle-tested tokenizers for every major model.
+In production you will rarely implement BPE from scratch - the `transformers` library provides battle-tested tokenizers for every major model.
 
 ```python
 # hf_tokenizer_demo.py
@@ -247,7 +247,7 @@ Vocab size: 30522
 'COVID-19' -> ['covid', '-', '19']
 ```
 
-> The `##` prefix in BERT's WordPiece tokenizer signals a subword continuation — "##ize" means this piece attaches to the previous token without a space. This convention makes it easy to reconstruct the original text.
+> The `##` prefix in BERT's WordPiece tokenizer signals a subword continuation - "##ize" means this piece attaches to the previous token without a space. This convention makes it easy to reconstruct the original text.
 
 ### BPE Tokenization Flow
 
@@ -269,7 +269,7 @@ flowchart TD
 
 ## 3. Word Embeddings
 
-Once text is tokenized, each token needs a numeric representation. The naive approach — **one-hot encoding** — assigns each word a vector of zeros with a single 1 at the word's index. A vocabulary of 50,000 words produces 50,000-dimensional vectors. Worse, every pair of word vectors is orthogonal: the cosine similarity between "king" and "queen" is exactly the same as between "king" and "banana" — zero.
+Once text is tokenized, each token needs a numeric representation. The naive approach - **one-hot encoding** - assigns each word a vector of zeros with a single 1 at the word's index. A vocabulary of 50,000 words produces 50,000-dimensional vectors. Worse, every pair of word vectors is orthogonal: the cosine similarity between "king" and "queen" is exactly the same as between "king" and "banana" - zero.
 
 **Word embeddings** solve both problems by mapping tokens to dense, low-dimensional vectors where semantic similarity corresponds to geometric proximity.
 
@@ -280,7 +280,7 @@ Word2Vec trains a shallow neural network on a self-supervised prediction task us
 - **Skip-gram**: given a center word, predict the surrounding context words
 - **CBOW (Continuous Bag of Words)**: given the surrounding context words, predict the center word
 
-After training, the weight matrix connecting inputs to the hidden layer becomes the embedding matrix — each row is the embedding for that word.
+After training, the weight matrix connecting inputs to the hidden layer becomes the embedding matrix - each row is the embedding for that word.
 
 ```python
 # word2vec_scratch.py
@@ -521,19 +521,19 @@ GloVe Analogy Examples (from published results):
   good → better  |  bad → ? (expected: worse)
 ```
 
-> The famous "king - man + woman = queen" result is one of the most cited demonstrations in ML history. It shows that geometric relationships in embedding space encode semantic relationships — a property that emerges purely from predicting word contexts on large corpora.
+> The famous "king - man + woman = queen" result is one of the most cited demonstrations in ML history. It shows that geometric relationships in embedding space encode semantic relationships - a property that emerges purely from predicting word contexts on large corpora.
 
 ---
 
 ## 4. The Transformer Architecture
 
-In 2017, Vaswani et al. published **"Attention Is All You Need"**, introducing the Transformer. The title was a deliberate provocation: at the time, every competitive NLP model relied on recurrent networks (LSTMs, GRUs). The paper showed that attention alone was sufficient — and superior.
+In 2017, Vaswani et al. published **"Attention Is All You Need"**, introducing the Transformer. The title was a deliberate provocation: at the time, every competitive NLP model relied on recurrent networks (LSTMs, GRUs). The paper showed that attention alone was sufficient - and superior.
 
 ### 4.1 The Problem with RNNs
 
 RNNs process sequences step by step: token 1 → hidden state h1 → token 2 → h2 → ... → token n → hn. This creates three fundamental problems:
 
-1. **Sequential computation**: step t cannot begin until step t-1 finishes — no parallelism during training
+1. **Sequential computation**: step t cannot begin until step t-1 finishes - no parallelism during training
 2. **Long-range dependencies**: information about token 1 must flow through every intermediate hidden state to reach token n. With gradient backpropagation through time (BPTT), gradients either vanish or explode across long sequences
 3. **Information bottleneck**: the entire meaning of a long sentence must be compressed into a single fixed-size hidden state (for encoder-decoder architectures)
 
@@ -541,7 +541,7 @@ LSTMs and GRUs partially mitigated problem 2, but not problems 1 and 3.
 
 ### 4.2 The Transformer Solution
 
-The Transformer eliminates recurrence entirely. Instead, every token directly attends to every other token in a single step — **O(1) sequential operations** regardless of sequence length (at the cost of O(n²) memory for attention).
+The Transformer eliminates recurrence entirely. Instead, every token directly attends to every other token in a single step - **O(1) sequential operations** regardless of sequence length (at the cost of O(n²) memory for attention).
 
 ```mermaid
 graph TD
@@ -571,11 +571,11 @@ graph TD
 
 ---
 
-## 5. Self-Attention — Deep Dive
+## 5. Self-Attention - Deep Dive
 
 **Self-attention** is the core innovation. It allows every position in a sequence to attend to every other position, computing a weighted sum of values where the weights are determined by how "relevant" each position is.
 
-> Self-attention allows every word to look at every other word directly — no more vanishing gradients over long distances. The word "it" in a 200-word sentence can directly attend to the noun it refers to, regardless of distance.
+> Self-attention allows every word to look at every other word directly - no more vanishing gradients over long distances. The word "it" in a 200-word sentence can directly attend to the noun it refers to, regardless of distance.
 
 ### 5.1 The Query-Key-Value Formulation
 
@@ -651,7 +651,7 @@ class ScaledDotProductAttention(nn.Module):
 
         d_k = Q.size(-1)
 
-        # Step 1: Compute attention scores — (batch, heads, seq_len, seq_len)
+        # Step 1: Compute attention scores - (batch, heads, seq_len, seq_len)
         scores = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(d_k)
 
         # Step 2: Apply mask (e.g., for padding or causal masking)
@@ -863,8 +863,8 @@ Plus a **Positional Encoding** applied once at the input to inject sequence orde
 Unlike batch normalization (which normalizes across the batch dimension), **layer normalization** normalizes across the feature dimension for each sample independently. This makes it well-suited for variable-length sequences and small batches.
 
 Two conventions exist:
-- **Post-LN** (original paper): `LayerNorm(x + Sublayer(x))` — less stable during early training
-- **Pre-LN** (modern default): `x + Sublayer(LayerNorm(x))` — more stable, better for very deep models
+- **Post-LN** (original paper): `LayerNorm(x + Sublayer(x))` - less stable during early training
+- **Pre-LN** (modern default): `x + Sublayer(LayerNorm(x))` - more stable, better for very deep models
 
 ### 6.2 Feed-Forward Network
 
@@ -878,7 +878,7 @@ The inner dimension is typically 4× the model dimension: for d_model=512, the F
 
 ### 6.3 Positional Encoding
 
-Self-attention is **permutation equivariant** — it produces the same output regardless of the order of tokens. We must inject position information explicitly.
+Self-attention is **permutation equivariant** - it produces the same output regardless of the order of tokens. We must inject position information explicitly.
 
 The original paper uses sinusoidal positional encoding:
 
@@ -919,7 +919,7 @@ class PositionalEncoding(nn.Module):
         pe[:, 0::2] = torch.sin(position * div_term)  # even indices
         pe[:, 1::2] = torch.cos(position * div_term)  # odd indices
 
-        pe = pe.unsqueeze(0)  # (1, max_seq, d_model) — add batch dim
+        pe = pe.unsqueeze(0)  # (1, max_seq, d_model) - add batch dim
         self.register_buffer('pe', pe)  # not a learnable parameter
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -1140,7 +1140,7 @@ flowchart TD
 
 This prevents the model from simply learning to detect `[MASK]` tokens, and ensures representations are useful for all positions, not just masked ones.
 
-**Next Sentence Prediction (NSP)**: The model receives two sentences and must predict whether sentence B naturally follows sentence A. The `[CLS]` token's representation is used for this binary classification. (Note: later research showed NSP may not be necessary — RoBERTa removes it.)
+**Next Sentence Prediction (NSP)**: The model receives two sentences and must predict whether sentence B naturally follows sentence A. The `[CLS]` token's representation is used for this binary classification. (Note: later research showed NSP may not be necessary - RoBERTa removes it.)
 
 ### 7.3 Input Representation
 
@@ -1170,8 +1170,8 @@ Special tokens:
 | DistilBERT | 6-layer distilled BERT | 77.0 | Fast inference, edge |
 | ALBERT | Param sharing + factored embeds | 82.3 | Low memory |
 | DeBERTa | Disentangled attention | 90.3 | SOTA on many benchmarks |
-| SciBERT | Pretrained on scientific text | — | Scientific NLP |
-| BioBERT | Pretrained on biomedical text | — | Biomedical NLP |
+| SciBERT | Pretrained on scientific text | - | Scientific NLP |
+| BioBERT | Pretrained on biomedical text | - | Biomedical NLP |
 
 ---
 
@@ -1533,7 +1533,7 @@ Mixed precision: True
 
 ### 8.4 Fine-Tuning for Named Entity Recognition (NER)
 
-NER requires a label for every token, not just a single sentence-level label — this is a **token classification** task.
+NER requires a label for every token, not just a single sentence-level label - this is a **token classification** task.
 
 ```python
 # bert_ner.py
@@ -1584,13 +1584,13 @@ def tokenize_and_align_labels(examples):
         label_ids = []
         for word_idx in word_ids:
             if word_idx is None:
-                # Special tokens: [CLS], [SEP], [PAD] — ignore in loss
+                # Special tokens: [CLS], [SEP], [PAD] - ignore in loss
                 label_ids.append(-100)
             elif word_idx != previous_word_idx:
-                # First subword of a word — use the word's label
+                # First subword of a word - use the word's label
                 label_ids.append(label[word_idx])
             else:
-                # Subsequent subwords — ignore in loss
+                # Subsequent subwords - ignore in loss
                 label_ids.append(-100)
             previous_word_idx = word_idx
         labels.append(label_ids)
@@ -1676,7 +1676,7 @@ GPT's training objective is simple: predict the next token given all previous to
 P(w_1, w_2, ..., w_n) = P(w_1) · P(w_2|w_1) · P(w_3|w_1,w_2) · ... · P(w_n|w_1,...,w_{n-1})
 ```
 
-**Causal masking** ensures that position i can only attend to positions 1 through i — never future positions. This is implemented by setting the upper triangle of the attention score matrix to -infinity before softmax.
+**Causal masking** ensures that position i can only attend to positions 1 through i - never future positions. This is implemented by setting the upper triangle of the attention score matrix to -infinity before softmax.
 
 ### 9.2 Text Generation Strategies
 
@@ -2197,7 +2197,7 @@ def comprehensive_evaluation(model, dataloader, device, label_names=["NEGATIVE",
     return metrics, cm
 
 # Simulated evaluation results
-print("BERT-base Fine-Tuned on SST-2 — Evaluation Results")
+print("BERT-base Fine-Tuned on SST-2 - Evaluation Results")
 print("=" * 55)
 print("""
 Classification Report:
@@ -2337,7 +2337,7 @@ print("=" * 50)
 test_reviews = [
     "The performances were absolutely outstanding and the cinematography breathtaking.",
     "A complete waste of time. Poor acting, terrible script.",
-    "Mixed feelings — some parts were brilliant, others fell flat.",
+    "Mixed feelings - some parts were brilliant, others fell flat.",
     "One of the greatest films I've ever seen. A true masterpiece.",
     "The movie had potential but ultimately disappointed."
 ]
@@ -2361,7 +2361,7 @@ Text: 'The performances were absolutely outstanding and the c...'
 Text: 'A complete waste of time. Poor acting, terrible script...'
   Label: NEGATIVE | Confidence: 0.997
 
-Text: 'Mixed feelings — some parts were brilliant, others fe...'
+Text: 'Mixed feelings - some parts were brilliant, others fe...'
   Label: POSITIVE | Confidence: 0.734
 
 Text: 'One of the greatest films I've ever seen. A true mast...'
@@ -2374,7 +2374,7 @@ Text: 'The movie had potential but ultimately disappointed...'
 ### 11.5 Benchmark Results
 
 ```
-Sentiment Analysis Benchmark — SST-2 Validation Set
+Sentiment Analysis Benchmark - SST-2 Validation Set
 =====================================================
 
 Model               Accuracy    F1      AUC-ROC  Params    Inference
@@ -2439,9 +2439,9 @@ Key takeaways:
 
 ## 13. What's Next: Part 15
 
-In Part 14 we built up from raw text all the way to production-quality BERT fine-tuning — covering BPE tokenization, word embeddings, scaled dot-product attention, multi-head attention, the full Transformer encoder block, BERT's pretraining strategy, and practical fine-tuning for classification, NER, and QA tasks.
+In Part 14 we built up from raw text all the way to production-quality BERT fine-tuning - covering BPE tokenization, word embeddings, scaled dot-product attention, multi-head attention, the full Transformer encoder block, BERT's pretraining strategy, and practical fine-tuning for classification, NER, and QA tasks.
 
-**Part 15: Advanced Computer Vision — Object Detection, Segmentation, and GANs** will cover:
+**Part 15: Advanced Computer Vision - Object Detection, Segmentation, and GANs** will cover:
 
 - **Object Detection**: from R-CNN to YOLO to DETR (detection transformers)
   - Anchor boxes, IoU, non-maximum suppression
@@ -2462,11 +2462,11 @@ In Part 14 we built up from raw text all the way to production-quality BERT fine
   - Swin Transformer: hierarchical vision transformer
 - **Project**: Real-time object detection system with YOLOv8
 
-The skills from Part 14 — especially the Transformer architecture and attention mechanisms — transfer directly: DETR uses Transformer decoders for object detection, SegFormer uses a hierarchical encoder, and ViT applies the same self-attention to image patches.
+The skills from Part 14 - especially the Transformer architecture and attention mechanisms - transfer directly: DETR uses Transformer decoders for object detection, SegFormer uses a hierarchical encoder, and ViT applies the same self-attention to image patches.
 
 ---
 
-*Part 14 of the Machine Learning — A Developer's Deep Dive from Fundamentals to Production series.*
+*Part 14 of the Machine Learning - A Developer's Deep Dive from Fundamentals to Production series.*
 
-*Previous: [Part 13 — Transfer Learning and Knowledge Distillation](#)*
-*Next: [Part 15 — Advanced Computer Vision: Object Detection, GANs, and Vision Transformers](#)*
+*Previous: [Part 13 - Transfer Learning and Knowledge Distillation](#)*
+*Next: [Part 15 - Advanced Computer Vision: Object Detection, GANs, and Vision Transformers](#)*

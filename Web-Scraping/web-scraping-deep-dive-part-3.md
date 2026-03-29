@@ -1,8 +1,8 @@
-# Web Scraping Deep Dive — Part 3: Scrapy Framework — Crawling at Scale
+# Web Scraping Deep Dive - Part 3: Scrapy Framework - Crawling at Scale
 
 ---
 
-**Series:** Web Scraping — A Developer's Deep Dive
+**Series:** Web Scraping - A Developer's Deep Dive
 **Part:** 3 of 5 (Framework)
 **Audience:** Developers ready to move beyond scripts to professional-grade web crawling
 **Reading time:** ~45 minutes
@@ -14,11 +14,11 @@
 1. [Why Scrapy?](#1-why-scrapy)
 2. [Scrapy Architecture](#2-scrapy-architecture)
 3. [Your First Spider](#3-your-first-spider)
-4. [Items and Item Loaders — Structured Data Extraction](#4-items-and-item-loaders--structured-data-extraction)
-5. [Following Links — Recursive Crawling](#5-following-links--recursive-crawling)
-6. [Item Pipelines — Processing and Storage](#6-item-pipelines--processing-and-storage)
-7. [Middleware — Customizing Request/Response Flow](#7-middleware--customizing-requestresponse-flow)
-8. [Crawling Strategies — Breadth-First vs Depth-First](#8-crawling-strategies--breadth-first-vs-depth-first)
+4. [Items and Item Loaders - Structured Data Extraction](#4-items-and-item-loaders--structured-data-extraction)
+5. [Following Links - Recursive Crawling](#5-following-links--recursive-crawling)
+6. [Item Pipelines - Processing and Storage](#6-item-pipelines--processing-and-storage)
+7. [Middleware - Customizing Request/Response Flow](#7-middleware--customizing-requestresponse-flow)
+8. [Crawling Strategies - Breadth-First vs Depth-First](#8-crawling-strategies--breadth-first-vs-depth-first)
 9. [Settings and Configuration](#9-settings-and-configuration)
 10. [Real-World Project: E-Commerce Crawler](#10-real-world-project-e-commerce-crawler)
 11. [What's Next](#11-whats-next)
@@ -27,7 +27,7 @@
 
 ## 1. Why Scrapy?
 
-You have built scrapers with `requests + BeautifulSoup`. They work. But when you need to crawl 10,000+ pages with error handling, rate limiting, retry logic, data pipelines, and export — your script becomes unmaintainable.
+You have built scrapers with `requests + BeautifulSoup`. They work. But when you need to crawl 10,000+ pages with error handling, rate limiting, retry logic, data pipelines, and export - your script becomes unmaintainable.
 
 Scrapy is a complete crawling framework that handles all of this out of the box.
 
@@ -126,7 +126,7 @@ class BooksSpider(scrapy.Spider):
     RATING_MAP = {"One": 1, "Two": 2, "Three": 3, "Four": 4, "Five": 5}
 
     def parse(self, response):
-        """Parse the listing page — extract books and follow pagination."""
+        """Parse the listing page - extract books and follow pagination."""
 
         # Extract each book on this page
         for article in response.css("article.product_pod"):
@@ -142,7 +142,7 @@ class BooksSpider(scrapy.Spider):
                 "detail_url": response.urljoin(article.css("h3 a::attr(href)").get()),
             }
 
-        # Follow pagination — "next" button
+        # Follow pagination - "next" button
         next_page = response.css("li.next a::attr(href)").get()
         if next_page:
             yield response.follow(next_page, callback=self.parse)
@@ -164,7 +164,7 @@ scrapy crawl books -o books.csv
 scrapy crawl books -o books.jsonl -t jsonlines
 ```
 
-### 3.3 Scrapy Selectors — CSS and XPath
+### 3.3 Scrapy Selectors - CSS and XPath
 
 Scrapy has its own `Selector` objects that support both CSS and XPath:
 
@@ -194,7 +194,7 @@ def parse(self, response):
 
 ---
 
-## 4. Items and Item Loaders — Structured Data Extraction
+## 4. Items and Item Loaders - Structured Data Extraction
 
 ### 4.1 Defining Items
 
@@ -291,7 +291,7 @@ class BooksSpider(scrapy.Spider):
 
 ---
 
-## 5. Following Links — Recursive Crawling
+## 5. Following Links - Recursive Crawling
 
 ### 5.1 The CrawlSpider
 
@@ -307,13 +307,13 @@ class BookCrawler(CrawlSpider):
     start_urls = ["https://books.toscrape.com/"]
 
     rules = (
-        # Follow category links — but don't parse them as items
+        # Follow category links - but don't parse them as items
         Rule(LinkExtractor(restrict_css=".nav-list a"), follow=True),
 
         # Follow pagination links
         Rule(LinkExtractor(restrict_css=".next a"), follow=True),
 
-        # Follow product detail links — parse them
+        # Follow product detail links - parse them
         Rule(
             LinkExtractor(restrict_css="article.product_pod h3 a"),
             callback="parse_book",
@@ -355,7 +355,7 @@ class DeepCrawlSpider(scrapy.Spider):
 
 ---
 
-## 6. Item Pipelines — Processing and Storage
+## 6. Item Pipelines - Processing and Storage
 
 Pipelines process every yielded item in sequence. Each pipeline can modify, validate, drop, or store items.
 
@@ -464,11 +464,11 @@ ITEM_PIPELINES = {
 }
 ```
 
-The number is the priority — lower numbers run first.
+The number is the priority - lower numbers run first.
 
 ---
 
-## 7. Middleware — Customizing Request/Response Flow
+## 7. Middleware - Customizing Request/Response Flow
 
 ### 7.1 Downloader Middleware (Request/Response)
 
@@ -515,7 +515,7 @@ class RetryOn403Middleware:
 
     def process_response(self, request, response, spider):
         if response.status == 403:
-            logger.warning(f"403 Forbidden: {request.url} — retrying with new UA")
+            logger.warning(f"403 Forbidden: {request.url} - retrying with new UA")
             request.headers["User-Agent"] = random.choice(USER_AGENTS)
             request.dont_filter = True  # Allow re-requesting the same URL
             return request  # Return the request to retry it
@@ -535,14 +535,14 @@ DOWNLOADER_MIDDLEWARES = {
 
 ---
 
-## 8. Crawling Strategies — Breadth-First vs Depth-First
+## 8. Crawling Strategies - Breadth-First vs Depth-First
 
 ### 8.1 Breadth-First (Default)
 
-Scrapy crawls breadth-first by default — it processes all URLs at depth 0, then depth 1, then depth 2. This is usually what you want for scraping product listings.
+Scrapy crawls breadth-first by default - it processes all URLs at depth 0, then depth 1, then depth 2. This is usually what you want for scraping product listings.
 
 ```python
-# settings.py — BFS (default)
+# settings.py - BFS (default)
 DEPTH_PRIORITY = 0
 SCHEDULER_DISK_QUEUE = "scrapy.squeues.PickleFifoDiskQueue"
 SCHEDULER_MEMORY_QUEUE = "scrapy.squeues.FifoMemoryQueue"
@@ -553,7 +553,7 @@ SCHEDULER_MEMORY_QUEUE = "scrapy.squeues.FifoMemoryQueue"
 Depth-first is useful when you want to fully explore one branch before moving to the next (e.g., scraping all pages of one category before starting the next).
 
 ```python
-# settings.py — DFS
+# settings.py - DFS
 DEPTH_PRIORITY = 1
 SCHEDULER_DISK_QUEUE = "scrapy.squeues.PickleLifoDiskQueue"
 SCHEDULER_MEMORY_QUEUE = "scrapy.squeues.LifoMemoryQueue"
@@ -566,7 +566,7 @@ class PrioritizedSpider(scrapy.Spider):
     name = "prioritized"
 
     def parse(self, response):
-        # High priority — product detail pages
+        # High priority - product detail pages
         for link in response.css(".product a::attr(href)").getall():
             yield scrapy.Request(
                 response.urljoin(link),
@@ -574,7 +574,7 @@ class PrioritizedSpider(scrapy.Spider):
                 priority=10,  # Higher priority = processed first
             )
 
-        # Low priority — category pages
+        # Low priority - category pages
         for link in response.css(".category a::attr(href)").getall():
             yield scrapy.Request(
                 response.urljoin(link),
@@ -704,7 +704,7 @@ class ShopSpider(scrapy.Spider):
     }
 
     def parse(self, response):
-        """Parse the homepage — follow category links."""
+        """Parse the homepage - follow category links."""
         categories = response.css(".side_categories ul li ul li a")
         for cat in categories:
             yield response.follow(cat, callback=self.parse_category)
@@ -795,11 +795,11 @@ scrapy crawl shop -s LOG_LEVEL=INFO
 
 ## 11. What's Next
 
-In **Part 4**, we tackle the hardest challenges in web scraping — **anti-scraping defenses and protected websites**. You will learn:
+In **Part 4**, we tackle the hardest challenges in web scraping - **anti-scraping defenses and protected websites**. You will learn:
 
 - Scraping authenticated / protected websites (login flows, session cookies, OAuth)
 - Injecting browser cookies from your real sessions (LinkedIn, Twitter, etc.)
-- CAPTCHAs — types, solving services, and avoidance strategies
+- CAPTCHAs - types, solving services, and avoidance strategies
 - Browser fingerprinting and stealth techniques
 - Proxy rotation and residential proxies
 - Cloudflare, PerimeterX, and DataDome bypass strategies
@@ -807,6 +807,6 @@ In **Part 4**, we tackle the hardest challenges in web scraping — **anti-scrap
 
 ---
 
-**Series:** [Web Scraping Deep Dive — Index](index.md)
-**Previous:** [Part 2 — Dynamic Content & Browser Automation](web-scraping-deep-dive-part-2.md)
-**Next:** [Part 4 — Anti-Scraping & Advanced Techniques](web-scraping-deep-dive-part-4.md)
+**Series:** [Web Scraping Deep Dive - Index](index.md)
+**Previous:** [Part 2 - Dynamic Content & Browser Automation](web-scraping-deep-dive-part-2.md)
+**Next:** [Part 4 - Anti-Scraping & Advanced Techniques](web-scraping-deep-dive-part-4.md)

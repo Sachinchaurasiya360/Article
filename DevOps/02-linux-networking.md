@@ -1,6 +1,6 @@
-# Linux & Networking for DevOps — Interview Preparation
+# Linux & Networking for DevOps - Interview Preparation
 
-> Section 2 of 7 — Core system knowledge every DevOps engineer must have.
+> Section 2 of 7 - Core system knowledge every DevOps engineer must have.
 
 ---
 
@@ -35,7 +35,7 @@ tree -L 2                   # Directory tree, 2 levels deep
 # Create / Remove
 mkdir -p /app/config/env    # Create nested directories
 touch config.yml            # Create empty file
-rm -rf /tmp/old-builds      # Recursive force delete (DANGEROUS — double check path)
+rm -rf /tmp/old-builds      # Recursive force delete (DANGEROUS - double check path)
 cp -r source/ dest/         # Copy directory recursively
 mv old.conf new.conf        # Move/rename
 
@@ -201,15 +201,15 @@ chgrp apps config.yml
 ### Special Permissions
 
 ```bash
-# SUID (Set User ID) — execute as file owner, not as runner
+# SUID (Set User ID) - execute as file owner, not as runner
 chmod u+s /usr/bin/passwd    # This is why normal users can change passwords
 # Shows as: -rwsr-xr-x
 
-# SGID (Set Group ID) — new files inherit directory's group
+# SGID (Set Group ID) - new files inherit directory's group
 chmod g+s /shared/project/   # All files created here get 'project' group
 # Shows as: drwxr-sr-x
 
-# Sticky Bit — only file owner can delete files (used on /tmp)
+# Sticky Bit - only file owner can delete files (used on /tmp)
 chmod +t /tmp/
 # Shows as: drwxrwxrwt
 ```
@@ -225,7 +225,7 @@ docker run --user 1000:1000 -v /host/data:/app/data myapp
 
 # SSH key permissions (connection refused if wrong):
 chmod 700 ~/.ssh
-chmod 600 ~/.ssh/id_rsa         # Private key — must be 600
+chmod 600 ~/.ssh/id_rsa         # Private key - must be 600
 chmod 644 ~/.ssh/id_rsa.pub     # Public key
 chmod 644 ~/.ssh/authorized_keys
 ```
@@ -269,15 +269,15 @@ pgrep -la nginx      # Cleaner: just the PIDs and names
 ### Signals
 
 ```bash
-# Graceful stop (SIGTERM — 15)
-kill 1234            # Sends SIGTERM — process can clean up
+# Graceful stop (SIGTERM - 15)
+kill 1234            # Sends SIGTERM - process can clean up
 kill -15 1234        # Same as above, explicit
 
-# Force kill (SIGKILL — 9)
-kill -9 1234         # Immediate termination — no cleanup
+# Force kill (SIGKILL - 9)
+kill -9 1234         # Immediate termination - no cleanup
 # Use only as last resort! Can cause data corruption.
 
-# Reload configuration (SIGHUP — 1)
+# Reload configuration (SIGHUP - 1)
 kill -HUP $(pgrep nginx)   # Nginx reloads config without downtime
 
 # Kill by name
@@ -291,11 +291,11 @@ fuser -k 8080/tcp
 ### Signal Hierarchy
 
 ```
-SIGTERM (15) — "Please stop" — process can catch, clean up, exit
-SIGINT  (2)  — Ctrl+C — like SIGTERM but from keyboard
-SIGHUP  (1)  — "Hangup" — traditionally reload config
-SIGKILL (9)  — "Die immediately" — cannot be caught or ignored
-SIGSTOP (19) — "Freeze" — cannot be caught (like Ctrl+Z but forced)
+SIGTERM (15) - "Please stop" - process can catch, clean up, exit
+SIGINT  (2)  - Ctrl+C - like SIGTERM but from keyboard
+SIGHUP  (1)  - "Hangup" - traditionally reload config
+SIGKILL (9)  - "Die immediately" - cannot be caught or ignored
+SIGSTOP (19) - "Freeze" - cannot be caught (like Ctrl+Z but forced)
 ```
 
 ### Background Processes
@@ -352,7 +352,7 @@ cat /proc/1234/status | grep -i "vmrss\|vmsize"
 docker run -m 2g myapp      # Set 2GB limit
 ```
 
-**Why interviewer asks this:** Process management is essential for debugging production incidents — hanging processes, resource leaks, zombie processes.
+**Why interviewer asks this:** Process management is essential for debugging production incidents - hanging processes, resource leaks, zombie processes.
 
 **Follow-up:** *What's a zombie process, and how do you deal with it?*
 
@@ -361,11 +361,11 @@ A zombie is a process that has **finished executing** but whose parent hasn't ca
 ```bash
 ps aux | grep Z              # Find zombies
 # Can't kill a zombie (it's already dead)
-# Solution: kill the PARENT process — that releases the zombie
+# Solution: kill the PARENT process - that releases the zombie
 kill $(ps -o ppid= -p <zombie_pid>)
 ```
 
-In containers, this is why you need an **init process** — PID 1 must reap zombies. Use `--init` flag or Tini:
+In containers, this is why you need an **init process** - PID 1 must reap zombies. Use `--init` flag or Tini:
 ```bash
 docker run --init myapp
 ```
@@ -376,7 +376,7 @@ docker run --init myapp
 
 **Answer:**
 
-systemd is the **init system and service manager** for most modern Linux distributions. It's PID 1 — the first process that starts and manages all others.
+systemd is the **init system and service manager** for most modern Linux distributions. It's PID 1 - the first process that starts and manages all others.
 
 ### Service Management
 
@@ -481,7 +481,7 @@ journalctl --vacuum-size=500M    # Trim logs to 500MB
 
 ```bash
 #!/bin/bash
-# disk-monitor.sh — Monitor disk usage and alert via webhook
+# disk-monitor.sh - Monitor disk usage and alert via webhook
 
 set -euo pipefail
 
@@ -500,7 +500,7 @@ check_disk_usage() {
         if [ "$percent" -ge "$THRESHOLD" ]; then
             local alert_key="${ALERT_FILE}-${mount//\//_}"
 
-            # Don't spam — only alert once per mount until resolved
+            # Don't spam - only alert once per mount until resolved
             if [ ! -f "$alert_key" ]; then
                 echo "[ALERT] ${HOSTNAME}: ${mount} is at ${usage} usage"
                 send_alert "$mount" "$usage"
@@ -579,7 +579,7 @@ ${SLACK_WEBHOOK_URL:-}  # Empty string if not set (no error with -u)
 
 **Follow-up:** *How would you improve this for production use?*
 
-1. Replace with **Prometheus node_exporter** — it already monitors disk usage with proper metric history
+1. Replace with **Prometheus node_exporter** - it already monitors disk usage with proper metric history
 2. Use **Alertmanager** for deduplication, routing, silencing, and escalation
 3. If keeping the script, add **exponential backoff** for alerts and write to a **metrics endpoint** instead of Slack
 4. Use **systemd timer** instead of cron (better logging, dependency management)
@@ -626,7 +626,7 @@ When you type `https://api.example.com/users` and press Enter:
    Client → SYN → Server
    Client ← SYN-ACK ← Server
    Client → ACK → Server
-   (Three-way handshake complete — connection established)
+   (Three-way handshake complete - connection established)
 
 3. TLS Handshake (between Application and Transport)
    Client → ClientHello (supported ciphers)
@@ -801,7 +801,7 @@ TTL (Time to Live). The old record had a TTL of 3600 (1 hour), and some ISP reso
 
 **Answer:**
 
-### TLS Handshake (TLS 1.3 — current standard)
+### TLS Handshake (TLS 1.3 - current standard)
 
 ```
 Client                                 Server
@@ -861,14 +861,14 @@ curl -vI https://api.example.com 2>&1 | grep -i "expire\|issuer\|subject"
 openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes \
   -subj "/CN=localhost"
 
-# Let's Encrypt (production — free, automated)
+# Let's Encrypt (production - free, automated)
 # Using certbot:
 certbot certonly --nginx -d example.com -d www.example.com
 
 # Auto-renewal (certbot installs a timer)
 certbot renew --dry-run
 
-# In Kubernetes — use cert-manager
+# In Kubernetes - use cert-manager
 # Automatically provisions and renews TLS certificates
 ```
 
@@ -908,9 +908,9 @@ server {
 **Follow-up:** *Your TLS certificate expires in production at 2 AM. What's your process to prevent this?*
 
 **Prevention:**
-1. **Automated renewal** — Let's Encrypt + certbot timer, or cert-manager in K8s
-2. **Monitoring** — Prometheus `ssl_certificate_expiry_seconds` metric with alert at 30 days, 7 days, and 1 day before expiry
-3. **External checks** — services like UptimeRobot or Blackbox Exporter that probe the endpoint and alert on cert issues
+1. **Automated renewal** - Let's Encrypt + certbot timer, or cert-manager in K8s
+2. **Monitoring** - Prometheus `ssl_certificate_expiry_seconds` metric with alert at 30 days, 7 days, and 1 day before expiry
+3. **External checks** - services like UptimeRobot or Blackbox Exporter that probe the endpoint and alert on cert issues
 
 ---
 
@@ -918,7 +918,7 @@ server {
 
 **Answer:**
 
-### Systematic debugging — layer by layer
+### Systematic debugging - layer by layer
 
 ```
 Step 1: Is DNS working?
@@ -940,7 +940,7 @@ $ ping -c 3 93.184.216.34
 0 packets received                     ← Network unreachable or ICMP blocked
 
 $ traceroute api.external.com          # Where does the path break?
-$ mtr --report api.external.com        # Better — statistical view
+$ mtr --report api.external.com        # Better - statistical view
 
 
 Step 3: Is the specific port open?
@@ -969,7 +969,7 @@ $ openssl s_client -connect api.external.com:443
 # Verify return code: 0 (ok)          ← Certificate valid
 # Verify return code: 20              ← Unable to get local issuer cert
 
-# Common in containers — missing CA certificates
+# Common in containers - missing CA certificates
 $ apt-get install ca-certificates && update-ca-certificates
 
 
@@ -1008,10 +1008,10 @@ apt-get update && apt-get install -y curl dnsutils iputils-ping netcat-tradition
 **Follow-up:** *The `curl` works from the host but not from inside the Docker container. What's likely wrong?*
 
 Common causes:
-1. **DNS resolution** — container using different DNS server. Check `/etc/resolv.conf` inside container.
-2. **Network mode** — container on a bridge network that can't reach external networks. Check Docker network settings.
-3. **Missing CA certificates** — minimal images (Alpine, distroless) may not have CA bundles. Install `ca-certificates`.
-4. **Proxy configuration** — host has `HTTP_PROXY` set but container doesn't inherit it. Pass via `docker run -e HTTP_PROXY=...`.
+1. **DNS resolution** - container using different DNS server. Check `/etc/resolv.conf` inside container.
+2. **Network mode** - container on a bridge network that can't reach external networks. Check Docker network settings.
+3. **Missing CA certificates** - minimal images (Alpine, distroless) may not have CA bundles. Install `ca-certificates`.
+4. **Proxy configuration** - host has `HTTP_PROXY` set but container doesn't inherit it. Pass via `docker run -e HTTP_PROXY=...`.
 
 ---
 
@@ -1090,12 +1090,12 @@ Host staging-*
 ### SSH Tunneling (Port Forwarding)
 
 ```bash
-# Local Port Forwarding — access remote service through local port
+# Local Port Forwarding - access remote service through local port
 # "I want to access the database on the remote server from my laptop"
 ssh -L 5432:db.internal:5432 bastion
 # Now: localhost:5432 → bastion → db.internal:5432
 
-# Remote Port Forwarding — expose local service to remote server
+# Remote Port Forwarding - expose local service to remote server
 # "I want the remote server to access my local dev server"
 ssh -R 8080:localhost:3000 remote-server
 # Now: remote-server:8080 → your laptop:3000
@@ -1127,7 +1127,7 @@ psql -h localhost -p 5432 -U myuser mydb
 ### SSH Security Best Practices
 
 ```bash
-# /etc/ssh/sshd_config — on the server
+# /etc/ssh/sshd_config - on the server
 
 # Disable password authentication (keys only)
 PasswordAuthentication no
@@ -1154,9 +1154,9 @@ AllowUsers deploy admin
 
 **Follow-up:** *What's the difference between `ssh-agent forwarding` and `ProxyJump`?*
 
-- **Agent forwarding** (`-A`): Your SSH private key is accessible on the remote server (via the agent). Risky — if the bastion is compromised, your key can be used.
+- **Agent forwarding** (`-A`): Your SSH private key is accessible on the remote server (via the agent). Risky - if the bastion is compromised, your key can be used.
 - **ProxyJump** (`-J`): The SSH connection is proxied through the bastion, but your private key **never leaves your machine**. More secure. Always prefer `ProxyJump`.
 
 ---
 
-*Next: [03 — Docker Fundamentals →](./03-docker-fundamentals.md)*
+*Next: [03 - Docker Fundamentals →](./03-docker-fundamentals.md)*

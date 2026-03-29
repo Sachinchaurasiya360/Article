@@ -230,7 +230,7 @@ class AgentOrchestrator:
         async with self._lock:
             # Check 1: Total agent limit
             if len(self.active_agents) >= self.max_agents:
-                return None  # Deny — too many agents
+                return None  # Deny - too many agents
 
             # Check 2: Depth limit (prevent recursive spawning)
             depth = 0
@@ -239,13 +239,13 @@ class AgentOrchestrator:
                 depth += 1
                 current = self.active_agents.get(current, {}).get("parent")
             if depth >= self.max_depth:
-                return None  # Deny — too deep
+                return None  # Deny - too deep
 
             # Check 3: Budget
             if self.total_cost >= self.budget:
-                return None  # Deny — budget exhausted
+                return None  # Deny - budget exhausted
 
-            # Check 4: Deduplication — is another agent already working on this?
+            # Check 4: Deduplication - is another agent already working on this?
             for agent in self.active_agents.values():
                 if self._tasks_overlap(agent["task"], agent_config["task"]):
                     return agent["id"]  # Return existing agent instead of spawning new one
@@ -274,7 +274,7 @@ class AgentOrchestrator:
                 await self._stop_all_agents()
 
     async def _stop_all_agents(self):
-        """Emergency stop — halt all agents."""
+        """Emergency stop - halt all agents."""
         for agent_id in list(self.active_agents.keys()):
             self.active_agents[agent_id]["status"] = "stopped"
 ```
@@ -431,7 +431,7 @@ Tasks without dependencies can run in parallel."""
                     still_waiting.append((idx, task_def))
 
             if not ready:
-                # Deadlock — force execute remaining tasks
+                # Deadlock - force execute remaining tasks
                 ready = still_waiting
                 still_waiting = []
 
@@ -831,7 +831,7 @@ Respond with ONLY the agent name."""
 Original query: {state.query}
 Agent response: {state.results[state.current_agent][:1000]}
 
-Is this response: (a) GOOD — accurate and complete, or (b) NEEDS_IMPROVEMENT?
+Is this response: (a) GOOD - accurate and complete, or (b) NEEDS_IMPROVEMENT?
 Answer with ONLY "GOOD" or "NEEDS_IMPROVEMENT"."""
             }],
             temperature=0,
@@ -1080,9 +1080,9 @@ Return JSON array of findings:
 
 **Why it's multi-agent (not single agent):**
 - Each reviewer has a completely different system prompt and expertise
-- Parallel execution — 4 reviews in the time of 1
-- Specialized attention — security agent focuses only on security, doesn't get distracted by style issues
-- Cross-validation — if two agents flag the same issue, it's likely real
+- Parallel execution - 4 reviews in the time of 1
+- Specialized attention - security agent focuses only on security, doesn't get distracted by style issues
+- Cross-validation - if two agents flag the same issue, it's likely real
 
 **Why interviewer asks this:** Code review is a concrete, valuable multi-agent use case. Tests ability to design domain-specific multi-agent systems.
 

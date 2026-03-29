@@ -110,7 +110,7 @@ img { max-width: 100%; }
   pointer-events: all;
 }
 
-/* Left — portfolio link */
+/* Left - portfolio link */
 .nav-portfolio {
   justify-self: start;
   display: flex;
@@ -127,7 +127,7 @@ img { max-width: 100%; }
 .nav-portfolio:hover { color: var(--accent); text-decoration: none; }
 .nav-portfolio svg { width: 11px; height: 11px; }
 
-/* Center — site logo */
+/* Center - site logo */
 .nav-logo {
   font-weight: 800;
   font-size: 1rem;
@@ -139,7 +139,7 @@ img { max-width: 100%; }
 .nav-logo:hover { text-decoration: none; }
 .nav-logo span { color: var(--accent); }
 
-/* Right area — dropdown + about + toggle */
+/* Right area - dropdown + about + toggle */
 .nav-right { justify-self: end; display: flex; align-items: center; gap: 0.25rem; }
 
 /* Series dropdown */
@@ -435,7 +435,7 @@ img { max-width: 100%; }
   line-height: 1.25;
 }
 
-/* Parts count pill — mirrors the price badge in the reference */
+/* Parts count pill - mirrors the price badge in the reference */
 .card-count-badge {
   flex-shrink: 0;
   font-size: 0.76rem;
@@ -616,7 +616,7 @@ img { max-width: 100%; }
 
 .article-header {
   border-bottom: 1px solid var(--border);
-  padding: 3rem 0 2rem;           /* vertical only — horizontal handled by .article-content */
+  padding: 3rem 0 2rem;           /* vertical only - horizontal handled by .article-content */
 }
 .article-header .article-content {
   padding-top: 0;
@@ -640,7 +640,7 @@ img { max-width: 100%; }
 }
 
 .article-body {
-  padding: 2rem 0 4rem;           /* vertical only — horizontal handled by .article-content */
+  padding: 2rem 0 4rem;           /* vertical only - horizontal handled by .article-content */
 }
 
 /* At wide viewports, nudge content left so TOC sidebar doesn't overlap */
@@ -1099,7 +1099,7 @@ img { max-width: 100%; }
 
 /* ── Tablet and below (≤768px) ── */
 @media (max-width: 768px) {
-  /* Nav — pill shrinks, portfolio hides, logo stays center */
+  /* Nav - pill shrinks, portfolio hides, logo stays center */
   .site-nav { padding: 8px 1rem; }
   .nav-bar { border-radius: 16px; padding: 0 0.4rem 0 1rem; }
   .nav-portfolio { display: none; }

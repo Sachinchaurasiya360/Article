@@ -1,6 +1,6 @@
 # Section 1: AI & LLM Fundamentals
 
-> Core knowledge about large language models — architecture, training, inference, and the mechanics that power modern AI systems.
+> Core knowledge about large language models - architecture, training, inference, and the mechanics that power modern AI systems.
 
 ---
 
@@ -20,7 +20,7 @@
 
 **Answer:**
 
-A Large Language Model (LLM) is a neural network trained on massive text corpora using self-supervised learning (next-token prediction or masked language modeling) that develops emergent capabilities — reasoning, in-context learning, instruction following — as a function of scale.
+A Large Language Model (LLM) is a neural network trained on massive text corpora using self-supervised learning (next-token prediction or masked language modeling) that develops emergent capabilities - reasoning, in-context learning, instruction following - as a function of scale.
 
 **Key differences from traditional NLP:**
 
@@ -33,7 +33,7 @@ A Large Language Model (LLM) is a neural network trained on massive text corpora
 | Emergent abilities | None | In-context learning, chain-of-thought, code generation |
 | Knowledge | Only what's in training labels | Broad world knowledge encoded in parameters |
 
-Traditional NLP required separate pipelines — tokenization → POS tagging → NER → parsing → task-specific classifier. LLMs collapse this into a single model that can be steered with natural language instructions.
+Traditional NLP required separate pipelines - tokenization → POS tagging → NER → parsing → task-specific classifier. LLMs collapse this into a single model that can be steered with natural language instructions.
 
 The critical insight: scale (parameters × data × compute) produces **qualitative** shifts in capability. A 100M parameter model can do sentiment analysis. A 100B parameter model can write code, solve math, and follow complex multi-step instructions.
 
@@ -47,7 +47,7 @@ The critical insight: scale (parameters × data × compute) produces **qualitati
 
 **Answer:**
 
-The Transformer (Vaswani et al., 2017 — "Attention Is All You Need") processes sequences using **self-attention** instead of recurrence, enabling parallel computation and capturing long-range dependencies without vanishing gradients.
+The Transformer (Vaswani et al., 2017 - "Attention Is All You Need") processes sequences using **self-attention** instead of recurrence, enabling parallel computation and capturing long-range dependencies without vanishing gradients.
 
 **Core components:**
 
@@ -82,7 +82,7 @@ The `√d_k` scaling prevents the dot products from growing too large, which wou
 | O(n) path length for distant dependencies | O(1) path length via direct attention |
 | Slow training (can't use modern GPU parallelism) | Highly parallelizable on GPUs/TPUs |
 
-**Why interviewer asks this:** Transformer knowledge is foundational for every LLM discussion. Interviewers test depth — do you understand *why* self-attention works, not just *that* it works.
+**Why interviewer asks this:** Transformer knowledge is foundational for every LLM discussion. Interviewers test depth - do you understand *why* self-attention works, not just *that* it works.
 
 **Follow-up:** What is the computational complexity of self-attention, and what approaches exist to reduce it?
 
@@ -101,7 +101,7 @@ The `√d_k` scaling prevents the dot products from growing too large, which wou
 **Why decoder-only dominates today:**
 
 1. **Scaling efficiency**: Simpler architecture scales better with compute
-2. **Unified interface**: Everything is text-in, text-out — no task-specific heads needed
+2. **Unified interface**: Everything is text-in, text-out - no task-specific heads needed
 3. **In-context learning**: Emergent with scale, makes fine-tuning optional
 4. **Autoregressive generation**: Naturally produces fluent, coherent long-form text
 
@@ -130,7 +130,7 @@ Compute: Thousands of GPUs for weeks/months
 Result: Base model with broad knowledge but no instruction-following
 ```
 
-The model learns language structure, facts, reasoning patterns, and code — all from predicting the next token. This is where >99% of compute is spent.
+The model learns language structure, facts, reasoning patterns, and code - all from predicting the next token. This is where >99% of compute is spent.
 
 **Stage 2: Supervised Fine-Tuning (SFT)**
 ```
@@ -140,7 +140,7 @@ Compute: Hours to days on modest GPU clusters
 Result: Model that can follow instructions but may still be harmful/unhelpful
 ```
 
-SFT teaches the *format* — how to be a helpful assistant rather than a text completion engine. Quality of data matters far more than quantity (LIMA paper: 1,000 carefully curated examples can match models trained on 50K).
+SFT teaches the *format* - how to be a helpful assistant rather than a text completion engine. Quality of data matters far more than quantity (LIMA paper: 1,000 carefully curated examples can match models trained on 50K).
 
 **Stage 3: RLHF / Preference Optimization**
 ```
@@ -324,7 +324,7 @@ This is why **long-context models are memory-bound, not compute-bound** during i
 
 **Answer:**
 
-Speculative decoding uses a small, fast "draft" model to generate candidate tokens that a large "target" model verifies in parallel — converting sequential generation into partially parallel verification.
+Speculative decoding uses a small, fast "draft" model to generate candidate tokens that a large "target" model verifies in parallel - converting sequential generation into partially parallel verification.
 
 **The core insight:** Verifying N tokens is much cheaper than generating N tokens because verification can be done in a single forward pass (all tokens processed simultaneously), while generation requires N sequential forward passes.
 
@@ -371,7 +371,7 @@ def speculative_decoding(target_model, draft_model, prompt, gamma=5):
     return output_tokens
 ```
 
-**Key property:** The output distribution is **mathematically identical** to the target model alone. Speculative decoding is lossless — it's a pure speed optimization.
+**Key property:** The output distribution is **mathematically identical** to the target model alone. Speculative decoding is lossless - it's a pure speed optimization.
 
 **Speedup depends on:**
 - **Acceptance rate**: How well the draft model approximates the target (typically 70-90% for good draft models)
@@ -383,7 +383,7 @@ def speculative_decoding(target_model, draft_model, prompt, gamma=5):
 - **EAGLE**: Uses the target model's hidden states to predict future tokens
 - **Lookahead decoding**: Uses Jacobi iteration instead of a draft model
 
-**Why interviewer asks this:** Tests deep understanding of inference optimization. This is cutting-edge production knowledge — most teams deploying LLMs at scale use some form of speculative decoding.
+**Why interviewer asks this:** Tests deep understanding of inference optimization. This is cutting-edge production knowledge - most teams deploying LLMs at scale use some form of speculative decoding.
 
 **Follow-up:** When would speculative decoding provide minimal benefit, and what are the memory overhead implications?
 
@@ -406,7 +406,7 @@ GPU 3: Full model copy → processes batch 3 → compute gradients → all-reduc
 ```
 - **When**: Model fits on one GPU, want faster training via larger effective batch size
 - **Limitation**: Every GPU must hold the entire model
-- **Variant**: ZeRO (Zero Redundancy Optimizer) — partitions optimizer states, gradients, and parameters across GPUs
+- **Variant**: ZeRO (Zero Redundancy Optimizer) - partitions optimizer states, gradients, and parameters across GPUs
 
 **Tensor Parallelism (TP):**
 ```
@@ -437,7 +437,7 @@ GPU 2: [  ][  ][μ0][μ1][μ2][μ3][  ][  ]
 GPU 3: [  ][  ][  ][μ0][μ1][μ2][μ3][  ]
 ```
 - **When**: Model is too large for one GPU but you want minimal inter-GPU communication
-- **Issue**: Pipeline "bubble" — GPUs idle while waiting for data
+- **Issue**: Pipeline "bubble" - GPUs idle while waiting for data
 - **Optimization**: Micro-batching reduces bubble time
 
 **Combined strategy (what large models actually use):**
@@ -466,10 +466,10 @@ LLaMA-70B serving:
 Quantization reduces the numerical precision of model weights (and optionally activations) to decrease memory usage and improve inference speed.
 
 ```
-FP32: ████████████████████████████████  (32 bits) — Full precision
-FP16: ████████████████                  (16 bits) — Half precision
-INT8: ████████                          (8 bits)  — 4× compression vs FP32
-INT4: ████                              (4 bits)  — 8× compression vs FP32
+FP32: ████████████████████████████████  (32 bits) - Full precision
+FP16: ████████████████                  (16 bits) - Half precision
+INT8: ████████                          (8 bits)  - 4× compression vs FP32
+INT4: ████                              (4 bits)  - 8× compression vs FP32
 ```
 
 **Quantization methods:**
@@ -490,7 +490,7 @@ INT4: ████                              (4 bits)  — 8× compression vs
 | INT8 | 70 GB | 1.5-2× faster | 79.1% (−0.2%) |
 | INT4 (GPTQ) | 35 GB | 2-3× faster | 77.8% (−1.5%) |
 | INT4 (AWQ) | 35 GB | 2-3× faster | 78.5% (−0.8%) |
-| 2-bit | 17.5 GB | 3-4× faster | 71.2% (−8.1%) — significant degradation |
+| 2-bit | 17.5 GB | 3-4× faster | 71.2% (−8.1%) - significant degradation |
 
 ```python
 # Loading a quantized model with transformers
@@ -524,7 +524,7 @@ model = AutoModelForCausalLM.from_pretrained(
 
 **LoRA (Low-Rank Adaptation)** freezes the pre-trained model and injects trainable low-rank decomposition matrices into each transformer layer.
 
-**Core idea:** Weight updates during fine-tuning have low "intrinsic rank" — you don't need to update all parameters.
+**Core idea:** Weight updates during fine-tuning have low "intrinsic rank" - you don't need to update all parameters.
 
 ```
 Original: Y = Wx         (W is d×d, e.g., 4096×4096 = 16.7M params)
@@ -557,7 +557,7 @@ class LoRALinear(nn.Module):
 ```
 
 **QLoRA** combines LoRA with 4-bit quantization:
-1. Quantize the base model to 4-bit (NF4 — NormalFloat 4-bit)
+1. Quantize the base model to 4-bit (NF4 - NormalFloat 4-bit)
 2. Keep LoRA adapters in FP16 (full precision for training stability)
 3. Use double quantization (quantize the quantization constants)
 4. Use paged optimizers to handle memory spikes
@@ -591,7 +591,7 @@ model = prepare_model_for_kbit_training(model)
 
 # Configure LoRA
 lora_config = LoraConfig(
-    r=64,                          # Rank — higher = more capacity, more memory
+    r=64,                          # Rank - higher = more capacity, more memory
     lora_alpha=128,                # Scaling factor (typically 2×r)
     target_modules=[               # Which layers to add LoRA to
         "q_proj", "k_proj", "v_proj", "o_proj",  # Attention
@@ -782,12 +782,12 @@ for _ in range(5):
     idx = sample_next_token(logits, temperature=0)
     print(f"  → {vocab[idx]}")  # Always "cat" (highest logit)
 
-print("\nLow temperature (0.3) — more focused:")
+print("\nLow temperature (0.3) - more focused:")
 for _ in range(5):
     idx = sample_next_token(logits, temperature=0.3)
     print(f"  → {vocab[idx]}")  # Usually "cat" or "dog"
 
-print("\nHigh temperature (1.5) — more creative:")
+print("\nHigh temperature (1.5) - more creative:")
 for _ in range(5):
     idx = sample_next_token(logits, temperature=1.5)
     print(f"  → {vocab[idx]}")  # More varied outputs
@@ -977,7 +977,7 @@ tokenizer = AutoTokenizer.from_pretrained("gpt2")
 input_text = "Once upon a time"
 input_ids = tokenizer.encode(input_text, return_tensors="pt")
 
-# THIS CODE HAS BUGS — find them
+# THIS CODE HAS BUGS - find them
 output = model.generate(
     input_ids,
     max_length=200,
@@ -994,11 +994,11 @@ print(tokenizer.decode(output[0]))
 
 Three issues cause repetitive generation:
 
-1. **`do_sample=False`** — Greedy decoding always picks the highest probability token. If the model enters a loop ("The cat sat on the mat"), it will never escape because the same tokens always have the highest probability given the same context.
+1. **`do_sample=False`** - Greedy decoding always picks the highest probability token. If the model enters a loop ("The cat sat on the mat"), it will never escape because the same tokens always have the highest probability given the same context.
 
-2. **No repetition penalty** — Without `repetition_penalty`, previously generated tokens maintain their original probability.
+2. **No repetition penalty** - Without `repetition_penalty`, previously generated tokens maintain their original probability.
 
-3. **No n-gram blocking** — Without `no_repeat_ngram_size`, the model can repeat any n-gram.
+3. **No n-gram blocking** - Without `no_repeat_ngram_size`, the model can repeat any n-gram.
 
 **Fix:**
 
@@ -1014,7 +1014,7 @@ output = model.generate(
 )
 ```
 
-**Deeper explanation:** Repetition is a fundamental failure mode of autoregressive models. The model's next-token distribution is conditioned on all previous tokens. If context drifts into a repetitive pattern, the conditional distribution *reinforces* that pattern — creating a feedback loop. Sampling and repetition penalties break this cycle.
+**Deeper explanation:** Repetition is a fundamental failure mode of autoregressive models. The model's next-token distribution is conditioned on all previous tokens. If context drifts into a repetitive pattern, the conditional distribution *reinforces* that pattern - creating a feedback loop. Sampling and repetition penalties break this cycle.
 
 **Why interviewer asks this:** Repetitive generation is the #1 complaint in production LLM deployments. Tests practical debugging skills.
 
@@ -1029,11 +1029,11 @@ import torch
 from transformers import AutoModelForCausalLM
 
 # Expected: 7B params × 2 bytes (FP16) = 14 GB
-# Actual: Using ~28 GB — why?
+# Actual: Using ~28 GB - why?
 
 model = AutoModelForCausalLM.from_pretrained(
     "meta-llama/Llama-3.1-8B",
-    # No dtype specified — BUG
+    # No dtype specified - BUG
     device_map="auto",
 )
 ```
@@ -1100,7 +1100,7 @@ for text in texts:
 'HelloWorld'    → 2 tokens → ['Hello', 'World']  # CamelCase splits
 ```
 
-**Key insight:** Tokenizers treat leading spaces as part of the token. `"Hello"` and `" Hello"` are different tokens. This matters when constructing prompts programmatically — extra spaces can change tokenization and model behavior.
+**Key insight:** Tokenizers treat leading spaces as part of the token. `"Hello"` and `" Hello"` are different tokens. This matters when constructing prompts programmatically - extra spaces can change tokenization and model behavior.
 
 ---
 
@@ -1170,9 +1170,9 @@ def safe_api_call(messages, model="gpt-4o-mini", max_context=128_000, max_tokens
 
 **Recommended approach: RAG + Light Fine-Tuning**
 
-1. **RAG** for knowledge retrieval — weekly-updated knowledge base of product docs and past resolutions
-2. **Fine-tune** (LoRA) for tone/style — train on 5,000 best-rated support responses to match company voice
-3. **Evaluation pipeline** — automated checks for accuracy, tone, and hallucination
+1. **RAG** for knowledge retrieval - weekly-updated knowledge base of product docs and past resolutions
+2. **Fine-tune** (LoRA) for tone/style - train on 5,000 best-rated support responses to match company voice
+3. **Evaluation pipeline** - automated checks for accuracy, tone, and hallucination
 
 ```python
 # Architecture sketch
@@ -1199,7 +1199,7 @@ class SupportAssistant:
         )
 ```
 
-**Why interviewer asks this:** Tests ability to make architectural decisions with real-world trade-offs. No single answer is correct — the reasoning matters.
+**Why interviewer asks this:** Tests ability to make architectural decisions with real-world trade-offs. No single answer is correct - the reasoning matters.
 
 **Follow-up:** How would you handle the case where the knowledge base has contradictory information from different time periods?
 
@@ -1265,6 +1265,6 @@ class CostGuard:
         return True
 ```
 
-**Why interviewer asks this:** Tests operational awareness. Building AI systems isn't just about models — it's about running them reliably at acceptable cost.
+**Why interviewer asks this:** Tests operational awareness. Building AI systems isn't just about models - it's about running them reliably at acceptable cost.
 
 **Follow-up:** Design a cost monitoring and alerting system for a production LLM application.

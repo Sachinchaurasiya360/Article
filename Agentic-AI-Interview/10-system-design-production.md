@@ -7,9 +7,9 @@
 ## 📚 Pre-requisite Reading
 
 > **Production deployment is partially covered in existing series:**
-> - [RAG Part 8: Production RAG](../RAG/rag-deep-dive-part-8.md) — Scaling RAG, monitoring, caching, latency optimization
-> - [LangChain Part 2: Production Deployment](../LangChain/langchain-deep-dive-part-2.md) — LangSmith, containerization, error handling
-> - [AI Memory Part 17: Scaling Memory Systems](../AI-Memory/ai-memory-deep-dive-part-17.md) — Distributed memory, production deployment
+> - [RAG Part 8: Production RAG](../RAG/rag-deep-dive-part-8.md) - Scaling RAG, monitoring, caching, latency optimization
+> - [LangChain Part 2: Production Deployment](../LangChain/langchain-deep-dive-part-2.md) - LangSmith, containerization, error handling
+> - [AI Memory Part 17: Scaling Memory Systems](../AI-Memory/ai-memory-deep-dive-part-17.md) - Distributed memory, production deployment
 
 ---
 
@@ -296,7 +296,7 @@ class HighThroughputRAG:
         reranked = await self._rerank(question, merged[:10])  # Re-rank top 10 only
         top_docs = reranked[:5]
 
-        # 3d: Generate answer (~200-500ms — the bottleneck)
+        # 3d: Generate answer (~200-500ms - the bottleneck)
         answer = await self._generate(question, top_docs)
 
         # Cache the result
@@ -919,7 +919,7 @@ async def metrics(req: Request):
     return dashboard
 ```
 
-**Why interviewer asks this:** Comprehensive test of production engineering skills — API design, error handling, caching, monitoring, security.
+**Why interviewer asks this:** Comprehensive test of production engineering skills - API design, error handling, caching, monitoring, security.
 
 **Follow-up:** How would you deploy this to handle 10× traffic spikes without pre-provisioning?
 

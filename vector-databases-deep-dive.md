@@ -1,12 +1,12 @@
 # Vector Databases: The Engine Behind Modern AI Search and Retrieval
 
-*Why traditional databases can't keep up with AI — and how vector databases are quietly powering the next generation of intelligent applications.*
+*Why traditional databases can't keep up with AI - and how vector databases are quietly powering the next generation of intelligent applications.*
 
 ---
 
 ## The Problem Traditional Databases Can't Solve
 
-You have a million product descriptions. A user types "comfortable summer shoes for walking all day." Try writing that SQL query. You can't — at least not well.
+You have a million product descriptions. A user types "comfortable summer shoes for walking all day." Try writing that SQL query. You can't - at least not well.
 
 ```sql
 -- This is what we've been doing for decades
@@ -16,9 +16,9 @@ WHERE description LIKE '%comfortable%'
   AND description LIKE '%shoes%';
 ```
 
-This misses "breathable sneakers perfect for long hikes in warm weather" — a product the user would love. Keyword matching is brittle. It matches strings, not meaning.
+This misses "breathable sneakers perfect for long hikes in warm weather" - a product the user would love. Keyword matching is brittle. It matches strings, not meaning.
 
-Vector databases solve this by operating on **meaning**, not text. They store data as high-dimensional vectors (embeddings) and find items that are semantically close to each other — even when they share zero keywords.
+Vector databases solve this by operating on **meaning**, not text. They store data as high-dimensional vectors (embeddings) and find items that are semantically close to each other - even when they share zero keywords.
 
 ---
 
@@ -26,7 +26,7 @@ Vector databases solve this by operating on **meaning**, not text. They store da
 
 Before we talk databases, let's demystify vectors.
 
-An **embedding** is a list of numbers that represents the meaning of a piece of data — text, images, audio, code. These numbers are produced by machine learning models (like OpenAI's `text-embedding-ada-002` or open-source models like `all-MiniLM-L6-v2`).
+An **embedding** is a list of numbers that represents the meaning of a piece of data - text, images, audio, code. These numbers are produced by machine learning models (like OpenAI's `text-embedding-ada-002` or open-source models like `all-MiniLM-L6-v2`).
 
 ```
 "comfortable summer shoes"  →  [0.12, -0.45, 0.78, 0.33, ..., -0.21]  (1536 dimensions)
@@ -60,7 +60,7 @@ A vector database does three things at scale:
 
 1. **Store** millions (or billions) of vectors alongside metadata
 2. **Index** them for fast approximate nearest neighbor (ANN) search
-3. **Query** them — given a vector, find the K most similar vectors
+3. **Query** them - given a vector, find the K most similar vectors
 
 ### The Naive Approach: Brute Force
 
@@ -130,7 +130,7 @@ Cluster vectors into groups. At query time, only search the nearest clusters.
 
 #### 3. Product Quantization (PQ)
 
-Compress vectors to reduce memory. A 1536-dim float32 vector takes 6KB. With PQ, it can be compressed to ~200 bytes — a 30x reduction.
+Compress vectors to reduce memory. A 1536-dim float32 vector takes 6KB. With PQ, it can be compressed to ~200 bytes - a 30x reduction.
 
 ```
 Original:  [0.12, -0.45, 0.78, 0.33, -0.21, 0.67, 0.15, -0.89]
@@ -331,7 +331,7 @@ LIMIT 5;
 
 ## The RAG Pattern: Where Vector Databases Shine
 
-The most common use case today is **Retrieval-Augmented Generation (RAG)** — giving LLMs access to your private data without fine-tuning.
+The most common use case today is **Retrieval-Augmented Generation (RAG)** - giving LLMs access to your private data without fine-tuning.
 
 ```
 ┌──────────────────────────────────────────────────────┐
@@ -457,7 +457,7 @@ Vector search:
   ❌ Might miss: exact "404" matches if embeddings don't capture codes well
 
 Hybrid search:
-  ✅ Finds both — combines BM25 scores with vector similarity scores
+  ✅ Finds both - combines BM25 scores with vector similarity scores
 
 Score fusion:
   hybrid_score = alpha × vector_score + (1 - alpha) × bm25_score
@@ -484,7 +484,7 @@ Benchmark: 1M vectors, 1536 dimensions, top-10 query
 │ (HNSW)     │          │         │          │          │
 └─────────────┴──────────┴─────────┴──────────┴──────────┘
 
-(Approximate numbers — actual performance varies by hardware and config)
+(Approximate numbers - actual performance varies by hardware and config)
 ```
 
 ### Scaling Strategies
@@ -755,11 +755,11 @@ curl -X POST http://localhost:8000/search \
 
 The vector database space is evolving fast:
 
-- **Multi-modal search** — Single databases handling text, image, audio, and video vectors side by side
-- **Serverless and auto-scaling** — Pay-per-query pricing instead of always-on clusters
-- **Built-in embedding** — Databases that handle vectorization internally (Weaviate already does this)
-- **Tighter LLM integration** — Native RAG pipelines built into the database layer
-- **Sparse + dense hybrid indexes** — Better handling of both exact and semantic matches in one index
+- **Multi-modal search** - Single databases handling text, image, audio, and video vectors side by side
+- **Serverless and auto-scaling** - Pay-per-query pricing instead of always-on clusters
+- **Built-in embedding** - Databases that handle vectorization internally (Weaviate already does this)
+- **Tighter LLM integration** - Native RAG pipelines built into the database layer
+- **Sparse + dense hybrid indexes** - Better handling of both exact and semantic matches in one index
 
 ---
 
@@ -777,4 +777,4 @@ The best vector database is the one that fits your existing stack, handles your 
 
 ---
 
-*Vector databases are not magic — they're math. But applied correctly, they make your application feel like magic to users.*
+*Vector databases are not magic - they're math. But applied correctly, they make your application feel like magic to users.*

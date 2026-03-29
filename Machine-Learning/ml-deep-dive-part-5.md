@@ -1,8 +1,8 @@
-# Machine Learning Deep Dive — Part 5: The Algorithm Zoo — SVMs, KNN, Naive Bayes, and When to Use What
+# Machine Learning Deep Dive - Part 5: The Algorithm Zoo - SVMs, KNN, Naive Bayes, and When to Use What
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
 **Part:** 5 of 19 (Core Algorithms)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~50 minutes
@@ -11,9 +11,9 @@
 
 ## Recap: Where We've Been
 
-In Part 4, we explored decision trees — how they split data by asking binary questions — and then stacked those trees into powerful ensemble methods: Random Forests that average many uncorrelated trees, and Gradient Boosting that builds trees sequentially to correct prior errors. We saw how bagging reduces variance and how boosting reduces bias, giving us robust predictors that consistently top Kaggle leaderboards.
+In Part 4, we explored decision trees - how they split data by asking binary questions - and then stacked those trees into powerful ensemble methods: Random Forests that average many uncorrelated trees, and Gradient Boosting that builds trees sequentially to correct prior errors. We saw how bagging reduces variance and how boosting reduces bias, giving us robust predictors that consistently top Kaggle leaderboards.
 
-You now have linear regression, logistic regression, and tree-based methods in your toolkit. But there's a whole zoo of classical ML algorithms — each with its own strengths, weaknesses, and ideal use cases. Today we add **K-Nearest Neighbors (KNN)**, **Support Vector Machines (SVMs)**, and **Naive Bayes**, and build a practical framework for choosing between all of them.
+You now have linear regression, logistic regression, and tree-based methods in your toolkit. But there's a whole zoo of classical ML algorithms - each with its own strengths, weaknesses, and ideal use cases. Today we add **K-Nearest Neighbors (KNN)**, **Support Vector Machines (SVMs)**, and **Naive Bayes**, and build a practical framework for choosing between all of them.
 
 By the end of this article you will have:
 - Implemented KNN from scratch including multiple distance metrics
@@ -46,7 +46,7 @@ By the end of this article you will have:
 
 That's it. No training. No model parameters. No optimization loop. Just a lookup.
 
-> **Core Insight:** KNN is a *lazy learner* — it defers all computation to prediction time. There is no explicit training phase; the algorithm memorizes the entire training set.
+> **Core Insight:** KNN is a *lazy learner* - it defers all computation to prediction time. There is no explicit training phase; the algorithm memorizes the entire training set.
 
 This simplicity makes KNN both powerful and problematic. It makes no assumptions about the underlying data distribution (it is **non-parametric**), which means it can capture arbitrarily complex decision boundaries. But it pays a steep price in prediction time and memory.
 
@@ -68,13 +68,13 @@ The soul of KNN is the distance function. Different metrics capture different no
 
 #### Euclidean Distance (L2 Norm)
 
-The straight-line distance between two points — the most common default.
+The straight-line distance between two points - the most common default.
 
 $$d_{euclidean}(a, b) = \sqrt{\sum_{i=1}^{n}(a_i - b_i)^2}$$
 
 #### Manhattan Distance (L1 Norm)
 
-Sum of absolute differences — thinks in city blocks, not straight lines.
+Sum of absolute differences - thinks in city blocks, not straight lines.
 
 $$d_{manhattan}(a, b) = \sum_{i=1}^{n}|a_i - b_i|$$
 
@@ -88,7 +88,7 @@ When `p=1`, this is Manhattan. When `p=2`, this is Euclidean.
 
 #### Cosine Similarity
 
-Measures the angle between two vectors — particularly useful for text.
+Measures the angle between two vectors - particularly useful for text.
 
 $$\cos(\theta) = \frac{a \cdot b}{\|a\| \cdot \|b\|}$$
 
@@ -100,11 +100,11 @@ import numpy as np
 from typing import Literal
 
 def euclidean_distance(a: np.ndarray, b: np.ndarray) -> float:
-    """L2 norm — straight-line distance."""
+    """L2 norm - straight-line distance."""
     return np.sqrt(np.sum((a - b) ** 2))
 
 def manhattan_distance(a: np.ndarray, b: np.ndarray) -> float:
-    """L1 norm — sum of absolute differences."""
+    """L1 norm - sum of absolute differences."""
     return np.sum(np.abs(a - b))
 
 def minkowski_distance(a: np.ndarray, b: np.ndarray, p: float = 2) -> float:
@@ -148,7 +148,7 @@ from typing import Callable, Literal
 
 class KNNClassifier:
     """
-    K-Nearest Neighbors Classifier — built from scratch.
+    K-Nearest Neighbors Classifier - built from scratch.
 
     Parameters
     ----------
@@ -187,7 +187,7 @@ class KNNClassifier:
             raise ValueError(f"Unknown metric: {self.metric}")
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> 'KNNClassifier':
-        """Store training data — that's it."""
+        """Store training data - that's it."""
         self._X_train = np.array(X, dtype=float)
         self._y_train = np.array(y)
         return self
@@ -234,7 +234,7 @@ class KNNClassifier:
 
 class KNNRegressor:
     """
-    K-Nearest Neighbors Regressor — built from scratch.
+    K-Nearest Neighbors Regressor - built from scratch.
     Predicts the average target value of the K nearest neighbors.
     """
 
@@ -365,10 +365,10 @@ axes = axes.ravel()
 
 k_values = [1, 5, 15, 50]
 descriptions = [
-    "k=1: Overfit — each point owns its region",
+    "k=1: Overfit - each point owns its region",
     "k=5: Balanced boundary",
     "k=15: Smoother, slightly underfit",
-    "k=50: Very smooth — may underfit"
+    "k=50: Very smooth - may underfit"
 ]
 
 for ax, k, desc in zip(axes, k_values, descriptions):
@@ -386,16 +386,16 @@ print("Figure saved: knn_k_effect.png")
 ```
 
 **Key observations:**
-- **K=1**: Perfect training accuracy, extremely jagged boundaries — severe **overfitting**. Every training point becomes its own tiny decision region.
+- **K=1**: Perfect training accuracy, extremely jagged boundaries - severe **overfitting**. Every training point becomes its own tiny decision region.
 - **K=5**: Good balance, captures the moon shape without memorizing noise.
 - **K=15**: Smoother boundary, starts losing detail on the edges.
-- **K=50**: Heavily regularized — essentially classifies by the global majority class in some regions.
+- **K=50**: Heavily regularized - essentially classifies by the global majority class in some regions.
 
 > **Rule of Thumb:** Start with K = sqrt(n_training_samples), then tune with cross-validation. Larger K = more regularization = less variance but more bias.
 
 ### The Curse of Dimensionality
 
-Here is the most important limitation of KNN — one that applies broadly to distance-based methods.
+Here is the most important limitation of KNN - one that applies broadly to distance-based methods.
 
 **The curse of dimensionality** refers to the phenomenon where data becomes increasingly sparse as the number of dimensions grows. In high-dimensional space, every point is far from every other point, and "nearest neighbors" are no longer truly near.
 
@@ -453,7 +453,7 @@ As the ratio approaches 1.0, the nearest neighbor is barely closer than the fart
 
 ### KD-Trees: Efficient Nearest Neighbor Lookup
 
-The naive KNN implementation above has O(n) prediction time per query — it computes the distance to every training point. For large datasets this is prohibitively slow.
+The naive KNN implementation above has O(n) prediction time per query - it computes the distance to every training point. For large datasets this is prohibitively slow.
 
 A **KD-Tree** (K-Dimensional Tree) is a binary tree that partitions the feature space recursively by splitting along one dimension at each level. This allows nearest-neighbor queries in O(log n) average time.
 
@@ -484,7 +484,7 @@ graph TD
 | NN query | O(log n) | O(n) |
 | k-NN query | O(k log n) | O(kn) |
 
-The worst case occurs in high dimensions — another manifestation of the curse of dimensionality. In practice, `sklearn`'s `KNeighborsClassifier` uses KD-trees by default and automatically falls back to brute-force search in high dimensions.
+The worst case occurs in high dimensions - another manifestation of the curse of dimensionality. In practice, `sklearn`'s `KNeighborsClassifier` uses KD-trees by default and automatically falls back to brute-force search in high dimensions.
 
 ```python
 # filename: knn_sklearn_comparison.py
@@ -528,7 +528,7 @@ for algo in ['ball_tree', 'kd_tree', 'brute']:
 # algorithm=brute      acc=0.8700  train=0.1ms   pred=892.4ms
 ```
 
-Note that all algorithms produce identical accuracy — they're searching for the same neighbors, just more or less efficiently.
+Note that all algorithms produce identical accuracy - they're searching for the same neighbors, just more or less efficiently.
 
 ---
 
@@ -538,7 +538,7 @@ Note that all algorithms produce identical accuracy — they're searching for th
 
 **Support Vector Machines** take a completely different approach to classification. Instead of asking "what does the neighborhood look like?", SVMs ask: "What is the optimal boundary that separates the classes with the **widest possible margin**?"
 
-Imagine two classes of points on a plane. There are infinitely many hyperplanes that could separate them. SVM finds the one that maximizes the distance (the "street width") between the hyperplane and the nearest points from each class. Those nearest points are called **support vectors** — they literally support, or define, the boundary.
+Imagine two classes of points on a plane. There are infinitely many hyperplanes that could separate them. SVM finds the one that maximizes the distance (the "street width") between the hyperplane and the nearest points from each class. Those nearest points are called **support vectors** - they literally support, or define, the boundary.
 
 ```mermaid
 graph LR
@@ -563,7 +563,7 @@ graph LR
 
 **Why maximize the margin?**
 
-- A larger margin means more robustness to new data — points slightly different from training examples are less likely to be misclassified.
+- A larger margin means more robustness to new data - points slightly different from training examples are less likely to be misclassified.
 - It corresponds to minimizing the Vapnik-Chervonenkis (VC) dimension, which is a theoretical measure of model complexity.
 - Empirically, maximum-margin classifiers generalize better on unseen data.
 
@@ -680,9 +680,9 @@ class LinearSVM:
     def n_support_vectors(self):
         """
         Returns the number of support vectors identified during training.
-        (Points with margin <= 1 — on or inside the margin band)
+        (Points with margin <= 1 - on or inside the margin band)
         """
-        # Cannot compute without training data — just show w/b
+        # Cannot compute without training data - just show w/b
         return f"w={self.w[:3]}..., b={self.b:.4f}"
 
 
@@ -736,12 +736,12 @@ graph LR
     style D fill:#E8A838,color:#000
 ```
 
-**The trick:** We never actually compute $\phi(x)$. The SVM optimization only needs dot products $\phi(x_i) \cdot \phi(x_j)$. A **kernel function** $K(x_i, x_j) = \phi(x_i) \cdot \phi(x_j)$ computes this dot product directly in the original space — often in O(d) instead of O(d^p) or O(∞).
+**The trick:** We never actually compute $\phi(x)$. The SVM optimization only needs dot products $\phi(x_i) \cdot \phi(x_j)$. A **kernel function** $K(x_i, x_j) = \phi(x_i) \cdot \phi(x_j)$ computes this dot product directly in the original space - often in O(d) instead of O(d^p) or O(∞).
 
 #### Common Kernels
 
 **Linear kernel:** $K(x_i, x_j) = x_i \cdot x_j$
-No transformation — equivalent to linear SVM. Best for linearly separable or high-dimensional data.
+No transformation - equivalent to linear SVM. Best for linearly separable or high-dimensional data.
 
 **Polynomial kernel:** $K(x_i, x_j) = (\gamma \cdot x_i \cdot x_j + r)^d$
 Implicitly maps to all polynomial feature combinations up to degree d.
@@ -913,10 +913,10 @@ print(f"\nBest: C={best_C}, gamma={best_gamma}, score={scores[best_idx]:.4f}")
 $$P(y | X) = \frac{P(X | y) \cdot P(y)}{P(X)}$$
 
 In plain English:
-- **Posterior** $P(y|X)$: the probability of class $y$ given the observed features $X$ — what we want to predict.
-- **Likelihood** $P(X|y)$: the probability of seeing features $X$ given class $y$ — learned from training data.
-- **Prior** $P(y)$: the probability of class $y$ before seeing any features — just the class frequencies.
-- **Evidence** $P(X)$: the probability of seeing these features at all — same for all classes, so we can ignore it for classification.
+- **Posterior** $P(y|X)$: the probability of class $y$ given the observed features $X$ - what we want to predict.
+- **Likelihood** $P(X|y)$: the probability of seeing features $X$ given class $y$ - learned from training data.
+- **Prior** $P(y)$: the probability of class $y$ before seeing any features - just the class frequencies.
+- **Evidence** $P(X)$: the probability of seeing these features at all - same for all classes, so we can ignore it for classification.
 
 For classification, we choose the class with the highest posterior:
 
@@ -924,13 +924,13 @@ $$\hat{y} = \arg\max_y P(y) \cdot P(X | y)$$
 
 ### The "Naive" Independence Assumption
 
-Here's the key assumption that makes this computationally tractable — and gives Naive Bayes its name.
+Here's the key assumption that makes this computationally tractable - and gives Naive Bayes its name.
 
 **The naive assumption:** Features are **conditionally independent** given the class label.
 
 $$P(X | y) = P(x_1 | y) \cdot P(x_2 | y) \cdots P(x_n | y) = \prod_{i=1}^{n} P(x_i | y)$$
 
-This assumption is almost certainly wrong in practice. Features are usually correlated — knowing a patient has fever makes it more likely they also have chills. But the assumption leads to a classifier that:
+This assumption is almost certainly wrong in practice. Features are usually correlated - knowing a patient has fever makes it more likely they also have chills. But the assumption leads to a classifier that:
 
 1. Is extremely fast to train: O(n * d) where n=samples, d=features
 2. Works surprisingly well on many real problems
@@ -956,7 +956,7 @@ from sklearn.preprocessing import StandardScaler
 
 class GaussianNaiveBayes:
     """
-    Gaussian Naive Bayes classifier — built from scratch.
+    Gaussian Naive Bayes classifier - built from scratch.
 
     Assumes each feature follows a Gaussian distribution within each class.
     Uses log-probabilities to avoid numerical underflow.
@@ -1098,13 +1098,13 @@ print(f"\nsklearn GaussianNB test accuracy: {sklearn_gnb.score(X_test, y_test):.
 
 ### Multinomial Naive Bayes (Count Features)
 
-**Multinomial Naive Bayes** is designed for discrete count data — most notably, word counts in text classification. Instead of assuming Gaussian distributions, it assumes features follow a multinomial distribution.
+**Multinomial Naive Bayes** is designed for discrete count data - most notably, word counts in text classification. Instead of assuming Gaussian distributions, it assumes features follow a multinomial distribution.
 
 For each class $y$ and feature $i$:
 
 $$P(x_i | y) = \frac{count(x_i, y) + \alpha}{\sum_j count(x_j, y) + \alpha \cdot n_{features}}$$
 
-The $\alpha$ parameter is **Laplace smoothing** (additive smoothing) — it prevents zero probabilities for words not seen in training for a particular class.
+The $\alpha$ parameter is **Laplace smoothing** (additive smoothing) - it prevents zero probabilities for words not seen in training for a particular class.
 
 ```python
 # filename: multinomial_naive_bayes_scratch.py
@@ -1115,14 +1115,14 @@ from sklearn.model_selection import train_test_split
 
 class MultinomialNaiveBayes:
     """
-    Multinomial Naive Bayes — built from scratch.
+    Multinomial Naive Bayes - built from scratch.
     Designed for count features (e.g., word counts in text).
 
     Parameters
     ----------
     alpha : float
         Laplace (additive) smoothing parameter. Default 1.0.
-        alpha=0: no smoothing (risky — zero probabilities possible)
+        alpha=0: no smoothing (risky - zero probabilities possible)
         alpha=1: standard Laplace smoothing
     """
 
@@ -1263,7 +1263,7 @@ for idx, category in enumerate(categories):
 
 ### Bernoulli Naive Bayes (Binary Features)
 
-**Bernoulli Naive Bayes** is designed for binary feature vectors — each feature is either 0 (absent) or 1 (present). In text classification, this corresponds to whether a word appears in a document at all (not how many times).
+**Bernoulli Naive Bayes** is designed for binary feature vectors - each feature is either 0 (absent) or 1 (present). In text classification, this corresponds to whether a word appears in a document at all (not how many times).
 
 The key difference from Multinomial NB: Bernoulli NB explicitly penalizes the absence of a feature. If a word is strongly associated with class A but absent from a document, that's evidence against class A.
 
@@ -1275,7 +1275,7 @@ import numpy as np
 
 class BernoulliNaiveBayes:
     """
-    Bernoulli Naive Bayes — for binary/boolean features.
+    Bernoulli Naive Bayes - for binary/boolean features.
     Explicitly models absence of features (unlike Multinomial NB).
 
     Parameters
@@ -1388,7 +1388,7 @@ Given that the independence assumption is almost always violated, why does Naive
 Even if $P(y|X)$ is wildly off numerically, as long as the correct class gets the highest probability, the classifier is right.
 
 **Reason 2: In practice, correlated features often reinforce each other.**
-If features A and B are both evidence for class C, and they're correlated, Naive Bayes double-counts the evidence. But so does the competing class — so the ranking is preserved.
+If features A and B are both evidence for class C, and they're correlated, Naive Bayes double-counts the evidence. But so does the competing class - so the ranking is preserved.
 
 **Reason 3: Naive Bayes is extremely low variance.**
 With few parameters to estimate, it rarely overfits. For small datasets, this often outweighs the bias from the independence assumption.
@@ -1431,7 +1431,7 @@ This is perhaps the most practically important factor when choosing algorithms f
 
 | Algorithm | Training Time | Prediction Time | Memory |
 |-----------|--------------|-----------------|--------|
-| KNN | O(1) | O(n·d) per sample | O(n·d) — stores all data |
+| KNN | O(1) | O(n·d) per sample | O(n·d) - stores all data |
 | KD-Tree KNN | O(n·log(n)) | O(log(n)·d) avg | O(n·d) |
 | Linear SVM | O(n²) to O(n³) | O(d) | O(d) + support vectors |
 | Kernel SVM | O(n²) to O(n³) | O(sv·d) | O(sv·d) |
@@ -1761,10 +1761,10 @@ print(f"  Dataset: 10,000 train samples, 2,000 test samples, 20 features")
 ### Small Data (< 1,000 Samples)
 
 When you have very little data, high-variance models will overfit. Prefer:
-1. **Naive Bayes** — lowest variance, incredibly data-efficient
-2. **Linear SVM** — maximum margin principle prevents overfitting
-3. **KNN** — can work if features are meaningful and d is small
-4. **Logistic Regression** — with L2 regularization
+1. **Naive Bayes** - lowest variance, incredibly data-efficient
+2. **Linear SVM** - maximum margin principle prevents overfitting
+3. **KNN** - can work if features are meaningful and d is small
+4. **Logistic Regression** - with L2 regularization
 
 Avoid: Deep trees, Random Forests (will overfit), Gradient Boosting without extensive regularization
 
@@ -1772,20 +1772,20 @@ Avoid: Deep trees, Random Forests (will overfit), Gradient Boosting without exte
 
 KNN becomes useless due to the curse of dimensionality. Linear methods often outperform non-linear ones because the high-dimensional space is often already linearly separable.
 
-1. **Linear SVM** — excellent for text (100K+ features), face recognition
-2. **Logistic Regression** — fast, interpretable, L1 for automatic feature selection
-3. **Naive Bayes** — especially Multinomial for text
-4. **Random Forest** — handles high dimensions but slower
+1. **Linear SVM** - excellent for text (100K+ features), face recognition
+2. **Logistic Regression** - fast, interpretable, L1 for automatic feature selection
+3. **Naive Bayes** - especially Multinomial for text
+4. **Random Forest** - handles high dimensions but slower
 
 Avoid: KNN (distance meaningless), RBF SVM without dimensionality reduction
 
 ### When Interpretability Matters
 
 Stakeholders need to understand why a prediction was made:
-1. **Logistic Regression** — coefficients directly interpretable as log-odds
-2. **Decision Tree** — visualization possible, HIPAA/GDPR friendly
-3. **Naive Bayes** — probabilities are intuitive
-4. **Linear SVM** — feature weights available
+1. **Logistic Regression** - coefficients directly interpretable as log-odds
+2. **Decision Tree** - visualization possible, HIPAA/GDPR friendly
+3. **Naive Bayes** - probabilities are intuitive
+4. **Linear SVM** - feature weights available
 
 Avoid: Kernel SVM, KNN (no model), Random Forest (though SHAP values help)
 
@@ -1805,22 +1805,22 @@ Avoid: Kernel SVM, KNN (no model), Random Forest (though SHAP values help)
 
 **Case Study 1: Email Spam Detection**
 - Dataset: 50K emails, 100K+ vocabulary words
-- Winner: **Multinomial Naive Bayes** — handles high dimensions, fast, works with word counts
+- Winner: **Multinomial Naive Bayes** - handles high dimensions, fast, works with word counts
 - Runner-up: Linear SVM on TF-IDF features
 
 **Case Study 2: Fraud Detection (Imbalanced)**
 - Dataset: 1M transactions, 0.1% fraud
-- Winner: **Gradient Boosting** with class weights — handles imbalance via sample weights
+- Winner: **Gradient Boosting** with class weights - handles imbalance via sample weights
 - Key note: KNN fails because the "neighborhood" is dominated by the majority class
 
 **Case Study 3: Medical Image Classification (Small Dataset)**
 - Dataset: 300 labeled MRI scans, 512-dim feature vectors
-- Winner: **RBF SVM** — maximum-margin principle prevents overfitting on small data
+- Winner: **RBF SVM** - maximum-margin principle prevents overfitting on small data
 - Runner-up: Linear SVM (surprisingly competitive in high-dim spaces)
 
 **Case Study 4: Real-Time User Recommendations**
 - Dataset: 10M users, must predict in < 1ms
-- Winner: **Logistic Regression** — O(d) prediction, model fits in L1 cache
+- Winner: **Logistic Regression** - O(d) prediction, model fits in L1 cache
 - Alternative: Pre-computed KNN approximate nearest neighbors (Faiss)
 
 ---
@@ -2194,7 +2194,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 
-# Breast Cancer is binary — perfect for ROC curves
+# Breast Cancer is binary - perfect for ROC curves
 bc = load_breast_cancer()
 X, y = bc.data, bc.target
 X_train, X_test, y_train, y_test = train_test_split(
@@ -2238,7 +2238,7 @@ for (name, clf), color in zip(classifiers.items(), colors):
 
 ax.set_xlabel('False Positive Rate', fontsize=12)
 ax.set_ylabel('True Positive Rate', fontsize=12)
-ax.set_title('ROC Curves — All Algorithms\n(Breast Cancer Dataset)', fontsize=14, fontweight='bold')
+ax.set_title('ROC Curves - All Algorithms\n(Breast Cancer Dataset)', fontsize=14, fontweight='bold')
 ax.legend(loc='lower right', fontsize=9)
 ax.grid(alpha=0.3)
 ax.set_xlim([-0.01, 1.01])
@@ -2283,7 +2283,7 @@ print("Figure saved: roc_curves_all_algorithms.png")
 | **Soft Margin SVM** | SVM with slack variables that allow some misclassification; controlled by C parameter |
 | **C Parameter** | SVM regularization: large C = narrow margin, few errors; small C = wide margin, more errors |
 | **Kernel Trick** | Computing dot products in a high-dimensional feature space without explicit transformation |
-| **Kernel Function** | K(x_i, x_j) — computes φ(x_i)·φ(x_j) implicitly without computing φ |
+| **Kernel Function** | K(x_i, x_j) - computes φ(x_i)·φ(x_j) implicitly without computing φ |
 | **RBF Kernel** | Radial Basis Function: exp(-γ||x_i - x_j||²); maps to infinite dimensions |
 | **Gamma (γ)** | RBF kernel parameter: large γ = narrow Gaussian = complex boundary; small = smooth boundary |
 | **Polynomial Kernel** | (γx·z + r)^d; captures polynomial feature interactions up to degree d |
@@ -2305,23 +2305,23 @@ print("Figure saved: roc_curves_all_algorithms.png")
 
 ## What's Next
 
-In **Part 6: Unsupervised Learning — Finding Structure Without Labels**, we leave the supervised world behind. No more labeled training data. No more loss functions that directly measure prediction error.
+In **Part 6: Unsupervised Learning - Finding Structure Without Labels**, we leave the supervised world behind. No more labeled training data. No more loss functions that directly measure prediction error.
 
 Instead, we'll ask: **what natural structure exists in this data?**
 
 We will cover:
-- **K-Means Clustering** — partition data into K groups by minimizing within-cluster variance
-- **DBSCAN** — density-based clustering that finds arbitrarily shaped clusters and marks outliers as noise
-- **Hierarchical Clustering** — build a tree of nested clusters (dendrograms)
-- **Principal Component Analysis (PCA)** — find the directions of maximum variance in high-dimensional data
-- **t-SNE** — visualize high-dimensional data in 2D while preserving local structure
-- **Autoencoders** — neural networks that learn compressed representations
+- **K-Means Clustering** - partition data into K groups by minimizing within-cluster variance
+- **DBSCAN** - density-based clustering that finds arbitrarily shaped clusters and marks outliers as noise
+- **Hierarchical Clustering** - build a tree of nested clusters (dendrograms)
+- **Principal Component Analysis (PCA)** - find the directions of maximum variance in high-dimensional data
+- **t-SNE** - visualize high-dimensional data in 2D while preserving local structure
+- **Autoencoders** - neural networks that learn compressed representations
 
 We'll also implement K-Means from scratch, visualize cluster quality with silhouette scores, and apply PCA to the MNIST digits dataset.
 
 ---
 
-*Part 5 of 19 — [Part 4: Decision Trees and Ensemble Methods](#) | [Part 6: Unsupervised Learning](#)*
+*Part 5 of 19 - [Part 4: Decision Trees and Ensemble Methods](#) | [Part 6: Unsupervised Learning](#)*
 
 ---
 
@@ -2331,4 +2331,4 @@ We'll also implement K-Means from scratch, visualize cluster quality with silhou
 > 2. Extend the `BenchmarkSuite` to accept regression datasets and regression metrics (R², RMSE).
 > 3. Implement cross-validation for the `LinearSVM` class with gradient descent, tuning both C and learning rate.
 > 4. Build a Naive Bayes classifier for a multi-label classification problem (each sample can belong to multiple classes simultaneously).
-> 5. Investigate the effect of `max_features` in Random Forest and relate it to KNN's K — both are variance-reducing parameters.
+> 5. Investigate the effect of `max_features` in Random Forest and relate it to KNN's K - both are variance-reducing parameters.

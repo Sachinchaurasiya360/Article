@@ -1,8 +1,8 @@
-# Web Scraping Deep Dive — Part 1: BeautifulSoup & Requests — Parsing and Extraction
+# Web Scraping Deep Dive - Part 1: BeautifulSoup & Requests - Parsing and Extraction
 
 ---
 
-**Series:** Web Scraping — A Developer's Deep Dive
+**Series:** Web Scraping - A Developer's Deep Dive
 **Part:** 1 of 5 (Core Skills)
 **Audience:** Developers who have completed Part 0 and want to master static page scraping
 **Reading time:** ~45 minutes
@@ -11,12 +11,12 @@
 
 ## Table of Contents
 
-1. [The requests Library — Beyond GET](#1-the-requests-library--beyond-get)
-2. [BeautifulSoup — The Parser's Swiss Army Knife](#2-beautifulsoup--the-parsers-swiss-army-knife)
-3. [DOM Traversal — Navigating the Tree](#3-dom-traversal--navigating-the-tree)
+1. [The requests Library - Beyond GET](#1-the-requests-library--beyond-get)
+2. [BeautifulSoup - The Parser's Swiss Army Knife](#2-beautifulsoup--the-parsers-swiss-army-knife)
+3. [DOM Traversal - Navigating the Tree](#3-dom-traversal--navigating-the-tree)
 4. [Data Extraction Patterns](#4-data-extraction-patterns)
-5. [Session Handling — Cookies, Logins, CSRF](#5-session-handling--cookies-logins-csrf)
-6. [XPath — The Alternative Selector Language](#6-xpath--the-alternative-selector-language)
+5. [Session Handling - Cookies, Logins, CSRF](#5-session-handling--cookies-logins-csrf)
+6. [XPath - The Alternative Selector Language](#6-xpath--the-alternative-selector-language)
 7. [Building a Structured Extraction Pipeline](#7-building-a-structured-extraction-pipeline)
 8. [Performance: requests vs httpx](#8-performance-requests-vs-httpx)
 9. [Real-World Project: Job Listing Scraper](#9-real-world-project-job-listing-scraper)
@@ -24,22 +24,22 @@
 
 ---
 
-## 1. The requests Library — Beyond GET
+## 1. The requests Library - Beyond GET
 
 In Part 0, we used `requests.get()`. Now let's explore the full API.
 
-### 1.1 Sessions — Persistent Connections
+### 1.1 Sessions - Persistent Connections
 
 A `requests.Session` persists cookies, headers, and TCP connections across multiple requests. This is essential for scraping sites that require login or track state via cookies.
 
 ```python
 import requests
 
-# WITHOUT session — each request is independent
+# WITHOUT session - each request is independent
 response1 = requests.get("https://example.com/page1")
 response2 = requests.get("https://example.com/page2")  # No cookies from page1
 
-# WITH session — cookies and connections persist
+# WITH session - cookies and connections persist
 session = requests.Session()
 session.headers.update({
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -52,7 +52,7 @@ response2 = session.get("https://example.com/page2")   # Cookies sent automatica
 
 > **Key insight:** Always use `requests.Session()` for scraping. Even if you don't need cookies, it reuses TCP connections (HTTP keep-alive), which is significantly faster than creating a new connection per request.
 
-### 1.2 POST Requests — Forms and APIs
+### 1.2 POST Requests - Forms and APIs
 
 ```python
 session = requests.Session()
@@ -107,26 +107,26 @@ session.cookies.set("custom_cookie", "value", domain="example.com")
 ### 1.4 Timeouts, Proxies, and SSL
 
 ```python
-# Timeouts — ALWAYS set these
+# Timeouts - ALWAYS set these
 response = session.get(
     "https://example.com",
     timeout=(5, 30),  # (connect_timeout, read_timeout) in seconds
 )
 
-# Proxy support — route traffic through a proxy
+# Proxy support - route traffic through a proxy
 proxies = {
     "http": "http://proxy.example.com:8080",
     "https": "http://proxy.example.com:8080",
 }
 response = session.get("https://example.com", proxies=proxies)
 
-# Disable SSL verification (use cautiously — for self-signed certs only)
+# Disable SSL verification (use cautiously - for self-signed certs only)
 response = session.get("https://internal.corp.com", verify=False)
 ```
 
 ---
 
-## 2. BeautifulSoup — The Parser's Swiss Army Knife
+## 2. BeautifulSoup - The Parser's Swiss Army Knife
 
 BeautifulSoup transforms raw HTML into a navigable Python object tree.
 
@@ -137,13 +137,13 @@ from bs4 import BeautifulSoup
 
 html = "<html><body><p>Hello World</p></body></html>"
 
-# html.parser — built-in, no dependencies, good enough for most cases
+# html.parser - built-in, no dependencies, good enough for most cases
 soup = BeautifulSoup(html, "html.parser")
 
-# lxml — fastest, handles broken HTML better, requires C library
+# lxml - fastest, handles broken HTML better, requires C library
 soup = BeautifulSoup(html, "lxml")
 
-# html5lib — slowest, but parses exactly like a browser
+# html5lib - slowest, but parses exactly like a browser
 soup = BeautifulSoup(html, "html5lib")
 ```
 
@@ -155,7 +155,7 @@ soup = BeautifulSoup(html, "html5lib")
 
 > **Key insight:** Use `lxml` for production scraping (fastest + best error recovery). Use `html.parser` for quick scripts where you want zero dependencies. Use `html5lib` only when you need browser-identical parsing of severely broken HTML.
 
-### 2.2 Finding Elements — The Core Methods
+### 2.2 Finding Elements - The Core Methods
 
 ```python
 from bs4 import BeautifulSoup
@@ -196,7 +196,7 @@ print(first_card.select_one(".title").text)  # "Wireless Mouse"
 all_cards = soup.find_all("div", class_="card")
 print(len(all_cards))  # 3
 
-# --- select() vs select_one() — CSS selectors ---
+# --- select() vs select_one() - CSS selectors ---
 # select_one() = find() but with CSS selectors
 sale_item = soup.select_one(".price.sale")
 print(sale_item.text)  # "$24.99"
@@ -233,23 +233,23 @@ print(len(custom_results))  # 3
 card = soup.select_one("#prod-1")
 
 # --- Text Extraction ---
-# .text / .get_text() — all text content, including nested elements
+# .text / .get_text() - all text content, including nested elements
 print(card.select_one(".description").text)
 # "Ergonomic wireless mouse with USB receiver"
 
-# .get_text(separator) — join text nodes with a separator
+# .get_text(separator) - join text nodes with a separator
 print(card.select_one(".features").get_text(separator=" | ", strip=True))
 # "2.4 GHz wireless | 1600 DPI | Battery life: 12 months"
 
-# .string — ONLY if the element has a single text child (None otherwise)
+# .string - ONLY if the element has a single text child (None otherwise)
 print(card.select_one(".title").string)    # "Wireless Mouse"
 print(card.select_one(".description").string)  # None (has nested <strong>)
 
-# .strings — generator of all text nodes
+# .strings - generator of all text nodes
 print(list(card.select_one(".description").strings))
 # ['Ergonomic ', 'wireless', ' mouse with USB receiver']
 
-# .stripped_strings — like .strings but strips whitespace
+# .stripped_strings - like .strings but strips whitespace
 print(list(card.select_one(".features").stripped_strings))
 # ['2.4 GHz wireless', '1600 DPI', 'Battery life: 12 months']
 
@@ -262,7 +262,7 @@ print(card.attrs)                    # {'class': ['card'], 'data-category': 'ele
 
 ---
 
-## 3. DOM Traversal — Navigating the Tree
+## 3. DOM Traversal - Navigating the Tree
 
 Sometimes CSS selectors are not enough. You need to move up, down, or sideways in the tree.
 
@@ -306,16 +306,16 @@ flowchart TD
 card = soup.select_one("#prod-1")
 
 # --- Children ---
-# .children — direct children (iterator)
+# .children - direct children (iterator)
 for child in card.children:
     if child.name:  # Skip NavigableString (whitespace/text nodes)
         print(f"  {child.name}.{child.get('class', [''])[0]}")
 # h3.title, span.price, p.description, ul.features
 
-# .contents — direct children (list)
+# .contents - direct children (list)
 print(len(card.contents))  # Includes text nodes (whitespace)
 
-# .descendants — ALL nested elements (recursive)
+# .descendants - ALL nested elements (recursive)
 tags = [d.name for d in card.descendants if d.name]
 print(tags)  # ['h3', 'span', 'p', 'strong', 'ul', 'li', 'li', 'li']
 
@@ -324,7 +324,7 @@ price = soup.select_one("#prod-1 .price")
 print(price.parent.name)    # "div"
 print(price.parent["id"])   # "prod-1"
 
-# .parents — all ancestors up to the root
+# .parents - all ancestors up to the root
 for parent in price.parents:
     if parent.name:
         print(f"  {parent.name}", end="")
@@ -334,7 +334,7 @@ for parent in price.parents:
 title = soup.select_one("#prod-1 .title")
 print(title.find_next_sibling().text)              # "$24.99" (the price span)
 print(title.find_next_sibling("p").text)           # "Ergonomic wireless..." (skip to <p>)
-print(title.find_next_siblings("li"))              # [] (no <li> siblings — li is nested deeper)
+print(title.find_next_siblings("li"))              # [] (no <li> siblings - li is nested deeper)
 
 # Navigate between cards
 card1 = soup.select_one("#prod-1")
@@ -533,7 +533,7 @@ def safe_extract(element, selector: str, attribute: str = None, default: str = "
         return found.get(attribute, default)
     return found.get_text(strip=True)
 
-# Usage — never crashes on missing elements
+# Usage - never crashes on missing elements
 for card in soup.select(".product-card"):
     product = {
         "title": safe_extract(card, "h3.title"),
@@ -546,7 +546,7 @@ for card in soup.select(".product-card"):
 
 ---
 
-## 5. Session Handling — Cookies, Logins, CSRF
+## 5. Session Handling - Cookies, Logins, CSRF
 
 ### 5.1 Login Flow
 
@@ -561,7 +561,7 @@ sequenceDiagram
     S->>W: POST /login (username + password + CSRF token)
     W-->>S: 302 Redirect + Set-Cookie: auth_token=xxx
     S->>W: GET /dashboard (with auth cookie)
-    W-->>S: 200 OK — Protected content
+    W-->>S: 200 OK - Protected content
 ```
 
 ```python
@@ -610,7 +610,7 @@ def login_and_scrape(base_url: str, username: str, password: str) -> requests.Se
 
     # Step 4: Verify login success
     if response.url.endswith("/login") or response.status_code == 401:
-        raise Exception("Login failed — check credentials")
+        raise Exception("Login failed - check credentials")
 
     return session
 
@@ -647,7 +647,7 @@ for name, value in saved_cookies.items():
 
 ---
 
-## 6. XPath — The Alternative Selector Language
+## 6. XPath - The Alternative Selector Language
 
 While CSS selectors are sufficient for most scraping, XPath offers more power for complex queries. You need the `lxml` library for XPath support.
 
@@ -691,11 +691,11 @@ cheap_books = tree.xpath(
 price_element = tree.xpath('//p[@class="price_color"]')[0]
 parent_article = price_element.xpath('..')[0]  # Go up to parent
 
-# Conditional selection — only rows where stock > 0
+# Conditional selection - only rows where stock > 0
 in_stock = tree.xpath('//article[contains(.//p[@class="instock availability"], "In stock")]')
 ```
 
-> **Key insight:** Use CSS selectors for 90% of scraping tasks — they are simpler and more readable. Switch to XPath when you need text-based matching, parent navigation, or complex conditional selections that CSS cannot express.
+> **Key insight:** Use CSS selectors for 90% of scraping tasks - they are simpler and more readable. Switch to XPath when you need text-based matching, parent navigation, or complex conditional selections that CSS cannot express.
 
 ---
 
@@ -965,12 +965,12 @@ For sequential scraping, `requests` and `httpx` perform similarly. The differenc
 ```python
 import httpx
 
-# Synchronous httpx — drop-in replacement for requests
+# Synchronous httpx - drop-in replacement for requests
 with httpx.Client(
     headers={"User-Agent": "Mozilla/5.0 ..."},
     timeout=httpx.Timeout(5.0, read=30.0),
     follow_redirects=True,
-    http2=True,  # HTTP/2 support — not available in requests
+    http2=True,  # HTTP/2 support - not available in requests
 ) as client:
     response = client.get("https://example.com")
     print(response.http_version)  # "HTTP/2" if supported
@@ -992,7 +992,7 @@ with httpx.Client(
 
 ## 9. Real-World Project: Job Listing Scraper
 
-Let's build a complete scraper for a realistic use case — extracting job listings with proper error handling and data cleaning.
+Let's build a complete scraper for a realistic use case - extracting job listings with proper error handling and data cleaning.
 
 ```python
 # filename: job_scraper.py
@@ -1128,7 +1128,7 @@ def scrape_jobs(
         cards = soup.select(".job-card, .job-listing, article.job")
 
         if not cards:
-            logger.info("No more job cards found — stopping")
+            logger.info("No more job cards found - stopping")
             break
 
         for card in cards:
@@ -1160,17 +1160,17 @@ if __name__ == "__main__":
 
 ## 10. What's Next
 
-In **Part 2**, we tackle the biggest challenge in modern web scraping — **JavaScript-rendered pages**. You will learn:
+In **Part 2**, we tackle the biggest challenge in modern web scraping - **JavaScript-rendered pages**. You will learn:
 
 - Why `requests + BeautifulSoup` fails on modern SPAs
-- Selenium — the legacy standard for browser automation
-- Playwright — the modern alternative (faster, more reliable)
-- Waiting strategies — explicit waits, network idle, custom conditions
+- Selenium - the legacy standard for browser automation
+- Playwright - the modern alternative (faster, more reliable)
+- Waiting strategies - explicit waits, network idle, custom conditions
 - Intercepting network requests to find hidden APIs
 - Headless vs headed mode and when to use each
 
 ---
 
-**Series:** [Web Scraping Deep Dive — Index](index.md)
-**Previous:** [Part 0 — Foundations](web-scraping-deep-dive-part-0.md)
-**Next:** [Part 2 — Dynamic Content & Browser Automation](web-scraping-deep-dive-part-2.md)
+**Series:** [Web Scraping Deep Dive - Index](index.md)
+**Previous:** [Part 0 - Foundations](web-scraping-deep-dive-part-0.md)
+**Next:** [Part 2 - Dynamic Content & Browser Automation](web-scraping-deep-dive-part-2.md)

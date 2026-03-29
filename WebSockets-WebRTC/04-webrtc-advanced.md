@@ -1,4 +1,4 @@
-# Blog 4: WebRTC Advanced — System Design for Video/Audio Applications
+# Blog 4: WebRTC Advanced - System Design for Video/Audio Applications
 
 > Scaling WebRTC beyond 1-to-1 calls. SFU vs MCU architectures, building group video calls, simulcast, bandwidth estimation, recording, and production-grade system design for real-time communication platforms.
 
@@ -7,7 +7,7 @@
 ## Table of Contents
 
 - [The Scaling Problem: Why P2P Breaks in Groups](#the-scaling-problem-why-p2p-breaks-in-groups)
-- [SFU vs MCU — Media Server Architectures](#sfu-vs-mcu--media-server-architectures)
+- [SFU vs MCU - Media Server Architectures](#sfu-vs-mcu--media-server-architectures)
 - [Building a Group Video Call with an SFU](#building-a-group-video-call-with-an-sfu)
 - [Simulcast and Scalable Video Coding](#simulcast-and-scalable-video-coding)
 - [Bandwidth Estimation and Adaptive Quality](#bandwidth-estimation-and-adaptive-quality)
@@ -66,11 +66,11 @@ At 5 participants, a single person uploading 720p video 4 times needs **~6 Mbps 
 
 ---
 
-## SFU vs MCU — Media Server Architectures
+## SFU vs MCU - Media Server Architectures
 
-### SFU (Selective Forwarding Unit) — The Industry Standard
+### SFU (Selective Forwarding Unit) - The Industry Standard
 
-The SFU receives each participant's stream **once** and **forwards it selectively** to others. No encoding/decoding — it just routes packets.
+The SFU receives each participant's stream **once** and **forwards it selectively** to others. No encoding/decoding - it just routes packets.
 
 ```
 SFU Architecture:
@@ -103,7 +103,7 @@ Latency:             Low (~50-100ms added)
 Quality:             Each viewer can receive different quality (simulcast)
 ```
 
-### MCU (Multipoint Control Unit) — The Mixing Approach
+### MCU (Multipoint Control Unit) - The Mixing Approach
 
 The MCU decodes all incoming streams, **mixes them into a single composite** stream, and sends one mixed stream to each participant.
 
@@ -126,11 +126,11 @@ MCU Architecture:
 
 ```
 Upload per person:   1 stream
-Download per person: 1 stream (always — the mixed output)
+Download per person: 1 stream (always - the mixed output)
 Server CPU:          VERY HIGH (decode all + mix + re-encode)
 Server bandwidth:    Low (only 1 outgoing stream per participant)
 Latency:             Higher (~200-500ms due to decoding/encoding)
-Quality:             Fixed layout — everyone sees the same thing
+Quality:             Fixed layout - everyone sees the same thing
 ```
 
 ### SFU vs MCU Comparison
@@ -224,7 +224,7 @@ const worker = await mediasoup.createWorker({
   rtcMaxPort: 59999
 });
 
-// Create a Router (represents a "room" — all participants share a router)
+// Create a Router (represents a "room" - all participants share a router)
 const mediaCodecs = [
   {
     kind: 'audio',
@@ -394,7 +394,7 @@ class SFUClient {
 
 ## Simulcast and Scalable Video Coding
 
-### Simulcast — Send Multiple Quality Layers
+### Simulcast - Send Multiple Quality Layers
 
 With simulcast, the sender encodes their video at **multiple resolutions simultaneously**. The SFU then forwards the appropriate layer to each receiver based on their bandwidth and display size.
 
@@ -435,7 +435,7 @@ const videoProducer = await sendTransport.produce({
 // it sends the High layer.
 ```
 
-### Scalable Video Coding (SVC) — VP9 and AV1
+### Scalable Video Coding (SVC) - VP9 and AV1
 
 ```
 Simulcast: Separate encodes at different resolutions (3× encoding cost)
@@ -578,15 +578,15 @@ class AdaptiveQuality {
     if (packetLoss > 0.1 || rtt > 0.3) {
       // Bad network: drop to low quality
       targetBitrate = 150000; // 150 Kbps
-      console.log('Network poor — switching to low quality');
+      console.log('Network poor - switching to low quality');
     } else if (packetLoss > 0.03 || rtt > 0.15 || bandwidth < 800000) {
       // Moderate network: medium quality
       targetBitrate = 500000; // 500 Kbps
-      console.log('Network moderate — switching to medium quality');
+      console.log('Network moderate - switching to medium quality');
     } else {
       // Good network: high quality
       targetBitrate = 1500000; // 1.5 Mbps
-      console.log('Network good — high quality');
+      console.log('Network good - high quality');
     }
 
     params.encodings[0].maxBitrate = targetBitrate;
@@ -730,7 +730,7 @@ await peerConnection.setLocalDescription({ type: 'offer', sdp: modifiedSdp });
 function preferCodec(sdp, kind, codecName) {
   const lines = sdp.split('\r\n');
   // Reorder codec priority in the m= line
-  // (Real implementation needs full SDP munging — simplified here)
+  // (Real implementation needs full SDP munging - simplified here)
   return lines.join('\r\n');
 }
 
@@ -837,7 +837,7 @@ class RoomService {
     let sfuId = await this.redis.hget(`room:${roomId}`, 'sfuId');
 
     if (!sfuId) {
-      // New room — pick the least loaded SFU
+      // New room - pick the least loaded SFU
       sfuId = await this.selectBestSFU();
       await this.redis.hset(`room:${roomId}`, 'sfuId', sfuId);
     }
@@ -906,7 +906,7 @@ Optimization opportunities:
 
 ```
 For live streaming (1 broadcaster, thousands of viewers):
-WebRTC P2P doesn't work — you can't have 10,000 peer connections.
+WebRTC P2P doesn't work - you can't have 10,000 peer connections.
 
 Solution: WebRTC for ingest, HLS/DASH for distribution
 
@@ -1224,18 +1224,18 @@ Top cost-saving strategies:
 | Concept | What to Remember |
 |---|---|
 | Full mesh P2P | Breaks beyond 4-5 participants (N² complexity) |
-| SFU | Industry standard — forward packets, no transcoding, low latency |
-| MCU | Mixes all streams — high CPU, low client bandwidth, higher latency |
+| SFU | Industry standard - forward packets, no transcoding, low latency |
+| MCU | Mixes all streams - high CPU, low client bandwidth, higher latency |
 | Simulcast | Send multiple quality layers; SFU picks the right one per viewer |
-| SVC (VP9/AV1) | Single encode with embedded layers — more efficient than simulcast |
-| Bandwidth estimation | GCC/REMB/Transport-CC — WebRTC adapts quality automatically |
+| SVC (VP9/AV1) | Single encode with embedded layers - more efficient than simulcast |
+| Bandwidth estimation | GCC/REMB/Transport-CC - WebRTC adapts quality automatically |
 | Recording | SFU forwards to recording consumer → FFmpeg → S3 |
 | Cascading SFUs | Tree structure for scaling to thousands of viewers |
-| Active speaker | Only forward HD video for the current speaker — saves massive bandwidth |
+| Active speaker | Only forward HD video for the current speaker - saves massive bandwidth |
 | ICE restart | Handles network changes (WiFi → mobile) without dropping the call |
 | Cost optimization | Simulcast + audio-only + minimize TURN + auto-scaling |
 
 ---
 
-**Previous:** [← Blog 3 — WebRTC Fundamentals](./03-webrtc-fundamentals.md)
+**Previous:** [← Blog 3 - WebRTC Fundamentals](./03-webrtc-fundamentals.md)
 **Back to index:** [README](./README.md)

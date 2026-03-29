@@ -1,8 +1,8 @@
-# Machine Learning Deep Dive — Part 15: Advanced Computer Vision — Object Detection, Segmentation, and GANs
+# Machine Learning Deep Dive - Part 15: Advanced Computer Vision - Object Detection, Segmentation, and GANs
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
 **Part:** 15 of 19 (Applied ML)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~60 minutes
@@ -13,7 +13,7 @@
 
 In Part 14 we explored the Transformer architecture, walked through BERT's pre-training objectives (masked language modeling and next-sentence prediction), and fine-tuned a pre-trained BERT model on a text classification task. We saw how attention mechanisms allow the model to build rich contextual representations of language, and how transfer learning dramatically reduces the data and compute needed for downstream NLP tasks.
 
-Image classification asks "what is in this image?" But real computer vision problems are harder: "where is it?" (detection), "which pixels belong to it?" (segmentation), and "can we generate new realistic images?" (generation). These tasks power self-driving cars, medical imaging, and content creation — and today we tackle all of them.
+Image classification asks "what is in this image?" But real computer vision problems are harder: "where is it?" (detection), "which pixels belong to it?" (segmentation), and "can we generate new realistic images?" (generation). These tasks power self-driving cars, medical imaging, and content creation - and today we tackle all of them.
 
 ---
 
@@ -21,11 +21,11 @@ Image classification asks "what is in this image?" But real computer vision prob
 
 1. [Object Detection Overview](#1-object-detection-overview)
 2. [The R-CNN Family (Two-Stage Detectors)](#2-the-r-cnn-family-two-stage-detectors)
-3. [YOLO — You Only Look Once](#3-yolo--you-only-look-once)
+3. [YOLO - You Only Look Once](#3-yolo--you-only-look-once)
 4. [Semantic Segmentation](#4-semantic-segmentation)
 5. [Instance Segmentation](#5-instance-segmentation)
 6. [Generative Adversarial Networks (GANs)](#6-generative-adversarial-networks-gans)
-7. [DCGAN — Deep Convolutional GAN](#7-dcgan--deep-convolutional-gan)
+7. [DCGAN - Deep Convolutional GAN](#7-dcgan--deep-convolutional-gan)
 8. [Variational Autoencoders (VAEs)](#8-variational-autoencoders-vaes)
 9. [Vision Transformers (ViT)](#9-vision-transformers-vit)
 10. [Project: Object Detection System with YOLO](#10-project-object-detection-system-with-yolo)
@@ -198,7 +198,7 @@ def non_maximum_suppression(boxes, scores, iou_threshold=0.5):
 # --- Test ---
 boxes = np.array([
     [100, 100, 210, 210],   # high confidence
-    [105, 105, 215, 215],   # slightly shifted — same object
+    [105, 105, 215, 215],   # slightly shifted - same object
     [110, 110, 220, 220],   # another shifted duplicate
     [300, 300, 400, 400],   # completely different object
 ])
@@ -261,7 +261,7 @@ graph TD
     D1["RPN + RoI Align\nPixel mask output\n~5 FPS"] --- D
 ```
 
-### R-CNN (2014) — The Original
+### R-CNN (2014) - The Original
 
 **R-CNN** (Girshick et al., 2014) introduced the region proposal + CNN pipeline:
 
@@ -271,7 +271,7 @@ graph TD
 4. Classify each region with an SVM
 5. Refine bounding boxes with a regression model
 
-**Problem:** Extremely slow — processing each region independently meant ~47 seconds per image at test time and could not be trained end-to-end.
+**Problem:** Extremely slow - processing each region independently meant ~47 seconds per image at test time and could not be trained end-to-end.
 
 ### Fast R-CNN (2015)
 
@@ -391,7 +391,7 @@ Supports multi-scale detection.
 
 ---
 
-## 3. YOLO — You Only Look Once
+## 3. YOLO - You Only Look Once
 
 **YOLO** (You Only Look Once) is a family of one-stage object detectors that frame detection as a single regression problem: predict all bounding boxes and class probabilities in one forward pass through the network.
 
@@ -616,7 +616,7 @@ Custom YOLO training pipeline configured.
 
 ## 4. Semantic Segmentation
 
-**Semantic segmentation** assigns a class label to every single pixel in an image. Unlike detection (bounding boxes), segmentation provides pixel-precise boundaries for each class. Unlike instance segmentation, all instances of the same class share the same label — two overlapping cars are both labeled "car."
+**Semantic segmentation** assigns a class label to every single pixel in an image. Unlike detection (bounding boxes), segmentation provides pixel-precise boundaries for each class. Unlike instance segmentation, all instances of the same class share the same label - two overlapping cars are both labeled "car."
 
 Applications include road segmentation in autonomous driving, organ segmentation in medical imaging, and background removal in photography.
 
@@ -1038,7 +1038,7 @@ Output per instance: box + class + score + H×W binary mask
 
 **Generative Adversarial Networks (GANs)** (Goodfellow et al., 2014) are a framework for training generative models through an adversarial game between two neural networks.
 
-> GANs are a two-player game where the generator tries to fool the discriminator and the discriminator tries not to be fooled — ideally they improve together until the generator produces perfect fakes and the discriminator can no longer tell real from fake.
+> GANs are a two-player game where the generator tries to fool the discriminator and the discriminator tries not to be fooled - ideally they improve together until the generator produces perfect fakes and the discriminator can no longer tell real from fake.
 
 ### The Adversarial Game
 
@@ -1218,7 +1218,7 @@ graph TD
 
 ---
 
-## 7. DCGAN — Deep Convolutional GAN
+## 7. DCGAN - Deep Convolutional GAN
 
 **DCGAN** (Radford et al., 2015) applied convolutional architectures to GANs with a set of architectural guidelines that stabilized training dramatically. DCGAN became the de facto standard for image generation GANs.
 
@@ -1375,7 +1375,7 @@ def train_dcgan(num_epochs=25, batch_size=128, latent_dim=100, lr=2e-4):
     print(f"  Latent dimension: {latent_dim}")
     print(f"  Output image: 1×64×64 (grayscale)")
 
-    # Training loop (abbreviated — full loop would iterate over DataLoader)
+    # Training loop (abbreviated - full loop would iterate over DataLoader)
     # for epoch in range(num_epochs):
     #     for real_imgs, _ in loader:
     #         real_imgs = real_imgs.to(device)
@@ -2686,12 +2686,12 @@ Detection Metrics (IoU@0.5):
 
 **Part 16: Model Evaluation and Selection** dives deep into the science of rigorously evaluating and choosing machine learning models:
 
-- **Cross-validation strategies:** k-fold, stratified k-fold, time-series splits — when to use which
-- **Metrics deep dive:** precision, recall, F1, ROC-AUC, PR-AUC, Cohen's Kappa, MCC — and which metric to optimize for your problem
+- **Cross-validation strategies:** k-fold, stratified k-fold, time-series splits - when to use which
+- **Metrics deep dive:** precision, recall, F1, ROC-AUC, PR-AUC, Cohen's Kappa, MCC - and which metric to optimize for your problem
 - **Calibration:** Are your model's probabilities trustworthy? Reliability diagrams, Platt scaling, isotonic regression
 - **Statistical testing:** Is model A actually better than model B? McNemar's test, Wilcoxon signed-rank test
 - **Hyperparameter optimization:** Grid search vs. random search vs. Bayesian optimization (Optuna)
-- **Experiment tracking:** MLflow, Weights & Biases — logging experiments, comparing runs, versioning models
+- **Experiment tracking:** MLflow, Weights & Biases - logging experiments, comparing runs, versioning models
 - **Model selection frameworks:** Nested cross-validation, AutoML approaches
 - **Bias-variance tradeoff revisited:** Learning curves, validation curves, diagnosing underfitting/overfitting
 - **The evaluation pipeline in production:** Train/val/test splits, holdout sets, data leakage detection
@@ -2704,9 +2704,9 @@ By the end of Part 16, you will have a systematic, rigorous process for evaluati
 
 This part covered the full breadth of advanced computer vision:
 
-We started with the **object detection problem** — implementing IoU and NMS from scratch to understand the foundations. We traced the **R-CNN family** evolution from the slow region-by-region R-CNN through the shared-features Fast R-CNN to the end-to-end Faster R-CNN with its learnable RPN.
+We started with the **object detection problem** - implementing IoU and NMS from scratch to understand the foundations. We traced the **R-CNN family** evolution from the slow region-by-region R-CNN through the shared-features Fast R-CNN to the end-to-end Faster R-CNN with its learnable RPN.
 
-We learned **YOLO's** elegant one-stage approach — a single forward pass predicting all boxes across a grid of cells — and built a full YOLOv8 inference and training pipeline including a REST API.
+We learned **YOLO's** elegant one-stage approach - a single forward pass predicting all boxes across a grid of cells - and built a full YOLOv8 inference and training pipeline including a REST API.
 
 For **segmentation**, we implemented the full **U-Net** architecture with its crucial skip connections, built Dice loss from scratch, and contrasted semantic versus instance segmentation, using Mask R-CNN for the latter.
 
@@ -2716,4 +2716,4 @@ Finally, **Vision Transformers** showed how treating image patches as tokens ena
 
 ---
 
-*End of Part 15 — Part 16 covers Model Evaluation and Selection.*
+*End of Part 15 - Part 16 covers Model Evaluation and Selection.*

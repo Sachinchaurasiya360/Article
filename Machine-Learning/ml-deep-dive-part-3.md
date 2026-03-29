@@ -1,19 +1,19 @@
-# Machine Learning Deep Dive — Part 3: Classification — Logistic Regression, Decision Boundaries, and Evaluation
+# Machine Learning Deep Dive - Part 3: Classification - Logistic Regression, Decision Boundaries, and Evaluation
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
 **Part:** 3 of 19 (Foundations)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~45 minutes
 
 ---
 
-In Part 2, we built a complete linear regression model from scratch — deriving the math behind gradient descent, implementing it in NumPy, and building a house price predictor that learned from data. We saw how a machine can adjust its parameters iteratively to minimize prediction error, converging on a model that generalizes to new inputs.
+In Part 2, we built a complete linear regression model from scratch - deriving the math behind gradient descent, implementing it in NumPy, and building a house price predictor that learned from data. We saw how a machine can adjust its parameters iteratively to minimize prediction error, converging on a model that generalizes to new inputs.
 
-Linear regression predicts numbers. But what if you want to predict a category — spam or not spam, malignant or benign, fraud or legitimate? That's **classification**, and it's arguably the most common ML task in industry. Nearly every high-stakes system you interact with — your email inbox, your credit card processor, your medical imaging software — is making classification decisions hundreds of times per second.
+Linear regression predicts numbers. But what if you want to predict a category - spam or not spam, malignant or benign, fraud or legitimate? That's **classification**, and it's arguably the most common ML task in industry. Nearly every high-stakes system you interact with - your email inbox, your credit card processor, your medical imaging software - is making classification decisions hundreds of times per second.
 
-In this part, we start with the foundational classification algorithm: **logistic regression**. Despite its name, it does not do regression — it classifies. We will derive it from scratch, implement every component in NumPy, build a full evaluation framework, and finish with a working email spam classifier. By the end, you will understand not just *how* to train a classifier, but *how to know if it is actually working*.
+In this part, we start with the foundational classification algorithm: **logistic regression**. Despite its name, it does not do regression - it classifies. We will derive it from scratch, implement every component in NumPy, build a full evaluation framework, and finish with a working email spam classifier. By the end, you will understand not just *how* to train a classifier, but *how to know if it is actually working*.
 
 ---
 
@@ -23,7 +23,7 @@ In this part, we start with the foundational classification algorithm: **logisti
 2. [Logistic Regression from Scratch](#2-logistic-regression-from-scratch)
 3. [Multi-Class Classification](#3-multi-class-classification)
 4. [Decision Boundaries](#4-decision-boundaries)
-5. [Evaluation Metrics — Deep Dive](#5-evaluation-metrics--deep-dive)
+5. [Evaluation Metrics - Deep Dive](#5-evaluation-metrics--deep-dive)
 6. [Class Imbalance](#6-class-imbalance)
 7. [scikit-learn Pipeline](#7-scikit-learn-pipeline)
 8. [Project: Email Spam Classifier](#8-project-email-spam-classifier)
@@ -36,7 +36,7 @@ In this part, we start with the foundational classification algorithm: **logisti
 
 ### 1.1 Binary Classification Setup
 
-A **classification problem** asks: given input features X, which discrete category does this example belong to? The simplest case is **binary classification**, where there are exactly two categories — often labeled 0 and 1, or "negative" and "positive".
+A **classification problem** asks: given input features X, which discrete category does this example belong to? The simplest case is **binary classification**, where there are exactly two categories - often labeled 0 and 1, or "negative" and "positive".
 
 Formally:
 - Input: feature vector **x** ∈ ℝⁿ
@@ -87,7 +87,7 @@ for i in range(5):
 
 ### 1.2 Why Linear Regression Fails for Classification
 
-Your first instinct might be to apply linear regression to this problem. After all, it worked beautifully for house prices — why not set the threshold at 0.5 and call values above it class 1?
+Your first instinct might be to apply linear regression to this problem. After all, it worked beautifully for house prices - why not set the threshold at 0.5 and call values above it class 1?
 
 There are two fundamental problems with this approach.
 
@@ -165,7 +165,7 @@ The derivative has a particularly elegant form:
 
 $$\sigma'(z) = \sigma(z) \cdot (1 - \sigma(z))$$
 
-This is important — it means we can compute the gradient using only the sigmoid output itself, with no additional computation.
+This is important - it means we can compute the gradient using only the sigmoid output itself, with no additional computation.
 
 ```python
 # file: sigmoid_from_scratch.py
@@ -241,7 +241,7 @@ xychart-beta
 
 The S-curve shape tells the whole story: inputs far below zero confidently map to "class 0", inputs far above zero confidently map to "class 1", and the transition happens smoothly around zero. The **decision boundary** sits at z = 0, where σ(z) = 0.5.
 
-> **Key Insight:** The sigmoid function does not just produce a hard 0/1 prediction. It produces a *probability* — a confidence score between 0 and 1. This is what makes logistic regression far more useful than a simple threshold classifier. You can say "I am 94% confident this email is spam" rather than just "spam."
+> **Key Insight:** The sigmoid function does not just produce a hard 0/1 prediction. It produces a *probability* - a confidence score between 0 and 1. This is what makes logistic regression far more useful than a simple threshold classifier. You can say "I am 94% confident this email is spam" rather than just "spam."
 
 ---
 
@@ -261,7 +261,7 @@ Where:
 The **decision boundary** is where P(y=1|**x**) = 0.5, which happens when:
 $$\mathbf{w} \cdot \mathbf{x} + b = 0$$
 
-This is a **linear equation in feature space** — for 2D features, it's a line; for 3D, a plane; for higher dimensions, a hyperplane.
+This is a **linear equation in feature space** - for 2D features, it's a line; for 3D, a plane; for higher dimensions, a hyperplane.
 
 ### 2.2 Binary Cross-Entropy Loss (Log Loss)
 
@@ -353,7 +353,7 @@ print(f"  --> Confident wrong answer gets penalized exponentially harder!")
 #   --> Confident wrong answer gets penalized exponentially harder!
 ```
 
-> **Key Insight:** The logarithm in the loss function creates an asymmetric penalty. Being confidently wrong (predicting 0.01 when truth is 1) is penalized enormously — 4.6 vs 0.01 for being confidently right. This is exactly what you want: the optimizer is strongly motivated to never be confidently wrong.
+> **Key Insight:** The logarithm in the loss function creates an asymmetric penalty. Being confidently wrong (predicting 0.01 when truth is 1) is penalized enormously - 4.6 vs 0.01 for being confidently right. This is exactly what you want: the optimizer is strongly motivated to never be confidently wrong.
 
 ### 2.3 Gradient Derivation
 
@@ -370,7 +370,7 @@ $$\frac{\partial J}{\partial \mathbf{w}} = \frac{1}{m} \mathbf{X}^T (\hat{\mathb
 
 $$\frac{\partial J}{\partial b} = \frac{1}{m} \sum_i (\hat{y}_i - y_i)$$
 
-Remarkably, this has **exactly the same form** as the linear regression gradient — the only difference is that $\hat{y}$ comes from sigmoid rather than a direct linear function. This is not a coincidence; it falls out of the maximum likelihood framework.
+Remarkably, this has **exactly the same form** as the linear regression gradient - the only difference is that $\hat{y}$ comes from sigmoid rather than a direct linear function. This is not a coincidence; it falls out of the maximum likelihood framework.
 
 ### 2.4 Full Logistic Regression Implementation
 
@@ -699,7 +699,7 @@ class OneVsRestClassifier:
             self.classifiers[cls] = clf
 
             accuracy = clf.score(X, y_binary)
-            print(f"  Class {cls} vs. Rest — train accuracy: {accuracy:.4f}")
+            print(f"  Class {cls} vs. Rest - train accuracy: {accuracy:.4f}")
 
         return self
 
@@ -764,9 +764,9 @@ print(f"  True labels: {[class_names[t] for t in y_test[:5]]}")
 # Iris dataset classes: ['setosa' 'versicolor' 'virginica']
 #
 # Training One-vs-Rest classifier:
-#   Class 0 vs. Rest — train accuracy: 1.0000
-#   Class 1 vs. Rest — train accuracy: 0.9250
-#   Class 2 vs. Rest — train accuracy: 0.9583
+#   Class 0 vs. Rest - train accuracy: 1.0000
+#   Class 1 vs. Rest - train accuracy: 0.9250
+#   Class 2 vs. Rest - train accuracy: 0.9583
 #
 # Train accuracy: 0.9583
 # Test accuracy:  0.9667
@@ -881,7 +881,7 @@ print(f"\nCategorical cross-entropy loss: {loss:.4f}")
 
 ### 4.1 Linear Decision Boundaries
 
-Logistic regression always produces a **linear decision boundary** — a line (2D), plane (3D), or hyperplane (nD). This is because the boundary is defined by:
+Logistic regression always produces a **linear decision boundary** - a line (2D), plane (3D), or hyperplane (nD). This is because the boundary is defined by:
 
 $$\mathbf{w} \cdot \mathbf{x} + b = 0$$
 
@@ -1012,11 +1012,11 @@ plt.savefig('polynomial_boundaries.png', dpi=150, bbox_inches='tight')
 
 ---
 
-## 5. Evaluation Metrics — Deep Dive
+## 5. Evaluation Metrics - Deep Dive
 
 ### 5.1 Why Accuracy Alone is Misleading
 
-**Accuracy** — the fraction of correct predictions — is intuitive but dangerously misleading when classes are imbalanced.
+**Accuracy** - the fraction of correct predictions - is intuitive but dangerously misleading when classes are imbalanced.
 
 Consider fraud detection: if 99% of transactions are legitimate, a model that always predicts "not fraud" achieves 99% accuracy. But it catches exactly zero fraud cases. This model is useless, yet accuracy would call it excellent.
 
@@ -1158,10 +1158,10 @@ FP = cm[0, 1]
 FN = cm[1, 0]
 TP = cm[1, 1]
 print(f"\nBreakdown:")
-print(f"  True Negatives  (TN): {TN}  — correctly identified as benign")
-print(f"  False Positives (FP): {FP}  — benign flagged as malignant (unnecessary biopsy)")
-print(f"  False Negatives (FN): {FN}  — malignant missed! (dangerous)")
-print(f"  True Positives  (TP): {TP}  — correctly identified as malignant")
+print(f"  True Negatives  (TN): {TN}  - correctly identified as benign")
+print(f"  False Positives (FP): {FP}  - benign flagged as malignant (unnecessary biopsy)")
+print(f"  False Negatives (FN): {FN}  - malignant missed! (dangerous)")
+print(f"  True Positives  (TP): {TP}  - correctly identified as malignant")
 print(f"  Total: {TN+FP+FN+TP} (should equal {len(y_true)})")
 
 # Expected output:
@@ -1172,10 +1172,10 @@ print(f"  Total: {TN+FP+FN+TP} (should equal {len(y_true)})")
 # Actual Malignant |       3         7
 #
 # Breakdown:
-#   True Negatives  (TN): 8  — correctly identified as benign
-#   False Positives (FP): 2  — benign flagged as malignant (unnecessary biopsy)
-#   False Negatives (FN): 3  — malignant missed! (dangerous)
-#   True Positives  (TP): 7  — correctly identified as malignant
+#   True Negatives  (TN): 8  - correctly identified as benign
+#   False Positives (FP): 2  - benign flagged as malignant (unnecessary biopsy)
+#   False Negatives (FN): 3  - malignant missed! (dangerous)
+#   True Positives  (TP): 7  - correctly identified as malignant
 #   Total: 20 (should equal 20)
 ```
 
@@ -1307,7 +1307,7 @@ This is one of the most important decisions in applied ML. The choice depends en
 | Drug side effect detection | **Recall** | Missing a dangerous side effect is life-threatening |
 | Content moderation | **Precision** or **F1** | Balance between silencing legitimate users and allowing harmful content |
 
-> **Practitioner's Rule:** Start by asking "Which error is more costly — a false positive or a false negative?" Then set your threshold to minimize that error, and report the metric that reflects that priority.
+> **Practitioner's Rule:** Start by asking "Which error is more costly - a false positive or a false negative?" Then set your threshold to minimize that error, and report the metric that reflects that priority.
 
 ### 5.5 Macro vs Micro vs Weighted Averaging
 
@@ -1813,7 +1813,7 @@ print(f"Regularization parameter C: {pipeline.named_steps['clf'].C}")
 
 ### 7.2 GridSearchCV for Hyperparameter Tuning
 
-The **C** parameter in logistic regression controls **regularization strength** — the trade-off between fitting the training data and keeping weights small. Smaller C means more regularization (simpler model, less overfitting).
+The **C** parameter in logistic regression controls **regularization strength** - the trade-off between fitting the training data and keeping weights small. Smaller C means more regularization (simpler model, less overfitting).
 
 ```python
 # file: gridsearch_logistic.py
@@ -1904,7 +1904,7 @@ Raw text cannot be fed directly into logistic regression. We need to convert tex
 
 - **TF (Term Frequency):** How often does word w appear in document d?
 - **IDF (Inverse Document Frequency):** How rare is word w across all documents? (log(N/df_w))
-- **TF-IDF:** TF * IDF — high when a word appears frequently in a specific document but rarely overall
+- **TF-IDF:** TF * IDF - high when a word appears frequently in a specific document but rarely overall
 
 ```python
 # file: tfidf_from_scratch.py
@@ -2341,7 +2341,7 @@ print("  - Business decision: How much does a missed spam vs lost email cost?")
 In **Part 3**, we covered the full arc of classification:
 
 - Why linear regression fails for classification and how the sigmoid function solves it
-- Binary cross-entropy loss — derived from maximum likelihood estimation
+- Binary cross-entropy loss - derived from maximum likelihood estimation
 - Logistic regression implemented from scratch in NumPy, including gradient derivation
 - Multi-class strategies: One-vs-Rest and Softmax regression
 - Linear and non-linear decision boundaries via polynomial features
@@ -2352,16 +2352,16 @@ In **Part 3**, we covered the full arc of classification:
 
 You now have a solid foundation in the most common ML task type.
 
-**Part 4: Decision Trees and Random Forests** will take a completely different approach to classification. Instead of linear boundaries and probability estimates, decision trees build nested if-else rules directly from data — entirely interpretable, requiring no feature scaling, handling mixed data types natively. We will:
+**Part 4: Decision Trees and Random Forests** will take a completely different approach to classification. Instead of linear boundaries and probability estimates, decision trees build nested if-else rules directly from data - entirely interpretable, requiring no feature scaling, handling mixed data types natively. We will:
 
 - Build a decision tree from scratch (recursive binary splitting, Gini impurity, information gain)
 - Understand why individual trees overfit and how **bagging** fixes this
-- Implement **Random Forests** — the "swiss army knife" of ML algorithms
+- Implement **Random Forests** - the "swiss army knife" of ML algorithms
 - Learn feature importance and partial dependence plots
 - Compare decision boundaries between logistic regression and tree-based models
 - Build a complete project: predicting customer churn with a Random Forest
 
 ---
 
-*Written for the Machine Learning — A Developer's Deep Dive series.*
-*Part 3 of 19 | Next: Part 4 — Decision Trees and Random Forests*
+*Written for the Machine Learning - A Developer's Deep Dive series.*
+*Part 3 of 19 | Next: Part 4 - Decision Trees and Random Forests*

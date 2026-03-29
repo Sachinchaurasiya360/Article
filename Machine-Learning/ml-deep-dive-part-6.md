@@ -1,8 +1,8 @@
-# Machine Learning Deep Dive — Part 6: Unsupervised Learning — Clustering, Dimensionality Reduction, and Anomaly Detection
+# Machine Learning Deep Dive - Part 6: Unsupervised Learning - Clustering, Dimensionality Reduction, and Anomaly Detection
 
 ---
 
-**Series:** Machine Learning — A Developer's Deep Dive from Fundamentals to Production
+**Series:** Machine Learning - A Developer's Deep Dive from Fundamentals to Production
 **Part:** 6 of 19 (Core Algorithms)
 **Audience:** Developers with Python experience who want to master machine learning from the ground up
 **Reading time:** ~50 minutes
@@ -11,11 +11,11 @@
 
 ## Recap: Where We've Been
 
-In Part 5, we toured the algorithm zoo — SVMs carved decision boundaries with maximum margin, KNN let neighborhood votes decide class membership, and Naive Bayes applied probabilistic reasoning through Bayes' theorem to tackle text classification with surprising effectiveness. Each algorithm revealed a different philosophy for separating labeled examples into meaningful categories.
+In Part 5, we toured the algorithm zoo - SVMs carved decision boundaries with maximum margin, KNN let neighborhood votes decide class membership, and Naive Bayes applied probabilistic reasoning through Bayes' theorem to tackle text classification with surprising effectiveness. Each algorithm revealed a different philosophy for separating labeled examples into meaningful categories.
 
-Everything we've done so far requires **labeled data** — someone had to tell us "this email is spam" or "this house sold for $300k". But what if you have a mountain of data with no labels? Unsupervised learning lets you find hidden structure in raw data. No teacher, no correct answers — just patterns waiting to be discovered.
+Everything we've done so far requires **labeled data** - someone had to tell us "this email is spam" or "this house sold for $300k". But what if you have a mountain of data with no labels? Unsupervised learning lets you find hidden structure in raw data. No teacher, no correct answers - just patterns waiting to be discovered.
 
-This part is arguably the most creatively rich territory in all of machine learning. Clustering reveals natural groupings your business never knew existed. Dimensionality reduction lets you see 100-dimensional data with human eyes. Anomaly detection catches the outlier that should not exist. These tools do not require annotation effort — just data, curiosity, and the right algorithms.
+This part is arguably the most creatively rich territory in all of machine learning. Clustering reveals natural groupings your business never knew existed. Dimensionality reduction lets you see 100-dimensional data with human eyes. Anomaly detection catches the outlier that should not exist. These tools do not require annotation effort - just data, curiosity, and the right algorithms.
 
 ---
 
@@ -23,11 +23,11 @@ This part is arguably the most creatively rich territory in all of machine learn
 
 1. [The Unsupervised Learning Landscape](#the-unsupervised-learning-landscape)
 2. [K-Means Clustering](#k-means-clustering)
-3. [DBSCAN — Density-Based Clustering](#dbscan--density-based-clustering)
+3. [DBSCAN - Density-Based Clustering](#dbscan--density-based-clustering)
 4. [Hierarchical Clustering](#hierarchical-clustering)
-5. [PCA — Principal Component Analysis](#pca--principal-component-analysis)
-6. [t-SNE — t-Distributed Stochastic Neighbor Embedding](#t-sne--t-distributed-stochastic-neighbor-embedding)
-7. [UMAP — Uniform Manifold Approximation and Projection](#umap--uniform-manifold-approximation-and-projection)
+5. [PCA - Principal Component Analysis](#pca--principal-component-analysis)
+6. [t-SNE - t-Distributed Stochastic Neighbor Embedding](#t-sne--t-distributed-stochastic-neighbor-embedding)
+7. [UMAP - Uniform Manifold Approximation and Projection](#umap--uniform-manifold-approximation-and-projection)
 8. [Anomaly Detection](#anomaly-detection)
 9. [Association Rules and Market Basket Analysis](#association-rules-and-market-basket-analysis)
 10. [Project: Customer Segmentation System](#project-customer-segmentation-system)
@@ -70,7 +70,7 @@ graph TD
     F --> F2[FP-Growth]
 ```
 
-> **Key insight:** Unsupervised learning answers: "What structure exists here?" Supervised learning answers: "Given this input, predict that output." They complement each other — often you cluster first, then train a classifier on each cluster.
+> **Key insight:** Unsupervised learning answers: "What structure exists here?" Supervised learning answers: "Given this input, predict that output." They complement each other - often you cluster first, then train a classifier on each cluster.
 
 ---
 
@@ -80,7 +80,7 @@ graph TD
 
 Imagine you have thousands of customer records with two features: average order value and purchase frequency. You want to discover natural customer segments. **K-Means** assumes there are exactly K groups, each defined by a central point called a **centroid**, and assigns every data point to its nearest centroid.
 
-The beautiful thing: you never told the algorithm what makes a "good customer" vs a "bargain hunter." It figures this out purely from geometry — points close together belong together.
+The beautiful thing: you never told the algorithm what makes a "good customer" vs a "bargain hunter." It figures this out purely from geometry - points close together belong together.
 
 ### The Algorithm
 
@@ -350,7 +350,7 @@ plot_kmeans_iterations(X, km, max_frames=8)
 
 ### The Elbow Method
 
-How do you choose K? You don't know in advance how many natural clusters exist. The **Elbow Method** plots WCSS vs K and looks for the "elbow" — the point of diminishing returns where adding more clusters provides minimal improvement.
+How do you choose K? You don't know in advance how many natural clusters exist. The **Elbow Method** plots WCSS vs K and looks for the "elbow" - the point of diminishing returns where adding more clusters provides minimal improvement.
 
 ```python
 # filename: elbow_method.py
@@ -389,7 +389,7 @@ def elbow_method(X, k_range=range(1, 11), random_state=42):
     ax.plot(list(k_range), inertias, 'bo-', linewidth=2, markersize=8)
     ax.set_xlabel('Number of Clusters K', fontsize=12)
     ax.set_ylabel('WCSS (Inertia)', fontsize=12)
-    ax.set_title('Elbow Method — Finding Optimal K', fontsize=14, fontweight='bold')
+    ax.set_title('Elbow Method - Finding Optimal K', fontsize=14, fontweight='bold')
     ax.grid(alpha=0.3)
 
     # Mark elbow at K=3 (for our 3-cluster synthetic data)
@@ -517,11 +517,11 @@ K-Means has important constraints you must know before applying it blindly:
 
 ---
 
-## DBSCAN — Density-Based Clustering
+## DBSCAN - Density-Based Clustering
 
 ### Motivation: When K-Means Fails
 
-K-Means completely fails on non-convex cluster shapes. Consider two interleaved crescents (the "moons" dataset). Each crescent is clearly one group to a human, but K-Means — which partitions space with straight Voronoi boundaries — cannot capture this.
+K-Means completely fails on non-convex cluster shapes. Consider two interleaved crescents (the "moons" dataset). Each crescent is clearly one group to a human, but K-Means - which partitions space with straight Voronoi boundaries - cannot capture this.
 
 **DBSCAN (Density-Based Spatial Clustering of Applications with Noise)** takes a completely different approach: instead of finding centroids, it grows clusters from dense regions, following paths of closely packed points.
 
@@ -531,7 +531,7 @@ DBSCAN classifies every point into one of three types:
 
 - **Core point**: has at least `minPts` neighbors within radius `epsilon` (ε)
 - **Border point**: within ε of a core point but has fewer than `minPts` neighbors itself
-- **Noise point**: not within ε of any core point — these are outliers
+- **Noise point**: not within ε of any core point - these are outliers
 
 ```mermaid
 graph LR
@@ -685,13 +685,13 @@ print(f"Cluster 1 size: {np.sum(db_labels == 1)}")
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
 
 ax1.scatter(X_moons[:, 0], X_moons[:, 1], c=km_labels, cmap='Set1', s=20, alpha=0.8)
-ax1.set_title('K-Means (K=2) — FAILS on Moons', fontsize=12, fontweight='bold', color='red')
+ax1.set_title('K-Means (K=2) - FAILS on Moons', fontsize=12, fontweight='bold', color='red')
 ax1.set_xlabel('Feature 1')
 ax1.set_ylabel('Feature 2')
 
 colors = ['#2196F3' if l == 0 else '#F44336' if l == 1 else 'gray' for l in db_labels]
 ax2.scatter(X_moons[:, 0], X_moons[:, 1], c=colors, s=20, alpha=0.8)
-ax2.set_title('DBSCAN (ε=0.2, minPts=5) — SUCCEEDS', fontsize=12, fontweight='bold', color='green')
+ax2.set_title('DBSCAN (ε=0.2, minPts=5) - SUCCEEDS', fontsize=12, fontweight='bold', color='green')
 ax2.set_xlabel('Feature 1')
 ax2.set_ylabel('Feature 2')
 
@@ -737,7 +737,7 @@ def plot_k_distance(X, k=5):
     plt.plot(k_distances, linewidth=2)
     plt.xlabel('Points sorted by k-distance', fontsize=12)
     plt.ylabel(f'{k}-NN Distance', fontsize=12)
-    plt.title(f'k-Distance Graph (k={k}) — Elbow Suggests eps', fontsize=13, fontweight='bold')
+    plt.title(f'k-Distance Graph (k={k}) - Elbow Suggests eps', fontsize=13, fontweight='bold')
     plt.axhline(y=0.2, color='red', linestyle='--', label='eps=0.2 (our choice)')
     plt.legend()
     plt.grid(alpha=0.3)
@@ -755,7 +755,7 @@ plot_k_distance(X_moons, k=5)
 
 ## Hierarchical Clustering
 
-**Hierarchical clustering** builds a tree of cluster merges/splits rather than a flat partition. This gives you a complete picture of all possible cluster granularities at once — you choose where to cut the tree.
+**Hierarchical clustering** builds a tree of cluster merges/splits rather than a flat partition. This gives you a complete picture of all possible cluster granularities at once - you choose where to cut the tree.
 
 ### Agglomerative (Bottom-Up) Approach
 
@@ -823,7 +823,7 @@ for ax, method in zip(axes.flatten(), linkage_methods):
     ax.set_ylabel('Distance')
     ax.grid(alpha=0.2, axis='y')
 
-plt.suptitle('Dendrogram Comparison — All Linkage Methods', fontsize=14, fontweight='bold')
+plt.suptitle('Dendrogram Comparison - All Linkage Methods', fontsize=14, fontweight='bold')
 plt.tight_layout()
 plt.savefig('dendrograms.png', dpi=150, bbox_inches='tight')
 plt.show()
@@ -857,15 +857,15 @@ sklearn AgglomerativeClustering cluster sizes:
 
 The height at which two branches merge indicates the distance between those clusters at the time of merger. To choose K:
 
-1. Look for the **longest horizontal gap** with no merges — this is the most natural cut point
+1. Look for the **longest horizontal gap** with no merges - this is the most natural cut point
 2. Draw a horizontal line across the dendrogram at that height
-3. Count how many vertical lines it crosses — that is your K
+3. Count how many vertical lines it crosses - that is your K
 
-> **Key insight:** Hierarchical clustering is ideal when you want to explore multiple granularities of clusters without rerunning the algorithm. A dendrogram gives you the full spectrum from K=N (each point alone) to K=1 (everything merged). Use Ward linkage as your default — it minimizes variance and tends to produce the most interpretable results.
+> **Key insight:** Hierarchical clustering is ideal when you want to explore multiple granularities of clusters without rerunning the algorithm. A dendrogram gives you the full spectrum from K=N (each point alone) to K=1 (everything merged). Use Ward linkage as your default - it minimizes variance and tends to produce the most interpretable results.
 
 ---
 
-## PCA — Principal Component Analysis
+## PCA - Principal Component Analysis
 
 ### The Dimensionality Problem
 
@@ -1113,7 +1113,7 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.datasets import load_digits  # 8x8 version (smaller than full MNIST)
 
-# Load digits dataset (1797 samples, 64 features — 8x8 images)
+# Load digits dataset (1797 samples, 64 features - 8x8 images)
 digits = load_digits()
 X_digits = digits.data         # shape: (1797, 64)
 y_digits = digits.target       # labels 0-9
@@ -1177,13 +1177,13 @@ Total explained: 21.7%
 Components needed for 95% variance: 41 (out of 64)
 ```
 
-Notice that with just 2 components, PCA captures only ~22% of the variance in digit data. Different digit classes partially overlap in PCA space. This is because digit structure is inherently non-linear — which motivates t-SNE.
+Notice that with just 2 components, PCA captures only ~22% of the variance in digit data. Different digit classes partially overlap in PCA space. This is because digit structure is inherently non-linear - which motivates t-SNE.
 
 > **Key insight:** PCA is a linear method. It is optimal for data with linear structure (correlated features, elliptical clusters). For data with complex manifold structure (images, text embeddings, genomics), non-linear methods like t-SNE and UMAP produce much better visual separation.
 
 ---
 
-## t-SNE — t-Distributed Stochastic Neighbor Embedding
+## t-SNE - t-Distributed Stochastic Neighbor Embedding
 
 ### Why PCA Falls Short
 
@@ -1193,17 +1193,17 @@ PCA maximizes global variance. It preserves the directions of greatest spread, b
 
 ### How t-SNE Works (Conceptually)
 
-1. **In high-dimensional space**: for each pair (i, j), compute a similarity score based on Gaussian distributions centered at each point — similar points get high scores
+1. **In high-dimensional space**: for each pair (i, j), compute a similarity score based on Gaussian distributions centered at each point - similar points get high scores
 2. **In low-dimensional space (2D)**: define similarity scores using a t-distribution (heavier tails prevent crowding)
 3. **Optimize**: adjust 2D positions to minimize the KL divergence between high-D and low-D similarities
 
-The t-distribution in low-D space is crucial: it creates repulsive forces that separate clusters. Gaussian in high-D, t-distribution in low-D — this asymmetry is what gives t-SNE its cluster-revealing power.
+The t-distribution in low-D space is crucial: it creates repulsive forces that separate clusters. Gaussian in high-D, t-distribution in low-D - this asymmetry is what gives t-SNE its cluster-revealing power.
 
 ```python
 # filename: tsne_digits.py
 """
 Visualize MNIST digits using t-SNE.
-Compared with PCA — t-SNE separates the 10 digit classes much more clearly.
+Compared with PCA - t-SNE separates the 10 digit classes much more clearly.
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -1253,7 +1253,7 @@ for ax, perp in zip(axes, perplexities):
     ax.set_yticks([])
     plt.colorbar(scatter, ax=ax, label='Digit')
 
-plt.suptitle('t-SNE: MNIST Digits — Effect of Perplexity', fontsize=14)
+plt.suptitle('t-SNE: MNIST Digits - Effect of Perplexity', fontsize=14)
 plt.tight_layout()
 plt.savefig('tsne_digits.png', dpi=150, bbox_inches='tight')
 plt.show()
@@ -1280,13 +1280,13 @@ t-SNE is powerful but frequently misused. Understanding its limitations is as im
 | **Not for feature engineering** | t-SNE output cannot reliably be used as features for downstream models | Use PCA or UMAP for actual dimensionality reduction |
 | **Slow on large datasets** | O(n log n) but still slow for n > 100,000 | Use UMAP instead; or subsample + project |
 
-> **Key insight:** t-SNE is a visualization tool, not a dimensionality reduction tool. Its embedding is not stable — two different runs with different random seeds may produce visually different but equally valid embeddings. Never train a model on t-SNE coordinates and expect the model to generalize.
+> **Key insight:** t-SNE is a visualization tool, not a dimensionality reduction tool. Its embedding is not stable - two different runs with different random seeds may produce visually different but equally valid embeddings. Never train a model on t-SNE coordinates and expect the model to generalize.
 
 ---
 
-## UMAP — Uniform Manifold Approximation and Projection
+## UMAP - Uniform Manifold Approximation and Projection
 
-**UMAP** is a newer algorithm that achieves results comparable to t-SNE while being significantly faster and preserving more global structure. It is grounded in Riemannian geometry and algebraic topology — but practically, you can think of it as "t-SNE but better in nearly every way."
+**UMAP** is a newer algorithm that achieves results comparable to t-SNE while being significantly faster and preserving more global structure. It is grounded in Riemannian geometry and algebraic topology - but practically, you can think of it as "t-SNE but better in nearly every way."
 
 ### UMAP vs t-SNE Comparison
 
@@ -1296,7 +1296,7 @@ t-SNE is powerful but frequently misused. Understanding its limitations is as im
 | **Global structure** | Often distorted | Better preserved |
 | **Local structure** | Excellent | Excellent |
 | **Deterministic** | No (stochastic) | Yes (with `random_state`) |
-| **Used as features** | Not recommended | Yes — stable and usable |
+| **Used as features** | Not recommended | Yes - stable and usable |
 | **Key parameters** | `perplexity`, `learning_rate` | `n_neighbors`, `min_dist` |
 | **Theoretical basis** | KL divergence minimization | Topological manifold learning |
 | **Memory efficient** | Moderate | More efficient |
@@ -1382,7 +1382,7 @@ Original (64D): accuracy=0.9699 ± 0.0082
 UMAP (10D): accuracy=0.9732 ± 0.0071
 ```
 
-UMAP reduction can actually improve classification accuracy by removing noise dimensions — a sign that the 10 UMAP components capture more discriminative structure than all 64 original pixels.
+UMAP reduction can actually improve classification accuracy by removing noise dimensions - a sign that the 10 UMAP components capture more discriminative structure than all 64 original pixels.
 
 ### UMAP Parameters Guide
 
@@ -1514,7 +1514,7 @@ class SimpleIsolationTree:
         feat_min, feat_max = feat_vals.min(), feat_vals.max()
 
         if feat_min == feat_max:
-            return self  # degenerate — can't split
+            return self  # degenerate - can't split
 
         self.split_value = np.random.uniform(feat_min, feat_max)
 
@@ -1613,7 +1613,7 @@ pred_binary = (predictions == -1).astype(int)
 
 # Evaluation
 from sklearn.metrics import classification_report
-print("Isolation Forest — Fraud Detection Results:")
+print("Isolation Forest - Fraud Detection Results:")
 print(classification_report(true_labels, pred_binary, target_names=['Normal', 'Fraud']))
 
 # Visualization
@@ -1643,7 +1643,7 @@ plt.show()
 
 **Expected output:**
 ```
-Isolation Forest — Fraud Detection Results:
+Isolation Forest - Fraud Detection Results:
               precision    recall  f1-score   support
 
       Normal       0.99      0.97      0.98       500
@@ -1748,9 +1748,9 @@ LOF Results:
 
 Given a rule A → B (if customer buys A, they also buy B):
 
-- **Support**: P(A ∩ B) — how often do A and B appear together? `support = count(A and B) / total transactions`
-- **Confidence**: P(B|A) — given A, how often is B present? `confidence = count(A and B) / count(A)`
-- **Lift**: support / (P(A) × P(B)) — how much more likely is B given A vs. by chance? Lift > 1 means positive association; Lift = 1 means independence
+- **Support**: P(A ∩ B) - how often do A and B appear together? `support = count(A and B) / total transactions`
+- **Confidence**: P(B|A) - given A, how often is B present? `confidence = count(A and B) / count(A)`
+- **Lift**: support / (P(A) × P(B)) - how much more likely is B given A vs. by chance? Lift > 1 means positive association; Lift = 1 means independence
 
 ```python
 # filename: association_rules.py
@@ -1851,7 +1851,7 @@ This project ties together K-Means clustering, PCA for visualization, and busine
 
 ### Project Overview
 
-We will use **RFM Analysis** — a classic marketing framework:
+We will use **RFM Analysis** - a classic marketing framework:
 
 - **Recency (R)**: How recently did the customer purchase? (lower = more recent = better)
 - **Frequency (F)**: How often do they purchase? (higher = more loyal = better)
@@ -1871,7 +1871,7 @@ graph LR
 ### Step 1: Generate and Prepare Data
 
 ```python
-# filename: customer_segmentation.py — Part 1: Data Generation
+# filename: customer_segmentation.py - Part 1: Data Generation
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
@@ -1959,7 +1959,7 @@ occasional    147
 ### Step 2: RFM Feature Engineering
 
 ```python
-# filename: customer_segmentation.py — Part 2: RFM Computation
+# filename: customer_segmentation.py - Part 2: RFM Computation
 from datetime import datetime
 
 def compute_rfm(df, reference_date=None):
@@ -1969,7 +1969,7 @@ def compute_rfm(df, reference_date=None):
     Parameters
     ----------
     df : DataFrame with columns [customer_id, order_date, order_amount]
-    reference_date : datetime — the "today" for recency calculation
+    reference_date : datetime - the "today" for recency calculation
 
     Returns
     -------
@@ -2015,7 +2015,7 @@ max     364.00      40.00    8142.15
 ### Step 3: Clustering and Visualization
 
 ```python
-# filename: customer_segmentation.py — Part 3: Clustering
+# filename: customer_segmentation.py - Part 3: Clustering
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -2078,7 +2078,7 @@ Adjusted Rand Index (vs true segments): 0.7842
 ### Step 4: PCA Visualization of Clusters
 
 ```python
-# filename: customer_segmentation.py — Part 4: PCA Visualization
+# filename: customer_segmentation.py - Part 4: PCA Visualization
 # Reduce 3D RFM to 2D for visualization
 pca_viz = PCA(n_components=2)
 X_pca = pca_viz.fit_transform(X_scaled)
@@ -2140,7 +2140,7 @@ PCA explained variance: PC1=60.3%, PC2=27.8%, Total=88.1%
 ### Step 5: Business Interpretation
 
 ```python
-# filename: customer_segmentation.py — Part 5: Segment Profiles
+# filename: customer_segmentation.py - Part 5: Segment Profiles
 # Compute mean RFM values per cluster
 cluster_profiles = rfm.groupby('cluster').agg(
     n_customers=('customer_id', 'count'),
@@ -2191,7 +2191,7 @@ strategies = {
 
 for i, (cluster_id, row) in enumerate(ranked.iterrows()):
     label = segment_labels.get(cluster_id, f"Segment {cluster_id}")
-    print(f"\n[{label}] — Cluster {cluster_id}")
+    print(f"\n[{label}] - Cluster {cluster_id}")
     print(f"  Customers: {int(row['n_customers'])}")
     print(f"  Avg Recency:  {row['avg_recency']:.0f} days")
     print(f"  Avg Frequency: {row['avg_frequency']:.1f} orders")
@@ -2223,7 +2223,7 @@ Cluster 3: 147 customers | Rev=    24,614 |  5.3% of total
 SEGMENT INTERPRETATION & STRATEGY
 =================================================================
 
-[Champions] — Cluster 0
+[Champions] - Cluster 0
   Customers: 77
   Avg Recency:  19 days
   Avg Frequency: 25.1 orders
@@ -2241,10 +2241,10 @@ This is the power of unsupervised learning in practice: 15% of customers (Champi
 
 | Algorithm | Finds K Automatically | Handles Arbitrary Shapes | Handles Noise | Scalability | Memory | Key Parameter |
 |---|---|---|---|---|---|---|
-| **K-Means** | No | No (spherical only) | No | O(nkd) — excellent | Low | K (number of clusters) |
+| **K-Means** | No | No (spherical only) | No | O(nkd) - excellent | Low | K (number of clusters) |
 | **K-Means++** | No | No | No | O(nkd) | Low | K |
 | **DBSCAN** | Yes | Yes | Yes (noise class) | O(n log n) | Medium | eps, minPts |
-| **Hierarchical** | After dendro | Moderate | Limited | O(n²) — poor | High | Linkage, cut threshold |
+| **Hierarchical** | After dendro | Moderate | Limited | O(n²) - poor | High | Linkage, cut threshold |
 | **Gaussian Mixture** | No | Elliptical | No | O(nkd²) | Medium | K, covariance type |
 | **HDBSCAN** | Partial | Yes | Yes | O(n log n) | Medium | min_cluster_size |
 
@@ -2320,10 +2320,10 @@ This is the power of unsupervised learning in practice: 15% of customers (Champi
 
 ## What's Next
 
-In **Part 7: Feature Engineering — Transforming Raw Data into Model Fuel**, we shift from discovering structure to deliberately crafting the inputs that make models learn faster, generalize better, and handle real-world messiness:
+In **Part 7: Feature Engineering - Transforming Raw Data into Model Fuel**, we shift from discovering structure to deliberately crafting the inputs that make models learn faster, generalize better, and handle real-world messiness:
 
-- **Handling missing data**: imputation strategies beyond mean fill — KNN imputer, iterative imputer, indicator variables
-- **Encoding categorical variables**: ordinal encoding, one-hot, target encoding, binary encoding — and when each fails
+- **Handling missing data**: imputation strategies beyond mean fill - KNN imputer, iterative imputer, indicator variables
+- **Encoding categorical variables**: ordinal encoding, one-hot, target encoding, binary encoding - and when each fails
 - **Feature scaling deep dive**: when normalization hurts (tree models), when it's critical (SVM, PCA, neural nets)
 - **Feature creation**: polynomial features, interaction terms, domain-specific engineering (log transforms, binning, date features)
 - **Feature selection**: filter methods (correlation, mutual information), wrapper methods (RFE), embedded methods (Lasso, feature importance)
@@ -2335,6 +2335,6 @@ Feature engineering is where the practical art of machine learning lives. The al
 
 ---
 
-*Part of the [Machine Learning — A Developer's Deep Dive from Fundamentals to Production](#) series.*
+*Part of the [Machine Learning - A Developer's Deep Dive from Fundamentals to Production](#) series.*
 
-*Part 5: The Algorithm Zoo — SVMs, KNN, and Naive Bayes | Part 7: Feature Engineering (coming next)*
+*Part 5: The Algorithm Zoo - SVMs, KNN, and Naive Bayes | Part 7: Feature Engineering (coming next)*

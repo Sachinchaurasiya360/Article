@@ -1,19 +1,19 @@
-# Blog 3: WebRTC Fundamentals — Peer-to-Peer Communication
+# Blog 3: WebRTC Fundamentals - Peer-to-Peer Communication
 
-> WebRTC lets browsers talk directly to each other — no server in the middle for audio, video, and data. But setting it up requires understanding signaling, ICE candidates, STUN/TURN servers, and NAT traversal. This blog explains all of it.
+> WebRTC lets browsers talk directly to each other - no server in the middle for audio, video, and data. But setting it up requires understanding signaling, ICE candidates, STUN/TURN servers, and NAT traversal. This blog explains all of it.
 
 ---
 
 ## Table of Contents
 
 - [What is WebRTC](#what-is-webrtc)
-- [WebRTC vs WebSockets — Different Tools for Different Jobs](#webrtc-vs-websockets--different-tools-for-different-jobs)
+- [WebRTC vs WebSockets - Different Tools for Different Jobs](#webrtc-vs-websockets--different-tools-for-different-jobs)
 - [The WebRTC Architecture](#the-webrtc-architecture)
-- [Signaling — The Part WebRTC Doesn't Handle](#signaling--the-part-webrtc-doesnt-handle)
-- [ICE, STUN, and TURN — NAT Traversal Explained](#ice-stun-and-turn--nat-traversal-explained)
+- [Signaling - The Part WebRTC Doesn't Handle](#signaling--the-part-webrtc-doesnt-handle)
+- [ICE, STUN, and TURN - NAT Traversal Explained](#ice-stun-and-turn--nat-traversal-explained)
 - [The Connection Process Step by Step](#the-connection-process-step-by-step)
-- [Media Streams — Capturing Audio and Video](#media-streams--capturing-audio-and-video)
-- [Data Channels — Sending Arbitrary Data P2P](#data-channels--sending-arbitrary-data-p2p)
+- [Media Streams - Capturing Audio and Video](#media-streams--capturing-audio-and-video)
+- [Data Channels - Sending Arbitrary Data P2P](#data-channels--sending-arbitrary-data-p2p)
 - [Building a 1-to-1 Video Call](#building-a-1-to-1-video-call)
 - [Common Mistakes and Debugging](#common-mistakes-and-debugging)
 
@@ -21,7 +21,7 @@
 
 ## What is WebRTC
 
-**WebRTC (Web Real-Time Communication)** is a set of browser APIs and protocols that enable **peer-to-peer** audio, video, and data transfer directly between browsers — without routing media through a server.
+**WebRTC (Web Real-Time Communication)** is a set of browser APIs and protocols that enable **peer-to-peer** audio, video, and data transfer directly between browsers - without routing media through a server.
 
 ```
 Traditional client-server (WebSocket):
@@ -55,24 +55,24 @@ WebRTC APIs and Protocols:
 ┌──────────────────────────────────────────────────────┐
 │                    Browser APIs                       │
 │                                                       │
-│  getUserMedia()        — Capture camera/microphone    │
-│  RTCPeerConnection     — Manage P2P connection        │
-│  RTCDataChannel        — Send arbitrary data P2P      │
-│  getDisplayMedia()     — Screen sharing               │
-│  MediaStream           — Represent audio/video tracks │
+│  getUserMedia()        - Capture camera/microphone    │
+│  RTCPeerConnection     - Manage P2P connection        │
+│  RTCDataChannel        - Send arbitrary data P2P      │
+│  getDisplayMedia()     - Screen sharing               │
+│  MediaStream           - Represent audio/video tracks │
 └───────────────────────────────┬───────────────────────┘
                                 │
 ┌───────────────────────────────▼───────────────────────┐
 │                  Under the Hood                        │
 │                                                        │
-│  ICE Framework        — Find the best connection path  │
-│  STUN                 — Discover your public IP        │
-│  TURN                 — Relay when direct fails        │
-│  DTLS                 — Encryption for data            │
-│  SRTP                 — Encryption for media           │
-│  SDP                  — Describe media capabilities    │
-│  RTP/RTCP             — Media transport + quality      │
-│  SCTP                 — Data channel transport         │
+│  ICE Framework        - Find the best connection path  │
+│  STUN                 - Discover your public IP        │
+│  TURN                 - Relay when direct fails        │
+│  DTLS                 - Encryption for data            │
+│  SRTP                 - Encryption for media           │
+│  SDP                  - Describe media capabilities    │
+│  RTP/RTCP             - Media transport + quality      │
+│  SCTP                 - Data channel transport         │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -80,7 +80,7 @@ WebRTC APIs and Protocols:
 
 ---
 
-## WebRTC vs WebSockets — Different Tools for Different Jobs
+## WebRTC vs WebSockets - Different Tools for Different Jobs
 
 This is the most common interview question about WebRTC. Here's the definitive comparison:
 
@@ -96,7 +96,7 @@ Client ◄───► Server ◄───► Client     Client ◄────�
 | Transport | TCP | UDP (media), SCTP (data channels) |
 | Latency | Low (~50-100ms) | Ultra-low (~10-50ms) |
 | Reliability | Guaranteed delivery (TCP) | Best-effort for media; reliable option for data channels |
-| Encryption | TLS (wss://) | DTLS/SRTP mandatory — always encrypted |
+| Encryption | TLS (wss://) | DTLS/SRTP mandatory - always encrypted |
 | Media support | Manual (send bytes) | Native (audio, video, screen share) |
 | NAT traversal | Not needed (server has public IP) | Required (ICE, STUN, TURN) |
 | Setup complexity | Simple | Complex (signaling, ICE, SDP) |
@@ -114,7 +114,7 @@ WebSocket:  Signaling, chat messages, presence, notifications
 WebRTC:     Audio/video streams, screen sharing, P2P data transfer
             (anything that should be peer-to-peer)
 
-Example — Video conferencing app:
+Example - Video conferencing app:
 ├── WebSocket: Exchange SDP offers/answers (signaling)
 ├── WebSocket: Chat messages alongside the call
 ├── WebSocket: Participant join/leave notifications
@@ -166,7 +166,7 @@ Example — Video conferencing app:
 Phase 1: Signaling (via your server)
 ├── Exchange SDP descriptions (what media capabilities each peer has)
 ├── Exchange ICE candidates (how to reach each peer)
-└── All happens over WebSocket or HTTP — your choice
+└── All happens over WebSocket or HTTP - your choice
 
 Phase 2: Connection Establishment (ICE)
 ├── Try to connect directly (host candidates)
@@ -182,7 +182,7 @@ Phase 3: Media/Data Flow (P2P)
 
 ---
 
-## Signaling — The Part WebRTC Doesn't Handle
+## Signaling - The Part WebRTC Doesn't Handle
 
 WebRTC deliberately does **not** define how peers discover each other and exchange connection information. This is called **signaling**, and you must implement it yourself.
 
@@ -190,7 +190,7 @@ WebRTC deliberately does **not** define how peers discover each other and exchan
 
 **1. SDP (Session Description Protocol):**
 
-SDP describes what a peer can send and receive — codecs, media types, encryption parameters, etc.
+SDP describes what a peer can send and receive - codecs, media types, encryption parameters, etc.
 
 ```
 Example SDP (simplified):
@@ -334,7 +334,7 @@ console.log('Signaling server running on ws://localhost:8080');
 
 ---
 
-## ICE, STUN, and TURN — NAT Traversal Explained
+## ICE, STUN, and TURN - NAT Traversal Explained
 
 ### The Problem: NAT
 
@@ -349,8 +349,8 @@ Alice's Home Network:                    The Internet:
 │ (private IP)         │     ↕ translates        (public IP)
 └──────────────────────┘     addresses
 
-Bob can't send packets to 192.168.1.100 — that's a private address.
-Bob needs to know 203.0.113.50:PORT — but which port?
+Bob can't send packets to 192.168.1.100 - that's a private address.
+Bob needs to know 203.0.113.50:PORT - but which port?
 The NAT maps internal IPs to external ports dynamically.
 ```
 
@@ -411,7 +411,7 @@ const peerConnection = new RTCPeerConnection({
 
 ### TURN (Traversal Using Relays around NAT)
 
-When direct P2P fails (symmetric NAT, strict firewalls), TURN acts as a **relay** — all media flows through the TURN server.
+When direct P2P fails (symmetric NAT, strict firewalls), TURN acts as a **relay** - all media flows through the TURN server.
 
 ```
 Without TURN (direct P2P):
@@ -443,7 +443,7 @@ const peerConnection = new RTCPeerConnection({
 });
 ```
 
-**TURN is expensive** — it handles all media bandwidth for connections that can't go direct. Budget for it:
+**TURN is expensive** - it handles all media bandwidth for connections that can't go direct. Budget for it:
 
 ```
 TURN server costs:
@@ -480,7 +480,7 @@ Alice's candidates:          Bob's candidates:
 ICE connectivity checks (tries all pairs):
 Alice:host     ↔ Bob:host        ❌ (different private networks)
 Alice:host     ↔ Bob:srflx       ❌ (Alice's private IP can't reach Bob's public)
-Alice:srflx    ↔ Bob:srflx       ✅ (both public IPs — works!)
+Alice:srflx    ↔ Bob:srflx       ✅ (both public IPs - works!)
 Alice:srflx    ↔ Bob:host        ❌
 Alice:relay    ↔ Bob:relay       ✅ (always works via TURN)
 
@@ -651,9 +651,9 @@ signalingChannel.onmessage = async (event) => {
 
 ---
 
-## Media Streams — Capturing Audio and Video
+## Media Streams - Capturing Audio and Video
 
-### getUserMedia — Camera and Microphone
+### getUserMedia - Camera and Microphone
 
 ```javascript
 // Basic capture
@@ -684,7 +684,7 @@ localVideo.srcObject = stream;
 localVideo.muted = true; // Important! Prevent audio feedback
 ```
 
-### getDisplayMedia — Screen Sharing
+### getDisplayMedia - Screen Sharing
 
 ```javascript
 // Capture screen (user picks which screen/window/tab)
@@ -748,9 +748,9 @@ function toggleVideo() {
 
 ---
 
-## Data Channels — Sending Arbitrary Data P2P
+## Data Channels - Sending Arbitrary Data P2P
 
-WebRTC isn't just for audio/video. **Data channels** let you send any data peer-to-peer — text, files, game state, whatever.
+WebRTC isn't just for audio/video. **Data channels** let you send any data peer-to-peer - text, files, game state, whatever.
 
 ### Creating a Data Channel
 
@@ -794,21 +794,21 @@ peerConnection.ondatachannel = (event) => {
 ### Data Channel Configuration Options
 
 ```javascript
-// Reliable and ordered (like TCP) — default
+// Reliable and ordered (like TCP) - default
 const reliableChannel = peerConnection.createDataChannel('reliable', {
   ordered: true
   // No maxRetransmits or maxPacketLifeTime = unlimited retries
 });
 // Use for: chat messages, file transfer, game commands
 
-// Unreliable and unordered (like UDP) — lowest latency
+// Unreliable and unordered (like UDP) - lowest latency
 const unreliableChannel = peerConnection.createDataChannel('gameState', {
   ordered: false,
   maxRetransmits: 0  // Don't retry lost packets
 });
 // Use for: real-time game positions, cursor tracking, live sensor data
 
-// Partially reliable — retry up to N times
+// Partially reliable - retry up to N times
 const partialChannel = peerConnection.createDataChannel('video-meta', {
   ordered: true,
   maxRetransmits: 3
@@ -889,7 +889,7 @@ dataChannel.onmessage = (event) => {
 
 ## Building a 1-to-1 Video Call
 
-Putting it all together — a complete 1-to-1 video call with signaling.
+Putting it all together - a complete 1-to-1 video call with signaling.
 
 ### Complete Client Code
 
@@ -977,7 +977,7 @@ class VideoCall {
   async handleSignalingMessage(data) {
     switch (data.type) {
       case 'peer-joined':
-        console.log('Peer joined — initiating call');
+        console.log('Peer joined - initiating call');
         await this.call(document.getElementById('remoteVideo'));
         break;
 
@@ -1120,11 +1120,11 @@ peerConnection.oniceconnectionstatechange = () => {
       statusEl.textContent = 'Connected!';
       break;
     case 'disconnected':
-      statusEl.textContent = 'Connection interrupted — attempting recovery...';
+      statusEl.textContent = 'Connection interrupted - attempting recovery...';
       // Often recovers automatically
       break;
     case 'failed':
-      statusEl.textContent = 'Connection failed — restarting...';
+      statusEl.textContent = 'Connection failed - restarting...';
       restartIce(); // Attempt ICE restart
       break;
     case 'closed':
@@ -1154,7 +1154,7 @@ This is the #1 debugging tool for WebRTC issues.
 ### 5. Not Using TURN as Fallback
 
 ```javascript
-// ❌ STUN only — fails for ~15% of connections
+// ❌ STUN only - fails for ~15% of connections
 const pc = new RTCPeerConnection({
   iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
 });
@@ -1179,16 +1179,16 @@ const pc = new RTCPeerConnection({
 | Concept | What to Remember |
 |---|---|
 | WebRTC vs WebSocket | WebRTC = P2P media; WebSocket = client-server messages. Use both together. |
-| Signaling | WebRTC doesn't handle discovery — you build signaling with WebSockets/HTTP |
+| Signaling | WebRTC doesn't handle discovery - you build signaling with WebSockets/HTTP |
 | SDP | Describes media capabilities (codecs, encryption). Offer from caller, answer from callee. |
 | ICE | Finds the best P2P path. Tries host → STUN → TURN in order. |
-| STUN | "What's my public IP?" — free, works ~85% of the time |
-| TURN | Relay server for when P2P fails — expensive but guaranteed |
+| STUN | "What's my public IP?" - free, works ~85% of the time |
+| TURN | Relay server for when P2P fails - expensive but guaranteed |
 | Data channels | P2P arbitrary data. Configurable: reliable (TCP-like) or unreliable (UDP-like) |
 | Track replacement | Use `replaceTrack()` to switch camera/screen without renegotiation |
 | Debugging | `chrome://webrtc-internals/` is your best friend |
 
 ---
 
-**Previous:** [← Blog 2 — Advanced WebSockets](./02-advanced-websockets.md)
-**Next:** [Blog 4 — WebRTC Advanced + System Design →](./04-webrtc-advanced.md)
+**Previous:** [← Blog 2 - Advanced WebSockets](./02-advanced-websockets.md)
+**Next:** [Blog 4 - WebRTC Advanced + System Design →](./04-webrtc-advanced.md)

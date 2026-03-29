@@ -1,12 +1,12 @@
 # Part 3: Advanced SQL & Database Internals
 
-> Dive deep into how databases actually work under the hood. Query execution plans, index internals, partitioning, locking, isolation levels, and deadlocks — the knowledge that separates senior engineers from everyone else.
+> Dive deep into how databases actually work under the hood. Query execution plans, index internals, partitioning, locking, isolation levels, and deadlocks - the knowledge that separates senior engineers from everyone else.
 
 ---
 
 ## Table of Contents
 
-- [3.1 Query Execution Plans — Deep Dive](#31-query-execution-plans--deep-dive)
+- [3.1 Query Execution Plans - Deep Dive](#31-query-execution-plans--deep-dive)
 - [3.2 Index Types & Internals](#32-index-types--internals)
 - [3.3 Table Partitioning](#33-table-partitioning)
 - [3.4 Sharding](#34-sharding)
@@ -19,7 +19,7 @@
 
 ---
 
-## 3.1 Query Execution Plans — Deep Dive
+## 3.1 Query Execution Plans - Deep Dive
 
 ### Question: How does PostgreSQL execute a SQL query? Walk through the entire pipeline.
 
@@ -116,11 +116,11 @@ Index Only Scan
 ├── Reads everything from the index (never touches the table)
 ├── Best for: queries where all needed columns are in the index
 ├── Requires: covering index + visible pages in visibility map
-└── O(log n + k) — fastest possible scan
+└── O(log n + k) - fastest possible scan
 
 Bitmap Index Scan + Bitmap Heap Scan
-├── Phase 1: Bitmap Index Scan — builds a bitmap of matching page locations
-├── Phase 2: Bitmap Heap Scan — reads pages in sequential order
+├── Phase 1: Bitmap Index Scan - builds a bitmap of matching page locations
+├── Phase 2: Bitmap Heap Scan - reads pages in sequential order
 ├── Best for: medium selectivity (5-25% of rows), OR conditions
 └── Combines benefits of index precision with sequential I/O
 ```
@@ -218,7 +218,7 @@ WHERE tablename = 'employees' AND attname = 'dept_id';
 ```
 
 ```sql
--- Default index type — works for: =, <, >, <=, >=, BETWEEN, IN, IS NULL
+-- Default index type - works for: =, <, >, <=, >=, BETWEEN, IN, IS NULL
 CREATE INDEX idx_salary ON employees (salary);
 
 -- Composite B-tree (leftmost prefix rule applies)
@@ -229,7 +229,7 @@ CREATE INDEX idx_dept_salary ON employees (dept_id, salary);
 -- • Each node fits in one disk page (8KB in PostgreSQL)
 -- • Leaf nodes are linked for range scans
 -- • Height is typically 3-4 for millions of rows
--- • Lookup: O(log n) — about 3-4 I/O operations for 100M rows
+-- • Lookup: O(log n) - about 3-4 I/O operations for 100M rows
 ```
 
 **Best for:** Equality and range queries (the vast majority of use cases).
@@ -342,7 +342,7 @@ WITH (pages_per_range = 128);
 
 **Answer:**
 
-A covering index includes all columns needed by a query, so the database never needs to access the table heap — it reads everything from the index.
+A covering index includes all columns needed by a query, so the database never needs to access the table heap - it reads everything from the index.
 
 ```sql
 -- Query: frequently find employee names and salaries by department
@@ -414,7 +414,7 @@ CREATE TABLE orders_2024 PARTITION OF orders
 CREATE TABLE orders_default PARTITION OF orders DEFAULT;
 ```
 
-**Partition pruning — the performance benefit:**
+**Partition pruning - the performance benefit:**
 
 ```sql
 -- Query with partition key in WHERE → only scans relevant partition
@@ -477,7 +477,7 @@ CREATE TABLE events_p3 PARTITION OF events FOR VALUES WITH (MODULUS 4, REMAINDER
 -- Detach old partition (instant, no data movement)
 ALTER TABLE orders DETACH PARTITION orders_2022;
 
--- Drop old data (instant — just drops the partition table)
+-- Drop old data (instant - just drops the partition table)
 DROP TABLE orders_2022;
 -- Compare: DELETE FROM orders WHERE order_date < '2023-01-01' → slow, generates WAL
 
@@ -564,7 +564,7 @@ Used when sharding logic is complex or changes frequently
 | Distributed transactions | 2PC (two-phase commit) needed for cross-shard writes |
 | Rebalancing | Moving data between shards when load is uneven |
 | Schema changes | Must coordinate DDL across all shards |
-| Auto-increment IDs | Can't use SERIAL — need distributed ID generation (Snowflake IDs, UUIDs) |
+| Auto-increment IDs | Can't use SERIAL - need distributed ID generation (Snowflake IDs, UUIDs) |
 | Application complexity | Shard routing logic in application layer |
 
 **Choosing a shard key:**
@@ -627,7 +627,7 @@ CREATE INDEX idx_salary ON employees (salary);
 
 -- ACCESS EXCLUSIVE: ALTER TABLE, DROP TABLE, TRUNCATE, VACUUM FULL
 ALTER TABLE employees ADD COLUMN phone VARCHAR(20);
--- Blocks EVERYTHING — even reads!
+-- Blocks EVERYTHING - even reads!
 ```
 
 **Lock compatibility matrix (simplified):**
@@ -648,7 +648,7 @@ ACCESS EXCLUSIVE     ❌        ❌       ❌         ❌        ❌
 -- FOR UPDATE: Exclusive row lock (blocks other FOR UPDATE and writes)
 BEGIN;
 SELECT * FROM accounts WHERE account_id = 1 FOR UPDATE;
--- Row is now locked — other transactions trying to UPDATE or FOR UPDATE this row will WAIT
+-- Row is now locked - other transactions trying to UPDATE or FOR UPDATE this row will WAIT
 UPDATE accounts SET balance = balance - 100 WHERE account_id = 1;
 COMMIT;
 
@@ -670,7 +670,7 @@ SELECT * FROM tasks WHERE status = 'pending'
 ORDER BY created_at
 LIMIT 1
 FOR UPDATE SKIP LOCKED;
--- Picks the first UNLOCKED pending task — perfect for worker queues
+-- Picks the first UNLOCKED pending task - perfect for worker queues
 UPDATE tasks SET status = 'processing' WHERE task_id = ...;
 COMMIT;
 ```
@@ -716,7 +716,7 @@ COMMIT;  -- lock released
 -- Cons: Blocks other transactions, potential for deadlocks
 -- Best for: High contention (many concurrent writes to same rows)
 
--- OPTIMISTIC LOCKING: Don't lock — detect conflicts at write time
+-- OPTIMISTIC LOCKING: Don't lock - detect conflicts at write time
 -- "I assume conflicts are RARE, so I'll just check before writing"
 
 -- Add a version column:
@@ -769,7 +769,7 @@ BEGIN;                              BEGIN;
 UPDATE accounts SET balance = 0
 WHERE id = 1;
                                     SELECT balance FROM accounts WHERE id = 1;
-                                    -- Reads 0 (DIRTY — Transaction A hasn't committed!)
+                                    -- Reads 0 (DIRTY - Transaction A hasn't committed!)
 ROLLBACK;                           -- But the real balance was never 0!
                                     -- Transaction B made a decision based on phantom data
 ```
@@ -918,7 +918,7 @@ WHERE id = 1;                    WHERE id = 1;
 
 #### Prevention Strategies
 
-**1. Consistent lock ordering — most effective:**
+**1. Consistent lock ordering - most effective:**
 
 ```sql
 -- ❌ Deadlock-prone: different transactions lock tables in different order
@@ -1084,7 +1084,7 @@ SELECT salary FROM employees WHERE name = 'Alice';
 -- Sees 90000 (new version, because 201 is committed and visible to 202)
 ```
 
-**MVCC consequences — VACUUM:**
+**MVCC consequences - VACUUM:**
 
 ```sql
 -- Dead tuples (old row versions) accumulate over time
@@ -1251,7 +1251,7 @@ WHERE pct_rank <= 0.10;
 
 ---
 
-### Problem 2: Gaps and Islands — Find Consecutive Date Ranges
+### Problem 2: Gaps and Islands - Find Consecutive Date Ranges
 
 ```sql
 -- Given: employee_attendance(emp_id, attendance_date)
@@ -1325,7 +1325,7 @@ SELECT * FROM crosstab(
 
 ---
 
-### Problem 4: Recursive Hierarchy — Org Chart with Levels
+### Problem 4: Recursive Hierarchy - Org Chart with Levels
 
 ```sql
 WITH RECURSIVE org_chart AS (
@@ -1361,7 +1361,7 @@ ORDER BY path;
 
 ---
 
-### Problem 5: Output-Based — MVCC Visibility
+### Problem 5: Output-Based - MVCC Visibility
 
 ```sql
 -- Session 1 (REPEATABLE READ):
@@ -1380,7 +1380,7 @@ SELECT COUNT(*) FROM employees;  -- What does this return?
 
 ---
 
-### Problem 6: Debugging — Slow Query Analysis
+### Problem 6: Debugging - Slow Query Analysis
 
 ```sql
 -- This query takes 45 seconds on a table with 50M rows. Why?
@@ -1418,7 +1418,7 @@ WHERE status = 'delivered';  -- partial index for common filter
 |---|---|
 | Execution plans | Read bottom-up and inside-out; watch for row estimate mismatches |
 | Index types | B-tree (default), GIN (JSONB/FTS), BRIN (time-series), GiST (spatial) |
-| Covering indexes | `INCLUDE` columns enable Index Only Scan — huge performance win |
+| Covering indexes | `INCLUDE` columns enable Index Only Scan - huge performance win |
 | Partitioning | Partition pruning + easy data lifecycle management |
 | Sharding | Cross-shard queries are expensive; choose shard key carefully |
 | Locks | Consistent lock ordering prevents deadlocks; `SKIP LOCKED` for queues |
@@ -1428,5 +1428,5 @@ WHERE status = 'delivered';  -- partial index for common filter
 
 ---
 
-**Previous:** [← Part 2 — Intermediate SQL](./02-intermediate-sql.md)
-**Next:** [Part 4 — NoSQL & Modern Databases →](./04-nosql.md)
+**Previous:** [← Part 2 - Intermediate SQL](./02-intermediate-sql.md)
+**Next:** [Part 4 - NoSQL & Modern Databases →](./04-nosql.md)

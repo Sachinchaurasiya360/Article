@@ -1,6 +1,6 @@
-# DevOps Fundamentals — Interview Preparation
+# DevOps Fundamentals - Interview Preparation
 
-> Section 1 of 7 — From zero to understanding the DevOps philosophy, lifecycle, and core practices.
+> Section 1 of 7 - From zero to understanding the DevOps philosophy, lifecycle, and core practices.
 
 ---
 
@@ -53,18 +53,18 @@ DevOps is NOT a tool, a job title, or a team. It's a **set of practices** built 
 ### The CALMS Framework
 
 ```
-C — Culture       (collaboration over silos)
-A — Automation    (eliminate manual toil)
-L — Lean          (small batches, fast feedback)
-M — Measurement   (data-driven decisions)
-S — Sharing       (knowledge sharing, blameless postmortems)
+C - Culture       (collaboration over silos)
+A - Automation    (eliminate manual toil)
+L - Lean          (small batches, fast feedback)
+M - Measurement   (data-driven decisions)
+S - Sharing       (knowledge sharing, blameless postmortems)
 ```
 
 **Why interviewer asks this:** To check whether you understand DevOps as a philosophy, not just "using Docker and Jenkins." Candidates who list tools without mentioning culture and feedback loops are giving a surface-level answer.
 
 **Follow-up:** *Can a company "do DevOps" without changing its organizational structure?*
 
-No — tooling alone doesn't make DevOps. If developers and operations still sit in separate silos with separate goals, tickets passed between teams, and no shared responsibility for production, you have the same old model with newer tools. The core of DevOps is breaking down organizational barriers. Conway's Law applies: your architecture will mirror your team structure.
+No - tooling alone doesn't make DevOps. If developers and operations still sit in separate silos with separate goals, tickets passed between teams, and no shared responsibility for production, you have the same old model with newer tools. The core of DevOps is breaking down organizational barriers. Conway's Law applies: your architecture will mirror your team structure.
 
 ---
 
@@ -99,7 +99,7 @@ The DevOps lifecycle is an **infinite loop** of 8 phases, not a linear waterfall
 
 ### The Feedback Loop
 
-The critical insight: **monitoring feeds back into planning**. If monitoring detects high error rates after a deployment, that triggers a hotfix in the planning phase. This loop is continuous — there is no "done" state.
+The critical insight: **monitoring feeds back into planning**. If monitoring detects high error rates after a deployment, that triggers a hotfix in the planning phase. This loop is continuous - there is no "done" state.
 
 ```
 Example flow:
@@ -117,7 +117,7 @@ Example flow:
 
 **Follow-up:** *Which phase is the most commonly neglected in organizations, and why?*
 
-**Monitoring and feedback.** Many teams invest heavily in CI/CD but have minimal observability. They can deploy fast but can't detect or diagnose failures quickly. Without monitoring, you're flying blind — you can deploy 100 times a day, but if you don't know what's breaking, speed is dangerous.
+**Monitoring and feedback.** Many teams invest heavily in CI/CD but have minimal observability. They can deploy fast but can't detect or diagnose failures quickly. Without monitoring, you're flying blind - you can deploy 100 times a day, but if you don't know what's breaking, speed is dangerous.
 
 ---
 
@@ -153,7 +153,7 @@ Developer pushes code
 - Broken builds are fixed immediately (top priority)
 - Tests run on every push
 
-### Continuous Delivery (CD — Delivery)
+### Continuous Delivery (CD - Delivery)
 
 ```
 CI passes
@@ -170,7 +170,7 @@ CI passes
 
 **Use case:** Regulated industries (fintech, healthcare) where a human must approve production releases.
 
-### Continuous Deployment (CD — Deployment)
+### Continuous Deployment (CD - Deployment)
 
 ```
 CI passes
@@ -201,7 +201,7 @@ CI passes
 ### Real-world example
 
 ```yaml
-# GitHub Actions — Continuous Delivery
+# GitHub Actions - Continuous Delivery
 name: CD Pipeline
 
 on:
@@ -236,11 +236,11 @@ jobs:
 
 **Follow-up:** *What must be true before a team can safely adopt Continuous Deployment?*
 
-1. **Comprehensive automated test suite** — unit, integration, e2e, performance
-2. **Feature flags** — deploy code without activating features
-3. **Automated rollback** — if health checks fail post-deploy, revert automatically
-4. **Observability** — you must detect problems within seconds, not hours
-5. **Small, frequent deployments** — so each deployment's blast radius is tiny
+1. **Comprehensive automated test suite** - unit, integration, e2e, performance
+2. **Feature flags** - deploy code without activating features
+3. **Automated rollback** - if health checks fail post-deploy, revert automatically
+4. **Observability** - you must detect problems within seconds, not hours
+5. **Small, frequent deployments** - so each deployment's blast radius is tiny
 
 ---
 
@@ -272,7 +272,7 @@ AFTER (IaC):
 
 **Declarative (what, not how):**
 ```hcl
-# Terraform — Declarative
+# Terraform - Declarative
 resource "aws_instance" "web" {
   ami           = "ami-0c55b159cbfafe1f0"
   instance_type = "t3.medium"
@@ -299,7 +299,7 @@ You describe the **desired state**. Terraform figures out how to get there.
 
 **Imperative (step-by-step instructions):**
 ```yaml
-# Ansible — Imperative (procedural)
+# Ansible - Imperative (procedural)
 - name: Configure web server
   hosts: webservers
   tasks:
@@ -335,11 +335,11 @@ You describe the **steps to execute**.
 
 ### Key Benefits
 
-1. **Reproducibility** — `terraform apply` gives identical infra every time
-2. **Version control** — Git history = infrastructure audit trail
-3. **Peer review** — infra changes go through PRs, just like code
-4. **Disaster recovery** — rebuild entire infrastructure from code in minutes
-5. **Drift detection** — `terraform plan` shows what changed outside of code
+1. **Reproducibility** - `terraform apply` gives identical infra every time
+2. **Version control** - Git history = infrastructure audit trail
+3. **Peer review** - infra changes go through PRs, just like code
+4. **Disaster recovery** - rebuild entire infrastructure from code in minutes
+5. **Drift detection** - `terraform plan` shows what changed outside of code
 
 ### Terraform Workflow
 
@@ -370,7 +370,7 @@ terraform destroy
 
 Terraform maintains a `terraform.tfstate` file that maps your code to real-world resources. If lost:
 - Terraform loses track of what exists → it tries to recreate everything → conflicts and failures
-- Fix: use **remote state backends** (S3 + DynamoDB locking, Terraform Cloud) — never store state locally in production
+- Fix: use **remote state backends** (S3 + DynamoDB locking, Terraform Cloud) - never store state locally in production
 - Recovery: `terraform import` can re-link existing resources to your code, but it's manual per resource
 
 ---
@@ -535,7 +535,7 @@ With DevOps, Agile teams build fast AND deploy fast:
 
 **Follow-up:** *Can you do DevOps without Agile?*
 
-Technically yes — you can automate infrastructure and deployments regardless of your project management methodology. But you lose the tight feedback loop. Waterfall + DevOps means you have a great pipeline that only gets used every 6 months. The combination of Agile (fast iteration) + DevOps (fast delivery) is what creates real velocity.
+Technically yes - you can automate infrastructure and deployments regardless of your project management methodology. But you lose the tight feedback loop. Waterfall + DevOps means you have a great pipeline that only gets used every 6 months. The combination of Agile (fast iteration) + DevOps (fast delivery) is what creates real velocity.
 
 ---
 
@@ -543,7 +543,7 @@ Technically yes — you can automate infrastructure and deployments regardless o
 
 **Answer:**
 
-"Shift-left" means moving testing **earlier** in the development lifecycle — to the left on a timeline.
+"Shift-left" means moving testing **earlier** in the development lifecycle - to the left on a timeline.
 
 ```
 Traditional (testing at the end):
@@ -573,7 +573,7 @@ Code+Test → Code+Test → Code+Test → Code+Test → Deploy
 ### Implementation in CI
 
 ```yaml
-# Every commit gets all these checks — not just before release
+# Every commit gets all these checks - not just before release
 name: Shift-Left CI
 
 on: [push, pull_request]
@@ -627,12 +627,12 @@ Production          100x
 
 **Follow-up:** *How does shift-left apply to security specifically?*
 
-It's called **DevSecOps** — integrating security tools into the CI pipeline:
-- **SAST** (Static Analysis) — scan code for vulnerabilities on every push (Semgrep, SonarQube)
-- **SCA** (Software Composition Analysis) — check dependencies for CVEs (`npm audit`, Snyk)
-- **Container scanning** — scan Docker images for vulnerabilities (Trivy, Grype)
-- **Secret detection** — prevent committed secrets (GitLeaks, TruffleHog)
-- **DAST** (Dynamic Analysis) — scan running application in staging (OWASP ZAP)
+It's called **DevSecOps** - integrating security tools into the CI pipeline:
+- **SAST** (Static Analysis) - scan code for vulnerabilities on every push (Semgrep, SonarQube)
+- **SCA** (Software Composition Analysis) - check dependencies for CVEs (`npm audit`, Snyk)
+- **Container scanning** - scan Docker images for vulnerabilities (Trivy, Grype)
+- **Secret detection** - prevent committed secrets (GitLeaks, TruffleHog)
+- **DAST** (Dynamic Analysis) - scan running application in staging (OWASP ZAP)
 
 ---
 
@@ -688,7 +688,7 @@ DORA (DevOps Research and Assessment) identified **four metrics** that predict s
 
 ### The Key Insight
 
-**Speed and stability are NOT trade-offs.** Elite performers deploy MORE frequently AND have LOWER failure rates. The common belief that "moving fast breaks things" is wrong — moving fast with good practices (CI/CD, automated testing, monitoring) actually improves stability.
+**Speed and stability are NOT trade-offs.** Elite performers deploy MORE frequently AND have LOWER failure rates. The common belief that "moving fast breaks things" is wrong - moving fast with good practices (CI/CD, automated testing, monitoring) actually improves stability.
 
 ```
                     High Stability
@@ -708,16 +708,16 @@ DORA (DevOps Research and Assessment) identified **four metrics** that predict s
 ### How to Track These Metrics
 
 ```bash
-# Deployment Frequency — count deployments per week
+# Deployment Frequency - count deployments per week
 git log --format="%H %ai" --merges --after="2024-01-01" | wc -l
 
-# Lead Time — time between first commit and deploy
+# Lead Time - time between first commit and deploy
 # Track in CI/CD: record commit timestamp and deploy timestamp
 
-# Change Failure Rate — deployments requiring rollback / total deployments
+# Change Failure Rate - deployments requiring rollback / total deployments
 # Track in incident management tool
 
-# MTTR — time from alert to resolution
+# MTTR - time from alert to resolution
 # Track in PagerDuty, Opsgenie, etc.
 ```
 
@@ -725,11 +725,11 @@ git log --format="%H %ai" --merges --after="2024-01-01" | wc -l
 
 **Follow-up:** *Your team has a deployment frequency of once per month and an MTTR of 3 days. What specific improvements would you prioritize?*
 
-1. **Reduce deployment size** — smaller changes → easier to debug failures → lower MTTR
-2. **Automate rollbacks** — one-click or automatic rollback drops MTTR to minutes
-3. **Add monitoring/alerting** — 3-day MTTR suggests issues aren't detected quickly
-4. **Improve CI speed** — fast pipelines encourage more frequent deployments
-5. **Implement feature flags** — decouple deployment from release, enabling daily deploys
+1. **Reduce deployment size** - smaller changes → easier to debug failures → lower MTTR
+2. **Automate rollbacks** - one-click or automatic rollback drops MTTR to minutes
+3. **Add monitoring/alerting** - 3-day MTTR suggests issues aren't detected quickly
+4. **Improve CI speed** - fast pipelines encourage more frequent deployments
+5. **Implement feature flags** - decouple deployment from release, enabling daily deploys
 
 ---
 
@@ -764,7 +764,7 @@ Lifecycle:                          Lifecycle:
 
 ### Example: Building a Web Server
 
-**Step 1 — IaC (Terraform) creates the server:**
+**Step 1 - IaC (Terraform) creates the server:**
 ```hcl
 resource "aws_instance" "web" {
   ami           = "ami-0c55b159cbfafe1f0"
@@ -775,7 +775,7 @@ resource "aws_instance" "web" {
 }
 ```
 
-**Step 2 — Configuration Management (Ansible) configures it:**
+**Step 2 - Configuration Management (Ansible) configures it:**
 ```yaml
 - hosts: webservers
   become: yes
@@ -865,7 +865,7 @@ jobs:
       # Secret detection
       - uses: gitleaks/gitleaks-action@v2
 
-      # SAST — find code vulnerabilities
+      # SAST - find code vulnerabilities
       - name: Run Semgrep
         uses: returntocorp/semgrep-action@v1
         with:
@@ -909,8 +909,8 @@ After DevSecOps:
 **Follow-up:** *A developer accidentally commits an AWS secret key to a public repo. What's your incident response?*
 
 **Immediate (within minutes):**
-1. **Revoke the key** in AWS IAM — this is priority #1
-2. Rotate the key — generate a new one
+1. **Revoke the key** in AWS IAM - this is priority #1
+2. Rotate the key - generate a new one
 3. Check CloudTrail for any unauthorized usage of the compromised key
 
 **Short-term (within hours):**
@@ -946,4 +946,4 @@ After DevSecOps:
 
 ---
 
-*Next: [02 — Linux & Networking for DevOps →](./02-linux-networking.md)*
+*Next: [02 - Linux & Networking for DevOps →](./02-linux-networking.md)*

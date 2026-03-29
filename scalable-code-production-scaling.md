@@ -1,6 +1,6 @@
 # Scaling Systems in Production: Architecture, Failures, and Recovery for 100K+ Users
 
-*The senior engineer's field guide to building systems that don't fall over — and recover gracefully when they do.*
+*The senior engineer's field guide to building systems that don't fall over - and recover gracefully when they do.*
 
 ---
 
@@ -21,7 +21,7 @@ This article is about the architecture, failure modes, and recovery strategies t
 
 ### The Architecture Shift: Vertical to Horizontal
 
-At 1K users, you scale **vertically** — bigger server, more RAM, faster CPU. At 100K users, vertical scaling hits a ceiling (and gets extremely expensive). You need to scale **horizontally** — more servers, not bigger servers.
+At 1K users, you scale **vertically** - bigger server, more RAM, faster CPU. At 100K users, vertical scaling hits a ceiling (and gets extremely expensive). You need to scale **horizontally** - more servers, not bigger servers.
 
 ```
 1K users:                          100K users:
@@ -54,7 +54,7 @@ At 1K users, you scale **vertically** — bigger server, more RAM, faster CPU. A
                                  └──────────────┘
 ```
 
-### Load Balancing — Distributing Traffic Across Servers
+### Load Balancing - Distributing Traffic Across Servers
 
 **Nginx as a reverse proxy and load balancer:**
 
@@ -62,12 +62,12 @@ At 1K users, you scale **vertically** — bigger server, more RAM, faster CPU. A
 # /etc/nginx/conf.d/app.conf
 
 upstream app_servers {
-    # Round-robin by default — each request goes to the next server
+    # Round-robin by default - each request goes to the next server
     server app1:3000;
     server app2:3000;
     server app3:3000;
 
-    # Health checks — stop sending traffic to dead servers
+    # Health checks - stop sending traffic to dead servers
     # (nginx plus, or use upstream_check_module for open source)
 }
 
@@ -75,7 +75,7 @@ server {
     listen 80;
     server_name api.yourapp.com;
 
-    # Connection limits — protect against connection floods
+    # Connection limits - protect against connection floods
     limit_conn_zone $binary_remote_addr zone=addr:10m;
     limit_conn addr 100;
 
@@ -85,7 +85,7 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Request-ID $request_id;
 
-        # Timeouts — don't wait forever for a slow server
+        # Timeouts - don't wait forever for a slow server
         proxy_connect_timeout 5s;
         proxy_read_timeout 30s;
         proxy_send_timeout 30s;
@@ -105,7 +105,7 @@ server {
 }
 ```
 
-**Load balancing strategies — when to use each:**
+**Load balancing strategies - when to use each:**
 
 | Strategy | How It Works | When to Use |
 |---|---|---|
@@ -114,7 +114,7 @@ server {
 | IP Hash | Same client IP always goes to the same server | When you have sticky sessions (avoid if possible) |
 | Weighted | Some servers get more traffic than others | When servers have different capacities |
 
-### Stateless Services — The Foundation of Horizontal Scaling
+### Stateless Services - The Foundation of Horizontal Scaling
 
 **The rule:** Your application servers must not store any state locally. If a server dies, any other server should be able to handle the next request from that user.
 
@@ -137,7 +137,7 @@ const redis = require('redis').createClient({ url: process.env.REDIS_URL });
 const session = require('express-session');
 const RedisStore = require('connect-redis').default;
 
-// Sessions in Redis — accessible by any server
+// Sessions in Redis - accessible by any server
 app.use(session({
   store: new RedisStore({ client: redis }),
   secret: process.env.SESSION_SECRET,
@@ -221,7 +221,7 @@ class CacheService {
     const acquired = await redis.set(lockKey, '1', 'NX', 'EX', 10); // Lock for 10s
 
     if (acquired) {
-      // We got the lock — fetch from DB and populate cache
+      // We got the lock - fetch from DB and populate cache
       try {
         const data = await fetchFn();
         await redis.setex(key, ttl, JSON.stringify(data));
@@ -230,7 +230,7 @@ class CacheService {
         await redis.del(lockKey);
       }
     } else {
-      // Another request is already fetching — wait and retry from cache
+      // Another request is already fetching - wait and retry from cache
       await new Promise(resolve => setTimeout(resolve, 100));
       return this.getOrSetWithLock(key, fetchFn, ttl);
     }
@@ -267,9 +267,9 @@ async function updateProduct(id, data) {
 }
 ```
 
-### Queue Systems — Choosing the Right Tool
+### Queue Systems - Choosing the Right Tool
 
-**Bull (Redis-based) — Good for most applications:**
+**Bull (Redis-based) - Good for most applications:**
 
 ```javascript
 const Queue = require('bull');
@@ -307,7 +307,7 @@ app.post('/api/v1/orders', async (req, res) => {
 });
 
 // Consumer: Process jobs (run in separate worker process)
-// worker.js — run with: node worker.js
+// worker.js - run with: node worker.js
 emailQueue.process('order-confirmation', 5, async (job) => { // 5 concurrent
   const { orderId, email } = job.data;
   const order = await orderService.getById(orderId);
@@ -355,7 +355,7 @@ emailQueue.on('stalled', (jobId) => {
 
 ### Database Optimization for Scale
 
-**Read Replicas — Scale reads without touching your primary:**
+**Read Replicas - Scale reads without touching your primary:**
 
 ```javascript
 // PostgreSQL with read replicas
@@ -444,7 +444,7 @@ This lets you scale to many more app servers without exhausting database connect
 
 ## Part 3: Frontend Scaling
 
-### CDN — The Biggest Frontend Performance Win
+### CDN - The Biggest Frontend Performance Win
 
 ```
 Without CDN:
@@ -460,7 +460,7 @@ User (Tokyo) → CDN Edge (Tokyo) → Serve from cache (5ms)
 **Setting up CDN with your frontend build:**
 
 ```javascript
-// next.config.js — Next.js with CDN
+// next.config.js - Next.js with CDN
 module.exports = {
   // All static assets get served from CDN
   assetPrefix: process.env.NODE_ENV === 'production'
@@ -496,18 +496,18 @@ module.exports = {
 **Cache headers that make CDN effective:**
 
 ```nginx
-# Static assets with content hash in filename — cache forever
+# Static assets with content hash in filename - cache forever
 location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2)$ {
     expires 1y;
     add_header Cache-Control "public, immutable";
 }
 
-# HTML files — don't cache (they reference the hashed assets)
+# HTML files - don't cache (they reference the hashed assets)
 location ~* \.html$ {
     add_header Cache-Control "no-cache";
 }
 
-# API responses — short cache or no cache
+# API responses - short cache or no cache
 location /api/ {
     add_header Cache-Control "private, no-cache";
 }
@@ -535,7 +535,7 @@ function App() {
   );
 }
 // Bundle size: 2MB. Every user downloads the admin panel, analytics,
-// and report builder — even if they never visit those pages.
+// and report builder - even if they never visit those pages.
 
 // ✅ GOOD: Load each route only when needed
 import { lazy, Suspense } from 'react';
@@ -568,7 +568,7 @@ function App() {
 ```jsx
 import { lazy, Suspense, useState } from 'react';
 
-// Chart library is 500KB — don't load it until user clicks "Show Chart"
+// Chart library is 500KB - don't load it until user clicks "Show Chart"
 const HeavyChart = lazy(() => import('./components/HeavyChart'));
 
 function AnalyticsPage({ data }) {
@@ -589,7 +589,7 @@ function AnalyticsPage({ data }) {
 }
 ```
 
-### Bundle Analysis — Know What You're Shipping
+### Bundle Analysis - Know What You're Shipping
 
 ```bash
 # Next.js: Built-in bundle analyzer
@@ -601,7 +601,7 @@ function AnalyticsPage({ data }) {
 # module.exports = withBundleAnalyzer({ /* ... */ });
 
 ANALYZE=true npm run build
-# Opens a visual treemap of your bundle — you'll immediately see what's too big
+# Opens a visual treemap of your bundle - you'll immediately see what's too big
 ```
 
 **Common findings:**
@@ -614,7 +614,7 @@ ANALYZE=true npm run build
 
 ## Part 4: Failure Scenarios and How to Handle Them
 
-At 100K users, failures aren't hypothetical — they're scheduled. You need to design for failure, not just hope it doesn't happen.
+At 100K users, failures aren't hypothetical - they're scheduled. You need to design for failure, not just hope it doesn't happen.
 
 ### Failure 1: Server Crashes Mid-Request
 
@@ -638,7 +638,7 @@ module.exports = {
   }],
 };
 
-// 2. Graceful shutdown — finish in-flight requests before dying
+// 2. Graceful shutdown - finish in-flight requests before dying
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM received, starting graceful shutdown');
 
@@ -661,10 +661,10 @@ process.on('SIGTERM', async () => {
   }, 30000);
 });
 
-// 3. Catch unhandled errors — log them and exit cleanly
+// 3. Catch unhandled errors - log them and exit cleanly
 process.on('unhandledRejection', (reason, promise) => {
   logger.error('Unhandled Rejection', { reason: reason?.message || reason });
-  // Let PM2 restart us — don't swallow the error
+  // Let PM2 restart us - don't swallow the error
   process.exit(1);
 });
 
@@ -684,7 +684,7 @@ process.on('uncaughtException', (error) => {
 
 ```javascript
 // Instead of sending requests to a failing database until it dies completely,
-// "break the circuit" — fail fast and give the database time to recover.
+// "break the circuit" - fail fast and give the database time to recover.
 
 class CircuitBreaker {
   constructor(options = {}) {
@@ -701,14 +701,14 @@ class CircuitBreaker {
       if (Date.now() - this.lastFailureTime > this.resetTimeout) {
         this.state = 'HALF_OPEN';
       } else {
-        throw new Error('Circuit breaker is OPEN — service unavailable');
+        throw new Error('Circuit breaker is OPEN - service unavailable');
       }
     }
 
     try {
       const result = await fn();
 
-      // Success — reset the circuit
+      // Success - reset the circuit
       if (this.state === 'HALF_OPEN') {
         this.state = 'CLOSED';
       }
@@ -745,7 +745,7 @@ async function getUser(id) {
 
 // When the DB is overloaded:
 // - First 5 requests fail normally
-// - Circuit opens — next requests fail INSTANTLY (no DB load)
+// - Circuit opens - next requests fail INSTANTLY (no DB load)
 // - After 30 seconds, one request is allowed through (half-open)
 // - If it succeeds, circuit closes and normal traffic resumes
 // - If it fails, circuit stays open for another 30 seconds
@@ -776,7 +776,7 @@ async function getProducts(filters) {
       return JSON.parse(staleCache);
     }
 
-    throw err; // No cache, no DB — we have to fail
+    throw err; // No cache, no DB - we have to fail
   }
 }
 ```
@@ -789,7 +789,7 @@ async function getProducts(filters) {
 
 ```javascript
 // ❌ LEAK 1: Growing arrays/maps that never get cleaned
-const requestLog = []; // Never cleared — grows forever
+const requestLog = []; // Never cleared - grows forever
 
 app.use((req, res, next) => {
   requestLog.push({
@@ -813,7 +813,7 @@ const logger = require('./logger'); // Winston writes to file/service, not memor
 // ❌ LEAK 2: Event listeners that accumulate
 class OrderWatcher {
   watch(orderId) {
-    // Every call adds a NEW listener — they never get removed
+    // Every call adds a NEW listener - they never get removed
     eventEmitter.on('order-update', (data) => {
       if (data.orderId === orderId) {
         this.handleUpdate(data);
@@ -844,7 +844,7 @@ class OrderWatcher {
 app.get('/api/reports', async (req, res) => {
   const hugeDataset = await db.query('SELECT * FROM events'); // 500MB result set
 
-  // This closure captures hugeDataset — it stays in memory until the timer fires
+  // This closure captures hugeDataset - it stays in memory until the timer fires
   setTimeout(() => {
     logger.info('Report generated', { count: hugeDataset.length });
   }, 60000);
@@ -895,7 +895,7 @@ app.get('/health', (req, res) => {
 
 ## Part 5: Recovery Strategies
 
-### Auto-Scaling — Let Infrastructure Respond to Load
+### Auto-Scaling - Let Infrastructure Respond to Load
 
 **Kubernetes Horizontal Pod Autoscaler (HPA):**
 
@@ -942,7 +942,7 @@ spec:
 
 **Why scale-down is slower:** If your traffic spikes and then drops, you don't want to immediately remove servers. The spike might come back in waves. Slow scale-down prevents thrashing.
 
-### Graceful Degradation — Serve Something, Not Nothing
+### Graceful Degradation - Serve Something, Not Nothing
 
 When parts of your system fail, don't show a blank page. Degrade gracefully.
 
@@ -954,10 +954,10 @@ function Dashboard() {
   const recsQuery = useQuery({
     queryKey: ['recommendations'],
     queryFn: fetchRecommendations,
-    retry: 1, // Non-critical — don't retry aggressively
+    retry: 1, // Non-critical - don't retry aggressively
   });
 
-  // Critical data failed — show error page
+  // Critical data failed - show error page
   if (userQuery.error) {
     return <ErrorPage message="Unable to load your profile" retry={userQuery.refetch} />;
   }
@@ -976,7 +976,7 @@ function Dashboard() {
         <RecentOrders orders={ordersQuery.data} loading={ordersQuery.isLoading} />
       )}
 
-      {/* Recommendations are nice-to-have — just hide if they fail */}
+      {/* Recommendations are nice-to-have - just hide if they fail */}
       {recsQuery.data && <Recommendations items={recsQuery.data} />}
     </div>
   );
@@ -988,7 +988,7 @@ function Dashboard() {
 app.get('/api/v1/dashboard', async (req, res) => {
   const userId = req.user.id;
 
-  // Use Promise.allSettled — don't fail everything if one thing fails
+  // Use Promise.allSettled - don't fail everything if one thing fails
   const results = await Promise.allSettled([
     userService.getById(userId),             // Critical
     orderService.getRecent(userId, 5),       // Important
@@ -998,7 +998,7 @@ app.get('/api/v1/dashboard', async (req, res) => {
 
   const [userResult, ordersResult, notificationsResult, recsResult] = results;
 
-  // Critical failure — can't serve anything useful
+  // Critical failure - can't serve anything useful
   if (userResult.status === 'rejected') {
     return res.status(503).json({ error: 'Service temporarily unavailable' });
   }
@@ -1070,6 +1070,6 @@ Each of these is a small decision. Together, they're the difference between a 3 
 ---
 
 *This is Part 3 of a 3-part series:*
-1. *[Writing Scalable Code from Day 1](scalable-code-day-one.md) — Foundations*
-2. *[Handling Sudden Traffic Spikes](scalable-code-traffic-spikes.md) — From 1K to 100K*
-3. *Scaling Systems in Production — Architecture, Failures, Recovery (this article)*
+1. *[Writing Scalable Code from Day 1](scalable-code-day-one.md) - Foundations*
+2. *[Handling Sudden Traffic Spikes](scalable-code-traffic-spikes.md) - From 1K to 100K*
+3. *Scaling Systems in Production - Architecture, Failures, Recovery (this article)*

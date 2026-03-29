@@ -1,6 +1,6 @@
-# System Design & Real-World DevOps Scenarios — Interview Preparation
+# System Design & Real-World DevOps Scenarios - Interview Preparation
 
-> Section 7 of 7 — Kubernetes essentials, microservices deployment, high availability, disaster recovery, and real-world architecture.
+> Section 7 of 7 - Kubernetes essentials, microservices deployment, high availability, disaster recovery, and real-world architecture.
 
 ---
 
@@ -73,7 +73,7 @@
 
 ### Core Objects
 
-**Pod** — Smallest deployable unit. One or more containers sharing network and storage.
+**Pod** - Smallest deployable unit. One or more containers sharing network and storage.
 
 ```yaml
 apiVersion: v1
@@ -95,7 +95,7 @@ spec:
           cpu: "1000m"
 ```
 
-**Deployment** — Manages ReplicaSets. Handles rolling updates, rollbacks, scaling.
+**Deployment** - Manages ReplicaSets. Handles rolling updates, rollbacks, scaling.
 
 ```yaml
 apiVersion: apps/v1
@@ -136,7 +136,7 @@ spec:
             periodSeconds: 20
 ```
 
-**Service** — Stable network endpoint for a set of pods.
+**Service** - Stable network endpoint for a set of pods.
 
 ```yaml
 apiVersion: v1
@@ -153,7 +153,7 @@ spec:
 # Accessible at: api.namespace.svc.cluster.local
 ```
 
-**Ingress** — Routes external HTTP traffic to services.
+**Ingress** - Routes external HTTP traffic to services.
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -179,7 +179,7 @@ spec:
                   number: 80
 ```
 
-**ConfigMap & Secret** — Configuration and sensitive data.
+**ConfigMap & Secret** - Configuration and sensitive data.
 
 ```yaml
 apiVersion: v1
@@ -417,10 +417,10 @@ GitOps:
 
 ### Core Concepts
 
-1. **Git is the source of truth** — desired cluster state is declared in Git
-2. **Pull-based** — agent in cluster watches Git and applies changes
-3. **Declarative** — you describe WHAT, not HOW
-4. **Self-healing** — if someone manually changes the cluster, ArgoCD reverts it
+1. **Git is the source of truth** - desired cluster state is declared in Git
+2. **Pull-based** - agent in cluster watches Git and applies changes
+3. **Declarative** - you describe WHAT, not HOW
+4. **Self-healing** - if someone manually changes the cluster, ArgoCD reverts it
 
 ### ArgoCD Architecture
 
@@ -498,7 +498,7 @@ Rollback:
 
 ```
 Benefits:
-✓ Full audit trail (who changed what, when, why — Git blame)
+✓ Full audit trail (who changed what, when, why - Git blame)
 ✓ Peer review for infrastructure changes (PRs)
 ✓ Easy rollback (git revert)
 ✓ Disaster recovery (recreate entire cluster from Git)
@@ -597,7 +597,7 @@ resource "aws_route53_record" "primary" {
   health_check_id = aws_route53_health_check.us_east.id
 }
 
-# Secondary record (eu-west-1) — activated on primary failure
+# Secondary record (eu-west-1) - activated on primary failure
 resource "aws_route53_record" "secondary" {
   zone_id = aws_route53_zone.main.zone_id
   name    = "api.example.com"
@@ -915,8 +915,8 @@ jobs:
 **Follow-up:** *How do you handle breaking changes in shared libraries?*
 
 1. **Semantic versioning** for shared libs
-2. **Backward compatibility** — new versions must not break existing consumers
-3. **Deprecation cycle** — mark old APIs deprecated, give teams time to migrate
+2. **Backward compatibility** - new versions must not break existing consumers
+3. **Deprecation cycle** - mark old APIs deprecated, give teams time to migrate
 4. Run **affected service tests** when a shared lib changes (the path filter handles this)
 
 ---
@@ -1008,7 +1008,7 @@ UNSAFE operations (cause locks/downtime):
   ✗ DROP COLUMN (if code still references it)
   ✗ RENAME COLUMN (breaks existing queries)
   ✗ ADD NOT NULL constraint (full table scan)
-  ✗ CREATE INDEX (without CONCURRENTLY — locks writes)
+  ✗ CREATE INDEX (without CONCURRENTLY - locks writes)
   ✗ ALTER COLUMN type (full table rewrite)
 ```
 
@@ -1077,7 +1077,7 @@ Without service mesh (20 microservices):
 └────────────────────────────────────────────────┘
 ```
 
-The sidecar proxy handles all cross-cutting concerns **transparently** — the application code doesn't change.
+The sidecar proxy handles all cross-cutting concerns **transparently** - the application code doesn't change.
 
 ### What it provides
 
@@ -1193,7 +1193,7 @@ The mesh adds: CPU overhead (15-20%), memory per pod (~50MB sidecar),
 ### Postmortem Template
 
 ```markdown
-# Incident Report: API Error Rate Spike — 2024-01-15
+# Incident Report: API Error Rate Spike - 2024-01-15
 
 ## Summary
 A deployment at 14:25 UTC caused 30% of API requests to return 500 errors
@@ -1229,7 +1229,7 @@ constraint violation error.
 
 ## What Went Wrong
 - Migration was not tested against production-like data
-- No canary deployment — 100% of traffic hit the new version immediately
+- No canary deployment - 100% of traffic hit the new version immediately
 - Staging database didn't have NULL email records
 
 ## Action Items
@@ -1287,8 +1287,8 @@ Key principle: If a human can make a mistake that causes an outage,
 **Follow-up:** *How do you prevent the same incident from happening again?*
 
 Focus on **systemic fixes**, not process fixes:
-- **Don't:** "Engineers must be more careful with migrations" (process fix — will fail)
-- **Do:** "CI pipeline automatically checks migrations for unsafe operations" (systemic fix — enforced by tooling)
+- **Don't:** "Engineers must be more careful with migrations" (process fix - will fail)
+- **Do:** "CI pipeline automatically checks migrations for unsafe operations" (systemic fix - enforced by tooling)
 
 ---
 
@@ -1488,7 +1488,7 @@ k8s-manifests/
 | Monitoring | Prometheus + Grafana | Industry standard, powerful PromQL |
 | CI/CD | GitHub Actions | Integrated with repo, scalable runners |
 
-**Why interviewer asks this:** This is the ultimate system design question — tests everything from compute to data to observability.
+**Why interviewer asks this:** This is the ultimate system design question - tests everything from compute to data to observability.
 
 **Follow-up:** *What's the single most important thing to get right in this architecture?*
 
@@ -1496,7 +1496,7 @@ k8s-manifests/
 
 ---
 
-## Appendix: Quick Reference — Kubernetes Commands
+## Appendix: Quick Reference - Kubernetes Commands
 
 ```bash
 # ──── Cluster ────
@@ -1536,6 +1536,6 @@ kubectl run debug --image=busybox -it --rm -- sh
 
 ---
 
-*This completes the 7-part DevOps + Docker interview preparation guide. Master these 70 questions and you'll be prepared for any DevOps interview — from startup to FAANG.*
+*This completes the 7-part DevOps + Docker interview preparation guide. Master these 70 questions and you'll be prepared for any DevOps interview - from startup to FAANG.*
 
-*← Back to [01 — DevOps Fundamentals](./01-devops-fundamentals.md)*
+*← Back to [01 - DevOps Fundamentals](./01-devops-fundamentals.md)*

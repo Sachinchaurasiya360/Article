@@ -1,8 +1,8 @@
-# Web Scraping Deep Dive — Part 2: Dynamic Content & Browser Automation
+# Web Scraping Deep Dive - Part 2: Dynamic Content & Browser Automation
 
 ---
 
-**Series:** Web Scraping — A Developer's Deep Dive
+**Series:** Web Scraping - A Developer's Deep Dive
 **Part:** 2 of 5 (Core Skills)
 **Audience:** Developers who need to scrape JavaScript-rendered pages and SPAs
 **Reading time:** ~45 minutes
@@ -13,13 +13,13 @@
 
 1. [Why Static Scraping Fails on Modern Websites](#1-why-static-scraping-fails-on-modern-websites)
 2. [Browser Automation Fundamentals](#2-browser-automation-fundamentals)
-3. [Selenium — The Legacy Standard](#3-selenium--the-legacy-standard)
-4. [Playwright — The Modern Standard](#4-playwright--the-modern-standard)
-5. [Waiting Strategies — The Key to Reliable Scraping](#5-waiting-strategies--the-key-to-reliable-scraping)
-6. [Intercepting Network Requests — Finding Hidden APIs](#6-intercepting-network-requests--finding-hidden-apis)
+3. [Selenium - The Legacy Standard](#3-selenium--the-legacy-standard)
+4. [Playwright - The Modern Standard](#4-playwright--the-modern-standard)
+5. [Waiting Strategies - The Key to Reliable Scraping](#5-waiting-strategies--the-key-to-reliable-scraping)
+6. [Intercepting Network Requests - Finding Hidden APIs](#6-intercepting-network-requests--finding-hidden-apis)
 7. [Handling Infinite Scroll and Lazy Loading](#7-handling-infinite-scroll-and-lazy-loading)
 8. [Screenshots, PDFs, and Visual Debugging](#8-screenshots-pdfs-and-visual-debugging)
-9. [Headless vs Headed — When to Use Each](#9-headless-vs-headed--when-to-use-each)
+9. [Headless vs Headed - When to Use Each](#9-headless-vs-headed--when-to-use-each)
 10. [Real-World Project: SPA Product Catalog Scraper](#10-real-world-project-spa-product-catalog-scraper)
 11. [What's Next](#11-whats-next)
 
@@ -41,7 +41,7 @@ print(f"Found: {len(products)} products")
 # Found: 0 products
 ```
 
-Zero results. Why? Because `requests` downloads the raw HTML — which for a SPA looks like this:
+Zero results. Why? Because `requests` downloads the raw HTML - which for a SPA looks like this:
 
 ```html
 <!DOCTYPE html>
@@ -54,7 +54,7 @@ Zero results. Why? Because `requests` downloads the raw HTML — which for a SPA
 </html>
 ```
 
-The actual product cards are rendered by JavaScript **after** the page loads. `requests` cannot execute JavaScript — it only sees the empty `<div id="root">`.
+The actual product cards are rendered by JavaScript **after** the page loads. `requests` cannot execute JavaScript - it only sees the empty `<div id="root">`.
 
 ```mermaid
 flowchart LR
@@ -125,7 +125,7 @@ flowchart TD
 
 ---
 
-## 3. Selenium — The Legacy Standard
+## 3. Selenium - The Legacy Standard
 
 ### 3.1 Setup
 
@@ -171,7 +171,7 @@ try:
     for quote in quotes:
         text = quote.find_element(By.CSS_SELECTOR, ".text").text
         author = quote.find_element(By.CSS_SELECTOR, ".author").text
-        print(f'"{text}" — {author}')
+        print(f'"{text}" - {author}')
 
 finally:
     driver.quit()  # ALWAYS close the browser
@@ -207,7 +207,7 @@ print(f"Total products on page: {total}")
 
 ---
 
-## 4. Playwright — The Modern Standard
+## 4. Playwright - The Modern Standard
 
 ### 4.1 Setup
 
@@ -216,7 +216,7 @@ pip install playwright
 playwright install  # Downloads Chromium, Firefox, and WebKit
 ```
 
-### 4.2 Basic Usage — Sync API
+### 4.2 Basic Usage - Sync API
 
 ```python
 # filename: playwright_basics.py
@@ -239,12 +239,12 @@ with sync_playwright() as p:
     for quote in quotes:
         text = quote.query_selector(".text").inner_text()
         author = quote.query_selector(".author").inner_text()
-        print(f'"{text}" — {author}')
+        print(f'"{text}" - {author}')
 
     browser.close()
 ```
 
-### 4.3 Async API — Better for Scraping at Scale
+### 4.3 Async API - Better for Scraping at Scale
 
 ```python
 # filename: playwright_async.py
@@ -274,7 +274,7 @@ async def scrape_quotes():
         """)
 
         for item in data:
-            print(f'"{item["text"]}" — {item["author"]} [{", ".join(item["tags"])}]')
+            print(f'"{item["text"]}" - {item["author"]} [{", ".join(item["tags"])}]')
 
         await browser.close()
 
@@ -293,7 +293,7 @@ with sync_playwright() as p:
     page = browser.new_page()
     page.goto("https://example.com")
 
-    # Click — Playwright auto-waits for the element to be visible and clickable
+    # Click - Playwright auto-waits for the element to be visible and clickable
     page.click("button.load-more")
 
     # Fill form fields
@@ -328,10 +328,10 @@ with sync_playwright() as p:
     browser.close()
 ```
 
-### 4.5 Browser Contexts — Isolated Sessions
+### 4.5 Browser Contexts - Isolated Sessions
 
 ```python
-# A browser context is like an incognito window — separate cookies, storage, cache
+# A browser context is like an incognito window - separate cookies, storage, cache
 with sync_playwright() as p:
     browser = p.chromium.launch()
 
@@ -358,9 +358,9 @@ with sync_playwright() as p:
 
 ---
 
-## 5. Waiting Strategies — The Key to Reliable Scraping
+## 5. Waiting Strategies - The Key to Reliable Scraping
 
-The #1 cause of flaky scrapers is not waiting correctly. Content loads asynchronously — your scraper must know when the data it needs is ready.
+The #1 cause of flaky scrapers is not waiting correctly. Content loads asynchronously - your scraper must know when the data it needs is ready.
 
 ### 5.1 Playwright's Built-in Auto-Wait
 
@@ -456,7 +456,7 @@ flowchart TD
 
 ---
 
-## 6. Intercepting Network Requests — Finding Hidden APIs
+## 6. Intercepting Network Requests - Finding Hidden APIs
 
 The most powerful scraping technique: **do not scrape the HTML at all.** Instead, intercept the API calls that the frontend makes and extract structured JSON directly.
 
@@ -496,7 +496,7 @@ with sync_playwright() as p:
     # Register the response handler BEFORE navigating
     page.on("response", handle_response)
 
-    # Navigate — the page's JavaScript will make API calls
+    # Navigate - the page's JavaScript will make API calls
     page.goto("https://modern-spa-site.com/products")
     page.wait_for_selector(".product-card")  # Wait for rendering
 
@@ -518,14 +518,14 @@ with sync_playwright() as p:
     browser.close()
 ```
 
-### 6.3 Discovering Hidden APIs — DevTools Technique
+### 6.3 Discovering Hidden APIs - DevTools Technique
 
 Before writing code, use your browser's DevTools to find API endpoints:
 
 1. Open DevTools → **Network** tab
 2. Filter by **Fetch/XHR**
 3. Navigate to the page and interact with it
-4. Watch for API calls — they often return JSON with all the data you need
+4. Watch for API calls - they often return JSON with all the data you need
 
 ```python
 # Step 1: Record ALL network requests to discover API patterns
@@ -556,7 +556,7 @@ with sync_playwright() as p:
     browser.close()
 ```
 
-> **Key insight:** Once you discover the hidden API, you often do not need browser automation at all. You can call the API directly with `requests` or `httpx` — which is 10x faster than launching a browser. The browser is just a tool to discover the API contract.
+> **Key insight:** Once you discover the hidden API, you often do not need browser automation at all. You can call the API directly with `requests` or `httpx` - which is 10x faster than launching a browser. The browser is just a tool to discover the API contract.
 
 ### 6.4 Modifying Requests (Block Ads, Images, Tracking)
 
@@ -582,7 +582,7 @@ with sync_playwright() as p:
     # Register route handler BEFORE navigating
     page.route("**/*", block_unnecessary)
 
-    page.goto("https://example.com")  # Much faster — no images/tracking loaded
+    page.goto("https://example.com")  # Much faster - no images/tracking loaded
 ```
 
 ---
@@ -622,7 +622,7 @@ def scrape_infinite_scroll(url: str, max_items: int = 200) -> list[dict]:
             if len(items) == last_count:
                 stale_rounds += 1
                 if stale_rounds >= 3:
-                    print("No new items after 3 scrolls — reached the end")
+                    print("No new items after 3 scrolls - reached the end")
                     break
             else:
                 stale_rounds = 0
@@ -638,7 +638,7 @@ def scrape_infinite_scroll(url: str, max_items: int = 200) -> list[dict]:
                     timeout=5000,
                 )
             except Exception:
-                pass  # Timeout — might be at the end
+                pass  # Timeout - might be at the end
 
         browser.close()
         return items[:max_items]
@@ -735,22 +735,22 @@ context.tracing.stop(path="trace.zip")
 
 ---
 
-## 9. Headless vs Headed — When to Use Each
+## 9. Headless vs Headed - When to Use Each
 
 | Mode | Command | Use Case |
 |------|---------|----------|
 | **Headless** | `launch(headless=True)` | Production scraping, CI/CD, servers without display |
 | **Headed** | `launch(headless=False)` | Debugging, development, visual verification |
-| **Slow motion** | `launch(headless=False, slow_mo=500)` | Debugging — slows down every action by 500ms |
+| **Slow motion** | `launch(headless=False, slow_mo=500)` | Debugging - slows down every action by 500ms |
 
 ```python
-# Development — see what's happening
+# Development - see what's happening
 browser = p.chromium.launch(
     headless=False,
     slow_mo=200,  # 200ms pause between each action
 )
 
-# Production — maximum speed
+# Production - maximum speed
 browser = p.chromium.launch(
     headless=True,
     args=[
@@ -873,7 +873,7 @@ def scrape_catalog(base_url: str, categories: list[str], max_pages: int = 5) -> 
                 try:
                     page.wait_for_selector(".product-card", timeout=10000)
                 except PlaywrightTimeout:
-                    logger.info(f"  No products on page {page_num} — moving to next category")
+                    logger.info(f"  No products on page {page_num} - moving to next category")
                     break
 
                 # Extract product cards
@@ -936,7 +936,7 @@ if __name__ == "__main__":
 
 In **Part 3**, we move to large-scale crawling with the **Scrapy** framework. You will learn:
 
-- Scrapy architecture — spiders, items, pipelines, middleware
+- Scrapy architecture - spiders, items, pipelines, middleware
 - Writing spiders that follow links and crawl entire sites
 - Item pipelines for cleaning, deduplication, and storage
 - Middleware for custom headers, proxies, and retry logic
@@ -945,6 +945,6 @@ In **Part 3**, we move to large-scale crawling with the **Scrapy** framework. Yo
 
 ---
 
-**Series:** [Web Scraping Deep Dive — Index](index.md)
-**Previous:** [Part 1 — BeautifulSoup & Requests](web-scraping-deep-dive-part-1.md)
-**Next:** [Part 3 — Scrapy Framework](web-scraping-deep-dive-part-3.md)
+**Series:** [Web Scraping Deep Dive - Index](index.md)
+**Previous:** [Part 1 - BeautifulSoup & Requests](web-scraping-deep-dive-part-1.md)
+**Next:** [Part 3 - Scrapy Framework](web-scraping-deep-dive-part-3.md)

@@ -1,4 +1,4 @@
-# Part 1: SQL Fundamentals — Beginner Level
+# Part 1: SQL Fundamentals - Beginner Level
 
 > Master the building blocks of SQL and relational databases. Every database interview starts here.
 
@@ -8,13 +8,13 @@
 
 - [1.1 What is a Database?](#11-what-is-a-database)
 - [1.2 Relational Databases (RDBMS)](#12-relational-databases-rdbms)
-- [1.3 Basic SQL Queries — SELECT](#13-basic-sql-queries--select)
+- [1.3 Basic SQL Queries - SELECT](#13-basic-sql-queries--select)
 - [1.4 INSERT, UPDATE, DELETE](#14-insert-update-delete)
 - [1.5 Filtering with WHERE](#15-filtering-with-where)
 - [1.6 Sorting with ORDER BY](#16-sorting-with-order-by)
 - [1.7 Aggregation with GROUP BY and HAVING](#17-aggregation-with-group-by-and-having)
-- [1.8 Joins — INNER, LEFT, RIGHT, FULL](#18-joins--inner-left-right-full)
-- [1.9 Constraints — PRIMARY KEY, FOREIGN KEY, UNIQUE, CHECK, NOT NULL](#19-constraints--primary-key-foreign-key-unique-check-not-null)
+- [1.8 Joins - INNER, LEFT, RIGHT, FULL](#18-joins--inner-left-right-full)
+- [1.9 Constraints - PRIMARY KEY, FOREIGN KEY, UNIQUE, CHECK, NOT NULL](#19-constraints--primary-key-foreign-key-unique-check-not-null)
 - [1.10 SQL Query Problems & Practice](#110-sql-query-problems--practice)
 
 ---
@@ -70,19 +70,19 @@ A database is an **organized collection of structured data** stored electronical
 |---|---|---|
 | Concurrent access | No (file locks) | Yes (MVCC, locking) |
 | Data integrity | Manual validation | Enforced via constraints |
-| Query capability | Custom parsing code | SQL — declarative language |
+| Query capability | Custom parsing code | SQL - declarative language |
 | Scalability | Poor (load entire file) | Excellent (indexed access) |
 | ACID compliance | No | Yes (in RDBMS) |
 
 **Key types of databases:**
 
-- **Relational (RDBMS):** PostgreSQL, MySQL, Oracle, SQL Server — data in tables with relationships
-- **Document:** MongoDB, CouchDB — JSON-like flexible documents
-- **Key-Value:** Redis, DynamoDB — simple key → value lookup
-- **Column-Family:** Cassandra, HBase — optimized for write-heavy, wide-column data
-- **Graph:** Neo4j, Amazon Neptune — relationships are first-class citizens
+- **Relational (RDBMS):** PostgreSQL, MySQL, Oracle, SQL Server - data in tables with relationships
+- **Document:** MongoDB, CouchDB - JSON-like flexible documents
+- **Key-Value:** Redis, DynamoDB - simple key → value lookup
+- **Column-Family:** Cassandra, HBase - optimized for write-heavy, wide-column data
+- **Graph:** Neo4j, Amazon Neptune - relationships are first-class citizens
 
-> **Why the interviewer asks this:** They want to verify you understand *why* databases exist — not just how to use them. Engineers who understand the "why" make better architectural decisions.
+> **Why the interviewer asks this:** They want to verify you understand *why* databases exist - not just how to use them. Engineers who understand the "why" make better architectural decisions.
 
 **Follow-up:** *When would you choose a flat file over a database?*
 
@@ -142,13 +142,13 @@ projects (1) ─────────── (Many) employee_projects
 | MVCC | Yes | InnoDB only | Yes | Yes |
 | Partitioning | Declarative | Hash/Range/List | Yes | Yes |
 
-> **Why the interviewer asks this:** Understanding the relational model shows you can design normalized schemas and reason about data integrity — critical for any backend role.
+> **Why the interviewer asks this:** Understanding the relational model shows you can design normalized schemas and reason about data integrity - critical for any backend role.
 
 **Follow-up:** *What is the difference between a schema and a database?*
 
 ---
 
-## 1.3 Basic SQL Queries — SELECT
+## 1.3 Basic SQL Queries - SELECT
 
 ### Question: Explain the SELECT statement and its execution order.
 
@@ -243,7 +243,7 @@ FROM employees;
 | `COUNT(column)` | No | Yes |
 | `COUNT(DISTINCT column)` | No | No |
 
-**Performance consideration:** `COUNT(*)` is generally faster than `COUNT(column)` because the engine doesn't need to check for NULLs. In PostgreSQL, `COUNT(*)` on large tables can still be slow due to MVCC — consider using `pg_class.reltuples` for approximate counts.
+**Performance consideration:** `COUNT(*)` is generally faster than `COUNT(column)` because the engine doesn't need to check for NULLs. In PostgreSQL, `COUNT(*)` on large tables can still be slow due to MVCC - consider using `pg_class.reltuples` for approximate counts.
 
 > **Why the interviewer asks this:** NULL handling is a constant source of bugs. This question tests whether you understand SQL's three-valued logic (TRUE, FALSE, UNKNOWN).
 
@@ -274,7 +274,7 @@ SELECT emp_id, first_name, last_name
 FROM employees
 WHERE hire_date < '2020-01-01';
 
--- Insert with conflict handling (UPSERT) — PostgreSQL specific
+-- Insert with conflict handling (UPSERT) - PostgreSQL specific
 INSERT INTO employees (email, first_name, last_name, salary)
 VALUES ('alice@test.com', 'Alice', 'Smith', 95000)
 ON CONFLICT (email)
@@ -361,14 +361,14 @@ SELECT * FROM employees WHERE salary >= 80000 AND salary <= 120000;
 -- BETWEEN (inclusive on both ends)
 SELECT * FROM employees WHERE salary BETWEEN 80000 AND 120000;
 
--- IN — matches any value in a list
+-- IN - matches any value in a list
 SELECT * FROM employees WHERE dept_id IN (1, 2, 3);
 
--- LIKE — pattern matching (% = any chars, _ = single char)
+-- LIKE - pattern matching (% = any chars, _ = single char)
 SELECT * FROM employees WHERE email LIKE '%@gmail.com';
 SELECT * FROM employees WHERE first_name LIKE 'J___'; -- J followed by exactly 3 chars
 
--- ILIKE — case-insensitive LIKE (PostgreSQL specific)
+-- ILIKE - case-insensitive LIKE (PostgreSQL specific)
 SELECT * FROM employees WHERE first_name ILIKE 'alice';
 
 -- IS NULL / IS NOT NULL
@@ -378,7 +378,7 @@ SELECT * FROM employees WHERE manager_id IS NULL;
 SELECT * FROM employees WHERE manager_id = NULL;  -- Returns NOTHING (always UNKNOWN)
 ```
 
-**The NULL trap — SQL's three-valued logic:**
+**The NULL trap - SQL's three-valued logic:**
 
 ```sql
 -- NULL is not a value; it means "unknown"
@@ -499,7 +499,7 @@ GROUP BY d.dept_name
 ORDER BY avg_salary DESC;
 ```
 
-**HAVING — filter groups (not rows):**
+**HAVING - filter groups (not rows):**
 
 ```sql
 -- Departments with more than 5 employees
@@ -559,7 +559,7 @@ GROUP BY dept_id;
 
 ---
 
-## 1.8 Joins — INNER, LEFT, RIGHT, FULL
+## 1.8 Joins - INNER, LEFT, RIGHT, FULL
 
 ### Question: Explain all types of SQL joins with examples and Venn diagrams.
 
@@ -589,7 +589,7 @@ Joins combine rows from two or more tables based on a related column. Here's the
 --                                 4      | Dave       | NULL (no dept)
 ```
 
-#### INNER JOIN — Only matching rows from both tables
+#### INNER JOIN - Only matching rows from both tables
 
 ```sql
 SELECT e.first_name, d.dept_name
@@ -601,10 +601,10 @@ INNER JOIN departments d ON e.dept_id = d.dept_id;
 -- Alice      | Engineering
 -- Bob        | Engineering
 -- Carol      | Marketing
--- (Dave excluded — no matching dept; Sales excluded — no employees)
+-- (Dave excluded - no matching dept; Sales excluded - no employees)
 ```
 
-#### LEFT JOIN (LEFT OUTER JOIN) — All rows from left table + matches from right
+#### LEFT JOIN (LEFT OUTER JOIN) - All rows from left table + matches from right
 
 ```sql
 SELECT e.first_name, d.dept_name
@@ -619,7 +619,7 @@ LEFT JOIN departments d ON e.dept_id = d.dept_id;
 -- Dave       | NULL          ← Dave included even though no matching dept
 ```
 
-#### RIGHT JOIN (RIGHT OUTER JOIN) — All rows from right table + matches from left
+#### RIGHT JOIN (RIGHT OUTER JOIN) - All rows from right table + matches from left
 
 ```sql
 SELECT e.first_name, d.dept_name
@@ -634,7 +634,7 @@ RIGHT JOIN departments d ON e.dept_id = d.dept_id;
 -- NULL       | Sales         ← Sales included even though no employees
 ```
 
-#### FULL OUTER JOIN — All rows from both tables
+#### FULL OUTER JOIN - All rows from both tables
 
 ```sql
 SELECT e.first_name, d.dept_name
@@ -650,7 +650,7 @@ FULL OUTER JOIN departments d ON e.dept_id = d.dept_id;
 -- NULL       | Sales         ← from right (no matching employees)
 ```
 
-#### CROSS JOIN — Cartesian product (every combination)
+#### CROSS JOIN - Cartesian product (every combination)
 
 ```sql
 SELECT e.first_name, d.dept_name
@@ -661,7 +661,7 @@ CROSS JOIN departments d;
 -- Rarely useful, but important for generating combinations
 ```
 
-#### SELF JOIN — Joining a table to itself
+#### SELF JOIN - Joining a table to itself
 
 ```sql
 -- Find each employee's manager name
@@ -673,13 +673,13 @@ LEFT JOIN employees m ON e.manager_id = m.emp_id;
 
 -- Result:
 -- employee | manager
--- Alice    | NULL     (Alice has no manager — she's the CEO)
+-- Alice    | NULL     (Alice has no manager - she's the CEO)
 -- Bob      | Alice
 -- Carol    | Alice
 -- Dave     | Bob
 ```
 
-**Common join pitfall — duplicating rows:**
+**Common join pitfall - duplicating rows:**
 
 ```sql
 -- If join keys are not unique, you get a Cartesian product per group
@@ -696,7 +696,7 @@ SELECT * FROM A JOIN B ON A.id = B.id;
 ```sql
 -- JOIN performance depends on:
 -- 1. Are join columns indexed? (critical)
--- 2. Table sizes — smaller table should ideally be on the probe side
+-- 2. Table sizes - smaller table should ideally be on the probe side
 -- 3. Join algorithm chosen by optimizer:
 --    - Nested Loop: good for small tables or indexed joins
 --    - Hash Join: good for large unsorted tables
@@ -718,7 +718,7 @@ This is a critical distinction that even experienced developers get wrong:
 ```sql
 -- Scenario: Find all employees and their projects, but only show projects from 2024
 
--- ❌ WRONG (filters AFTER the join — removes employees without 2024 projects)
+-- ❌ WRONG (filters AFTER the join - removes employees without 2024 projects)
 SELECT e.first_name, p.project_name
 FROM employees e
 LEFT JOIN projects p ON e.emp_id = p.emp_id
@@ -726,7 +726,7 @@ WHERE p.start_date >= '2024-01-01';
 -- This converts the LEFT JOIN into an INNER JOIN for the date filter!
 -- Employees without 2024 projects are removed because p.start_date is NULL
 
--- ✅ CORRECT (filters DURING the join — preserves all employees)
+-- ✅ CORRECT (filters DURING the join - preserves all employees)
 SELECT e.first_name, p.project_name
 FROM employees e
 LEFT JOIN employee_projects ep ON e.emp_id = ep.emp_id
@@ -743,13 +743,13 @@ LEFT JOIN projects p ON ep.project_id = p.project_id
 
 ---
 
-## 1.9 Constraints — PRIMARY KEY, FOREIGN KEY, UNIQUE, CHECK, NOT NULL
+## 1.9 Constraints - PRIMARY KEY, FOREIGN KEY, UNIQUE, CHECK, NOT NULL
 
 ### Question: Explain all SQL constraints and why they matter.
 
 **Answer:**
 
-Constraints enforce **data integrity** at the database level. They're your last line of defense against bad data — even if the application has a bug, constraints prevent invalid data from being stored.
+Constraints enforce **data integrity** at the database level. They're your last line of defense against bad data - even if the application has a bug, constraints prevent invalid data from being stored.
 
 #### PRIMARY KEY
 
@@ -882,7 +882,7 @@ SELECT MAX(salary) AS second_highest
 FROM employees
 WHERE salary < (SELECT MAX(salary) FROM employees);
 
--- Solution 3: Using DENSE_RANK (most robust — handles ties properly)
+-- Solution 3: Using DENSE_RANK (most robust - handles ties properly)
 SELECT salary
 FROM (
     SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS rnk
@@ -975,14 +975,14 @@ HAVING COUNT(*) >= 2
 ORDER BY COUNT(*) DESC;
 ```
 
-**Answer — execution trace:**
+**Answer - execution trace:**
 
-1. `FROM employees` — start with all employee rows
-2. `WHERE salary > 50000` — remove employees earning ≤ 50000
-3. `GROUP BY dept_id` — group remaining rows by department
-4. `HAVING COUNT(*) >= 2` — keep only groups with 2+ employees (after the salary filter)
-5. `SELECT dept_id, COUNT(*)` — output department ID and count
-6. `ORDER BY COUNT(*) DESC` — sort by count descending
+1. `FROM employees` - start with all employee rows
+2. `WHERE salary > 50000` - remove employees earning ≤ 50000
+3. `GROUP BY dept_id` - group remaining rows by department
+4. `HAVING COUNT(*) >= 2` - keep only groups with 2+ employees (after the salary filter)
+5. `SELECT dept_id, COUNT(*)` - output department ID and count
+6. `ORDER BY COUNT(*) DESC` - sort by count descending
 
 **Result:** Departments that have **at least 2 employees earning more than $50,000**, ordered by how many such employees they have.
 
@@ -1041,7 +1041,7 @@ ORDER BY user_id, streak_start;
 **Step-by-step:**
 1. Remove duplicate logins per day with `DISTINCT`
 2. Assign a row number per user, ordered by date
-3. Subtract row number from date — consecutive dates produce the same group value
+3. Subtract row number from date - consecutive dates produce the same group value
 4. Group by user + group identifier and count
 5. Filter for groups with 3+ consecutive days
 
@@ -1053,7 +1053,7 @@ ORDER BY user_id, streak_start;
 |---|---|
 | SELECT execution order | FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT |
 | NULL comparisons | Always use `IS NULL` / `IS NOT NULL`, never `= NULL` |
-| NOT IN with NULLs | Can return zero rows unexpectedly — prefer `NOT EXISTS` |
+| NOT IN with NULLs | Can return zero rows unexpectedly - prefer `NOT EXISTS` |
 | LEFT JOIN + WHERE | Putting right-table filters in WHERE converts to INNER JOIN |
 | GROUP BY rule | Every non-aggregated column in SELECT must be in GROUP BY |
 | COUNT variations | `COUNT(*)` counts all rows; `COUNT(col)` skips NULLs |
@@ -1061,4 +1061,4 @@ ORDER BY user_id, streak_start;
 
 ---
 
-**Next:** [Part 2 — Intermediate SQL & Query Optimization →](./02-intermediate-sql.md)
+**Next:** [Part 2 - Intermediate SQL & Query Optimization →](./02-intermediate-sql.md)

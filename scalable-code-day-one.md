@@ -1,6 +1,6 @@
 # Writing Scalable Code from Day 1: Frontend + Backend Foundations
 
-*How a senior engineer would build things differently from the start — so you never have to "rewrite everything" later.*
+*How a senior engineer would build things differently from the start - so you never have to "rewrite everything" later.*
 
 ---
 
@@ -12,11 +12,11 @@ Then the product gets featured on Hacker News. Traffic jumps 20x overnight. The 
 
 The team spends the next 3 weeks rewriting everything.
 
-**This article exists so you never end up in that situation.** Not because you'll over-engineer from day one — but because you'll make small, smart decisions early that compound into a system that can actually grow.
+**This article exists so you never end up in that situation.** Not because you'll over-engineer from day one - but because you'll make small, smart decisions early that compound into a system that can actually grow.
 
 ---
 
-## Part 1: API Design — The Contract Between Your Frontend and Backend
+## Part 1: API Design - The Contract Between Your Frontend and Backend
 
 Your API is the spine of your application. Get it wrong early, and every layer above and below it suffers.
 
@@ -33,10 +33,10 @@ Forget the "GraphQL is better" or "REST is simpler" debates. Here's how you actu
 **Use GraphQL when:**
 - You have multiple clients (web, mobile, third-party) with different data needs
 - Your frontend frequently needs nested/related data in one request
-- Over-fetching is a real, measured problem — not a theoretical one
+- Over-fetching is a real, measured problem - not a theoretical one
 - You have a team that can maintain the schema and resolvers
 
-**The mistake:** Choosing GraphQL because it "sounds modern" when you have one frontend and 10 API endpoints. You just added a query language, a schema, resolvers, and a new debugging surface — for zero benefit.
+**The mistake:** Choosing GraphQL because it "sounds modern" when you have one frontend and 10 API endpoints. You just added a query language, a schema, resolvers, and a new debugging surface - for zero benefit.
 
 ### Route Design That Scales
 
@@ -63,9 +63,9 @@ GET    /api/v1/users/:id/orders   → Get user's orders
 
 The pattern is always: `/api/version/resource/identifier/sub-resource`
 
-### Pagination, Filtering, Versioning — Do Them from Day 1
+### Pagination, Filtering, Versioning - Do Them from Day 1
 
-**Pagination — The #1 thing beginners skip:**
+**Pagination - The #1 thing beginners skip:**
 
 ```javascript
 // ❌ BAD: Returns ALL users. Works with 50 users. Crashes with 50,000.
@@ -102,7 +102,7 @@ app.get('/api/v1/users', async (req, res) => {
 
 **Why cursor-based over offset?** With offset pagination (`?page=5&limit=20`), if someone inserts a record while you're paginating, you either skip a record or see a duplicate. Cursor-based pagination is stable.
 
-**Filtering — Build the pattern, even if you only have one filter:**
+**Filtering - Build the pattern, even if you only have one filter:**
 
 ```javascript
 // ✅ Consistent filtering pattern
@@ -125,7 +125,7 @@ app.get('/api/v1/products', async (req, res) => {
 
 ---
 
-## Part 2: Backend Architecture — Structure That Survives Growth
+## Part 2: Backend Architecture - Structure That Survives Growth
 
 ### The Modular Architecture Pattern
 
@@ -134,7 +134,7 @@ Here's the difference between a codebase that survives 100K users and one that d
 **❌ BAD: Everything in one file (the "startup special")**
 
 ```javascript
-// server.js — 2000 lines of everything
+// server.js - 2000 lines of everything
 const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
@@ -233,7 +233,7 @@ exports.listUsers = async (req, res, next) => {
 ```
 
 ```javascript
-// services/user.service.js — This is where the REAL logic lives
+// services/user.service.js - This is where the REAL logic lives
 const userRepository = require('../repositories/user.repository');
 const emailService = require('./email.service');
 
@@ -256,7 +256,7 @@ class UserService {
 
     const user = await userRepository.create({ email, name });
 
-    // Don't await this — send email in background
+    // Don't await this - send email in background
     emailService.sendWelcomeEmail(user.email).catch(err => {
       logger.error('Failed to send welcome email', { userId: user.id, error: err.message });
     });
@@ -308,11 +308,11 @@ module.exports = new UserRepository();
 **Why this matters for scaling:**
 
 1. **You can test business logic without HTTP.** The service layer doesn't know about `req` or `res`.
-2. **You can swap databases.** Change the repository — everything else stays the same.
+2. **You can swap databases.** Change the repository - everything else stays the same.
 3. **You can scale independently.** Move the email service to a queue. Move the user service to a microservice. The boundaries are already clean.
 4. **New developers can find things.** "Where's the user creation logic?" → `services/user.service.js`. Always.
 
-### Logging and Error Handling — The Things You'll Desperately Need at 3 AM
+### Logging and Error Handling - The Things You'll Desperately Need at 3 AM
 
 **❌ BAD: console.log and generic catches**
 
@@ -382,14 +382,14 @@ module.exports = errorHandler;
 
 ---
 
-## Part 3: Frontend Architecture — Building for Growth
+## Part 3: Frontend Architecture - Building for Growth
 
 ### Component Structure That Scales
 
 **❌ BAD: God components that do everything**
 
 ```jsx
-// UserDashboard.jsx — 500 lines, fetches data, manages state,
+// UserDashboard.jsx - 500 lines, fetches data, manages state,
 // renders everything, handles all interactions
 function UserDashboard() {
   const [users, setUsers] = useState([]);
@@ -438,7 +438,7 @@ components/
 ```
 
 ```jsx
-// useUsers.js — Data fetching logic, completely separated from UI
+// useUsers.js - Data fetching logic, completely separated from UI
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '../../utils/apiClient';
 
@@ -486,7 +486,7 @@ export function useUsers({ search, sortBy } = {}) {
 ```
 
 ```jsx
-// UserDashboard.jsx — Clean, coordinating component
+// UserDashboard.jsx - Clean, coordinating component
 import { useState } from 'react';
 import { useUsers } from './useUsers';
 import { UserSearch } from './UserSearch';
@@ -516,7 +516,7 @@ export function UserDashboard() {
 }
 ```
 
-### State Management — The Decision That Haunts You
+### State Management - The Decision That Haunts You
 
 Here's the real framework:
 
@@ -555,11 +555,11 @@ function UserList() {
     queryFn: () => apiClient.get('/api/v1/users'),
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
   });
-  // Caching, deduplication, background refetch, retry — all handled.
+  // Caching, deduplication, background refetch, retry - all handled.
 }
 ```
 
-### API Handling — Stop Over-Fetching
+### API Handling - Stop Over-Fetching
 
 **❌ BAD: Fetching everything, using 10%**
 
@@ -598,7 +598,7 @@ const { data } = useQuery({
 
 ---
 
-## Part 4: Database Decisions — SQL vs NoSQL
+## Part 4: Database Decisions - SQL vs NoSQL
 
 ### The Real Decision Framework
 
@@ -617,12 +617,12 @@ const { data } = useQuery({
 
 **The mistake most people make:** Choosing MongoDB because "it's easier" or "no migrations." Then 6 months later, you need to find all users who ordered a specific product in the last 30 days, and you're writing aggregation pipelines that would have been a simple SQL JOIN.
 
-### Indexing — The Cheapest Performance Win
+### Indexing - The Cheapest Performance Win
 
 ```javascript
 // MongoDB: You MUST index fields you query on
-// Without index on 'email': Full collection scan — O(n)
-// With index on 'email': Index lookup — O(log n)
+// Without index on 'email': Full collection scan - O(n)
+// With index on 'email': Index lookup - O(log n)
 
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true }, // unique creates an index
@@ -641,7 +641,7 @@ CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_status_created ON users(status, created_at DESC);
 ```
 
-**Rule of thumb:** If you have a `WHERE` clause or a `.find()` filter on a field, that field needs an index. Check your slow query logs regularly — they'll tell you exactly which indexes you're missing.
+**Rule of thumb:** If you have a `WHERE` clause or a `.find()` filter on a field, that field needs an index. Check your slow query logs regularly - they'll tell you exactly which indexes you're missing.
 
 ---
 
@@ -704,7 +704,7 @@ async function processOrder(orderId) {
     throw err;
   }
 
-  // Email is non-critical — don't fail the order if it doesn't send
+  // Email is non-critical - don't fail the order if it doesn't send
   sendConfirmation(order).catch(err => {
     logger.warn('Confirmation email failed', { orderId, error: err.message });
   });
@@ -769,4 +769,4 @@ None of these require extra infrastructure. None of these slow you down. But all
 
 ---
 
-*Next up: [Blog 2 — What actually breaks when your traffic jumps 20x overnight, and how to fix it in real-time.](scalable-code-traffic-spikes.md)*
+*Next up: [Blog 2 - What actually breaks when your traffic jumps 20x overnight, and how to fix it in real-time.](scalable-code-traffic-spikes.md)*

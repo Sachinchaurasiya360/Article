@@ -1,4 +1,4 @@
-# Advanced Python — Interview Preparation (Part 3/7)
+# Advanced Python - Interview Preparation (Part 3/7)
 
 > **Series:** Python + FastAPI Interview Prep
 > **Level:** Advanced
@@ -25,7 +25,7 @@
 
 **Answer:**
 
-MRO determines the order in which base classes are searched when looking up a method. Python uses the **C3 linearization** algorithm (since Python 2.3) to compute this order. It solves the **diamond problem** — the ambiguity that arises when a class inherits from two classes that share a common ancestor.
+MRO determines the order in which base classes are searched when looking up a method. Python uses the **C3 linearization** algorithm (since Python 2.3) to compute this order. It solves the **diamond problem** - the ambiguity that arises when a class inherits from two classes that share a common ancestor.
 
 ```python
 class A:
@@ -64,7 +64,7 @@ class X:
 class Y(X):
     pass
 
-# This raises TypeError — inconsistent MRO
+# This raises TypeError - inconsistent MRO
 # class Z(X, Y):
 #     pass
 # TypeError: Cannot create a consistent method resolution order (MRO)
@@ -161,7 +161,7 @@ class Repository(metaclass=InterfaceEnforcer):
         raise NotImplementedError
 
 
-# This works — all methods are implemented
+# This works - all methods are implemented
 class UserRepository(Repository):
     def save(self, entity):
         return f"Saved {entity}"
@@ -181,13 +181,13 @@ class UserRepository(Repository):
 # TypeError: Class 'BrokenRepository' must implement: find_by_id, delete
 ```
 
-**When metaclasses are overkill** — prefer these alternatives first:
+**When metaclasses are overkill** - prefer these alternatives first:
 1. `abc.ABC` and `@abstractmethod` (catches at instantiation, not class definition)
 2. Class decorators (simpler to reason about)
-3. `__init_subclass__` (Python 3.6+ — lighter weight)
+3. `__init_subclass__` (Python 3.6+ - lighter weight)
 
 ```python
-# __init_subclass__ — the modern, lightweight alternative
+# __init_subclass__ - the modern, lightweight alternative
 class Plugin:
     _registry: dict[str, type] = {}
 
@@ -214,7 +214,7 @@ print(Plugin._registry)
 
 ---
 
-### Q3: Explain `__slots__` — when should you use it and what are the trade-offs?
+### Q3: Explain `__slots__` - when should you use it and what are the trade-offs?
 
 **Answer:**
 
@@ -259,7 +259,7 @@ print(hasattr(obj_slots, "__dict__"))  # False
 |---|---|
 | ~40-50% less memory per instance | No dynamic attribute assignment |
 | Slightly faster attribute access | No `__dict__` (breaks some serialization) |
-| Prevents typos in attribute names | Inheritance requires care — subclass must also define `__slots__` |
+| Prevents typos in attribute names | Inheritance requires care - subclass must also define `__slots__` |
 | Useful for millions of instances | Cannot use with multiple inheritance if both parents have non-empty `__slots__` (layout conflict) |
 
 **Critical inheritance pitfall:**
@@ -274,7 +274,7 @@ class Child(Base):
     __slots__ = ("y",)  # Only NEW attributes; do NOT repeat "x"
 
 class BrokenChild(Base):
-    pass  # Has __dict__ — memory savings lost
+    pass  # Has __dict__ - memory savings lost
 
 print(hasattr(BrokenChild("val"), "__dict__"))  # True
 ```
@@ -357,7 +357,7 @@ print(user.age)    # 30
 # user.age = "thirty"
 # TypeError: 'age' must be int, got str
 
-user.email = None  # OK — nullable=True
+user.email = None  # OK - nullable=True
 # user.name = None
 # TypeError: 'name' must be str, got NoneType
 ```
@@ -370,12 +370,12 @@ user.email = None  # OK — nullable=True
 ```python
 # Demonstrating lookup precedence
 class NonDataDescriptor:
-    """Only defines __get__ — instance dict wins."""
+    """Only defines __get__ - instance dict wins."""
     def __get__(self, obj, objtype=None):
         return "from descriptor"
 
 class DataDescriptor:
-    """Defines __get__ and __set__ — descriptor wins."""
+    """Defines __get__ and __set__ - descriptor wins."""
     def __get__(self, obj, objtype=None):
         return "from descriptor"
     def __set__(self, obj, value):
@@ -441,12 +441,12 @@ Instance created: Child
 
 1. `Child()` invokes `Meta.__call__(Child)` because `Child`'s metaclass is `Meta`.
 2. Inside `Meta.__call__`, `super().__call__()` calls `type.__call__()`, which orchestrates:
-   - First: `Child.__new__(Child)` — but `Child` does not define `__new__`, so it falls to `Base.__new__`.
-   - Then: `Child.__init__(instance)` — which calls `super().__init__()`, hitting `Base.__init__`.
+   - First: `Child.__new__(Child)` - but `Child` does not define `__new__`, so it falls to `Base.__new__`.
+   - Then: `Child.__init__(instance)` - which calls `super().__init__()`, hitting `Base.__init__`.
 3. Control returns to `Meta.__call__`, which prints the "Instance created" message.
 4. `type(obj)` confirms it is a `Child` instance.
 
-**Why interviewer asks this:** This tests deep understanding of the full object lifecycle — from metaclass to `__new__` to `__init__`. It separates candidates who memorize syntax from those who understand Python's object model.
+**Why interviewer asks this:** This tests deep understanding of the full object lifecycle - from metaclass to `__new__` to `__init__`. It separates candidates who memorize syntax from those who understand Python's object model.
 
 **Follow-up:** How could you use `Meta.__call__` to implement the Singleton pattern?
 
@@ -547,7 +547,7 @@ from typing import Generator, Iterator
 
 
 def read_lines(filepath: str) -> Generator[str, None, None]:
-    """Lazily read lines from a file — O(1) memory."""
+    """Lazily read lines from a file - O(1) memory."""
     with open(filepath, "r", encoding="utf-8") as f:
         for line in f:
             yield line.rstrip("\n")
@@ -606,7 +606,7 @@ def analyze_log(filepath: str, top_n: int = 10) -> list[tuple[str, int]]:
 ```
 
 **Key design decisions:**
-- Each stage is a generator — the pipeline is lazy end-to-end.
+- Each stage is a generator - the pipeline is lazy end-to-end.
 - `batch()` amortizes the overhead of `Counter.update()` calls.
 - The entire 10GB file is processed with constant memory (~10KB working set).
 - Each function is independently testable and composable.
@@ -617,7 +617,7 @@ def analyze_log(filepath: str, top_n: int = 10) -> list[tuple[str, int]]:
 
 ---
 
-### Q8: Explain `itertools` — solve this problem using only `itertools` functions.
+### Q8: Explain `itertools` - solve this problem using only `itertools` functions.
 
 **Problem:** Given a stream of stock prices `[(timestamp, price), ...]`, find the longest consecutive streak where price increased.
 
@@ -685,21 +685,21 @@ print(streak)
 ```python
 import itertools
 
-# chain — flatten one level of nesting
+# chain - flatten one level of nesting
 list(itertools.chain([1, 2], [3, 4], [5]))          # [1, 2, 3, 4, 5]
 list(itertools.chain.from_iterable([[1, 2], [3]]))   # [1, 2, 3]
 
-# accumulate — running reduction
+# accumulate - running reduction
 list(itertools.accumulate([1, 2, 3, 4], lambda a, b: a + b))  # [1, 3, 6, 10]
 
-# product — Cartesian product (replaces nested loops)
+# product - Cartesian product (replaces nested loops)
 list(itertools.product("AB", "12"))  # [('A','1'),('A','2'),('B','1'),('B','2')]
 
 # combinations vs permutations
 list(itertools.combinations("ABC", 2))   # [('A','B'),('A','C'),('B','C')]
 list(itertools.permutations("ABC", 2))   # [('A','B'),('A','C'),('B','A'),...]
 
-# takewhile / dropwhile — lazy filtering
+# takewhile / dropwhile - lazy filtering
 list(itertools.takewhile(lambda x: x < 5, [1, 3, 5, 2]))  # [1, 3]
 
 # groupby (REQUIRES sorted input for meaningful groups)
@@ -802,9 +802,9 @@ def fetch_user_data(user_id: int) -> dict:
 ```
 
 **Anatomy of a parameterized decorator (three nested functions):**
-1. **Outer function** (`retry(...)`) — receives decorator parameters, returns the decorator.
-2. **Middle function** (`decorator(func)`) — receives the decorated function, returns the wrapper.
-3. **Inner function** (`wrapper(*args, **kwargs)`) — runs on every call.
+1. **Outer function** (`retry(...)`) - receives decorator parameters, returns the decorator.
+2. **Middle function** (`decorator(func)`) - receives the decorated function, returns the wrapper.
+3. **Inner function** (`wrapper(*args, **kwargs)`) - runs on every call.
 
 **Why interviewer asks this:** Retry logic is universal in distributed systems. This tests decorator fluency, error handling patterns, and understanding of production concerns (backoff, jitter, logging).
 
@@ -873,7 +873,7 @@ def example(a: int, b: str = "hello") -> bool:
 # and inspect.signature follows __wrapped__):
 print(inspect.signature(example))  # (a: int, b: str = 'hello') -> bool
 
-# BUT — if your wrapper changes the signature, this can be misleading:
+# BUT - if your wrapper changes the signature, this can be misleading:
 def bad_decorator(func):
     @functools.wraps(func)
     def wrapper(request, *args, **kwargs):  # Added 'request' param
@@ -885,7 +885,7 @@ def greet(name: str) -> str:
     return f"Hello {name}"
 
 # inspect.signature(greet) still shows (name: str) -> str
-# But calling greet("Alice") fails — wrapper expects 'request' as first arg!
+# But calling greet("Alice") fails - wrapper expects 'request' as first arg!
 ```
 
 **Why interviewer asks this:** Forgetting `@wraps` causes broken debugging, confusing tracebacks, and breaks tools like Sphinx, pytest, and API documentation generators. This question tests attention to production code quality.
@@ -983,7 +983,7 @@ restored = Event.from_json('{"name": "PyCon", "date": "2025-05-15", "attendees":
 print(restored)             # Event(name='PyCon', date='2025-05-15', attendees=3000)
 ```
 
-**Decorator stacking — execution order matters:**
+**Decorator stacking - execution order matters:**
 
 ```python
 def decorator_a(func):
@@ -1076,7 +1076,7 @@ class Transaction:
         exc_tb: Optional[TracebackType],
     ) -> bool:
         if exc_type is not None:
-            # Exception occurred — rollback
+            # Exception occurred - rollback
             if self.savepoint and self._savepoint_name:
                 self.connection.execute(
                     f"ROLLBACK TO SAVEPOINT {self._savepoint_name}"
@@ -1089,7 +1089,7 @@ class Transaction:
                                exc_type.__name__, exc_val)
             return False  # Re-raise the exception
         else:
-            # Clean exit — commit
+            # Clean exit - commit
             if self.savepoint and self._savepoint_name:
                 self.connection.execute(
                     f"RELEASE SAVEPOINT {self._savepoint_name}"
@@ -1113,7 +1113,7 @@ import contextlib
 @contextlib.contextmanager
 def transaction(connection, *, savepoint=False):
     """
-    Generator-based context manager — less boilerplate,
+    Generator-based context manager - less boilerplate,
     but harder to extend with additional methods.
     """
     connection.execute("BEGIN")
@@ -1125,10 +1125,10 @@ def transaction(connection, *, savepoint=False):
         raise  # Always re-raise after rollback
 
 
-# Nesting with contextlib.ExitStack — managing dynamic number of resources:
+# Nesting with contextlib.ExitStack - managing dynamic number of resources:
 @contextlib.contextmanager
 def multi_resource_operation(file_paths: list[str]):
-    """Open multiple files safely — all are cleaned up even if one fails."""
+    """Open multiple files safely - all are cleaned up even if one fails."""
     with contextlib.ExitStack() as stack:
         files = [
             stack.enter_context(open(path, "r"))
@@ -1138,8 +1138,8 @@ def multi_resource_operation(file_paths: list[str]):
 ```
 
 **`__exit__` return value semantics:**
-- `return False` (or `None`) — exception is **re-raised** after `__exit__` completes.
-- `return True` — exception is **suppressed** (swallowed).
+- `return False` (or `None`) - exception is **re-raised** after `__exit__` completes.
+- `return True` - exception is **suppressed** (swallowed).
 - **Best practice:** Almost never return `True`. Suppressing exceptions silently hides bugs.
 
 **Why interviewer asks this:** Transaction management is fundamental in backend systems. This tests understanding of resource management, exception handling, and the difference between class-based and generator-based context managers.
@@ -1286,7 +1286,7 @@ class AsyncConnectionPool:
             yield conn
 
         except Exception:
-            # Connection may be in a bad state — discard it
+            # Connection may be in a bad state - discard it
             if conn is not None:
                 await self._close_connection(conn)
                 conn = None
@@ -1324,9 +1324,9 @@ async def main():
 ```
 
 **Key async context manager patterns:**
-- `__aenter__` / `__aexit__` — class-based async context manager.
-- `@contextlib.asynccontextmanager` — generator-based async context manager.
-- `async with` — must be used inside an `async def` function.
+- `__aenter__` / `__aexit__` - class-based async context manager.
+- `@contextlib.asynccontextmanager` - generator-based async context manager.
+- `async with` - must be used inside an `async def` function.
 
 **Why interviewer asks this:** Connection pooling is a core backend pattern. This tests understanding of async resource management, semaphores for concurrency control, and proper error handling in async contexts.
 
@@ -1557,7 +1557,7 @@ t2.join()
 
 **Answer:**
 
-**The deadlock:** `worker_1` acquires `lock_a` then waits for `lock_b`. `worker_2` acquires `lock_b` then waits for `lock_a`. Neither can proceed — classic circular wait.
+**The deadlock:** `worker_1` acquires `lock_a` then waits for `lock_b`. `worker_2` acquires `lock_b` then waits for `lock_a`. Neither can proceed - classic circular wait.
 
 **Fix 1: Consistent lock ordering (recommended)**
 
@@ -1646,7 +1646,7 @@ async def demo():
 6. After 1 second, the event loop resumes `demo()` from where it was suspended.
 7. `demo()` runs to completion, and its return value resolves the Future.
 
-**Critical concept — `await` does NOT mean "run in background":**
+**Critical concept - `await` does NOT mean "run in background":**
 
 ```python
 import time
@@ -1678,22 +1678,22 @@ async def fetch(url: str) -> str:
 
 
 async def main():
-    # Option 1: asyncio.gather — run concurrently, await all results
+    # Option 1: asyncio.gather - run concurrently, await all results
     results = await asyncio.gather(
         fetch("https://api.example.com/users"),
         fetch("https://api.example.com/orders"),
         fetch("https://api.example.com/products"),
     )
-    # All three ran concurrently — total time ~0.5s, not ~1.5s
+    # All three ran concurrently - total time ~0.5s, not ~1.5s
 
-    # Option 2: create_task — fire-and-forget with manual awaiting
+    # Option 2: create_task - fire-and-forget with manual awaiting
     task1 = asyncio.create_task(fetch("https://api.example.com/users"))
     task2 = asyncio.create_task(fetch("https://api.example.com/orders"))
     # Tasks start running immediately, even before we await them
     result1 = await task1
     result2 = await task2
 
-    # Option 3: TaskGroup (Python 3.11+) — structured concurrency
+    # Option 3: TaskGroup (Python 3.11+) - structured concurrency
     async with asyncio.TaskGroup() as tg:
         t1 = tg.create_task(fetch("https://api.example.com/users"))
         t2 = tg.create_task(fetch("https://api.example.com/orders"))
@@ -1794,7 +1794,7 @@ async def main():
             await asyncio.sleep(0.05)  # Simulate API call
             return f"Response {request_id}"
 
-    # Fire 30 requests — only 10 per second will go through
+    # Fire 30 requests - only 10 per second will go through
     tasks = [make_api_call(i) for i in range(30)]
     results = await asyncio.gather(*tasks)
     print(f"Completed {len(results)} requests")
@@ -1842,7 +1842,7 @@ Results: A, B, C
 
 **Total time: ~4 seconds** (2 + 1 + 1), NOT ~2 seconds.
 
-**The mistake:** Each `await` is sequential. `task("B")` does not start until `task("A")` finishes. This is the most common async antipattern — writing "synchronous-looking" async code that gets zero concurrency benefit.
+**The mistake:** Each `await` is sequential. `task("B")` does not start until `task("A")` finishes. This is the most common async antipattern - writing "synchronous-looking" async code that gets zero concurrency benefit.
 
 **The fix:**
 
@@ -1894,7 +1894,7 @@ async def fetch_pages(url: str, max_pages: int = 10) -> AsyncIterator[dict]:
         data = {"page": page, "items": [f"item_{i}" for i in range(10)]}
 
         if not data["items"]:
-            return  # StopAsyncIteration — no more pages
+            return  # StopAsyncIteration - no more pages
 
         yield data  # Suspend and produce a value
 
@@ -1968,7 +1968,7 @@ async def get_active_users():
     return users
 ```
 
-**Why interviewer asks this:** Async generators are essential for streaming data in async applications — paginated APIs, database cursors, WebSocket message streams, and server-sent events in FastAPI.
+**Why interviewer asks this:** Async generators are essential for streaming data in async applications - paginated APIs, database cursors, WebSocket message streams, and server-sent events in FastAPI.
 
 **Follow-up:** How would you implement backpressure in an async generator to prevent a fast producer from overwhelming a slow consumer?
 
@@ -1983,7 +1983,7 @@ async def get_active_users():
 The **Global Interpreter Lock (GIL)** is a mutex in CPython that allows only one thread to execute Python bytecode at a time, even on multi-core machines.
 
 **Why the GIL exists:**
-1. CPython's memory management uses **reference counting** for garbage collection. Without the GIL, every `Py_INCREF`/`Py_DECREF` operation would need atomic operations or per-object locks — massive overhead.
+1. CPython's memory management uses **reference counting** for garbage collection. Without the GIL, every `Py_INCREF`/`Py_DECREF` operation would need atomic operations or per-object locks - massive overhead.
 2. Many C extensions assume they have exclusive access to Python objects.
 3. The GIL makes single-threaded code faster (no lock overhead on every operation).
 
@@ -2006,7 +2006,7 @@ cpu_bound()
 cpu_bound()
 print(f"Sequential: {time.perf_counter() - start:.2f}s")
 
-# Two threads: ~4.5s (NO speedup — GIL serializes execution)
+# Two threads: ~4.5s (NO speedup - GIL serializes execution)
 start = time.perf_counter()
 t1 = threading.Thread(target=cpu_bound)
 t2 = threading.Thread(target=cpu_bound)
@@ -2015,7 +2015,7 @@ t1.join(); t2.join()
 print(f"Threaded: {time.perf_counter() - start:.2f}s")
 
 
-# I/O-BOUND: GIL is released during I/O — threads work fine
+# I/O-BOUND: GIL is released during I/O - threads work fine
 import urllib.request
 
 def io_bound(url):
@@ -2030,10 +2030,10 @@ def io_bound(url):
 - `time.sleep()`
 - NumPy/SciPy heavy computations (implemented in C, release GIL)
 - `ctypes` calls to C functions
-- Every 5ms (Python 3.2+ — `sys.getswitchinterval()`)
+- Every 5ms (Python 3.2+ - `sys.getswitchinterval()`)
 
 **Workarounds for CPU-bound parallelism:**
-1. `multiprocessing` — separate processes, each with its own GIL.
+1. `multiprocessing` - separate processes, each with its own GIL.
 2. C extensions that release the GIL (NumPy, Cython with `nogil`).
 3. `concurrent.futures.ProcessPoolExecutor`.
 4. **Python 3.13+ (PEP 703):** Experimental free-threaded build (`--disable-gil`).
@@ -2236,19 +2236,19 @@ emitter.emit("user_created", {"name": "Alice", "email": "alice@example.com"})
 # UserService: Sending welcome email to alice@example.com
 # AuditService: Logging user creation for Alice
 
-# Delete the audit service — it should be garbage collected
+# Delete the audit service - it should be garbage collected
 del audit_svc
 
 emitter.emit("user_created", {"name": "Bob", "email": "bob@example.com"})
-# Only UserService responds — AuditService was garbage collected
+# Only UserService responds - AuditService was garbage collected
 # UserService: Sending welcome email to bob@example.com
 ```
 
 **Key `weakref` concepts:**
-- `weakref.ref(obj)` — does not increment reference count.
-- `weakref.WeakMethod(method)` — needed for bound methods (bound methods are ephemeral).
-- `weakref.WeakValueDictionary` — dict whose values are weak references (great for caches).
-- `weakref.finalize(obj, callback)` — safer alternative to `__del__`.
+- `weakref.ref(obj)` - does not increment reference count.
+- `weakref.WeakMethod(method)` - needed for bound methods (bound methods are ephemeral).
+- `weakref.WeakValueDictionary` - dict whose values are weak references (great for caches).
+- `weakref.finalize(obj, callback)` - safer alternative to `__del__`.
 
 **Why interviewer asks this:** Weak references solve a common problem in event systems, caching, and plugin architectures where objects need to observe each other without creating ownership relationships that prevent GC.
 
@@ -2430,7 +2430,7 @@ class Record:
 
 
 def generate_records(n: int) -> Generator[Record, None, None]:
-    """Lazily generate n records — O(1) memory."""
+    """Lazily generate n records - O(1) memory."""
     categories = ["A", "B", "C", "D"]
     for i in range(n):
         yield Record(
@@ -2494,7 +2494,7 @@ def main():
     print(f"Total savings for {n:,} records: "
           f"~{(regular_obj_size + 200 - slots_obj_size) * n / 1024 / 1024:.0f} MB")
 
-    # Stream processing — only one batch in memory at a time
+    # Stream processing - only one batch in memory at a time
     final_totals: dict[str, float] = {}
     final_counts: dict[str, int] = {}
 
@@ -2564,7 +2564,7 @@ print(f"5: {callback_log}")
 
 **Explanation:**
 1. `weak_a()` dereferences the weak reference, returning the `Foo` object. It is still alive (refcount >= 1).
-2. `weak_a()` returns the same object as `a` — it is the identical object (`is` returns `True`).
+2. `weak_a()` returns the same object as `a` - it is the identical object (`is` returns `True`).
 3. After `del a`, the refcount is still 1 because `b` also references the object. The weak reference still works.
 4. After `del b`, the refcount drops to 0. CPython immediately deallocates the object. The weak reference callback fires, appending to `callback_log`. Now `weak_a()` returns `None`.
 5. The callback ran synchronously at deallocation time, so the log has one entry.
@@ -2592,14 +2592,14 @@ from fastapi.responses import StreamingResponse
 
 app = FastAPI()
 
-# Create a process pool — reuse across requests.
+# Create a process pool - reuse across requests.
 # max_workers = number of CPU cores dedicated to image processing.
 process_pool = ProcessPoolExecutor(max_workers=4)
 
 
 def process_image_sync(image_bytes: bytes, operation: str) -> bytes:
     """
-    CPU-intensive image processing — runs in a separate PROCESS
+    CPU-intensive image processing - runs in a separate PROCESS
     to bypass the GIL.
 
     This function must be picklable (top-level function, no closures).
@@ -2632,7 +2632,7 @@ async def process_image(
     Architecture:
     1. FastAPI handles the I/O (receiving upload) on the async event loop.
     2. CPU-heavy processing runs in a ProcessPoolExecutor.
-    3. The event loop is NOT blocked — other requests are served concurrently.
+    3. The event loop is NOT blocked - other requests are served concurrently.
     """
     image_bytes = await file.read()
 
@@ -2715,7 +2715,7 @@ async def get_job_status(job_id: str):
 
 **Why interviewer asks this:** This is a direct FastAPI production scenario. It tests understanding of the GIL, async/sync boundary, process pools, and scalability patterns.
 
-**Follow-up:** How would you handle backpressure — what happens when 1,000 image processing requests arrive simultaneously and your pool only has 4 workers?
+**Follow-up:** How would you handle backpressure - what happens when 1,000 image processing requests arrive simultaneously and your pool only has 4 workers?
 
 ---
 
@@ -2759,7 +2759,7 @@ class SafeList:
     def extend(self, items):
         with self._lock:
             for item in items:
-                self.append(item)  # This re-acquires _lock — OK with RLock!
+                self.append(item)  # This re-acquires _lock - OK with RLock!
 
 
 # --- Semaphore: limit concurrent access ---
@@ -3061,7 +3061,7 @@ with (
 
 **Why interviewer asks this:** Tests understanding of resource cleanup ordering, which matters when resources have dependencies (e.g., closing a cursor before closing a database connection).
 
-**Follow-up:** What happens if `f2.__exit__()` raises an exception — does `f1.__exit__()` still run?
+**Follow-up:** What happens if `f2.__exit__()` raises an exception - does `f1.__exit__()` still run?
 
 ---
 
@@ -3091,7 +3091,7 @@ Starting with Python 3.10, `asyncio.get_event_loop()` emits a deprecation warnin
 
 2. If the loop was closed (by `asyncio.run()` or explicit `loop.close()`), the second call raises `RuntimeError: Event loop is closed`.
 
-**The fix — use `asyncio.run()` (Python 3.7+):**
+**The fix - use `asyncio.run()` (Python 3.7+):**
 
 ```python
 async def main():

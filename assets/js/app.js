@@ -186,7 +186,7 @@ async function loadArticle() {
 
   try {
     const res = await fetch(filePath);
-    if (!res.ok) throw new Error(`HTTP ${res.status} — could not fetch ${filePath}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status} - could not fetch ${filePath}`);
     const raw = await res.text();
     const md = stripFrontMatter(raw);
 
@@ -213,7 +213,7 @@ async function loadArticle() {
       breadcrumb.innerHTML = `<a href="index.html">Home</a><span>›</span><a href="series.html?id=${seriesId}">${seriesData.title}</a><span>›</span>Part ${partNum}`;
     }
 
-    document.title = title + ' — DeepDive';
+    document.title = title + ' - DeepDive';
 
     const titleEl = document.getElementById('article-title');
     if (titleEl) titleEl.textContent = title;
@@ -237,7 +237,7 @@ async function loadArticle() {
       wrapper.appendChild(table);
     });
 
-    // Mermaid — replace fenced code blocks with .mermaid divs
+    // Mermaid - replace fenced code blocks with .mermaid divs
     bodyEl.querySelectorAll('code.language-mermaid').forEach(code => {
       const div = document.createElement('div');
       div.className = 'mermaid';
@@ -299,7 +299,7 @@ function loadSeriesPage() {
     return;
   }
 
-  document.title = s.title + ' — DeepDive';
+  document.title = s.title + ' - DeepDive';
 
   container.innerHTML = `
     <div class="series-header">

@@ -1,6 +1,6 @@
-# Docker Fundamentals — Interview Preparation
+# Docker Fundamentals - Interview Preparation
 
-> Section 3 of 7 — Understanding containers, Docker architecture, images, and core commands.
+> Section 3 of 7 - Understanding containers, Docker architecture, images, and core commands.
 
 ---
 
@@ -62,7 +62,7 @@ Virtual Machines:                    Containers:
 Containers are NOT a single technology. They're a combination of Linux kernel features:
 
 ```
-1. Namespaces — "What a container can SEE"
+1. Namespaces - "What a container can SEE"
    ├── PID namespace  → Container sees its own process tree (PID 1)
    ├── NET namespace  → Container has its own network stack
    ├── MNT namespace  → Container has its own filesystem
@@ -70,13 +70,13 @@ Containers are NOT a single technology. They're a combination of Linux kernel fe
    ├── IPC namespace  → Container has its own inter-process communication
    └── USER namespace → Container has its own user IDs
 
-2. cgroups (Control Groups) — "What a container can USE"
+2. cgroups (Control Groups) - "What a container can USE"
    ├── Memory limit    → Container can use max 512MB
    ├── CPU shares      → Container gets 25% of CPU
    ├── I/O bandwidth   → Container gets limited disk I/O
    └── Process count   → Container can have max 100 processes
 
-3. Union Filesystem (OverlayFS) — "How the filesystem works"
+3. Union Filesystem (OverlayFS) - "How the filesystem works"
    └── Layered filesystem: read-only image layers + read-write container layer
 ```
 
@@ -91,11 +91,11 @@ Containers are NOT a single technology. They're a combination of Linux kernel fe
 | Development environments | Containers | Fast to create/destroy |
 | Running untrusted code | VMs (or gVisor) | Stronger isolation boundary |
 
-**Why interviewer asks this:** Fundamental question — if you don't understand what a container actually IS at the Linux level, you'll struggle with debugging.
+**Why interviewer asks this:** Fundamental question - if you don't understand what a container actually IS at the Linux level, you'll struggle with debugging.
 
 **Follow-up:** *Can you run Linux containers on a Mac or Windows machine? How?*
 
-Not natively. Mac and Windows don't have the Linux kernel features (namespaces, cgroups). Docker Desktop runs a **lightweight Linux VM** (using HyperKit on Mac, WSL2/Hyper-V on Windows) and runs containers inside that VM. So technically, it's VMs running containers — you just don't see the VM.
+Not natively. Mac and Windows don't have the Linux kernel features (namespaces, cgroups). Docker Desktop runs a **lightweight Linux VM** (using HyperKit on Mac, WSL2/Hyper-V on Windows) and runs containers inside that VM. So technically, it's VMs running containers - you just don't see the VM.
 
 ---
 
@@ -164,7 +164,7 @@ Docker uses a **client-server architecture**:
    a. runc sets up namespaces (PID, NET, MNT, etc.)
    b. runc sets up cgroups (memory/CPU limits)
    c. runc executes the container's entrypoint (nginx -g "daemon off;")
-   d. runc exits — containerd monitors the running process
+   d. runc exits - containerd monitors the running process
 
 5. Container is running:
    - Has its own PID 1 (nginx master process)
@@ -191,7 +191,7 @@ sudo usermod -aG docker $USER
 
 **Follow-up:** *What's the difference between containerd and Docker? Can you use containerd without Docker?*
 
-Yes — containerd is an independent container runtime. Kubernetes switched from Docker to containerd directly (removing the Docker shim) in v1.24. containerd is lower-level: no `docker build`, no `docker-compose`, no CLI. It's the runtime engine. Docker adds developer tooling on top of containerd.
+Yes - containerd is an independent container runtime. Kubernetes switched from Docker to containerd directly (removing the Docker shim) in v1.24. containerd is lower-level: no `docker build`, no `docker-compose`, no CLI. It's the runtime engine. Docker adds developer tooling on top of containerd.
 
 ---
 
@@ -239,7 +239,7 @@ Build 2: Only code changed → Layers 1-4 cached, layers 5-6 rebuilt
 Build 3: package.json changed → Layers 1-2 cached, layers 3-6 rebuilt
 ```
 
-This is why you **COPY package.json BEFORE copying source code** — dependency installation is cached separately from code changes.
+This is why you **COPY package.json BEFORE copying source code** - dependency installation is cached separately from code changes.
 
 ### Inspecting Layers
 
@@ -283,7 +283,7 @@ Both images share the base layers. They're only stored once on disk and in the r
 
 **Follow-up:** *What is a "dangling image" and how do you clean them up?*
 
-A dangling image is a layer that's no longer referenced by any tagged image — usually created when you rebuild an image with the same tag. Clean up:
+A dangling image is a layer that's no longer referenced by any tagged image - usually created when you rebuild an image with the same tag. Clean up:
 
 ```bash
 docker image prune           # Remove dangling images
@@ -302,43 +302,43 @@ docker system prune -a       # Nuclear option: remove everything unused
 # Complete Dockerfile Reference with DevOps Best Practices
 # ═══════════════════════════════════════════════════════════
 
-# FROM — Base image (required, must be first instruction)
+# FROM - Base image (required, must be first instruction)
 FROM node:20-alpine AS builder
 # Use specific tags (not 'latest') for reproducibility
 # Use Alpine/slim variants for smaller images
 # AS names a build stage for multi-stage builds
 
-# LABEL — Metadata (for image management)
+# LABEL - Metadata (for image management)
 LABEL maintainer="devops@company.com"
 LABEL version="1.2.0"
 LABEL description="Production API server"
 
-# ARG — Build-time variable (not available at runtime)
+# ARG - Build-time variable (not available at runtime)
 ARG NODE_ENV=production
 ARG APP_VERSION=1.0.0
 # Pass via: docker build --build-arg NODE_ENV=development .
 
-# ENV — Environment variable (available at build AND runtime)
+# ENV - Environment variable (available at build AND runtime)
 ENV NODE_ENV=$NODE_ENV
 ENV PORT=3000
 # Can be overridden: docker run -e PORT=8080
 
-# WORKDIR — Set working directory (creates if doesn't exist)
+# WORKDIR - Set working directory (creates if doesn't exist)
 WORKDIR /app
 # All subsequent commands run in this directory
 # Prefer WORKDIR over "RUN mkdir && cd"
 
-# COPY — Copy files from host to image
+# COPY - Copy files from host to image
 COPY package.json package-lock.json ./
 # COPY respects .dockerignore
 # Use specific files, not "COPY . ." early in the Dockerfile
 
-# ADD — Like COPY but with extras (generally prefer COPY)
+# ADD - Like COPY but with extras (generally prefer COPY)
 ADD https://example.com/file.tar.gz /tmp/
 # ADD auto-extracts tar archives and can fetch URLs
 # COPY is more explicit and preferred for simple file copying
 
-# RUN — Execute command during build (creates a layer)
+# RUN - Execute command during build (creates a layer)
 RUN npm ci --only=production
 # Combine related commands to reduce layers:
 RUN apt-get update && \
@@ -347,37 +347,37 @@ RUN apt-get update && \
 # The cleanup in the same RUN prevents the package lists from
 # being stored in a layer (saves ~30MB)
 
-# USER — Switch to non-root user
+# USER - Switch to non-root user
 RUN addgroup --system app && adduser --system --ingroup app app
 USER app
 # SECURITY: Never run production containers as root
 
-# EXPOSE — Document which ports the app listens on
+# EXPOSE - Document which ports the app listens on
 EXPOSE 3000
-# This is documentation only — doesn't actually publish the port
+# This is documentation only - doesn't actually publish the port
 # Use -p 3000:3000 at runtime to actually map ports
 
-# VOLUME — Declare mount point for external data
+# VOLUME - Declare mount point for external data
 VOLUME ["/app/data"]
 # Data in this path persists beyond container lifecycle
 
-# HEALTHCHECK — Define container health verification
+# HEALTHCHECK - Define container health verification
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:3000/health || exit 1
 # Docker marks container as healthy/unhealthy based on this
 
-# ENTRYPOINT — Main executable (not easily overridden)
+# ENTRYPOINT - Main executable (not easily overridden)
 ENTRYPOINT ["node"]
 # ENTRYPOINT defines WHAT runs
 
-# CMD — Default arguments (easily overridden)
+# CMD - Default arguments (easily overridden)
 CMD ["server.js"]
 # CMD defines the DEFAULT arguments to ENTRYPOINT
 # Combined: ENTRYPOINT + CMD = node server.js
 # Override: docker run myapp worker.js → node worker.js
 ```
 
-### ENTRYPOINT vs CMD — The Critical Distinction
+### ENTRYPOINT vs CMD - The Critical Distinction
 
 ```dockerfile
 # Pattern 1: CMD only (most common for simple apps)
@@ -400,11 +400,11 @@ CMD ["server.js"]
 ### Shell Form vs Exec Form
 
 ```dockerfile
-# Exec form (preferred) — runs directly, PID 1
+# Exec form (preferred) - runs directly, PID 1
 CMD ["node", "server.js"]
 # Process receives signals (SIGTERM) correctly → graceful shutdown
 
-# Shell form — runs via /bin/sh -c
+# Shell form - runs via /bin/sh -c
 CMD node server.js
 # Actually runs: /bin/sh -c "node server.js"
 # sh is PID 1, node is a child process
@@ -451,7 +451,7 @@ dist
 coverage
 ```
 
-Without it, `COPY . .` sends everything to the daemon — including `node_modules` (hundreds of MBs), `.git` (potentially huge), and `.env` (secrets!). This slows builds and can leak sensitive data into images.
+Without it, `COPY . .` sends everything to the daemon - including `node_modules` (hundreds of MBs), `.git` (potentially huge), and `.env` (secrets!). This slows builds and can leak sensitive data into images.
 
 ---
 
@@ -565,7 +565,7 @@ docker system df
 **Follow-up:** *What's the difference between `docker stop` and `docker kill`?*
 
 - `docker stop`: Sends **SIGTERM** first (graceful shutdown), waits 10 seconds (configurable with `-t`), then sends **SIGKILL** if still running
-- `docker kill`: Sends **SIGKILL** immediately — no grace period, no cleanup
+- `docker kill`: Sends **SIGKILL** immediately - no grace period, no cleanup
 
 Always prefer `docker stop` for production containers so the application can close database connections, finish processing requests, and flush logs.
 
@@ -707,7 +707,7 @@ docker run -d --name api --network mynet myapi
 ```bash
 docker run --network host nginx
 # Container uses host's network directly
-# No port mapping needed — nginx listens on host's port 80
+# No port mapping needed - nginx listens on host's port 80
 # Best performance (no NAT overhead)
 # No network isolation
 ```
@@ -716,7 +716,7 @@ docker run --network host nginx
 
 ```bash
 docker run --network none myapp
-# No network at all — completely isolated
+# No network at all - completely isolated
 # Use case: batch processing, security-sensitive operations
 ```
 
@@ -760,9 +760,9 @@ docker network connect frontend api
 
 **Answer:**
 
-Containers are **ephemeral** — when removed, all data inside is lost. Docker provides three mechanisms for persistent data:
+Containers are **ephemeral** - when removed, all data inside is lost. Docker provides three mechanisms for persistent data:
 
-### 1. Volumes (Managed by Docker — preferred)
+### 1. Volumes (Managed by Docker - preferred)
 
 ```bash
 # Create a named volume
@@ -793,7 +793,7 @@ docker run -d \
   -v /home/deploy/app/logs:/app/logs \          # Read-write mount
   myapp
 
-# Common for development — mount source code for live reloading
+# Common for development - mount source code for live reloading
 docker run -d \
   -v $(pwd)/src:/app/src \
   -p 3000:3000 \
@@ -840,7 +840,7 @@ docker run -d \
 | Performance | Native | Native | Fastest |
 | Security | Isolated from host | Exposes host paths | In memory only |
 
-**Why interviewer asks this:** Data persistence is a critical production concern — losing database data is catastrophic.
+**Why interviewer asks this:** Data persistence is a critical production concern - losing database data is catastrophic.
 
 **Follow-up:** *How do you back up a Docker volume?*
 
@@ -873,13 +873,13 @@ docker ps -a --filter "name=mycontainer"
 
 docker inspect --format '{{.State.ExitCode}}' mycontainer
 # Common exit codes:
-# 0   = Clean exit (process finished successfully — is this expected?)
+# 0   = Clean exit (process finished successfully - is this expected?)
 # 1   = Application error (check logs)
 # 126 = Permission denied (can't execute entrypoint)
 # 127 = Command not found (entrypoint doesn't exist)
-# 137 = OOM killed (128 + 9 SIGKILL) — out of memory
+# 137 = OOM killed (128 + 9 SIGKILL) - out of memory
 # 139 = Segfault (128 + 11 SIGSEGV)
-# 143 = SIGTERM (128 + 15) — graceful stop
+# 143 = SIGTERM (128 + 15) - graceful stop
 
 
 # Step 2: Check logs
@@ -890,7 +890,7 @@ docker logs mycontainer
 
 # Step 3: If no logs, run interactively
 docker run -it --entrypoint sh myapp:1.0
-# Now you're inside — manually run the entrypoint to see errors:
+# Now you're inside - manually run the entrypoint to see errors:
 # $ node server.js
 # Error: Cannot find module '/app/server.js'
 # ^ Found the problem!
@@ -906,7 +906,7 @@ docker run -it --entrypoint sh myapp:1.0
 # $ ls -la /app/server.js
 # -rw-r--r-- (no execute permission)
 # $ whoami
-# app (non-root user — can it read the file?)
+# app (non-root user - can it read the file?)
 
 
 # Step 6: Check for OOM
@@ -933,22 +933,22 @@ docker inspect --format '{{.State.OOMKilled}}' mycontainer
 FROM gcr.io/distroless/nodejs20
 
 # This CMD fails:
-CMD node server.js          # Shell form — needs /bin/sh, which doesn't exist!
+CMD node server.js          # Shell form - needs /bin/sh, which doesn't exist!
 
-# Fix — use exec form:
-CMD ["node", "server.js"]   # Exec form — runs directly, no shell needed
+# Fix - use exec form:
+CMD ["node", "server.js"]   # Exec form - runs directly, no shell needed
 ```
 
 **Why interviewer asks this:** Container debugging is daily work. Systematic approaches matter more than guessing.
 
 **Follow-up:** *Your container runs fine locally but crashes in production. What could be different?*
 
-1. **Environment variables** — missing or different values in production
-2. **Memory limits** — production has stricter limits than local Docker
-3. **Network access** — production may not be able to reach external services
-4. **Secrets/config** — different database URLs, API keys
-5. **CPU architecture** — built on ARM Mac, running on x86 Linux (use `--platform linux/amd64`)
-6. **Volume permissions** — different user IDs between local and production
+1. **Environment variables** - missing or different values in production
+2. **Memory limits** - production has stricter limits than local Docker
+3. **Network access** - production may not be able to reach external services
+4. **Secrets/config** - different database URLs, API keys
+5. **CPU architecture** - built on ARM Mac, running on x86 Linux (use `--platform linux/amd64`)
+6. **Volume permissions** - different user IDs between local and production
 
 ---
 
@@ -977,7 +977,7 @@ A Docker image that runs a Flask application. It will work, but has **7 signific
 ```dockerfile
 # BAD
 FROM ubuntu:latest
-# "latest" is mutable — today it's 24.04, tomorrow 24.10
+# "latest" is mutable - today it's 24.04, tomorrow 24.10
 # Your builds are not reproducible
 
 # GOOD
@@ -988,11 +988,11 @@ FROM python:3.12-slim
 
 ### Problem 2: Separate `apt-get update` and `apt-get install`
 ```dockerfile
-# BAD — if the install line changes, the update line is cached (stale)
+# BAD - if the install line changes, the update line is cached (stale)
 RUN apt-get update
 RUN apt-get install -y python3
 
-# GOOD — always combine and clean up
+# GOOD - always combine and clean up
 RUN apt-get update && \
     apt-get install -y --no-install-recommends python3 && \
     rm -rf /var/lib/apt/lists/*
@@ -1000,19 +1000,19 @@ RUN apt-get update && \
 
 ### Problem 3: No `.dockerignore` consideration
 ```dockerfile
-# BAD — COPY . copies everything (node_modules, .git, .env, etc.)
+# BAD - COPY . copies everything (node_modules, .git, .env, etc.)
 COPY . /app
 
-# GOOD — use .dockerignore and copy strategically
+# GOOD - use .dockerignore and copy strategically
 ```
 
 ### Problem 4: Poor layer ordering (cache busting)
 ```dockerfile
-# BAD — any code change rebuilds pip install
+# BAD - any code change rebuilds pip install
 COPY . /app
 RUN pip3 install flask
 
-# GOOD — install dependencies first, then copy code
+# GOOD - install dependencies first, then copy code
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 COPY . /app
@@ -1020,16 +1020,16 @@ COPY . /app
 
 ### Problem 5: Secret in environment variable
 ```dockerfile
-# BAD — secret baked into the image, visible to anyone
+# BAD - secret baked into the image, visible to anyone
 ENV FLASK_SECRET_KEY=super-secret-123
 
-# GOOD — pass at runtime
+# GOOD - pass at runtime
 # docker run -e FLASK_SECRET_KEY=$SECRET myapp
 ```
 
 ### Problem 6: Running as root
 ```dockerfile
-# BAD — no USER directive, runs everything as root
+# BAD - no USER directive, runs everything as root
 
 # GOOD
 RUN useradd --create-home appuser
@@ -1038,10 +1038,10 @@ USER appuser
 
 ### Problem 7: Shell form CMD
 ```dockerfile
-# BAD — uses shell form (PID 1 is /bin/sh, not flask)
+# BAD - uses shell form (PID 1 is /bin/sh, not flask)
 CMD flask run --host=0.0.0.0
 
-# GOOD — exec form, flask is PID 1
+# GOOD - exec form, flask is PID 1
 CMD ["flask", "run", "--host=0.0.0.0"]
 ```
 
@@ -1070,7 +1070,7 @@ HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
 CMD ["flask", "run", "--host=0.0.0.0"]
 ```
 
-**Why interviewer asks this:** Tests your ability to review Dockerfiles critically — a daily code review skill.
+**Why interviewer asks this:** Tests your ability to review Dockerfiles critically - a daily code review skill.
 
 **Follow-up:** *How much smaller would the corrected image be compared to the original?*
 
@@ -1078,4 +1078,4 @@ The original (Ubuntu + Python + pip + dev tools) would be ~800MB-1GB. The correc
 
 ---
 
-*Next: [04 — Advanced Docker & Containerization →](./04-advanced-docker.md)*
+*Next: [04 - Advanced Docker & Containerization →](./04-advanced-docker.md)*

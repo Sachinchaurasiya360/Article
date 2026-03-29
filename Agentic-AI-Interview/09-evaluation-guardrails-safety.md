@@ -7,8 +7,8 @@
 ## 📚 Pre-requisite Reading
 
 > **Evaluation in the context of RAG is covered in:**
-> - [RAG Part 7: Evaluation & Debugging](../RAG/rag-deep-dive-part-7.md) — Precision@K, Recall@K, NDCG, MRR, hallucination detection
-> - [LangChain Part 2: Production Deployment](../LangChain/langchain-deep-dive-part-2.md) — LangSmith evaluation, testing patterns
+> - [RAG Part 7: Evaluation & Debugging](../RAG/rag-deep-dive-part-7.md) - Precision@K, Recall@K, NDCG, MRR, hallucination detection
+> - [LangChain Part 2: Production Deployment](../LangChain/langchain-deep-dive-part-2.md) - LangSmith evaluation, testing patterns
 
 ---
 
@@ -844,7 +844,7 @@ calibration_cases = [
 # If the judge gives these high scores, the judge is broken
 
 # Fix 5: Use reference-free evaluation where possible
-# Don't show the expected answer to the judge — just ask "is this a good response?"
+# Don't show the expected answer to the judge - just ask "is this a good response?"
 ```
 
 **Why interviewer asks this:** Evaluation reliability is critical. A bad evaluator is worse than no evaluator.
@@ -1018,11 +1018,11 @@ You're not alone, and help is available right now. Would you like me to help you
 ```
 
 **Key requirements:**
-- **Crisis detection takes absolute priority** — overrides all other behavior
-- **Never diagnose** — even if the model is confident, it must defer to professionals
-- **Always disclaim** — every response must include a healthcare disclaimer
-- **HIPAA compliance** — never log, store, or expose health PII
-- **Source citation** — medical claims must be traceable to reputable sources
+- **Crisis detection takes absolute priority** - overrides all other behavior
+- **Never diagnose** - even if the model is confident, it must defer to professionals
+- **Always disclaim** - every response must include a healthcare disclaimer
+- **HIPAA compliance** - never log, store, or expose health PII
+- **Source citation** - medical claims must be traceable to reputable sources
 
 **Why interviewer asks this:** Healthcare AI is one of the highest-stakes applications. Tests ability to design safety-critical systems.
 

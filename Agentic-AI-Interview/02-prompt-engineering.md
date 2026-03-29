@@ -1,6 +1,6 @@
 # Section 2: Prompt Engineering
 
-> The art and science of steering LLM behavior through carefully crafted inputs — from basic techniques to advanced patterns used in production systems.
+> The art and science of steering LLM behavior through carefully crafted inputs - from basic techniques to advanced patterns used in production systems.
 
 ---
 
@@ -219,7 +219,7 @@ async def self_consistent_answer(
 
 **Answer:**
 
-Structured output prompting forces LLMs to respond in a specific format (JSON, XML, YAML, etc.) — critical for programmatic consumption of LLM outputs.
+Structured output prompting forces LLMs to respond in a specific format (JSON, XML, YAML, etc.) - critical for programmatic consumption of LLM outputs.
 
 **Approaches (ordered by reliability):**
 
@@ -239,7 +239,7 @@ class SentimentResult(BaseModel):
     reasoning: str
 
 
-# OpenAI Structured Outputs — guaranteed valid JSON
+# OpenAI Structured Outputs - guaranteed valid JSON
 response = client.beta.chat.completions.parse(
     model="gpt-4o",
     messages=[
@@ -361,7 +361,7 @@ messages = [
 
 **Why the separation matters:**
 
-1. **Privilege levels**: System prompts have higher "authority" — the model treats system instructions as trusted, while user messages are treated as potentially adversarial
+1. **Privilege levels**: System prompts have higher "authority" - the model treats system instructions as trusted, while user messages are treated as potentially adversarial
 2. **Persistence**: System prompts are constant across a conversation, user messages change
 3. **Security boundary**: Helps (but doesn't guarantee) resistance to prompt injection
 4. **Prompt caching**: System prompts can be cached across requests, reducing cost and latency
@@ -794,7 +794,7 @@ registry.register("classify_ticket", "v2", PromptTemplate("""..."""))  # Updated
 prompt = registry.get("classify_ticket", "latest")
 ```
 
-**Why interviewer asks this:** Tests software engineering discipline applied to prompt management — versioning, validation, testing.
+**Why interviewer asks this:** Tests software engineering discipline applied to prompt management - versioning, validation, testing.
 
 **Follow-up:** How would you A/B test two prompt versions in production and measure which performs better?
 
@@ -1062,7 +1062,7 @@ Rules:
 - Keep the core intent of the original prompt
 - Add specific instructions to handle the failure patterns
 - Add examples if they would help
-- Be concise — don't add unnecessary verbosity"""
+- Be concise - don't add unnecessary verbosity"""
                 },
                 {
                     "role": "user",
@@ -1165,7 +1165,7 @@ system = """Extract entities from the text.
 Respond with ONLY a raw JSON object. Do NOT wrap in code fences or markdown.
 Do NOT include ```json or any other formatting."""
 
-# Fix 3: Use response_format (best — API-level guarantee)
+# Fix 3: Use response_format (best - API-level guarantee)
 response = client.chat.completions.create(
     model="gpt-4o",
     messages=[...],
@@ -1182,7 +1182,7 @@ response = client.chat.completions.create(
 ```python
 # Scenario: Adding few-shot examples made classification WORSE
 # Zero-shot accuracy: 87%
-# With 5 examples: 72% — WHY?
+# With 5 examples: 72% - WHY?
 
 system_prompt = """Classify support tickets.
 
@@ -1388,11 +1388,11 @@ Price: {product['price']}"""
 ```
 
 **Key decisions:**
-- **Prompt in English, output in target language** — more reliable than prompting in target language (models are strongest in English)
-- **Language-specific max tokens** — prevents truncation for high-token languages
-- **Cultural customization** — not just translation, but adaptation
-- **Cost budgeting** — account for token multiplier across languages
+- **Prompt in English, output in target language** - more reliable than prompting in target language (models are strongest in English)
+- **Language-specific max tokens** - prevents truncation for high-token languages
+- **Cultural customization** - not just translation, but adaptation
+- **Cost budgeting** - account for token multiplier across languages
 
-**Why interviewer asks this:** Tests ability to think beyond English-only systems — a real-world requirement for any global product.
+**Why interviewer asks this:** Tests ability to think beyond English-only systems - a real-world requirement for any global product.
 
 **Follow-up:** How would you evaluate the quality of generated descriptions across languages without native speakers for every language?
