@@ -1,6 +1,6 @@
 # Developer Deep Dive Series
 
-A comprehensive collection of **93 deeply technical articles** covering modern software engineering topics - from machine learning and distributed systems to AI agents and voice technology.
+A comprehensive collection of **111 deeply technical articles** covering modern software engineering topics - from machine learning and distributed systems to AI agents, voice technology, and offensive/defensive cybersecurity.
 
 Each series follows a **"from scratch to production"** philosophy: concepts are built from first principles with working code, then scaled to production-grade systems.
 
@@ -17,8 +17,9 @@ Each series follows a **"from scratch to production"** philosophy: concepts are 
 | [Apache Kafka](Kafka/) | 11 | Distributed logs, replication, stream processing, production operations |
 | [Redis](Redis/) | 9 | Internals, data structures, persistence, clustering, production patterns |
 | [LangChain](LangChain/) | 3 | Chains, agents, tools, memory, LangSmith, production deployment |
+| [Security & Bug Bounty](Security/) | 18 | IDOR, JWT attacks, SQLi, XSS, SSRF, race conditions, AWS misconfigs, privesc, vuln chaining |
 
-**Total: 93 articles | ~200,000+ lines of content | 1,500+ code examples**
+**Total: 111 articles | ~237,000+ lines of content | 2,000+ code examples**
 
 ---
 
@@ -155,6 +156,31 @@ Build production voice AI systems - from audio signal processing to phone call a
 | 0 | [LangChain Fundamentals - Chains, Prompts, and Models](LangChain/langchain-deep-dive-part-0.md) |
 | 1 | [Agents, Tools, Memory, and Advanced RAG](LangChain/langchain-deep-dive-part-1.md) |
 | 2 | [Production LangChain - LangSmith, Deployment, and Best Practices](LangChain/langchain-deep-dive-part-2.md) |
+
+## Security & Bug Bounty (18 Parts)
+
+Advanced offensive and defensive security - from individual vulnerability classes to full attack chains and building your own vulnerable lab.
+
+| Part | Title |
+|------|-------|
+| 0 | [Advanced IDOR Vulnerabilities and Broken Access Control](Security/security-deep-dive-part-0.md) |
+| 1 | [Payment Manipulation and Ecommerce Logic Abuse](Security/security-deep-dive-part-1.md) |
+| 2 | [Advanced JWT Attacks](Security/security-deep-dive-part-2.md) |
+| 3 | [SQL Injection and NoSQL Injection for Modern Applications](Security/security-deep-dive-part-3.md) |
+| 4 | [XSS Attacks in Modern Frontends](Security/security-deep-dive-part-4.md) |
+| 5 | [CSRF, Session Fixation, and Authentication Bypass](Security/security-deep-dive-part-5.md) |
+| 6 | [File Upload Vulnerabilities](Security/security-deep-dive-part-6.md) |
+| 7 | [SSRF and Internal Network Access](Security/security-deep-dive-part-7.md) |
+| 8 | [Path Traversal, LFI, and Internal File Disclosure](Security/security-deep-dive-part-8.md) |
+| 9 | [GraphQL Security Testing](Security/security-deep-dive-part-9.md) |
+| 10 | [Advanced API Security Testing](Security/security-deep-dive-part-10.md) |
+| 11 | [Race Conditions and Business Logic Vulnerabilities](Security/security-deep-dive-part-11.md) |
+| 12 | [AWS Security Misconfigurations for Bug Bounty Hunters](Security/security-deep-dive-part-12.md) |
+| 13 | [Linux Privilege Escalation Basics for Bug Bounty and Labs](Security/security-deep-dive-part-13.md) |
+| 14 | [Internal Logs, Debug Endpoints, and Source Code Disclosure](Security/security-deep-dive-part-14.md) |
+| 15 | [Chaining Vulnerabilities Together](Security/security-deep-dive-part-15.md) |
+| 16 | [Bug Bounty Methodology for Modern SaaS Applications](Security/security-deep-dive-part-16.md) |
+| 17 | [Building Your Own Vulnerable Lab](Security/security-deep-dive-part-17.md) |
 
 ---
 

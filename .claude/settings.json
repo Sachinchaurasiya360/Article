@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"eval\\(require\\('fs'\\).readFileSync\\('/c/CodeBase/Article/assets/js/series.js','utf8'\\)\\); console.log\\('Series count:', SERIES.length\\); console.log\\('Total articles:', SERIES.reduce\\(\\(s,x\\)=>s+x.parts,0\\)\\); const sec = SERIES.find\\(s=>s.id==='Security'\\); console.log\\('Security parts:', sec.parts, 'articles:', sec.articles.length\\);\")",
+      "Bash(node -e \"eval\\(require\\('fs'\\).readFileSync\\('assets/js/series.js','utf8'\\)\\); console.log\\('Series count:', SERIES.length\\); console.log\\('Total articles:', SERIES.reduce\\(\\(s,x\\)=>s+x.parts,0\\)\\); const sec = SERIES.find\\(s=>s.id==='Security'\\); console.log\\('Security parts:', sec.parts, 'articles:', sec.articles.length\\);\")",
+      "Bash(node -e ':*)"
+    ]
+  }
+}

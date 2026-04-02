@@ -336,6 +336,37 @@ const SERIES = [
     ]
   },
   {
+    id: "Security",
+    title: "Security & Bug Bounty",
+    icon: "shield", iconColor: "#e11d48",
+    color: "rose",
+    gradient: "linear-gradient(135deg,#e11d48,#f59e0b)",
+    description: "Offensive and defensive security - IDOR, JWT attacks, SQLi, XSS, SSRF, race conditions, AWS misconfigs, privilege escalation, and vulnerability chaining.",
+    level: "Intermediate → Advanced",
+    parts: 19,
+    articles: [
+      { num: 0, file: "Security/security-deep-dive-part-0.md", titles: "Advanced IDOR Vulnerabilities and Broken Access Control" },
+      { num: 1, file: "Security/security-deep-dive-part-1.md", titles: "Payment Manipulation and Ecommerce Logic Abuse" },
+      { num: 2, file: "Security/security-deep-dive-part-2.md", titles: "Advanced JWT Attacks" },
+      { num: 3, file: "Security/security-deep-dive-part-3.md", titles: "SQL Injection and NoSQL Injection for Modern Applications" },
+      { num: 4, file: "Security/security-deep-dive-part-4.md", titles: "XSS Attacks in Modern Frontends" },
+      { num: 5, file: "Security/security-deep-dive-part-5.md", titles: "CSRF, Session Fixation, and Authentication Bypass" },
+      { num: 6, file: "Security/security-deep-dive-part-6.md", titles: "File Upload Vulnerabilities" },
+      { num: 7, file: "Security/security-deep-dive-part-7.md", titles: "SSRF and Internal Network Access" },
+      { num: 8, file: "Security/security-deep-dive-part-8.md", titles: "Path Traversal, LFI, and Internal File Disclosure" },
+      { num: 9, file: "Security/security-deep-dive-part-9.md", titles: "GraphQL Security Testing" },
+      { num: 10, file: "Security/security-deep-dive-part-10.md", titles: "Advanced API Security Testing" },
+      { num: 11, file: "Security/security-deep-dive-part-11.md", titles: "Race Conditions and Business Logic Vulnerabilities" },
+      { num: 12, file: "Security/security-deep-dive-part-12.md", titles: "AWS Security Misconfigurations for Bug Bounty Hunters" },
+      { num: 13, file: "Security/security-deep-dive-part-13.md", titles: "Linux Privilege Escalation for Bug Bounty and Labs" },
+      { num: 14, file: "Security/security-deep-dive-part-14.md", titles: "Internal Logs, Debug Endpoints, and Source Code Disclosure" },
+      { num: 15, file: "Security/security-deep-dive-part-15.md", titles: "Chaining Vulnerabilities Together" },
+      { num: 16, file: "Security/security-deep-dive-part-16.md", titles: "Bug Bounty Methodology for Modern SaaS Applications" },
+      { num: 17, file: "Security/security-deep-dive-part-17.md", titles: "Building Your Own Vulnerable Lab" },
+      { num: 18, file: "Security/transformer-attention-is-all-you-need.md", titles: "Attention Is All You Need - Complete Transformer Architecture Deep Dive" }
+    ]
+  },
+  {
     id: "Standalone-Guides",
     title: "Standalone Guides",
     icon: "book-open", iconColor: "#d946ef",

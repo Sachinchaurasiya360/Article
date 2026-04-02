@@ -1101,10 +1101,11 @@ img { max-width: 100%; }
 @media (max-width: 768px) {
   /* Nav - pill shrinks, portfolio hides, logo stays center */
   .site-nav { padding: 8px 1rem; }
-  .nav-bar { border-radius: 16px; padding: 0 0.4rem 0 1rem; }
+  .nav-bar { border-radius: 16px; padding: 0 0.4rem 0 1rem; grid-template-columns: 1fr auto; }
   .nav-portfolio { display: none; }
-  .nav-logo { justify-self: start; }
+  .nav-logo { justify-self: start; white-space: nowrap; }
   .nav-about { display: none; }
+  .nav-dropdown { display: none; }
   .nav-toggle { display: flex; }
 
   /* Homepage hero */
