@@ -323,9 +323,35 @@ function loadSeriesPage() {
 
 // ===== Init =====
 
+function setupThemeToggle() {
+  const root = document.documentElement;
+  const stored = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const initial = stored || (prefersDark ? 'dark' : 'light');
+  root.setAttribute('data-theme', initial);
+
+  const btn = document.getElementById('nav-theme-toggle');
+  if (!btn) return;
+
+  const updateIcon = (theme) => {
+    btn.innerHTML = `<i data-lucide="${theme === 'dark' ? 'sun' : 'moon'}"></i>`;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  };
+  updateIcon(initial);
+
+  btn.addEventListener('click', () => {
+    const current = root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    const next = current === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    updateIcon(next);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   buildNav();
   setupScrollFeatures();
+  setupThemeToggle();
 
   const page = document.body.dataset.page;
   if (page === 'article') loadArticle();

@@ -13,6 +13,35 @@
   --max-content: 820px;
 }
 
+[data-theme="dark"] {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #21262d;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --accent: #a78bfa;
+  --accent2: #58a6ff;
+  --code-bg: #1c2128;
+}
+
+/* Theme toggle button */
+.nav-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+.nav-theme-toggle:hover { color: var(--text); background: var(--surface2); border-color: var(--text2); }
+.nav-theme-toggle svg { width: 18px; height: 18px; }
+
 /* ===== Reset & Base ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
