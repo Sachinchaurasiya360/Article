@@ -201,4 +201,4 @@ This content is deployed at: **[https://sachinchaurasiya360.github.io/My-Medium-
 
 ---
 
-Built with expertise. Every algorithm implemented from scratch. Every concept proven with code.
+Built with expertise. Every algorithm implemented from scratch. Every concept proven with code
