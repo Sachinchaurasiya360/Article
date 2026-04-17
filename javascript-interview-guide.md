@@ -1,6 +1,6 @@
 # JavaScript Interview Preparation Guide - Zero to Advanced
 
-> A complete, structured interview prep resource covering 50 critical JavaScript interview questions across all major topics, plus 50 hands-on coding problems with solutions.
+> A complete, structured interview prep resource covering 52 critical JavaScript interview questions across all major topics, plus 50 hands-on coding problems with solutions.
 
 ---
 
@@ -18,6 +18,7 @@
 8. [Error Handling & Debugging (Q40-Q43)](#error-handling--debugging)
 9. [DOM, Events & Browser APIs (Q44-Q47)](#dom-events--browser-apis)
 10. [Performance & Design Patterns (Q48-Q50)](#performance--design-patterns)
+11. [`this` Keyword & OOP (Q51-Q52)](#this-keyword--oop)
 
 ### Coding Problems
 
@@ -32,7 +33,7 @@
 
 ---
 
-# Part 1: Interview Questions (50 Questions)
+# Part 1: Interview Questions (52 Questions)
 
 
 ---
@@ -4943,6 +4944,310 @@ const report = transactions
 
 **Follow-up: Can JavaScript be a purely functional language?**
 No — JavaScript is a multi-paradigm language. It supports functional style but also allows mutation and side effects. The goal is not to eliminate side effects (impossible in real apps) but to isolate them, keeping the majority of logic pure and composable.
+
+
+---
+
+## `this` Keyword & OOP
+
+---
+
+## Q51. 🟡 How does the `this` keyword work in JavaScript? What are the different binding rules?
+
+**Answer:**
+
+`this` is a special keyword that refers to the **execution context** of a function — *who called it*, not *where it was defined*. Unlike most languages, `this` in JavaScript is determined at **call time**, not definition time (except for arrow functions).
+
+There are **four binding rules**, applied in order of precedence:
+
+**1. Default binding — standalone function call:**
+
+```js
+function show() {
+  console.log(this);
+}
+
+show();
+// In non-strict mode: global object (window in browsers, global in Node)
+// In strict mode: undefined
+
+'use strict';
+function showStrict() {
+  console.log(this); // undefined
+}
+showStrict();
+```
+
+**2. Implicit binding — called as a method on an object:**
+
+```js
+const user = {
+  name: 'Alice',
+  greet() {
+    console.log(`Hi, I'm ${this.name}`);
+  },
+};
+
+user.greet(); // "Hi, I'm Alice" — `this` is `user`
+
+// ⚠️ Implicit binding is easily lost:
+const greet = user.greet;
+greet(); // "Hi, I'm undefined" — `this` is now global/undefined
+
+// Same problem with callbacks:
+setTimeout(user.greet, 100); // loses `this`
+```
+
+**3. Explicit binding — `call`, `apply`, `bind`:**
+
+```js
+function introduce(greeting, punctuation) {
+  console.log(`${greeting}, I'm ${this.name}${punctuation}`);
+}
+
+const person = { name: 'Bob' };
+
+introduce.call(person, 'Hello', '!');       // "Hello, I'm Bob!"
+introduce.apply(person, ['Hi', '.']);       // "Hi, I'm Bob."
+
+const boundFn = introduce.bind(person, 'Hey');
+boundFn('?'); // "Hey, I'm Bob?"
+```
+
+**4. `new` binding — constructor invocation:**
+
+```js
+function User(name) {
+  // `this` is a brand-new object
+  this.name = name;
+}
+
+const alice = new User('Alice');
+console.log(alice.name); // "Alice"
+```
+
+**Arrow functions — lexical `this`:**
+
+Arrow functions don't have their own `this`. They inherit it from the surrounding (lexical) scope at definition time. They also ignore `call`/`apply`/`bind`.
+
+```js
+const obj = {
+  name: 'Alice',
+  regular() {
+    console.log(this.name); // "Alice"
+  },
+  arrow: () => {
+    console.log(this.name); // undefined — `this` is the outer scope, not obj
+  },
+  delayed() {
+    setTimeout(() => {
+      console.log(this.name); // "Alice" — arrow inherits from `delayed`
+    }, 100);
+  },
+};
+```
+
+**Common pitfalls:**
+
+```js
+// ❌ Losing `this` in callbacks
+class Counter {
+  constructor() {
+    this.count = 0;
+  }
+  start() {
+    setInterval(function () {
+      this.count++; // ❌ `this` is undefined/global
+    }, 1000);
+  }
+}
+
+// ✅ Fix 1: arrow function
+class Counter {
+  start() {
+    setInterval(() => {
+      this.count++; // inherits from start()
+    }, 1000);
+  }
+}
+
+// ✅ Fix 2: bind
+class Counter {
+  start() {
+    setInterval(function () {
+      this.count++;
+    }.bind(this), 1000);
+  }
+}
+```
+
+**Precedence order (highest to lowest):**
+
+1. `new` binding
+2. Explicit binding (`bind` > `call`/`apply`)
+3. Implicit binding
+4. Default binding
+
+**Why interviewers ask this:** `this` confuses developers more than any other JavaScript feature. Knowing the rules — and being able to spot when `this` gets lost — is essential for writing callbacks, event handlers, and class methods correctly.
+
+**Follow-up: Why don't arrow functions have their own `this`?**
+They were designed for short callbacks where inheriting `this` is almost always what you want (e.g., array methods, `setTimeout`). Pre-ES6, developers used `const self = this` or `.bind(this)` everywhere — arrow functions removed that boilerplate.
+
+
+---
+
+## Q52. 🟡 How do ES6 classes work? Explain inheritance, `super`, static members, and private fields.
+
+**Answer:**
+
+ES6 classes are **syntactic sugar** over JavaScript's prototype-based inheritance — they don't introduce a new object model. Under the hood, methods still live on the prototype chain, but classes give a cleaner syntax for constructors, inheritance, and encapsulation.
+
+**Basic class syntax:**
+
+```js
+class User {
+  constructor(name, email) {
+    this.name = name;
+    this.email = email;
+  }
+
+  // Instance method — lives on User.prototype
+  greet() {
+    return `Hi, I'm ${this.name}`;
+  }
+
+  // Getter and setter
+  get displayName() {
+    return this.name.toUpperCase();
+  }
+  set displayName(value) {
+    this.name = value.toLowerCase();
+  }
+}
+
+const alice = new User('Alice', 'a@x.com');
+alice.greet();                  // "Hi, I'm Alice"
+alice.displayName;              // "ALICE"
+User.prototype.greet === alice.greet; // true (method lives on prototype)
+```
+
+**Inheritance with `extends` and `super`:**
+
+```js
+class Admin extends User {
+  constructor(name, email, permissions) {
+    super(name, email);           // call parent constructor — required before using `this`
+    this.permissions = permissions;
+  }
+
+  greet() {
+    return `${super.greet()} (admin)`; // call parent method
+  }
+
+  hasPermission(perm) {
+    return this.permissions.includes(perm);
+  }
+}
+
+const bob = new Admin('Bob', 'b@x.com', ['read', 'write']);
+bob.greet();              // "Hi, I'm Bob (admin)"
+bob instanceof Admin;     // true
+bob instanceof User;      // true — prototype chain: Admin → User → Object
+```
+
+**Static members — belong to the class, not instances:**
+
+```js
+class MathUtils {
+  static PI = 3.14159;
+
+  static square(n) {
+    return n * n;
+  }
+
+  // Static block (ES2022) — runs once when class is defined
+  static {
+    MathUtils.TAU = MathUtils.PI * 2;
+  }
+}
+
+MathUtils.square(5);    // 25
+MathUtils.PI;           // 3.14159
+const m = new MathUtils();
+m.square;               // undefined — not on instances
+```
+
+**Private fields and methods (ES2022):**
+
+```js
+class BankAccount {
+  #balance = 0;              // private field — only accessible inside the class
+  static #accountCount = 0;  // private static field
+
+  constructor(initial) {
+    this.#balance = initial;
+    BankAccount.#accountCount++;
+  }
+
+  deposit(amount) {
+    this.#validate(amount);
+    this.#balance += amount;
+  }
+
+  #validate(amount) {        // private method
+    if (amount <= 0) throw new Error('Invalid amount');
+  }
+
+  get balance() {
+    return this.#balance;
+  }
+}
+
+const acc = new BankAccount(100);
+acc.deposit(50);
+acc.balance;       // 150
+// acc.#balance;   // ❌ SyntaxError — truly private, not just a convention
+```
+
+Before `#`, developers used underscore prefixes (`this._balance`) as a *convention*, but it offered no real protection. `#` fields are enforced by the language.
+
+**Class expressions and mixins:**
+
+```js
+// Class expression (can be anonymous or named)
+const Logger = class {
+  log(msg) { console.log(msg); }
+};
+
+// Mixin pattern — composing behavior without deep inheritance chains
+const Serializable = (Base) => class extends Base {
+  toJSON() {
+    return JSON.stringify(this);
+  }
+};
+
+class User {}
+class SerializableUser extends Serializable(User) {}
+
+const u = new SerializableUser();
+u.toJSON(); // "{}"
+```
+
+**Classes vs constructor functions — what's actually different:**
+
+| Feature | Constructor functions | ES6 classes |
+|---|---|---|
+| Hoisting | Hoisted (function declarations) | Not hoisted (TDZ) |
+| Strict mode | Opt-in | Always strict |
+| Call without `new` | Allowed | `TypeError` |
+| Method enumeration | Enumerable by default | Non-enumerable |
+| `super` keyword | Not available | Available |
+| Private fields | Closure hack | Native `#` syntax |
+
+**Why interviewers ask this:** Classes are used everywhere — React components (historically), Node.js frameworks, TypeScript code. Interviewers want to see you understand that classes are prototype-based under the hood, can reason about `super` and inheritance chains, and know when to use composition (mixins, functional patterns) over inheritance.
+
+**Follow-up: When should you prefer composition over class inheritance?**
+When behavior needs to be shared across unrelated types, or when inheritance would create deep, fragile hierarchies. Deep inheritance couples subclasses tightly to parents — changing a base class can break every descendant. Mixins, higher-order functions, and plain object composition are usually more flexible. A good rule: *has-a* relationships use composition; *is-a* relationships can justify inheritance.
 
 
 ---

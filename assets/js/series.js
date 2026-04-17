@@ -374,16 +374,18 @@ const SERIES = [
     gradient: "linear-gradient(135deg,#d946ef,#f43f5e)",
     description: "In-depth standalone interview and career guides - communication mastery, Next.js, vector databases, and more.",
     level: "All Levels",
-    parts: 8,
+    parts: 10,
     articles: [
       { num: 1, file: "interview-communication-mastery.md", titles: "Interview & Communication Mastery" },
       { num: 2, file: "nextjs-interview-guide.md", titles: "Next.js Interview Guide - Zero to Advanced" },
       { num: 3, file: "vector-databases-deep-dive.md", titles: "Vector Databases - The Engine Behind Modern AI Search" },
       { num: 4, file: "fine-tuning-llms-complete-guide.md", titles: "Fine-Tuning LLMs - The Complete Engineering Guide" },
       { num: 5, file: "javascript-interview-guide.md", titles: "JavaScript Interview Preparation Guide - Zero to Advanced" },
-      { num: 6, file: "react-interview-guide.md", titles: "React Interview Guide - 50 Questions + 30 Coding Problems" },
-      { num: 7, file: "nodejs-interview-guide.md", titles: "Node.js Interview Preparation Guide - Zero to Advanced" },
-      { num: 8, file: "networking-interview-guide.md", titles: "Computer Networking Interview Guide for Full-Stack Developers" }
+      { num: 6, file: "javascript-coding-questions.md", titles: "JavaScript Coding Interview Questions - Must-Know" },
+      { num: 7, file: "javascript-coding-practice.md", titles: "JavaScript Coding Practice - 200+ Questions (No Solutions)" },
+      { num: 8, file: "react-interview-guide.md", titles: "React Interview Guide - 50 Questions + 30 Coding Problems" },
+      { num: 9, file: "nodejs-interview-guide.md", titles: "Node.js Interview Preparation Guide - Zero to Advanced" },
+      { num: 10, file: "networking-interview-guide.md", titles: "Computer Networking Interview Guide for Full-Stack Developers" }
     ]
   }
 ];
