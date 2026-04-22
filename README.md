@@ -1,204 +1,473 @@
-# Developer Deep Dive Series
+# Developer Deep Dive — 200+ Free Technical Guides
 
-A comprehensive collection of **111 deeply technical articles** covering modern software engineering topics - from machine learning and distributed systems to AI agents, voice technology, and offensive/defensive cybersecurity.
+> **A free, open-source library of 200+ in-depth technical articles** covering Machine Learning, AI Agents, RAG, Vector Databases, LLM Fine-Tuning, Apache Kafka, Redis, LangChain, DevOps, Docker, System Design, Security & Bug Bounty, Voice AI, WebRTC, FastAPI, SQL, and complete interview preparation for JavaScript, React, Node.js, Next.js, Networking, and TCS NQT placement.
 
-Each series follows a **"from scratch to production"** philosophy: concepts are built from first principles with working code, then scaled to production-grade systems.
+Built with a **"from scratch to production"** philosophy — every concept starts from first principles with working code, then scales to production-grade systems.
 
----
-
-## Series Overview
-
-| Series | Parts | Topics |
-|--------|-------|--------|
-| [Machine Learning](Machine-Learning/) | 20 | Linear regression to production ML platforms - every algorithm from scratch |
-| [AI Memory Systems](AI-Memory/) | 20 | Tokens, attention, embeddings, vector DBs, RAG, autonomous agents |
-| [Voice Agents](Voice-Agents/) | 20 | Audio processing, ASR, TTS, voice cloning, real-time pipelines, telephony |
-| [RAG (Retrieval-Augmented Generation)](RAG/) | 10 | Chunking, embeddings, vector search, advanced retrieval, production RAG |
-| [Apache Kafka](Kafka/) | 11 | Distributed logs, replication, stream processing, production operations |
-| [Redis](Redis/) | 9 | Internals, data structures, persistence, clustering, production patterns |
-| [LangChain](LangChain/) | 3 | Chains, agents, tools, memory, LangSmith, production deployment |
-| [Security & Bug Bounty](Security/) | 18 | IDOR, JWT attacks, SQLi, XSS, SSRF, race conditions, AWS misconfigs, privesc, vuln chaining |
-
-**Total: 111 articles | ~237,000+ lines of content | 2,000+ code examples**
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
+[![Articles](https://img.shields.io/badge/articles-200%2B-blue?style=flat-square)]()
+[![Code Examples](https://img.shields.io/badge/code%20examples-2000%2B-success?style=flat-square)]()
+[![Topics](https://img.shields.io/badge/topics-20%2B-orange?style=flat-square)]()
+[![Website](https://img.shields.io/badge/live%20site-online-purple?style=flat-square)](https://sachinchaurasiya360.github.io/My-Medium-Article/)
 
 ---
 
-## Machine Learning (20 Parts)
+## 🌟 Why This Repo
 
-A complete ML engineering bootcamp - from "what is ML?" to deploying production platforms.
+- ✅ **Free forever** — no paywalls, no signups, no email lists
+- ✅ **Code-first** — every concept has working, runnable examples
+- ✅ **From zero to production** — foundations → algorithms → production systems
+- ✅ **Interview-ready** — complete prep guides for top tech roles
+- ✅ **Updated for 2026** — AI/LLM content, latest framework patterns, recent slot PYQs
+- ✅ **MIT licensed** — fork, translate, remix, republish
 
-| Part | Title |
-|------|-------|
-| 0 | [The ML Landscape - What ML Actually Is (And Isn't)](Machine-Learning/ml-deep-dive-part-0.md) |
-| 1 | [The Math You Actually Need - Linear Algebra, Stats, and Probability](Machine-Learning/ml-deep-dive-part-1.md) |
-| 2 | [Your First ML Model - Linear Regression from Scratch](Machine-Learning/ml-deep-dive-part-2.md) |
-| 3 | [Classification - Logistic Regression, Decision Boundaries, and Evaluation](Machine-Learning/ml-deep-dive-part-3.md) |
-| 4 | [Trees and Forests - Decision Trees, Random Forests, and Ensemble Methods](Machine-Learning/ml-deep-dive-part-4.md) |
-| 5 | [The Algorithm Zoo - SVMs, KNN, Naive Bayes, and When to Use What](Machine-Learning/ml-deep-dive-part-5.md) |
-| 6 | [Unsupervised Learning - Clustering, Dimensionality Reduction, and Anomaly Detection](Machine-Learning/ml-deep-dive-part-6.md) |
-| 7 | [Feature Engineering - The Art That Makes or Breaks ML Models](Machine-Learning/ml-deep-dive-part-7.md) |
-| 8 | [Neural Networks from Scratch - Building Your First Deep Learning Model](Machine-Learning/ml-deep-dive-part-8.md) |
-| 9 | [PyTorch Fundamentals - The Deep Learning Developer's Toolkit](Machine-Learning/ml-deep-dive-part-9.md) |
-| 10 | [CNNs - Teaching Machines to See](Machine-Learning/ml-deep-dive-part-10.md) |
-| 11 | [Sequence Models - RNNs, LSTMs, and Time Series](Machine-Learning/ml-deep-dive-part-11.md) |
-| 12 | [Training Deep Networks - Optimizers, Regularization, and Debugging](Machine-Learning/ml-deep-dive-part-12.md) |
-| 13 | [Transfer Learning - Standing on the Shoulders of Giants](Machine-Learning/ml-deep-dive-part-13.md) |
-| 14 | [NLP with Transformers - From Tokenization to Fine-Tuning BERT](Machine-Learning/ml-deep-dive-part-14.md) |
-| 15 | [Advanced Computer Vision - Object Detection, Segmentation, and GANs](Machine-Learning/ml-deep-dive-part-15.md) |
-| 16 | [Model Evaluation and Selection - Beyond Accuracy](Machine-Learning/ml-deep-dive-part-16.md) |
-| 17 | [ML System Design - Architecture for Real-World ML](Machine-Learning/ml-deep-dive-part-17.md) |
-| 18 | [MLOps - From Notebook to Production Pipeline](Machine-Learning/ml-deep-dive-part-18.md) |
-| 19 | [The Capstone - Building a Production ML Platform](Machine-Learning/ml-deep-dive-part-19.md) |
+> ⭐ **If this helps you learn or land a job, star the repo** — it helps more developers discover the content.
 
-## AI Memory Systems (20 Parts)
+---
 
-From how machines represent information to building autonomous agents with persistent memory.
+## 📑 Table of Contents
 
-| Part | Title |
-|------|-------|
+- [🎯 Who This Is For](#-who-this-is-for)
+- [🔥 Featured Guides](#-featured-guides)
+- [📚 All Series — Full Index](#-all-series--full-index)
+  - [AI, ML & LLMs](#ai-ml--llms)
+  - [Data & Infrastructure](#data--infrastructure)
+  - [Interview & Placement Prep](#interview--placement-prep)
+  - [Security, DevOps & Systems](#security-devops--systems)
+  - [Databases & Backend](#databases--backend)
+- [🚀 Quick Start](#-quick-start)
+- [🤝 Contributing](#-contributing)
+- [⭐ Support](#-support)
+- [📄 License](#-license)
+
+---
+
+## 🎯 Who This Is For
+
+- **Software engineers** going deep on ML, distributed systems, AI agents
+- **Students** preparing for campus placements (TCS NQT, Infosys, Wipro) or technical interviews
+- **Engineers transitioning** into ML, GenAI, or security roles
+- **Tech leads** evaluating technologies (Kafka vs alternatives, Redis patterns, RAG architectures)
+- **Self-taught developers** who prefer code-first learning over theory dumps
+
+---
+
+## 🔥 Featured Guides
+
+Curated list of the highest-impact, most-read guides:
+
+| Guide | Why Read | Series |
+|-------|----------|--------|
+| [Machine Learning from Scratch](Machine-Learning/ml-deep-dive-part-2.md) | Linear regression built from math up | ML |
+| [What Is RAG & How to Build One](RAG/rag-deep-dive-part-5.md) | End-to-end RAG pipeline from scratch | RAG |
+| [Transformer Architecture Deep Dive](AI-Memory/ai-memory-deep-dive-part-3.md) | Attention mechanism explained with code | AI Memory |
+| [Kafka Internals — KRaft & Replication](Kafka/kafka-deep-dive-part-2.md) | Broker, controller, ISR explained | Kafka |
+| [Redis Architecture & Event Loop](Redis/redis-deep-dive-part-1.md) | Why Redis is fast, from the ground up | Redis |
+| [Fine-Tuning LLMs — Complete Guide](Fine-Tuning/fine-tuning-llms-complete-guide.md) | LoRA, QLoRA, full-finetune tradeoffs | Standalone |
+| [Vector Databases Deep Dive](Vector-Databases/vector-databases-deep-dive.md) | How Pinecone / Weaviate / pgvector work | Standalone |
+| [TCS NQT 2026 Preparation](TCS-Prep/README.md) | 15-day roadmap for TCS Prime & Ninja | Placement |
+| [JavaScript Interview Preparation](Interview-Prep/javascript-interview-guide.md) | Zero to advanced — closures, async, memory | Interview |
+| [React Interview — 50 Qs + 30 Coding](Interview-Prep/react-interview-guide.md) | Hooks, rendering, performance traps | Interview |
+| [Building Scalable Code from Day 1](Scalable-Systems/scalable-code-day-one.md) | Frontend + backend foundations | Systems |
+| [Advanced IDOR & Broken Access](Security/security-deep-dive-part-0.md) | First bug-bounty-grade vuln class | Security |
+
+---
+
+## 📚 All Series — Full Index
+
+### AI, ML & LLMs
+
+<details open>
+<summary><strong>🤖 Machine Learning</strong> — 20 parts · Zero to production ML platform</summary>
+
+Full ML engineering bootcamp — from "what is ML?" to deploying production platforms.
+
+| # | Part |
+|---|------|
+| 0 | [The ML Landscape](Machine-Learning/ml-deep-dive-part-0.md) |
+| 1 | [Math You Actually Need — Linear Algebra, Stats, Probability](Machine-Learning/ml-deep-dive-part-1.md) |
+| 2 | [Linear Regression from Scratch](Machine-Learning/ml-deep-dive-part-2.md) |
+| 3 | [Classification — Logistic Regression, Decision Boundaries](Machine-Learning/ml-deep-dive-part-3.md) |
+| 4 | [Trees, Random Forests, Ensemble Methods](Machine-Learning/ml-deep-dive-part-4.md) |
+| 5 | [The Algorithm Zoo — SVM, KNN, Naive Bayes](Machine-Learning/ml-deep-dive-part-5.md) |
+| 6 | [Unsupervised — Clustering, Dim-Reduction, Anomaly](Machine-Learning/ml-deep-dive-part-6.md) |
+| 7 | [Feature Engineering](Machine-Learning/ml-deep-dive-part-7.md) |
+| 8 | [Neural Networks from Scratch](Machine-Learning/ml-deep-dive-part-8.md) |
+| 9 | [PyTorch Fundamentals](Machine-Learning/ml-deep-dive-part-9.md) |
+| 10 | [CNNs — Computer Vision](Machine-Learning/ml-deep-dive-part-10.md) |
+| 11 | [RNNs, LSTMs, Time Series](Machine-Learning/ml-deep-dive-part-11.md) |
+| 12 | [Optimizers, Regularization, Debugging](Machine-Learning/ml-deep-dive-part-12.md) |
+| 13 | [Transfer Learning](Machine-Learning/ml-deep-dive-part-13.md) |
+| 14 | [NLP with Transformers & BERT](Machine-Learning/ml-deep-dive-part-14.md) |
+| 15 | [Advanced CV — Detection, Segmentation, GANs](Machine-Learning/ml-deep-dive-part-15.md) |
+| 16 | [Model Evaluation Beyond Accuracy](Machine-Learning/ml-deep-dive-part-16.md) |
+| 17 | [ML System Design](Machine-Learning/ml-deep-dive-part-17.md) |
+| 18 | [MLOps Pipelines](Machine-Learning/ml-deep-dive-part-18.md) |
+| 19 | [Capstone — Production ML Platform](Machine-Learning/ml-deep-dive-part-19.md) |
+
+</details>
+
+<details>
+<summary><strong>🧠 AI Memory Systems</strong> — 20 parts · Tokens, attention, embeddings, vector DBs, RAG, agents</summary>
+
+| # | Part |
+|---|------|
 | 0 | [What Is Memory in AI?](AI-Memory/ai-memory-deep-dive-part-0.md) |
-| 1 | [How Machines Represent Information - Tokens, Numbers, and Vectors](AI-Memory/ai-memory-deep-dive-part-1.md) |
-| 2 | [Neural Networks as Memory Systems](AI-Memory/ai-memory-deep-dive-part-2.md) |
-| 3 | [The Attention Mechanism - Teaching AI to Focus](AI-Memory/ai-memory-deep-dive-part-3.md) |
-| 4 | [Transformers and Context Windows](AI-Memory/ai-memory-deep-dive-part-4.md) |
-| 5 | [Why Context Length Is Limited - The Memory Wall](AI-Memory/ai-memory-deep-dive-part-5.md) |
-| 6 | [External Memory - When the Context Window Isn't Enough](AI-Memory/ai-memory-deep-dive-part-6.md) |
-| 7 | [Embeddings - Teaching Machines to Understand Meaning](AI-Memory/ai-memory-deep-dive-part-7.md) |
-| 8 | [Building and Understanding Vector Databases](AI-Memory/ai-memory-deep-dive-part-8.md) |
-| 9 | [Retrieval-Augmented Generation - Giving AI Perfect Memory](AI-Memory/ai-memory-deep-dive-part-9.md) |
-| 10 | [Chunking and Retrieval Optimization](AI-Memory/ai-memory-deep-dive-part-10.md) |
-| 11 | [Short-Term vs Long-Term Memory in AI Agents](AI-Memory/ai-memory-deep-dive-part-11.md) |
-| 12 | [Memory Compression and Summarization](AI-Memory/ai-memory-deep-dive-part-12.md) |
-| 13 | [Updating and Editing Memory - When Knowledge Changes](AI-Memory/ai-memory-deep-dive-part-13.md) |
-| 14 | [Personalization - Memory That Knows You](AI-Memory/ai-memory-deep-dive-part-14.md) |
-| 15 | [Multi-Modal Memory - Beyond Text](AI-Memory/ai-memory-deep-dive-part-15.md) |
-| 16 | [Autonomous Agents With Memory - From Chat to Action](AI-Memory/ai-memory-deep-dive-part-16.md) |
-| 17 | [Scaling Memory Systems in Production](AI-Memory/ai-memory-deep-dive-part-17.md) |
-| 18 | [Research-Level Memory Architectures](AI-Memory/ai-memory-deep-dive-part-18.md) |
-| 19 | [Designing a Production AI Memory Platform - The Capstone](AI-Memory/ai-memory-deep-dive-part-19.md) |
+| 1 | [Tokens, Numbers, Vectors](AI-Memory/ai-memory-deep-dive-part-1.md) |
+| 2 | [Neural Networks as Memory](AI-Memory/ai-memory-deep-dive-part-2.md) |
+| 3 | [Attention Mechanism](AI-Memory/ai-memory-deep-dive-part-3.md) |
+| 4 | [Transformers & Context Windows](AI-Memory/ai-memory-deep-dive-part-4.md) |
+| 5 | [The Memory Wall](AI-Memory/ai-memory-deep-dive-part-5.md) |
+| 6 | [External Memory](AI-Memory/ai-memory-deep-dive-part-6.md) |
+| 7 | [Embeddings Deep Dive](AI-Memory/ai-memory-deep-dive-part-7.md) |
+| 8 | [Building Vector Databases](AI-Memory/ai-memory-deep-dive-part-8.md) |
+| 9 | [RAG — Retrieval-Augmented Generation](AI-Memory/ai-memory-deep-dive-part-9.md) |
+| 10 | [Chunking & Retrieval Optimization](AI-Memory/ai-memory-deep-dive-part-10.md) |
+| 11 | [Short vs Long-Term Memory](AI-Memory/ai-memory-deep-dive-part-11.md) |
+| 12 | [Memory Compression & Summarization](AI-Memory/ai-memory-deep-dive-part-12.md) |
+| 13 | [Updating & Editing Memory](AI-Memory/ai-memory-deep-dive-part-13.md) |
+| 14 | [Personalization](AI-Memory/ai-memory-deep-dive-part-14.md) |
+| 15 | [Multi-Modal Memory](AI-Memory/ai-memory-deep-dive-part-15.md) |
+| 16 | [Autonomous Agents with Memory](AI-Memory/ai-memory-deep-dive-part-16.md) |
+| 17 | [Scaling Memory in Production](AI-Memory/ai-memory-deep-dive-part-17.md) |
+| 18 | [Research-Level Architectures](AI-Memory/ai-memory-deep-dive-part-18.md) |
+| 19 | [Capstone — Production Memory Platform](AI-Memory/ai-memory-deep-dive-part-19.md) |
 
-## Voice Agents (20 Parts)
+</details>
 
-Build production voice AI systems - from audio signal processing to phone call agents.
+<details>
+<summary><strong>🎙️ Voice Agents</strong> — 20 parts · ASR, TTS, voice cloning, telephony</summary>
 
-| Part | Title |
-|------|-------|
+| # | Part |
+|---|------|
 | 0 | [The Voice AI Landscape](Voice-Agents/voice-agent-deep-dive-part-0.md) |
-| 1 | [Audio Fundamentals - Sound, Signals, and Digital Audio](Voice-Agents/voice-agent-deep-dive-part-1.md) |
-| 2 | [Audio Signal Processing - Spectrograms, MFCCs, and Feature Extraction](Voice-Agents/voice-agent-deep-dive-part-2.md) |
-| 3 | [Speech Recognition - From Sound Waves to Text](Voice-Agents/voice-agent-deep-dive-part-3.md) |
-| 4 | [Real-Time ASR - Streaming Transcription and Wake Word Detection](Voice-Agents/voice-agent-deep-dive-part-4.md) |
-| 5 | [Speech Synthesis - Teaching Machines to Talk](Voice-Agents/voice-agent-deep-dive-part-5.md) |
-| 6 | [Voice Cloning and Custom Voices](Voice-Agents/voice-agent-deep-dive-part-6.md) |
-| 7 | [Real-Time Audio Pipelines - Streaming, Buffers, and WebSockets](Voice-Agents/voice-agent-deep-dive-part-7.md) |
-| 8 | [WebRTC and Telephony - Browser and Phone Call Audio](Voice-Agents/voice-agent-deep-dive-part-8.md) |
-| 9 | [Your First Voice Agent - ASR + LLM + TTS in a Loop](Voice-Agents/voice-agent-deep-dive-part-9.md) |
-| 10 | [Dialog Management - Turn-Taking, Interruptions, and Conversation Flow](Voice-Agents/voice-agent-deep-dive-part-10.md) |
-| 11 | [Voice Agent Memory - Context, Personalization, and Learning](Voice-Agents/voice-agent-deep-dive-part-11.md) |
-| 12 | [Voice Agent Frameworks - LiveKit, Pipecat, and Vocode](Voice-Agents/voice-agent-deep-dive-part-12.md) |
-| 13 | [Phone Call Agents - Twilio, SIP, and Telephony Integration](Voice-Agents/voice-agent-deep-dive-part-13.md) |
-| 14 | [Multi-Language and Emotion - Building Human-Like Voice Agents](Voice-Agents/voice-agent-deep-dive-part-14.md) |
-| 15 | [Advanced Voice Features - Authentication, Multi-Modal, and Proactive Agents](Voice-Agents/voice-agent-deep-dive-part-15.md) |
-| 16 | [Latency Optimization - Making Voice Agents Feel Instant](Voice-Agents/voice-agent-deep-dive-part-16.md) |
-| 17 | [Production Infrastructure - Scaling, Monitoring, and Reliability](Voice-Agents/voice-agent-deep-dive-part-17.md) |
-| 18 | [Security, Testing, and Compliance - Enterprise-Grade Voice Systems](Voice-Agents/voice-agent-deep-dive-part-18.md) |
-| 19 | [The Capstone - Building a Production Voice Agent Platform](Voice-Agents/voice-agent-deep-dive-part-19.md) |
+| 1 | [Audio Fundamentals](Voice-Agents/voice-agent-deep-dive-part-1.md) |
+| 2 | [Signal Processing — Spectrograms, MFCCs](Voice-Agents/voice-agent-deep-dive-part-2.md) |
+| 3 | [Speech Recognition Basics](Voice-Agents/voice-agent-deep-dive-part-3.md) |
+| 4 | [Real-Time ASR & Wake Words](Voice-Agents/voice-agent-deep-dive-part-4.md) |
+| 5 | [Speech Synthesis (TTS)](Voice-Agents/voice-agent-deep-dive-part-5.md) |
+| 6 | [Voice Cloning](Voice-Agents/voice-agent-deep-dive-part-6.md) |
+| 7 | [Real-Time Pipelines — WebSockets, Buffers](Voice-Agents/voice-agent-deep-dive-part-7.md) |
+| 8 | [WebRTC & Telephony](Voice-Agents/voice-agent-deep-dive-part-8.md) |
+| 9 | [Your First Voice Agent — ASR + LLM + TTS](Voice-Agents/voice-agent-deep-dive-part-9.md) |
+| 10 | [Dialog Management & Turn-Taking](Voice-Agents/voice-agent-deep-dive-part-10.md) |
+| 11 | [Voice Agent Memory](Voice-Agents/voice-agent-deep-dive-part-11.md) |
+| 12 | [LiveKit, Pipecat, Vocode](Voice-Agents/voice-agent-deep-dive-part-12.md) |
+| 13 | [Phone Call Agents — Twilio, SIP](Voice-Agents/voice-agent-deep-dive-part-13.md) |
+| 14 | [Multi-Language & Emotion](Voice-Agents/voice-agent-deep-dive-part-14.md) |
+| 15 | [Authentication, Multi-Modal, Proactive](Voice-Agents/voice-agent-deep-dive-part-15.md) |
+| 16 | [Latency Optimization](Voice-Agents/voice-agent-deep-dive-part-16.md) |
+| 17 | [Production Infrastructure](Voice-Agents/voice-agent-deep-dive-part-17.md) |
+| 18 | [Security, Testing, Compliance](Voice-Agents/voice-agent-deep-dive-part-18.md) |
+| 19 | [Capstone — Production Voice Platform](Voice-Agents/voice-agent-deep-dive-part-19.md) |
 
-## RAG - Retrieval-Augmented Generation (10 Parts)
+</details>
 
-| Part | Title |
-|------|-------|
-| 0 | [What Is RAG? Foundations and Why It Matters](RAG/rag-deep-dive-part-0.md) |
-| 1 | [Text Preprocessing and Chunking Strategies](RAG/rag-deep-dive-part-1.md) |
-| 2 | [Embeddings - The Heart of RAG](RAG/rag-deep-dive-part-2.md) |
-| 3 | [Vector Databases and Indexing](RAG/rag-deep-dive-part-3.md) |
-| 4 | [Retrieval Strategies - From Basic to Advanced](RAG/rag-deep-dive-part-4.md) |
-| 5 | [Building Your First RAG Pipeline from Scratch](RAG/rag-deep-dive-part-5.md) |
-| 6 | [Advanced RAG Patterns - HyDE, Re-ranking, Fusion](RAG/rag-deep-dive-part-6.md) |
-| 7 | [Evaluation and Debugging RAG Systems](RAG/rag-deep-dive-part-7.md) |
-| 8 | [Production RAG - Scaling, Monitoring, and Optimization](RAG/rag-deep-dive-part-8.md) |
-| 9 | [Multi-Modal RAG, Agentic RAG, and The Future](RAG/rag-deep-dive-part-9.md) |
+<details>
+<summary><strong>🔍 RAG (Retrieval-Augmented Generation)</strong> — 10 parts · Production RAG systems</summary>
 
-## Apache Kafka (11 Parts)
+| # | Part |
+|---|------|
+| 0 | [What Is RAG?](RAG/rag-deep-dive-part-0.md) |
+| 1 | [Text Preprocessing & Chunking](RAG/rag-deep-dive-part-1.md) |
+| 2 | [Embeddings — The Heart of RAG](RAG/rag-deep-dive-part-2.md) |
+| 3 | [Vector Databases & Indexing](RAG/rag-deep-dive-part-3.md) |
+| 4 | [Retrieval Strategies](RAG/rag-deep-dive-part-4.md) |
+| 5 | [Your First RAG Pipeline](RAG/rag-deep-dive-part-5.md) |
+| 6 | [Advanced — HyDE, Re-ranking, Fusion](RAG/rag-deep-dive-part-6.md) |
+| 7 | [Evaluation & Debugging](RAG/rag-deep-dive-part-7.md) |
+| 8 | [Production RAG](RAG/rag-deep-dive-part-8.md) |
+| 9 | [Multi-Modal & Agentic RAG](RAG/rag-deep-dive-part-9.md) |
 
-| Part | Title |
-|------|-------|
-| 0 | [The Foundation You Need Before Going Deep](Kafka/kafka-deep-dive-part-0.md) |
-| 1 | [Why Kafka Exists - The Distributed Log as a Systems Primitive](Kafka/kafka-deep-dive-part-1.md) |
-| 2 | [Architecture Internals - Brokers, Controllers, and KRaft](Kafka/kafka-deep-dive-part-2.md) |
-| 3 | [Replication - ISR, Leader Election, and Durability](Kafka/kafka-deep-dive-part-3.md) |
-| 4 | [Consumer Groups - Coordination, Rebalancing, and Offset Management](Kafka/kafka-deep-dive-part-4.md) |
-| 5 | [Storage Engine - Segments, Indexes, Log Compaction](Kafka/kafka-deep-dive-part-5.md) |
-| 6 | [Producers - Batching, Idempotence, Transactions](Kafka/kafka-deep-dive-part-6.md) |
-| 7 | [Performance Engineering - Throughput, Latency, and Tuning](Kafka/kafka-deep-dive-part-7.md) |
-| 8 | [Stream Processing - Kafka Streams, ksqlDB, and Flink](Kafka/kafka-deep-dive-part-8.md) |
-| 9 | [Production Operations - Monitoring, Incident Response](Kafka/kafka-deep-dive-part-9.md) |
-| 10 | [Advanced Patterns - Event Sourcing, CDC, CQRS](Kafka/kafka-deep-dive-part-10.md) |
+</details>
 
-## Redis (9 Parts)
+<details>
+<summary><strong>🤖 Agentic AI Interview</strong> — 10 parts · AI/LLM engineer interview prep</summary>
 
-| Part | Title |
-|------|-------|
-| 0 | [The Foundation You Need Before Going Deep](Redis/redis-deep-dive-part-0.md) |
-| 1 | [Architecture and Event Loop Internals](Redis/redis-deep-dive-part-1.md) |
-| 2 | [Data Structures Deep Dive - Internal Encoding and Complexity](Redis/redis-deep-dive-part-2.md) |
-| 3 | [Memory Management, Persistence, and Storage Mechanics](Redis/redis-deep-dive-part-3.md) |
-| 4 | [Networking Model, Event Loop, and Performance](Redis/redis-deep-dive-part-4.md) |
-| 5 | [Replication, High Availability, and Sentinel](Redis/redis-deep-dive-part-5.md) |
-| 6 | [Redis Cluster and Distributed Systems](Redis/redis-deep-dive-part-6.md) |
-| 7 | [Advanced Use Cases and Real-World Patterns](Redis/redis-deep-dive-part-7.md) |
-| 8 | [Production Engineering, Scaling, and Failures](Redis/redis-deep-dive-part-8.md) |
+| # | Part |
+|---|------|
+| 1 | [AI & LLM Fundamentals](Agentic-AI-Interview/01-ai-llm-fundamentals.md) |
+| 2 | [Prompt Engineering](Agentic-AI-Interview/02-prompt-engineering.md) |
+| 3 | [Embeddings & Vector Databases](Agentic-AI-Interview/03-embeddings-vector-databases.md) |
+| 4 | [RAG](Agentic-AI-Interview/04-rag.md) |
+| 5 | [Agentic AI Basics](Agentic-AI-Interview/05-agentic-ai-basics.md) |
+| 6 | [Multi-Agent Systems](Agentic-AI-Interview/06-multi-agent-systems.md) |
+| 7 | [Tool Use & Function Calling](Agentic-AI-Interview/07-tool-use-function-calling.md) |
+| 8 | [Memory, Planning, Reasoning](Agentic-AI-Interview/08-memory-planning-reasoning.md) |
+| 9 | [Evaluation, Guardrails, Safety](Agentic-AI-Interview/09-evaluation-guardrails-safety.md) |
+| 10 | [System Design for Production](Agentic-AI-Interview/10-system-design-production.md) |
 
-## LangChain (3 Parts)
+</details>
 
-| Part | Title |
-|------|-------|
-| 0 | [LangChain Fundamentals - Chains, Prompts, and Models](LangChain/langchain-deep-dive-part-0.md) |
-| 1 | [Agents, Tools, Memory, and Advanced RAG](LangChain/langchain-deep-dive-part-1.md) |
-| 2 | [Production LangChain - LangSmith, Deployment, and Best Practices](LangChain/langchain-deep-dive-part-2.md) |
+<details>
+<summary><strong>⚡ Transformers</strong> — Deep dive series on transformer architecture</summary>
 
-## Security & Bug Bounty (18 Parts)
+See [Transformers/](Transformers/) for the full series.
 
-Advanced offensive and defensive security - from individual vulnerability classes to full attack chains and building your own vulnerable lab.
+</details>
 
-| Part | Title |
-|------|-------|
-| 0 | [Advanced IDOR Vulnerabilities and Broken Access Control](Security/security-deep-dive-part-0.md) |
-| 1 | [Payment Manipulation and Ecommerce Logic Abuse](Security/security-deep-dive-part-1.md) |
+<details>
+<summary><strong>🔗 LangChain</strong> — 3 parts · Chains, agents, production deployment</summary>
+
+| # | Part |
+|---|------|
+| 0 | [Fundamentals — Chains, Prompts, Models](LangChain/langchain-deep-dive-part-0.md) |
+| 1 | [Agents, Tools, Memory, Advanced RAG](LangChain/langchain-deep-dive-part-1.md) |
+| 2 | [Production — LangSmith & Deployment](LangChain/langchain-deep-dive-part-2.md) |
+
+</details>
+
+<details>
+<summary><strong>🎛️ Fine-Tuning LLMs</strong> — Complete engineering guide</summary>
+
+- [Fine-Tuning LLMs — The Complete Engineering Guide](Fine-Tuning/fine-tuning-llms-complete-guide.md) — LoRA, QLoRA, PEFT, full-finetune, dataset prep, evaluation.
+
+</details>
+
+<details>
+<summary><strong>🗂️ Vector Databases</strong> — Standalone deep dive</summary>
+
+- [Vector Databases — The Engine Behind Modern AI Search](Vector-Databases/vector-databases-deep-dive.md) — Pinecone, Weaviate, pgvector, HNSW, IVF.
+
+</details>
+
+---
+
+### Data & Infrastructure
+
+<details>
+<summary><strong>📨 Apache Kafka</strong> — 11 parts · Distributed logs to production streams</summary>
+
+| # | Part |
+|---|------|
+| 0 | [Foundation](Kafka/kafka-deep-dive-part-0.md) |
+| 1 | [Why Kafka — Distributed Log as Primitive](Kafka/kafka-deep-dive-part-1.md) |
+| 2 | [Internals — Brokers, Controllers, KRaft](Kafka/kafka-deep-dive-part-2.md) |
+| 3 | [Replication — ISR, Leader Election](Kafka/kafka-deep-dive-part-3.md) |
+| 4 | [Consumer Groups & Rebalancing](Kafka/kafka-deep-dive-part-4.md) |
+| 5 | [Storage — Segments, Indexes, Compaction](Kafka/kafka-deep-dive-part-5.md) |
+| 6 | [Producers — Batching, Idempotence, Transactions](Kafka/kafka-deep-dive-part-6.md) |
+| 7 | [Performance Tuning](Kafka/kafka-deep-dive-part-7.md) |
+| 8 | [Kafka Streams, ksqlDB, Flink](Kafka/kafka-deep-dive-part-8.md) |
+| 9 | [Production Ops & Monitoring](Kafka/kafka-deep-dive-part-9.md) |
+| 10 | [Event Sourcing, CDC, CQRS](Kafka/kafka-deep-dive-part-10.md) |
+
+</details>
+
+<details>
+<summary><strong>⚡ Redis</strong> — 9 parts · Internals, clustering, production</summary>
+
+| # | Part |
+|---|------|
+| 0 | [Foundation](Redis/redis-deep-dive-part-0.md) |
+| 1 | [Architecture & Event Loop](Redis/redis-deep-dive-part-1.md) |
+| 2 | [Data Structures & Internal Encoding](Redis/redis-deep-dive-part-2.md) |
+| 3 | [Memory, Persistence, Storage](Redis/redis-deep-dive-part-3.md) |
+| 4 | [Networking & Performance](Redis/redis-deep-dive-part-4.md) |
+| 5 | [Replication, HA, Sentinel](Redis/redis-deep-dive-part-5.md) |
+| 6 | [Cluster & Distributed Systems](Redis/redis-deep-dive-part-6.md) |
+| 7 | [Real-World Patterns](Redis/redis-deep-dive-part-7.md) |
+| 8 | [Scaling & Production Failures](Redis/redis-deep-dive-part-8.md) |
+
+</details>
+
+<details>
+<summary><strong>🕷️ Web Scraping</strong> — 6 parts · HTTP to production pipelines</summary>
+
+See [Web-Scraping/](Web-Scraping/) for the full series.
+
+</details>
+
+---
+
+### Interview & Placement Prep
+
+<details open>
+<summary><strong>🎯 TCS NQT 2026 — Complete Preparation</strong> (New · 15-day plan)</summary>
+
+[**TCS-Prep/**](TCS-Prep/) — 15-day roadmap for TCS NQT / Prime / Ninja with:
+- Day-by-day 6–7 hour schedule
+- Aptitude, Reasoning, Verbal, Coding guides
+- Actual 2025–2026 slot questions with solutions
+- 4 full mock tests + performance tracker
+- D-1 last-minute revision cheat sheet
+- JavaScript-based coding (Foundation + Prime Advanced DSA)
+
+</details>
+
+<details>
+<summary><strong>💼 Interview Prep — JavaScript, React, Node, Next.js, Networking</strong> (8 guides)</summary>
+
+| Guide | Covers |
+|-------|--------|
+| [Interview & Communication Mastery](Interview-Prep/interview-communication-mastery.md) | Soft skills, STAR framework, behavioral |
+| [JavaScript Interview — Zero to Advanced](Interview-Prep/javascript-interview-guide.md) | Closures, async, memory, event loop |
+| [JavaScript Coding Questions — Must-Know](Interview-Prep/javascript-coding-questions.md) | Solved coding problems |
+| [JavaScript Coding Practice — 200+ Questions](Interview-Prep/javascript-coding-practice.md) | No solutions — practice bank |
+| [React Interview — 50 Qs + 30 Coding](Interview-Prep/react-interview-guide.md) | Hooks, rendering, performance |
+| [Node.js Interview — Zero to Advanced](Interview-Prep/nodejs-interview-guide.md) | Event loop, streams, cluster |
+| [Next.js Interview — Zero to Advanced](Interview-Prep/nextjs-interview-guide.md) | App router, SSR, RSC |
+| [Computer Networking for Full-Stack Devs](Interview-Prep/networking-interview-guide.md) | TCP/IP, HTTP, WebSockets |
+
+</details>
+
+---
+
+### Security, DevOps & Systems
+
+<details>
+<summary><strong>🛡️ Security & Bug Bounty</strong> — 19 parts · Offensive + defensive</summary>
+
+| # | Part |
+|---|------|
+| 0 | [Advanced IDOR & Access Control](Security/security-deep-dive-part-0.md) |
+| 1 | [Payment Manipulation & Logic Abuse](Security/security-deep-dive-part-1.md) |
 | 2 | [Advanced JWT Attacks](Security/security-deep-dive-part-2.md) |
-| 3 | [SQL Injection and NoSQL Injection for Modern Applications](Security/security-deep-dive-part-3.md) |
-| 4 | [XSS Attacks in Modern Frontends](Security/security-deep-dive-part-4.md) |
-| 5 | [CSRF, Session Fixation, and Authentication Bypass](Security/security-deep-dive-part-5.md) |
+| 3 | [SQL & NoSQL Injection](Security/security-deep-dive-part-3.md) |
+| 4 | [XSS in Modern Frontends](Security/security-deep-dive-part-4.md) |
+| 5 | [CSRF, Session Fixation, Auth Bypass](Security/security-deep-dive-part-5.md) |
 | 6 | [File Upload Vulnerabilities](Security/security-deep-dive-part-6.md) |
-| 7 | [SSRF and Internal Network Access](Security/security-deep-dive-part-7.md) |
-| 8 | [Path Traversal, LFI, and Internal File Disclosure](Security/security-deep-dive-part-8.md) |
-| 9 | [GraphQL Security Testing](Security/security-deep-dive-part-9.md) |
-| 10 | [Advanced API Security Testing](Security/security-deep-dive-part-10.md) |
-| 11 | [Race Conditions and Business Logic Vulnerabilities](Security/security-deep-dive-part-11.md) |
-| 12 | [AWS Security Misconfigurations for Bug Bounty Hunters](Security/security-deep-dive-part-12.md) |
-| 13 | [Linux Privilege Escalation Basics for Bug Bounty and Labs](Security/security-deep-dive-part-13.md) |
-| 14 | [Internal Logs, Debug Endpoints, and Source Code Disclosure](Security/security-deep-dive-part-14.md) |
-| 15 | [Chaining Vulnerabilities Together](Security/security-deep-dive-part-15.md) |
-| 16 | [Bug Bounty Methodology for Modern SaaS Applications](Security/security-deep-dive-part-16.md) |
-| 17 | [Building Your Own Vulnerable Lab](Security/security-deep-dive-part-17.md) |
+| 7 | [SSRF & Internal Network Access](Security/security-deep-dive-part-7.md) |
+| 8 | [Path Traversal & LFI](Security/security-deep-dive-part-8.md) |
+| 9 | [GraphQL Security](Security/security-deep-dive-part-9.md) |
+| 10 | [Advanced API Security](Security/security-deep-dive-part-10.md) |
+| 11 | [Race Conditions & Business Logic](Security/security-deep-dive-part-11.md) |
+| 12 | [AWS Misconfigurations](Security/security-deep-dive-part-12.md) |
+| 13 | [Linux Privilege Escalation](Security/security-deep-dive-part-13.md) |
+| 14 | [Debug Endpoints & Source Disclosure](Security/security-deep-dive-part-14.md) |
+| 15 | [Chaining Vulnerabilities](Security/security-deep-dive-part-15.md) |
+| 16 | [SaaS Bug Bounty Methodology](Security/security-deep-dive-part-16.md) |
+| 17 | [Build Your Own Vulnerable Lab](Security/security-deep-dive-part-17.md) |
+
+</details>
+
+<details>
+<summary><strong>⚙️ DevOps</strong> — 7 parts · Linux, Docker, CI/CD, cloud</summary>
+
+| # | Part |
+|---|------|
+| 1 | [DevOps Fundamentals](DevOps/01-devops-fundamentals.md) |
+| 2 | [Linux Networking](DevOps/02-linux-networking.md) |
+| 3 | [Docker Fundamentals](DevOps/03-docker-fundamentals.md) |
+| 4 | [Advanced Docker](DevOps/04-advanced-docker.md) |
+| 5 | [CI/CD Pipelines](DevOps/05-cicd-pipelines.md) |
+| 6 | [Cloud Monitoring](DevOps/06-cloud-monitoring.md) |
+| 7 | [System Design](DevOps/07-system-design.md) |
+
+</details>
+
+<details>
+<summary><strong>🌐 WebSockets & WebRTC</strong> — 4 parts · Real-time communication</summary>
+
+See [WebSockets-WebRTC/](WebSockets-WebRTC/) for the full series.
+
+</details>
+
+<details>
+<summary><strong>📈 Scalable Systems</strong> — 3 parts · Day 1 to 100K+ users</summary>
+
+| # | Part |
+|---|------|
+| 1 | [Writing Scalable Code from Day 1](Scalable-Systems/scalable-code-day-one.md) |
+| 2 | [Handling Sudden Traffic Spikes](Scalable-Systems/scalable-code-traffic-spikes.md) |
+| 3 | [Scaling Systems in Production for 100K+ Users](Scalable-Systems/scalable-code-production-scaling.md) |
+
+</details>
 
 ---
 
-## Who Is This For?
+### Databases & Backend
 
-- **Software developers** wanting to deeply understand ML, distributed systems, and AI
-- **Engineers transitioning** into ML/AI roles
-- **Students** looking for practical, code-first learning materials
-- **Tech leads** evaluating technologies for their stack
+<details>
+<summary><strong>🗄️ SQL & Databases</strong> — 5 parts · SQL, NoSQL, system design</summary>
 
-## How to Read
+| # | Part |
+|---|------|
+| 1 | [SQL Fundamentals](SQL-Database/01-sql-fundamentals.md) |
+| 2 | [Intermediate SQL](SQL-Database/02-intermediate-sql.md) |
+| 3 | [Advanced SQL](SQL-Database/03-advanced-sql.md) |
+| 4 | [NoSQL](SQL-Database/04-nosql.md) |
+| 5 | [Database System Design](SQL-Database/05-system-design.md) |
 
-Each series is designed to be read sequentially - Part 0 sets up foundations, and each subsequent part builds on the previous one. However, each article is self-contained enough to be read independently if you already have the prerequisites.
+</details>
 
-## Live Site
+<details>
+<summary><strong>🐍 Python & FastAPI</strong> — 7 parts · Zero to production</summary>
 
-This content is deployed at: **[https://sachinchaurasiya360.github.io/My-Medium-Article/](https://sachinchaurasiya360.github.io/My-Medium-Article/)**
+| # | Part |
+|---|------|
+| 1 | [Python Fundamentals](Python-FastAPI/01-python-fundamentals.md) |
+| 2 | [Intermediate Python](Python-FastAPI/02-intermediate-python.md) |
+| 3 | [Advanced Python](Python-FastAPI/03-advanced-python.md) |
+| 4 | [FastAPI Fundamentals](Python-FastAPI/04-fastapi-fundamentals.md) |
+| 5 | [FastAPI Advanced & Production](Python-FastAPI/05-fastapi-advanced-production.md) |
+| 6 | [Databases, Caching, Async](Python-FastAPI/06-databases-caching-async.md) |
+| 7 | [System Design & Architecture](Python-FastAPI/07-system-design-architecture.md) |
+
+</details>
 
 ---
 
-Built with expertise. Every algorithm implemented from scratch. Every concept proven with code
+## 🚀 Quick Start
+
+```bash
+# Clone
+git clone https://github.com/sachinchaurasiya360/My-Medium-Article.git
+cd My-Medium-Article
+
+# Pick a series — everything is plain markdown
+open Machine-Learning/ml-deep-dive-part-0.md
+# or browse on GitHub
+```
+
+**Live site:** [sachinchaurasiya360.github.io/My-Medium-Article](https://sachinchaurasiya360.github.io/My-Medium-Article/)
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+- 🐛 **Fix errors** — typos, broken links, outdated code
+- 📝 **Add content** — new articles, expanded examples, translations
+- 💡 **Suggest topics** — open an issue with your idea
+- 🌍 **Translate** — create `translations/<lang>/` folders
+
+---
+
+## ⭐ Support
+
+- ⭐ **Star this repo** — helps it reach more developers
+- 🍴 **Fork** to customize or translate
+- 🔗 **Share** on LinkedIn, Twitter/X, Reddit, Telegram dev communities
+- 💬 **Open an issue** for questions, suggestions, or bug reports
+
+---
+
+## 📄 License
+
+[MIT License](LICENSE) — free to use, modify, and distribute with attribution.
+
+---
+
+## 🔖 Topics & Keywords
+
+`machine-learning` · `deep-learning` · `pytorch` · `tensorflow` · `neural-networks`
+`llm` · `large-language-models` · `fine-tuning` · `lora` · `rag` · `vector-database` · `embeddings`
+`ai-agents` · `agentic-ai` · `langchain` · `openai` · `anthropic` · `transformer`
+`voice-ai` · `speech-recognition` · `tts` · `webrtc` · `twilio`
+`apache-kafka` · `redis` · `distributed-systems` · `system-design` · `microservices`
+`bug-bounty` · `application-security` · `penetration-testing` · `owasp`
+`javascript` · `react` · `nodejs` · `nextjs` · `typescript`
+`python` · `fastapi` · `sql` · `postgresql` · `mongodb`
+`docker` · `devops` · `ci-cd` · `aws` · `kubernetes`
+`interview-preparation` · `coding-interview` · `tcs-nqt` · `placement-preparation` · `campus-placement`
+`tutorial` · `free` · `open-source` · `learn-in-public`
+
+---
+
+<p align="center">
+  Built with care. Every algorithm from scratch. Every concept proven with code.<br>
+  <sub>If this helped you — ⭐ star the repo and share it with one person.</sub>
+</p>
