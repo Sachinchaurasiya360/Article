@@ -213,7 +213,7 @@ const SERIES = [
     gradient: "linear-gradient(135deg,#7c3aed,#ec4899)",
     description: "Complete interview prep for Agentic AI & LLM systems - fundamentals, RAG, agents, multi-agent, tool use, safety, and system design.",
     level: "Intermediate → Advanced",
-    parts: 10,
+    parts: 11,
     articles: [
       { num: 1, file: "Agentic-AI-Interview/01-ai-llm-fundamentals.md", titles: "AI & LLM Fundamentals" },
       { num: 2, file: "Agentic-AI-Interview/02-prompt-engineering.md", titles: "Prompt Engineering" },
@@ -224,7 +224,8 @@ const SERIES = [
       { num: 7, file: "Agentic-AI-Interview/07-tool-use-function-calling.md", titles: "Tool Use, Function Calling & APIs" },
       { num: 8, file: "Agentic-AI-Interview/08-memory-planning-reasoning.md", titles: "Memory, Planning & Reasoning" },
       { num: 9, file: "Agentic-AI-Interview/09-evaluation-guardrails-safety.md", titles: "Evaluation, Guardrails & Safety" },
-      { num: 10, file: "Agentic-AI-Interview/10-system-design-production.md", titles: "System Design & Production AI Systems" }
+      { num: 10, file: "Agentic-AI-Interview/10-system-design-production.md", titles: "System Design & Production AI Systems" },
+      { num: 11, file: "Agentic-AI-Interview/11-ai-training-types.md", titles: "AI Training Types: Full Fine-Tuning, LoRA, QLoRA & Quantization" }
     ]
   },
   {
@@ -387,26 +388,6 @@ const SERIES = [
       { num: 9, file: "Interview-Prep/nodejs-interview-guide.md", titles: "Node.js Interview Preparation Guide - Zero to Advanced" },
       { num: 10, file: "Interview-Prep/networking-interview-guide.md", titles: "Computer Networking Interview Guide for Full-Stack Developers" },
       { num: 11, file: "Interview-Prep/typescript-interview-guide.md", titles: "TypeScript Interview Preparation Guide - Zero to Advanced" }
-    ]
-  },
-  {
-    id: "Advanced-AI",
-    title: "Advanced AI",
-    icon: "sparkles", iconColor: "#f59e0b",
-    color: "amber",
-    gradient: "linear-gradient(135deg,#f59e0b,#ef4444)",
-    description: "BE Computer Engineering exam preparation — GANs, WGANs, Autoencoders, Transfer Learning, Ensemble Methods, Probabilistic Models, and the Metaverse. Covers May 2024 & May 2025 university papers.",
-    level: "Intermediate → Advanced",
-    parts: 8,
-    articles: [
-      { num: 1, file: "Advanced-AI/01-gans-fundamentals.md", titles: "GAN Architecture, MinMax Loss & Training Challenges" },
-      { num: 2, file: "Advanced-AI/02-wgan.md", titles: "Wasserstein GAN & Earth Mover's Distance" },
-      { num: 3, file: "Advanced-AI/03-advanced-gans.md", titles: "Conditional GAN, DCGAN & CycleGAN" },
-      { num: 4, file: "Advanced-AI/04-autoencoders.md", titles: "Autoencoder Types, VAE, Sparse & Contractive AE" },
-      { num: 5, file: "Advanced-AI/05-transfer-learning.md", titles: "Transfer Learning Types, Fine-Tuning & Pre-trained Models" },
-      { num: 6, file: "Advanced-AI/06-ensemble-methods.md", titles: "Random Forest, AdaBoost & XGBoost" },
-      { num: 7, file: "Advanced-AI/07-probabilistic-models.md", titles: "GMM, HMM, Markov Random Fields & Bayesian Networks" },
-      { num: 8, file: "Advanced-AI/08-metaverse-2d-limitations.md", titles: "Metaverse & 2D Learning Environment Limitations" }
     ]
   }
 ];

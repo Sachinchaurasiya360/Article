@@ -31,6 +31,7 @@ Each section contains:
 | 8 | [Memory, Planning & Reasoning](./08-memory-planning-reasoning.md) | Working memory, long-term memory, planning algorithms, reasoning chains |
 | 9 | [Evaluation, Guardrails & Safety](./09-evaluation-guardrails-safety.md) | LLM evaluation, prompt injection defense, content filtering, alignment |
 | 10 | [System Design & Production AI Systems](./10-system-design-production.md) | Architecture patterns, scaling, monitoring, cost optimization, deployment |
+| 11 | [AI Training Types: Full Fine-Tuning, LoRA, QLoRA & Quantization](./11-ai-training-types.md) | Why/when/how to train, PEFT vs full fine-tuning, LoRA & QLoRA internals, bit-level quantization, weight decay & collapse-to-zero failure modes |
 
 ---
 
