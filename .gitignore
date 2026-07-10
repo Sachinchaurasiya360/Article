@@ -11,3 +11,7 @@ node_modules/
 *~
 .DS_Store
 Thumbs.db
+
+# Saved Medium login session (Playwright profile) — never commit
+tools/.medium-profile/
+tools/.medium-profile-system/
