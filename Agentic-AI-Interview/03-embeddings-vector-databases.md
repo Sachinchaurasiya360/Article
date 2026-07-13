@@ -1055,3 +1055,7 @@ Answer ONLY "YES" or "NO"."""
 **Why interviewer asks this:** Tests end-to-end system design using embeddings. Shows understanding of threshold tuning, multi-stage verification, and production concerns.
 
 **Follow-up:** How would you handle multi-language tickets where the same issue is reported in English and Spanish?
+
+---
+
+**Follow for more:** [@sachindev69](https://x.com/sachindev69) on X.

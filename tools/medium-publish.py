@@ -153,6 +153,31 @@ def paste_html(page, html: str):
     page.keyboard.press("Control+v")
 
 
+def paste_html_chunked(page, html: str, settle_fn):
+    """Paste HTML in pieces, split at each <img>, instead of one giant blob.
+
+    A single paste containing this much content plus ~19 images silently
+    truncates in Medium's editor after the first image — pasting the whole
+    article as one clipboard event apparently exceeds some internal limit in
+    Medium's paste handler. Splitting at image boundaries and pasting each
+    piece separately (waiting for each image to settle before continuing)
+    avoids that limit, since it mirrors how a human would build the post up
+    incrementally.
+    """
+    parts = re.split(r'(<img[^>]*/?>)', html)
+    parts = [p for p in parts if p.strip()]
+    total_imgs = sum(1 for p in parts if p.startswith('<img'))
+    img_done = 0
+    for part in parts:
+        paste_html(page, part)
+        if part.startswith('<img'):
+            img_done += 1
+            print(f"    image {img_done}/{total_imgs}…")
+            settle_fn(page, timeout_s=30, stable_checks=3, poll_s=1)
+        else:
+            page.wait_for_timeout(400)
+
+
 # JS injected before any page script runs — erases the automation fingerprints
 # Cloudflare looks for (navigator.webdriver, missing plugins/languages, etc.).
 STEALTH_INIT = """
@@ -359,13 +384,95 @@ def wait_through_cloudflare(page, headless: bool):
               "your profile for next time.")
         return
     print("  Complete the 'Verify you are human' checkbox in the browser window.")
-    # Auto-detect clearance for up to 90s, but let the user hit ENTER too.
-    for _ in range(90):
+    # Poll for clearance instead of blocking on input() — input() throws
+    # EOFError with no attached interactive terminal (task scheduler, IDE
+    # run button, double-clicked shortcut), which used to kill the script
+    # right after the window opened, looking like "nothing happened".
+    deadline = time.time() + 300
+    last_nudge = time.time()
+    while time.time() < deadline:
         page.wait_for_timeout(1000)
         if not on_challenge():
             print("  Cloudflare cleared. Continuing…")
             return
-    input("  Press ENTER once the page has loaded past the check… ")
+        if time.time() - last_nudge > 20:
+            print(f"  Still waiting on Cloudflare… ({int(deadline - time.time())}s left)")
+            last_nudge = time.time()
+    print("  Gave up waiting on Cloudflare after 5 minutes.")
+
+
+def wait_for_paste_to_settle(page, timeout_s=240, stable_checks=4, poll_s=2):
+    """Poll the editor's rendered text length until it stops growing.
+
+    Medium re-hosts each pasted <img> asynchronously, one at a time, appending
+    later paragraphs only once earlier images finish processing. A short fixed
+    sleep here isn't enough for articles with many images — closing the
+    browser while that's still in flight permanently truncates the draft,
+    since it's in-page JS state that dies with the Chrome process.
+    """
+    deadline = time.time() + timeout_s
+    last_len = -1
+    stable = 0
+    while time.time() < deadline:
+        try:
+            length = page.evaluate("document.body.innerText.length")
+        except Exception:
+            length = last_len
+        if length == last_len:
+            stable += 1
+            if stable >= stable_checks:
+                return
+        else:
+            stable = 0
+        last_len = length
+        page.wait_for_timeout(int(poll_s * 1000))
+    print("  (content was still changing after "
+          f"{timeout_s}s — proceeding anyway; check the draft length)")
+
+
+def wait_for_manual_close(page):
+    """Block until the user closes the browser window themselves.
+
+    Used instead of auto-closing after --keep-open: the script should not
+    tear down the browser just because it's done pasting — leave it fully in
+    the user's hands to review and close whenever they're ready.
+    """
+    print("\n  Browser left open for review — close the window yourself when done.")
+    try:
+        page.wait_for_event("close", timeout=0)
+    except Exception:
+        pass
+
+
+def wait_for_login(page, headless: bool, timeout_s=600):
+    """Poll until the editor becomes visible instead of blocking on input().
+
+    A blocking input() throws EOFError with no attached interactive terminal,
+    which used to kill the script right after the browser opened — looking
+    like the browser never opened at all. Polling works no matter how the
+    script was launched, and needs no keypress: it just notices you've logged in.
+    """
+    print("\n  ┌─────────────────────────────────────────────────────┐")
+    print("  │  Not logged in yet.                                   │")
+    print("  │  Log into Medium in the browser window that opened.   │")
+    print("  │  This continues automatically once you're logged in.  │")
+    print("  └─────────────────────────────────────────────────────┘")
+    deadline = time.time() + timeout_s
+    last_nudge = time.time()
+    last_reopen = time.time()
+    while time.time() < deadline:
+        if is_logged_in(page):
+            return True
+        # Re-nudge back to the editor in case login redirected elsewhere,
+        # but not so often it interrupts someone mid-login.
+        if time.time() - last_reopen > 45:
+            open_editor(page, headless)
+            last_reopen = time.time()
+        if time.time() - last_nudge > 30:
+            print(f"  Still waiting for login… ({int((deadline - time.time()) / 60)} min left)")
+            last_nudge = time.time()
+        page.wait_for_timeout(2000)
+    return False
 
 
 def open_editor(page, headless: bool):
@@ -420,74 +527,78 @@ def run(md_path: str, base_url: str, profile_dir: Path,
     profile_dir.mkdir(parents=True, exist_ok=True)
 
     with sync_playwright() as p:
-        context = launch_context(p, profile_dir, headless, system_profile)
-        # Always drive a fresh tab — with a real profile, restored tabs may sit
-        # at about:blank and steal pages[0].
-        page = context.new_page()
-
-        print("  Opening Medium editor…")
-        open_editor(page, headless)
-
-        if not is_logged_in(page):
-            if headless:
-                print("\n  Not logged in and running headless. Re-run WITHOUT "
-                      "--headless once to sign in, then headless will work.")
-                context.close()
-                sys.exit(1)
-            print("\n  ┌─────────────────────────────────────────────────────┐")
-            print("  │  Not logged in yet.                                   │")
-            print("  │  Log into Medium in the browser window that opened.   │")
-            print("  │  (You only have to do this once.)                     │")
-            print("  └─────────────────────────────────────────────────────┘")
-            input("\n  Press ENTER here after you've logged in… ")
-            open_editor(page, headless)
-            if not is_logged_in(page):
-                print("  Still can't see the editor. Aborting.")
-                context.close()
-                sys.exit(1)
-
-        # --- Title ---
-        title_loc = first_visible(page, TITLE_SELECTORS)
-        if not title_loc:
-            print("  Could not find the title field. Medium may have changed "
-                  "its layout — open an issue / tweak TITLE_SELECTORS.")
-            if keep_open:
-                input("  Press ENTER to close the browser… ")
-            context.close()
-            sys.exit(1)
-        title_loc.click()
-        page.keyboard.type(title, delay=10)
-        page.keyboard.press("Enter")
-        page.wait_for_timeout(400)
-
-        # --- Body ---
-        body_loc = first_visible(page, BODY_SELECTORS, timeout=5000)
-        if body_loc:
-            body_loc.click()
-        print("  Pasting article body…")
-        paste_html(page, html)
-        page.wait_for_timeout(2500)  # let Medium fetch images & autosave
-
-        # --- Wait for autosave ---
         try:
-            page.get_by_text(re.compile("Saved|Draft saved", re.I)).first.wait_for(timeout=8000)
-            print("  Draft saved by Medium.")
-        except Exception:
-            print("  (Didn't see a 'Saved' indicator — Medium autosaves every "
-                  "few seconds; the draft is almost certainly saved.)")
+            context = launch_context(p, profile_dir, headless, system_profile)
+        except Exception as e:
+            if _is_profile_locked_error(e):
+                print(f"  Browser profile is locked — an old automation Chrome "
+                      f"window is probably still open on {profile_dir}.")
+                print("  Close it (check Task Manager for a stray chrome.exe) and re-run.")
+            else:
+                print(f"  Could not launch the browser: {e}")
+            sys.exit(1)
 
-        draft_url = page.url
-        print(f"\n  Draft URL   : {draft_url}")
-        print(f"  Find it under: https://medium.com/me/stories/drafts")
+        try:
+            # Always drive a fresh tab — with a real profile, restored tabs may sit
+            # at about:blank and steal pages[0].
+            page = context.new_page()
 
-        if publish:
-            print("\n  --publish requested. Attempting to publish…")
-            _try_publish(page)
+            print("  Opening Medium editor…")
+            open_editor(page, headless)
 
-        if keep_open:
-            input("\n  Browser left open. Press ENTER here to close it… ")
+            if not is_logged_in(page):
+                if headless:
+                    print("\n  Not logged in and running headless. Re-run WITHOUT "
+                          "--headless once to sign in, then headless will work.")
+                    sys.exit(1)
+                if not wait_for_login(page, headless):
+                    print("  Still not logged in after 10 minutes. Aborting.")
+                    sys.exit(1)
 
-        context.close()
+            # --- Title ---
+            title_loc = first_visible(page, TITLE_SELECTORS)
+            if not title_loc:
+                print("  Could not find the title field. Medium may have changed "
+                      "its layout — open an issue / tweak TITLE_SELECTORS.")
+                if keep_open:
+                    wait_for_manual_close(page)
+                sys.exit(1)
+            title_loc.click()
+            page.keyboard.type(title, delay=10)
+            page.keyboard.press("Enter")
+            page.wait_for_timeout(400)
+
+            # --- Body ---
+            body_loc = first_visible(page, BODY_SELECTORS, timeout=5000)
+            if body_loc:
+                body_loc.click()
+            print("  Pasting article body…")
+            paste_html_chunked(page, html, wait_for_paste_to_settle)
+            wait_for_paste_to_settle(page)
+
+            # --- Wait for autosave ---
+            try:
+                page.get_by_text(re.compile("Saved|Draft saved", re.I)).first.wait_for(timeout=15000)
+                print("  Draft saved by Medium.")
+            except Exception:
+                print("  (Didn't see a 'Saved' indicator — Medium autosaves every "
+                      "few seconds; the draft is almost certainly saved.)")
+
+            draft_url = page.url
+            print(f"\n  Draft URL   : {draft_url}")
+            print(f"  Find it under: https://medium.com/me/stories/drafts")
+
+            if publish:
+                print("\n  --publish requested. Attempting to publish…")
+                _try_publish(page)
+
+            if keep_open:
+                wait_for_manual_close(page)
+        finally:
+            try:
+                context.close()
+            except Exception:
+                pass
 
     print("\n  Done. ✅")
 

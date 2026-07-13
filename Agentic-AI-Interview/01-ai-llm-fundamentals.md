@@ -29,7 +29,7 @@ A Large Language Model (LLM) is a neural network trained on massive text corpora
 | Architecture | Task-specific (LSTM, CRF, SVM) | General-purpose Transformer |
 | Training | Supervised on labeled data per task | Self-supervised on raw text, then fine-tuned |
 | Task handling | One model per task | One model, many tasks (via prompting) |
-| Data requirement | 1K–100K labeled examples | Trillions of tokens (pre-training) |
+| Data requirement | 1K-100K labeled examples | Trillions of tokens (pre-training) |
 | Emergent abilities | None | In-context learning, chain-of-thought, code generation |
 | Knowledge | Only what's in training labels | Broad world knowledge encoded in parameters |
 
@@ -135,7 +135,7 @@ The model learns language structure, facts, reasoning patterns, and code - all f
 **Stage 2: Supervised Fine-Tuning (SFT)**
 ```
 Objective: Learn to follow instructions and produce helpful responses
-Data: 10K–100K high-quality (instruction, response) pairs
+Data: 10K-100K high-quality (instruction, response) pairs
 Compute: Hours to days on modest GPU clusters
 Result: Model that can follow instructions but may still be harmful/unhelpful
 ```
@@ -257,7 +257,7 @@ print(f"Hindi: {len(hindi)} chars → {len(enc.encode(hindi))} tokens")
 - Token count directly affects **cost** (APIs charge per token)
 - Token count affects **latency** (more tokens = longer generation)
 - Token count determines if content fits in **context window**
-- Multilingual bias: non-English languages use 2–5× more tokens for equivalent content
+- Multilingual bias: non-English languages use 2-5× more tokens for equivalent content
 
 **Why interviewer asks this:** Tokenization bugs are common in production LLM systems. Understanding tokenization helps debug issues like hallucinated numbers, broken multilingual support, and unexpected context window exhaustion.
 
@@ -1268,3 +1268,7 @@ class CostGuard:
 **Why interviewer asks this:** Tests operational awareness. Building AI systems isn't just about models - it's about running them reliably at acceptable cost.
 
 **Follow-up:** Design a cost monitoring and alerting system for a production LLM application.
+
+---
+
+**Follow for more:** [@sachindev69](https://x.com/sachindev69) on X.

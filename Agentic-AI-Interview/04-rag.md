@@ -890,3 +890,7 @@ Return a JSON list of claims with "supported": true/false and "source": source_i
 **Why interviewer asks this:** Tests ability to adapt RAG for high-stakes domains with domain-specific constraints.
 
 **Follow-up:** How would you handle a user asking about the interaction between two different contracts that were indexed separately?
+
+---
+
+**Follow for more:** [@sachindev69](https://x.com/sachindev69) on X.

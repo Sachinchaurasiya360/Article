@@ -1037,3 +1037,7 @@ class CustomerSupportAgent:
 **Why interviewer asks this:** Tests ability to design agents with real-world consequences. Safety, autonomy levels, and guardrails are the hard parts.
 
 **Follow-up:** How would you measure the agent's success rate and what metrics would you track?
+
+---
+
+**Follow for more:** [@sachindev69](https://x.com/sachindev69) on X.
