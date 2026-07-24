@@ -86,19 +86,5 @@
 
   <script src="assets/js/series.js"></script>
   <script src="assets/js/app.js"></script>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const footer = document.getElementById('footer-series-links');
-      if (typeof SERIES !== 'undefined' && footer) {
-        SERIES.forEach(s => {
-          const fa = document.createElement('a');
-          fa.href = `series.html?id=${s.id}`;
-          fa.textContent = s.title;
-          footer.appendChild(fa);
-        });
-      }
-    });
-  </script>
 </body>
 </html>

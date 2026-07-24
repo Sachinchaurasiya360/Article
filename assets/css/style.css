@@ -1114,16 +1114,6 @@ img { max-width: 100%; }
   font-size: 0.88rem;
 }
 
-.footer-links {
-  display: flex;
-  gap: 1.5rem;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-}
-.footer-links a { color: var(--text2); }
-.footer-links a:hover { color: var(--text); text-decoration: none; }
-
 /* ===== Responsive ===== */
 
 /* ── Tablet and below (≤768px) ── */
