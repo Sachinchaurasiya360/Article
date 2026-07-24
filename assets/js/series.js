@@ -375,7 +375,7 @@ const SERIES = [
     gradient: "linear-gradient(135deg,#d946ef,#f43f5e)",
     description: "In-depth standalone interview and career guides - communication mastery, Next.js, vector databases, and more.",
     level: "All Levels",
-    parts: 11,
+    parts: 12,
     articles: [
       { num: 1, file: "Interview-Prep/interview-communication-mastery.md", titles: "Interview & Communication Mastery" },
       { num: 2, file: "Interview-Prep/nextjs-interview-guide.md", titles: "Next.js Interview Guide - Zero to Advanced" },
@@ -387,7 +387,8 @@ const SERIES = [
       { num: 8, file: "Interview-Prep/react-interview-guide.md", titles: "React Interview Guide - 50 Questions + 30 Coding Problems" },
       { num: 9, file: "Interview-Prep/nodejs-interview-guide.md", titles: "Node.js Interview Preparation Guide - Zero to Advanced" },
       { num: 10, file: "Interview-Prep/networking-interview-guide.md", titles: "Computer Networking Interview Guide for Full-Stack Developers" },
-      { num: 11, file: "Interview-Prep/typescript-interview-guide.md", titles: "TypeScript Interview Preparation Guide - Zero to Advanced" }
+      { num: 11, file: "Interview-Prep/typescript-interview-guide.md", titles: "TypeScript Interview Preparation Guide - Zero to Advanced" },
+      { num: 12, file: "Interview-Prep/os-interview-guide.md", titles: "Operating Systems Interview Guide - Zero to Advanced" }
     ]
   }
 ];

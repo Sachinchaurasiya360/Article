@@ -76,7 +76,6 @@
   </main>
 
   <footer class="site-footer">
-    <div class="footer-links" id="footer-series-links"></div>
     <p>© 2025 Sachin Chaurasiya · Built for engineers who want to understand the internals.</p>
   </footer>
 
@@ -93,7 +92,6 @@
     // Build series grid on homepage
     document.addEventListener('DOMContentLoaded', () => {
       const grid = document.getElementById('series-grid');
-      const footer = document.getElementById('footer-series-links');
       const navLinks = document.getElementById('nav-series-links');
 
       // Count total articles
@@ -143,12 +141,6 @@
           ma.innerHTML = `<i data-lucide="${s.icon}" style="stroke:${s.iconColor}"></i>${s.title}`;
           mobileGrid.appendChild(ma);
         }
-
-        // Footer link
-        const fa = document.createElement('a');
-        fa.href = `series.html?id=${s.id}`;
-        fa.textContent = s.title;
-        footer.appendChild(fa);
       });
 
       lucide.createIcons();
