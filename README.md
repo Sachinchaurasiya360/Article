@@ -375,6 +375,26 @@ See [WebSockets-WebRTC/](WebSockets-WebRTC/) for the full series.
 
 </details>
 
+<details>
+<summary><strong>🏗️ System Design</strong> — 12 parts · First principles to production distributed systems</summary>
+
+| # | Part |
+|---|------|
+| 0 | [The Foundation — Thinking in Systems, Estimation, Trade-offs](System-Design/system-design-deep-dive-part-0.md) |
+| 1 | [Scaling — Vertical, Horizontal, and Load Balancing](System-Design/system-design-deep-dive-part-1.md) |
+| 2 | [Databases and Data Modeling — SQL vs NoSQL](System-Design/system-design-deep-dive-part-2.md) |
+| 3 | [Replication and Sharding — Scaling the Data Layer](System-Design/system-design-deep-dive-part-3.md) |
+| 4 | [Caching and CDNs — Serving Data Fast](System-Design/system-design-deep-dive-part-4.md) |
+| 5 | [Consistency, CAP/PACELC, and Consensus](System-Design/system-design-deep-dive-part-5.md) |
+| 6 | [Messaging and Event-Driven Architecture](System-Design/system-design-deep-dive-part-6.md) |
+| 7 | [API Design — REST, gRPC, GraphQL, and Gateways](System-Design/system-design-deep-dive-part-7.md) |
+| 8 | [Reliability and Fault Tolerance](System-Design/system-design-deep-dive-part-8.md) |
+| 9 | [Observability and Operations — SLOs, Metrics, Tracing](System-Design/system-design-deep-dive-part-9.md) |
+| 10 | [Monolith vs Microservices and the Service Mesh](System-Design/system-design-deep-dive-part-10.md) |
+| 11 | [Case Studies — URL Shortener, News Feed, Chat System](System-Design/system-design-deep-dive-part-11.md) |
+
+</details>
+
 ---
 
 ### Databases & Backend
