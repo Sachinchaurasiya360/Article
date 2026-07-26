@@ -337,6 +337,34 @@ const SERIES = [
     ]
   },
   {
+    id: "System-Design",
+    title: "System Design",
+    icon: "network", iconColor: "#4f46e5",
+    color: "indigo",
+    gradient: "linear-gradient(135deg,#4f46e5,#0ea5e9)",
+    description: "From first principles to production distributed systems - scaling, databases, sharding, caching, consistency, messaging, APIs, reliability, and real case studies.",
+    level: "Beginner → Production",
+    parts: 12,
+    articles: Array.from({length:12},(_,i)=>({
+      num: i,
+      file: `System-Design/system-design-deep-dive-part-${i}.md`,
+      titles: [
+        "The Foundation - Thinking in Systems, Estimation, and Trade-offs",
+        "Scaling - Vertical, Horizontal, and Load Balancing",
+        "Databases and Data Modeling - SQL vs NoSQL",
+        "Replication and Sharding - Scaling the Data Layer",
+        "Caching and CDNs - Serving Data Fast",
+        "Consistency, CAP/PACELC, and Consensus",
+        "Messaging and Event-Driven Architecture",
+        "API Design - REST, gRPC, GraphQL, and Gateways",
+        "Reliability and Fault Tolerance",
+        "Observability and Operations - SLOs, Metrics, Tracing",
+        "Monolith vs Microservices and the Service Mesh",
+        "Case Studies - URL Shortener, News Feed, Chat System"
+      ][i]
+    }))
+  },
+  {
     id: "Security",
     title: "Security & Bug Bounty",
     icon: "shield", iconColor: "#e11d48",
