@@ -443,6 +443,12 @@ open Machine-Learning/ml-deep-dive-part-0.md
 
 **Live site:** [sachinchaurasiya360.github.io/My-Medium-Article](https://sachinchaurasiya360.github.io/My-Medium-Article/)
 
+**SEO:** after adding or renaming an article in `assets/js/series.js`, regenerate the sitemap (needs Node.js on PATH):
+
+```bash
+python tools/build-sitemap.py
+```
+
 ---
 
 ## 🤝 Contributing

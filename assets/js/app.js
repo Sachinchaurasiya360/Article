@@ -13,6 +13,81 @@ function extractTitle(markdown) {
   return m ? m[1].trim() : null;
 }
 
+// ===== SEO helpers =====
+
+const SITE_URL = 'https://blog.sachinchaurasiya.xyz';
+const SITE_NAME = 'Blog by Sachin';
+const AUTHOR = { '@type': 'Person', name: 'Sachin Chaurasiya', url: 'https://sachinchaurasiya.xyz' };
+
+function setMeta(key, content) {
+  if (!content) return;
+  const attr = /^(og|article):/.test(key) ? 'property' : 'name';
+  let el = document.head.querySelector(`meta[${attr}="${key}"]`);
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(attr, key);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content', content);
+}
+
+function setCanonical(url) {
+  let el = document.head.querySelector('link[rel="canonical"]');
+  if (!el) {
+    el = document.createElement('link');
+    el.rel = 'canonical';
+    document.head.appendChild(el);
+  }
+  el.href = url;
+}
+
+function setJsonLd(id, data) {
+  let el = document.getElementById(id);
+  if (!el) {
+    el = document.createElement('script');
+    el.type = 'application/ld+json';
+    el.id = id;
+    document.head.appendChild(el);
+  }
+  el.textContent = JSON.stringify(data);
+}
+
+function applySeo({ title, description, url, image, type }) {
+  document.title = title;
+  setMeta('description', description);
+  setCanonical(url);
+  setMeta('og:site_name', SITE_NAME);
+  setMeta('og:type', type || 'website');
+  setMeta('og:title', title);
+  setMeta('og:description', description);
+  setMeta('og:url', url);
+  setMeta('og:image', image);
+  setMeta('twitter:card', image ? 'summary_large_image' : 'summary');
+  setMeta('twitter:title', title);
+  setMeta('twitter:description', description);
+  setMeta('twitter:image', image);
+}
+
+function truncate(text, max) {
+  text = text.replace(/\s+/g, ' ').trim();
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max - 1);
+  return cut.slice(0, cut.lastIndexOf(' ')) + '…';
+}
+
+// First real paragraph, skipping the "Series / Part / Audience" header block
+function extractDescription(container) {
+  const paras = container.querySelectorAll('p');
+  for (const p of paras) {
+    if (p.closest('blockquote, table, li')) continue;
+    const text = p.textContent.trim();
+    if (text.length < 60) continue;
+    if (/^(Series|Part|Audience|Reading time)\s*:/i.test(text) || /Reading time:/i.test(text)) continue;
+    return truncate(text, 158);
+  }
+  return null;
+}
+
 // ===== Navigation =====
 
 function buildNav() {
@@ -213,8 +288,6 @@ async function loadArticle() {
       breadcrumb.innerHTML = `<a href="index.html">Home</a><span>›</span><a href="series.html?id=${seriesId}">${seriesData.title}</a><span>›</span>Part ${partNum}`;
     }
 
-    document.title = title + ' - DeepDive';
-
     const titleEl = document.getElementById('article-title');
     if (titleEl) titleEl.textContent = title;
 
@@ -248,6 +321,39 @@ async function loadArticle() {
 
     addCopyButtons(bodyEl);
     buildTOC(bodyEl);
+
+    // SEO: title, description, canonical, OG, JSON-LD
+    const pageUrl = `${SITE_URL}/article.html?path=${filePath}`;
+    const fullTitle = seriesData
+      ? `${seriesData.title} Deep Dive Part ${partNum}: ${title} | ${SITE_NAME}`
+      : `${title} | ${SITE_NAME}`;
+    const description = (articleData && articleData.desc) || extractDescription(bodyEl) || (seriesData && seriesData.description) || '';
+    const firstImg = bodyEl.querySelector('img');
+    const image = firstImg ? new URL(firstImg.getAttribute('src'), location.href).href : undefined;
+    applySeo({ title: fullTitle, description, url: pageUrl, image, type: 'article' });
+    setJsonLd('ld-article', {
+      '@context': 'https://schema.org',
+      '@type': 'TechArticle',
+      headline: truncate(seriesData ? `${seriesData.title} Part ${partNum}: ${title}` : title, 110),
+      description,
+      image: image ? [image] : undefined,
+      author: AUTHOR,
+      publisher: AUTHOR,
+      mainEntityOfPage: pageUrl,
+      isPartOf: seriesData ? { '@type': 'CreativeWorkSeries', name: `${seriesData.title} Deep Dive`, url: `${SITE_URL}/series.html?id=${seriesId}` } : undefined,
+      keywords: seriesData ? seriesData.keywords : undefined
+    });
+    if (seriesData) {
+      setJsonLd('ld-breadcrumb', {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+          { '@type': 'ListItem', position: 2, name: seriesData.title, item: `${SITE_URL}/series.html?id=${seriesId}` },
+          { '@type': 'ListItem', position: 3, name: `Part ${partNum}: ${title}`, item: pageUrl }
+        ]
+      });
+    }
 
     // Hide loading, reveal header
     if (loadingEl) loadingEl.remove();
@@ -299,7 +405,26 @@ function loadSeriesPage() {
     return;
   }
 
-  document.title = s.title + ' - DeepDive';
+  const seriesUrl = `${SITE_URL}/series.html?id=${s.id}`;
+  applySeo({
+    title: `${s.title} Deep Dive Series (${s.parts} Parts) | ${SITE_NAME}`,
+    description: truncate(s.description, 158),
+    url: seriesUrl
+  });
+  setJsonLd('ld-series', {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWorkSeries',
+    name: `${s.title} Deep Dive`,
+    description: s.description,
+    url: seriesUrl,
+    author: AUTHOR,
+    keywords: s.keywords,
+    hasPart: s.articles.map(a => ({
+      '@type': 'TechArticle',
+      headline: `Part ${a.num}: ${a.titles || a.file}`,
+      url: `${SITE_URL}/article.html?path=${a.file}`
+    }))
+  });
 
   container.innerHTML = `
     <div class="series-header">

@@ -8,6 +8,7 @@ const SERIES = [
     gradient: "linear-gradient(135deg,#8b5cf6,#6366f1)",
     description: "Linear regression to production ML platforms. Every algorithm built from scratch, then with PyTorch and scikit-learn.",
     level: "Beginner → Production",
+    keywords: "machine learning tutorial, ML from scratch, PyTorch, scikit-learn, neural networks, deep learning, MLOps",
     parts: 20,
     articles: Array.from({length:20},(_,i)=>({
       num: i,
@@ -44,6 +45,7 @@ const SERIES = [
     gradient: "linear-gradient(135deg,#3b82f6,#2dd4bf)",
     description: "How machines remember, retrieve, and reason. Attention, embeddings, vector databases, and autonomous agents.",
     level: "Beginner → Production",
+    keywords: "AI memory, LLM memory, embeddings, vector databases, RAG, AI agents memory, context window, transformers",
     parts: 20,
     articles: Array.from({length:20},(_,i)=>({
       num: i,
@@ -116,6 +118,7 @@ const SERIES = [
     gradient: "linear-gradient(135deg,#f59e0b,#ef4444)",
     description: "Retrieval-Augmented Generation from scratch - chunking, embeddings, vector search, and production deployment.",
     level: "Intermediate → Production",
+    keywords: "RAG, retrieval-augmented generation, LLM, vector search, embeddings, chunking, reranking, RAG in production",
     parts: 10,
     articles: Array.from({length:10},(_,i)=>({
       num: i,
@@ -142,6 +145,7 @@ const SERIES = [
     gradient: "linear-gradient(135deg,#ef4444,#f59e0b)",
     description: "Distributed logs, replication internals, stream processing, performance tuning, and production operations.",
     level: "Intermediate → Advanced",
+    keywords: "Apache Kafka, Kafka internals, event streaming, Kafka consumers, Kafka partitions, event-driven architecture",
     parts: 11,
     articles: Array.from({length:11},(_,i)=>({
       num: i,
@@ -169,10 +173,22 @@ const SERIES = [
     gradient: "linear-gradient(135deg,#ec4899,#f59e0b)",
     description: "Architecture internals, data structure encodings, persistence, clustering, and production engineering.",
     level: "Intermediate → Advanced",
+    keywords: "Redis internals, Redis architecture, Redis event loop, Redis data structures, Redis persistence, RDB, AOF, Redis replication, Redis Sentinel, Redis Cluster, caching, backend engineering, system design",
     parts: 9,
     articles: Array.from({length:9},(_,i)=>({
       num: i,
       file: `Redis/redis-deep-dive-part-${i}.md`,
+      desc: [
+        "Systems fundamentals for understanding Redis internals: memory hierarchy, CPU caches, sockets and TCP, I/O multiplexing, event loops, fork and copy-on-write.",
+        "How Redis really works inside: the single-threaded ae event loop, epoll, the client request lifecycle, threaded I/O, and the redisObject encoding model.",
+        "Redis data structures at the byte level: SDS strings, listpack, quicklist, hashes, sets, skip-list sorted sets, and streams, with encoding thresholds and Big-O.",
+        "Redis memory management and persistence explained: jemalloc, key expiration, eviction policies, RDB snapshots, AOF rewrite, fork and copy-on-write costs.",
+        "Redis networking and performance engineering: RESP protocol, pipelining, transactions, Lua scripting, latency diagnosis, and benchmarking Redis in production.",
+        "Redis replication and high availability: PSYNC, replication backlog, replica lag, Redis Sentinel failover, quorum, and split-brain scenarios explained.",
+        "Redis Cluster internals: hash slots, gossip protocol, resharding, MOVED and ASK redirects, failover, and the distributed systems trade-offs behind them.",
+        "Real-world Redis patterns for system design: distributed locks, rate limiting, caching strategies, queues, leaderboards, and session storage done right.",
+        "Running Redis in production at scale: capacity planning, monitoring, latency spikes, memory fragmentation, failure modes, and real outage war stories."
+      ][i],
       titles: [
         "The Foundation You Need Before Going Deep",
         "Architecture and Event Loop Internals",
@@ -344,6 +360,7 @@ const SERIES = [
     gradient: "linear-gradient(135deg,#4f46e5,#0ea5e9)",
     description: "From first principles to production distributed systems - scaling, databases, sharding, caching, consistency, messaging, APIs, reliability, and real case studies.",
     level: "Beginner → Production",
+    keywords: "system design, distributed systems, scalability, sharding, caching, CAP theorem, microservices, system design interview",
     parts: 12,
     articles: Array.from({length:12},(_,i)=>({
       num: i,
@@ -372,6 +389,7 @@ const SERIES = [
     gradient: "linear-gradient(135deg,#e11d48,#f59e0b)",
     description: "Offensive and defensive security - IDOR, JWT attacks, SQLi, XSS, SSRF, race conditions, AWS misconfigs, privilege escalation, and vulnerability chaining.",
     level: "Intermediate → Advanced",
+    keywords: "bug bounty, web security, IDOR, JWT attacks, SQL injection, XSS, SSRF, API security, penetration testing",
     parts: 19,
     articles: [
       { num: 0, file: "Security/security-deep-dive-part-0.md", titles: "Advanced IDOR Vulnerabilities and Broken Access Control" },
