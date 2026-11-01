@@ -1,0 +1,41 @@
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - link "Homepage" [ref=e6] [cursor=pointer]:
+        - /url: /?source=---top_nav_layout_nav-------------------------------------------
+      - combobox "search" [ref=e14]
+    - button "Get the Medium app" [ref=e16] [cursor=pointer]:
+      - generic [ref=e20]: Get app
+    - link "Write" [ref=e23] [cursor=pointer]:
+      - /url: /m/signin?operation=register&redirect=https%3A%2F%2Fmedium.com%2Fnew-story&source=---top_nav_layout_nav-----------------------new_post_topnav--------------------
+    - generic [ref=e29]:
+      - paragraph [ref=e30]:
+        - button "Sign up" [ref=e32]
+      - paragraph [ref=e34]:
+        - link "Sign in" [ref=e36] [cursor=pointer]:
+          - /url: /m/signin?operation=login&redirect=https%3A%2F%2Fmedium.com%2Fme%2Fstories&source=login---top_nav_layout_nav-----------------------global_nav--------------------
+    - button "user options menu" [ref=e41] [cursor=pointer]:
+      - img "Unknown user" [ref=e43]
+  - generic [ref=e48]:
+    - generic [ref=e49]:
+      - generic [ref=e51]:
+        - heading "Stories" [level=1] [ref=e54]
+        - link "Import a story" [ref=e56] [cursor=pointer]:
+          - /url: https://medium.com/p/import?source=your_stories_outbox----------------------------------------------
+      - generic [ref=e58]:
+        - tablist [ref=e59]:
+          - tab "Drafts" [ref=e62] [cursor=pointer]
+          - tab "Scheduled" [ref=e68] [cursor=pointer]
+          - tab "Published" [ref=e74] [cursor=pointer]
+          - tab "Unlisted" [ref=e80] [cursor=pointer]
+          - tab "Submissions" [ref=e87] [cursor=pointer]
+        - generic:
+          - button "next sections"
+        - generic:
+          - button "previous sections"
+    - generic [ref=e91]:
+      - paragraph [ref=e92]: No stories in draft.
+      - paragraph [ref=e93]:
+        - text: Why not
+        - link "start writing one?" [ref=e94] [cursor=pointer]:
+          - /url: https://medium.com/new-story?source=your_stories_outbox---writer_outbox_drafts-------------------------------------------
