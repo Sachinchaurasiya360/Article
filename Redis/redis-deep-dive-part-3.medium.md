@@ -1067,3 +1067,7 @@ Part 4 goes deep into this layer:
 ---
 
 *This is Part 3 of the Redis Deep Dive series. Parts 1-3 form the "single-node internals" trilogy  architecture, data structures, and memory/persistence. Starting with Part 4, we shift focus from *how Redis works internally* to *how to use it effectively*, and by Part 5, we'll leave the single-node world entirely for replication and high availability.*
+
+---
+
+*Looking for more study material? Check out [internhack.xyz](https://internhack.xyz) for interview prep, system design notes, and more deep dives.*

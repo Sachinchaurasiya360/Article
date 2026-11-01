@@ -82,8 +82,8 @@ sequenceDiagram
     participant R as Replica
     participant M as Master
 
-    R->>M: PSYNC ? -1<br/>("I have no replication ID;<br/>I need a full sync")
-    M->>R: +FULLRESYNC <replid> <offset><br/>("Starting full sync;<br/>here's my replication ID")
+    R->>M: PSYNC ? -1<br/>("I have no replication ID,<br/>I need a full sync")
+    M->>R: +FULLRESYNC <replid> <offset><br/>("Starting full sync,<br/>here's my replication ID")
 
     Note over M: Master triggers BGSAVE<br/>(fork + RDB snapshot)
 

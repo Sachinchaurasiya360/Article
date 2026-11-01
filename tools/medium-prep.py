@@ -59,6 +59,7 @@ def _clean_cell(text: str) -> str:
     text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)  # **bold** -> bold
     text = re.sub(r'\*(.+?)\*',     r'\1', text)   # *italic* -> plain
     text = re.sub(r'`(.+?)`',       r'\1', text)   # `code` -> plain
+    text = text.replace('$', r'\$')                 # $ would start matplotlib mathtext
     return text.strip()
 
 
