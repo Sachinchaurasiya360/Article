@@ -44,7 +44,7 @@ from pathlib import Path
 
 # Live site base. medium-assets PNGs are committed to the repo and served here,
 # so Medium can fetch them when the HTML is pasted.
-DEFAULT_BASE_URL = "https://blog.sachinchaurasiya.xyz"
+DEFAULT_BASE_URL = "https://article-pied-two.vercel.app"
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 

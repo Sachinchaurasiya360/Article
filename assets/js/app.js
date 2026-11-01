@@ -15,7 +15,7 @@ function extractTitle(markdown) {
 
 // ===== SEO helpers =====
 
-const SITE_URL = 'https://blog.sachinchaurasiya.xyz';
+const SITE_URL = 'https://article-pied-two.vercel.app';
 const SITE_NAME = 'Blog by Sachin';
 const AUTHOR = { '@type': 'Person', name: 'Sachin Chaurasiya', url: 'https://sachinchaurasiya.xyz' };
 

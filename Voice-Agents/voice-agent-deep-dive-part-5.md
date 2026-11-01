@@ -11,7 +11,7 @@
 
 ## Table of Contents
 
-1. [Recap of Part 4](#recap-of-part-4)
+1. [Recap of Parts 3 and 4](#recap-of-parts-3-and-4)
 2. [How TTS Works  The Complete Pipeline](#how-tts-works--the-complete-pipeline)
 3. [TTS Architecture Evolution](#tts-architecture-evolution)
 4. [Vocoders  Generating the Actual Waveform](#vocoders--generating-the-actual-waveform)
@@ -26,9 +26,9 @@
 
 ---
 
-## Recap of Part 4
+## Recap of Parts 3 and 4
 
-In Part 4, we explored **Speech-to-Text (STT)**  the art of converting human speech into written text. We covered the Connectionist Temporal Classification (CTC) loss function, attention-based encoder-decoder architectures, and production STT engines like OpenAI Whisper, Google Speech-to-Text, and Azure Cognitive Services. We learned how to handle real-time transcription with streaming APIs, built a robust transcription pipeline with speaker diarization, and evaluated accuracy using Word Error Rate (WER).
+In Parts 3 and 4, we explored **Speech-to-Text (STT)**  the art of converting human speech into written text. We covered the Connectionist Temporal Classification (CTC) loss function, attention-based encoder-decoder architectures, and production STT engines like OpenAI Whisper, Google Speech-to-Text, and Azure Cognitive Services. We learned how to handle real-time transcription with streaming APIs, built a robust transcription pipeline with speaker diarization, and evaluated accuracy using Word Error Rate (WER).
 
 Now we tackle the **opposite direction**: turning text back into speech. Text-to-Speech (TTS) is arguably the most user-facing component of any voice agent  it is literally the voice your users hear. A stilted, robotic voice will undermine even the most brilliant AI reasoning behind it, while a natural, expressive voice creates trust and engagement.
 

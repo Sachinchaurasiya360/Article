@@ -34,13 +34,13 @@ Or call the publisher directly:
 
 ```powershell
 python tools/medium-publish.py RAG/rag-deep-dive-part-0.medium.md
-python tools/medium-publish.py <file> --base-url https://blog.sachinchaurasiya.xyz --keep-open
+python tools/medium-publish.py <file> --base-url https://article-pied-two.vercel.app --keep-open
 ```
 
 ## How images work
 
 The PNGs live in the repo and are served from the live site
-(`https://blog.sachinchaurasiya.xyz/...`). The publisher rewrites local image
+(`https://article-pied-two.vercel.app/...`). The publisher rewrites local image
 paths to those absolute URLs; Medium fetches and re-hosts them when the article
 is pasted. **So push/deploy the article (and its `medium-assets/`) before
 publishing**, otherwise the images 404 in the draft.

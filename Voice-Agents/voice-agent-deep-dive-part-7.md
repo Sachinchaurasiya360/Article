@@ -11,7 +11,7 @@
 
 ## Introduction  From Offline Processing to the Live Wire
 
-In Part 6, we explored Voice Activity Detection (VAD)  the critical gatekeeper that decides when someone is speaking and when they are not. We implemented energy-based, zero-crossing, and neural network-based VAD systems, learned about hangover schemes to prevent choppy segmentation, and built a system that could reliably extract speech segments from continuous audio. All of that work assumed a comfortable scenario: audio files sitting on disk, waiting patiently for us to process them.
+In Part 6, we built custom and cloned voices. Before that, in Part 2, we explored Voice Activity Detection (VAD)  the critical gatekeeper that decides when someone is speaking and when they are not. We implemented energy-based, zero-crossing, and neural network-based VAD systems, learned about hangover schemes to prevent choppy segmentation, and built a system that could reliably extract speech segments from continuous audio. All of that work assumed a comfortable scenario: audio files sitting on disk, waiting patiently for us to process them.
 
 **Real-time changes everything.**
 
@@ -426,7 +426,7 @@ A **ring buffer** (also called a circular buffer) is a fixed-size buffer that wr
 
 ```mermaid
 graph LR
-    subgraph Ring Buffer capacity=8
+    subgraph RB["Ring Buffer (capacity 8)"]
         direction LR
         B0["[0] "] --- B1["[1] "] --- B2["[2] "] --- B3["[3]"]
         B3 --- B4["[4] "] --- B5["[5] "] --- B6["[6] "] --- B7["[7]"]

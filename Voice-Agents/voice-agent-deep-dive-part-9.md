@@ -13,7 +13,7 @@
 
 Welcome to Part 9. This is the part you have been building toward since the very beginning.
 
-Over the last eight parts, you learned how sound becomes numbers (Part 0), how those numbers become spectrograms (Part 1), how speech recognition turns audio into text (Parts 2-4), how voice activity detection knows when someone is talking (Part 5), how text-to-speech brings words back to life as audio (Parts 6-7), and how streaming architectures keep latency low (Part 8). Each piece was interesting on its own, but none of them alone constitutes a **voice agent**.
+Over the last eight parts, you learned how sound becomes numbers (Part 1), how those numbers become spectrograms and how voice activity detection knows when someone is talking (Part 2), how speech recognition turns audio into text (Parts 3-4), how text-to-speech and voice cloning bring words back to life as audio (Parts 5-6), how streaming architectures keep latency low (Part 7), and how audio reaches browsers and phones (Part 8). Each piece was interesting on its own, but none of them alone constitutes a **voice agent**.
 
 Today, we wire everything together. By the end of this part, you will have a fully functional voice agent running on your machine  one that listens to your microphone, understands what you say, thinks about a response, and speaks back to you in real time.
 

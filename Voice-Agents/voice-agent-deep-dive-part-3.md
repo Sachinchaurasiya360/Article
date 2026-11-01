@@ -11,7 +11,7 @@
 
 ## Table of Contents
 
-1. [Recap of Part 2](#recap-of-part-2)
+1. [Recap of Parts 1 and 2](#recap-of-parts-1-and-2)
 2. [How Humans Recognize Speech](#how-humans-recognize-speech)
 3. [The ASR Pipeline](#the-asr-pipeline)
 4. [Traditional ASR Overview](#traditional-asr-overview)
@@ -24,9 +24,9 @@
 
 ---
 
-## Recap of Part 2
+## Recap of Parts 1 and 2
 
-In **Part 2**, we explored the fascinating world of **digital audio fundamentals**  the hidden physics and mathematics that underpin every voice agent. We learned how sound travels as longitudinal pressure waves through air, how microphones convert those pressure variations into electrical signals, and how **Analog-to-Digital Converters (ADCs)** sample and quantize those signals into discrete numbers a computer can process. We implemented our own audio recording pipeline, visualized waveforms, and built spectrograms using the **Fast Fourier Transform (FFT)**.
+In **Parts 1 and 2**, we explored **digital audio fundamentals** and **audio signal processing**  the hidden physics and mathematics that underpin every voice agent. We learned how sound travels as longitudinal pressure waves through air, how microphones convert those pressure variations into electrical signals, and how **Analog-to-Digital Converters (ADCs)** sample and quantize those signals into discrete numbers a computer can process. We implemented our own audio recording pipeline, visualized waveforms, and built spectrograms using the **Fast Fourier Transform (FFT)**.
 
 We also explored **Mel-Frequency Cepstral Coefficients (MFCCs)**  the feature representation that bridges the gap between raw audio and machine learning models. By the end of Part 2, you had a working pipeline that could:
 

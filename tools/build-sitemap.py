@@ -13,7 +13,7 @@ from datetime import date
 from xml.sax.saxutils import escape
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SITE = "https://blog.sachinchaurasiya.xyz"
+SITE = "https://article-pied-two.vercel.app"
 
 NODE_DUMP = (
     "const fs=require('fs'),vm=require('vm'),c={};"
