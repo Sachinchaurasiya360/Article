@@ -160,3 +160,44 @@ Read this before every publish. Each one broke a real draft.
 ### Cleanup
 - Failed attempts leave extra drafts. "Delete story" in a draft's ⋯ menu deletes
   **immediately with no confirm**, so match the row to the draft ID before clicking.
+
+## More known issues & fixes (Redis Parts 4-5 and SEO pass, Nov 2026)
+
+### Prep
+- A `$` in a table cell made matplotlib parse mathtext and crash (`\r\n` in a RESP
+  table). `_clean_cell` now escapes `$`.
+- A `;` inside a mermaid sequence message ends the statement, so mermaid.ink returns
+  400 and the prep falls back to a broken URL. Use `,` instead. kroki.io
+  (`POST https://kroki.io/mermaid/png`) shows the real parse error.
+- `medium-prep.py` takes one file per run.
+
+### Editing a published story
+- The **first block of a synthetic paste merges into the paragraph at the caret**.
+  Prefix the HTML with `<p>&#8203;</p>` so the zero-width paragraph absorbs the merge.
+- `document.execCommand('delete')` on a JS selection does work in the background tab.
+- Edits autosave; "Save and publish" republishes immediately (no dialog).
+
+### Story settings (`medium.com/p/<id>/settings`)
+- SEO title, SEO description, topics and "Pin this story" all live here, also for drafts
+  and scheduled stories. Set input values with the native value setter + `input` event,
+  then click both **Save** buttons. Topic chips save instantly.
+- The topic suggestion menu lags behind the typed text: poll until an exact match
+  appears before clicking. Suggestions marked "(new)" have no followers; pick an
+  existing topic instead.
+- Empty subtitle/SEO description makes Google show `“” is published by ...`. Always set
+  an SEO description (140-156 chars) and a preview subtitle.
+
+### Publishing and scheduling
+- Publish dialog has "Schedule for later": a day grid plus hour and minute columns
+  (local time, IST). Times show in UTC on the Scheduled tab.
+- The bookmark button also adds the story to your private Reading list. Untick it after
+  adding a story to a public list.
+- The About page is a Slate editor: use a `beforeinput` event with
+  `inputType: 'insertFromPaste'` and a DataTransfer. Plain `<p>` only; headings/lists
+  get reordered.
+
+### Every new post
+- First paragraph is a keyword-rich hook, not the Series/Part/Audience block.
+- End with "Read the Full Redis Deep Dive Series" links, related series, and the
+  internhack.xyz footer. After a new part goes live, add it to the older parts' series
+  block and to the "Redis Deep Dive Series" list.
